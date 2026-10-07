@@ -58,6 +58,8 @@ Every scope has exactly one typed owner and a real foreign key. Scope IDs and ow
 
 ## Domain coverage and remaining work
 
+Migration 003 hardens this foundation with named multi-leg currency settlement, stricter and renewable worker leases, outbox collision detection, immutable character/container ownership, terminal run transitions, deferred run/scope consistency, and foreign-key index coverage. The read-only `db:audit` command reconciles balances and ownership/lifetime invariants. See [release readiness](release-readiness.md) for the implementation boundaries and remaining launch gates.
+
 The table below maps every design system to an existing foundation. It is an implementation boundary, not a claim that all features are done.
 
 | Systems | Available foundation | Next owning-module work |

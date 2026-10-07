@@ -6,18 +6,28 @@ export async function dispatchOutbox(pool:pg.Pool){
   return transaction(pool,async client=>{
     const batch=await client.query('SELECT * FROM outbox_events WHERE delivered_at IS NULL ORDER BY created_at,id FOR UPDATE SKIP LOCKED LIMIT 100');
     for(const event of batch.rows){
-      await client.query('INSERT INTO durable_jobs(job_key,kind,payload) VALUES($1,$2,$3) ON CONFLICT(job_key) DO NOTHING',[`outbox:${event.id}`,event.event_type,event.payload]);
+      const job=await client.query(`INSERT INTO durable_jobs(job_key,kind,payload) VALUES($1,$2,$3)
+        ON CONFLICT(job_key) DO UPDATE SET job_key=EXCLUDED.job_key
+        WHERE durable_jobs.kind=EXCLUDED.kind AND durable_jobs.payload=EXCLUDED.payload RETURNING id`,[`outbox:${event.id}`,event.event_type,event.payload]);
+      if(!job.rows.length)throw new Error('Outbox job key conflicts with different work');
       await client.query('UPDATE outbox_events SET delivered_at=now() WHERE id=$1',[event.id]);
     }
     return batch.rows.length;
   });
 }
 export async function enqueue(pool: pg.Pool, key: string, kind: string, payload: Json) {
+  if(key.trim().length===0 || key.length>256 || !/^[A-Za-z][A-Za-z0-9_.:-]{0,79}$/.test(kind) || payload===null || Array.isArray(payload) || typeof payload!=='object')throw new Error('Invalid job envelope');
   const result = await pool.query(`INSERT INTO durable_jobs(job_key,kind,payload) VALUES($1,$2,$3)
     ON CONFLICT(job_key) DO UPDATE SET job_key=EXCLUDED.job_key
     WHERE durable_jobs.kind=EXCLUDED.kind AND durable_jobs.payload=EXCLUDED.payload RETURNING id`, [key,kind,payload]);
   if (!result.rows.length) throw new Error('Job key reused with different work');
   return result.rows[0].id as string;
+}
+export async function renewJobLease(pool:pg.Pool,id:string,leaseToken:string,leaseSeconds=30){
+  if(!Number.isInteger(leaseSeconds) || leaseSeconds<1 || leaseSeconds>3600)throw new Error('Invalid job lease');
+  const result=await pool.query(`UPDATE durable_jobs SET lease_until=now()+$3*interval '1 second'
+    WHERE id=$1 AND lease_token=$2 AND status='RUNNING' AND lease_until>now() RETURNING id`,[id,leaseToken,leaseSeconds]);
+  return result.rows.length===1;
 }
 export async function claimJob(pool: pg.Pool, leaseSeconds = 30) {
   if (!Number.isInteger(leaseSeconds) || leaseSeconds<1 || leaseSeconds>3600) throw new Error('Invalid job lease');

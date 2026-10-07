@@ -1,0 +1,42 @@
+import type pg from 'pg';
+
+export async function unindexedForeignKeys(pool:pg.Pool){
+  return (await pool.query(`SELECT c.conname AS constraint_name,t.relname AS table_name,
+    ARRAY(SELECT a.attname::text FROM unnest(c.conkey) WITH ORDINALITY k(num,ord)
+      JOIN pg_attribute a ON a.attrelid=t.oid AND a.attnum=k.num ORDER BY k.ord) AS columns
+    FROM pg_constraint c JOIN pg_class t ON t.oid=c.conrelid JOIN pg_namespace n ON n.oid=t.relnamespace
+    WHERE c.contype='f' AND n.nspname=current_schema() AND NOT EXISTS(
+      SELECT 1 FROM pg_index i WHERE i.indrelid=t.oid AND i.indisvalid AND i.indisready AND i.indpred IS NULL
+      AND i.indnkeyatts>=cardinality(c.conkey)
+      AND (i.indkey::smallint[])[0:cardinality(c.conkey)-1] @> c.conkey)
+    ORDER BY t.relname,c.conname`)).rows as {constraint_name:string;table_name:string;columns:string[]}[];
+}
+
+export async function integrityReport(pool:pg.Pool){
+  const client=await pool.connect();
+  try{
+    await client.query('BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY');
+    const balances=(await client.query(`WITH legs AS (
+      SELECT from_wallet_id AS id,-amount::numeric AS delta FROM currency_transfers
+      UNION ALL SELECT to_wallet_id,amount::numeric FROM currency_transfers)
+      SELECT count(*)::int AS n FROM wallets w LEFT JOIN(SELECT id,sum(delta) AS total FROM legs GROUP BY id) l ON l.id=w.id
+      WHERE w.balance::numeric<>coalesce(l.total,0)`)).rows[0].n as number;
+    const lifetimes=(await client.query(`SELECT count(*)::int AS n FROM runs r LEFT JOIN state_scopes s ON s.run_id=r.id
+      WHERE s.lifecycle IS DISTINCT FROM CASE WHEN r.status IN('ARCHIVED','ABANDONED') THEN 'ARCHIVED' ELSE 'ACTIVE' END`)).rows[0].n as number;
+    const leases=(await client.query(`SELECT count(*)::int AS n FROM durable_jobs WHERE
+      (status='RUNNING' AND (lease_token IS NULL OR lease_until IS NULL)) OR
+      (status<>'RUNNING' AND (lease_token IS NOT NULL OR lease_until IS NOT NULL))`)).rows[0].n as number;
+    const bindings=(await client.query(`SELECT count(*)::int AS n FROM inventory_items i
+      JOIN inventory_containers b ON b.id=i.container_id JOIN state_scopes s ON s.id=b.scope_id
+      LEFT JOIN runs r ON r.id=s.run_id LEFT JOIN characters c ON c.id=r.character_id
+      WHERE (i.binding='ACCOUNT_BOUND' AND coalesce(s.account_id,c.account_id) IS DISTINCT FROM i.bound_account_id)
+      OR (i.binding='RUN_BOUND' AND s.run_id IS DISTINCT FROM i.bound_run_id)`)).rows[0].n as number;
+    const collisions=(await client.query(`SELECT count(*)::int AS n FROM outbox_events e JOIN durable_jobs j ON j.job_key='outbox:'||e.id::text
+      WHERE j.kind<>e.event_type OR j.payload<>e.payload`)).rows[0].n as number;
+    const constraints=(await client.query(`SELECT count(*)::int AS n FROM pg_constraint c JOIN pg_class t ON t.oid=c.conrelid
+      JOIN pg_namespace s ON s.oid=t.relnamespace WHERE s.nspname=current_schema() AND c.contype IN('c','f') AND NOT c.convalidated`)).rows[0].n as number;
+    await client.query('COMMIT');
+    return {walletBalanceMismatches:balances,runScopeMismatches:lifetimes,malformedJobLeases:leases,itemBindingMismatches:bindings,outboxJobCollisions:collisions,unvalidatedConstraints:constraints};
+  }catch(error){await client.query('ROLLBACK');throw error;}
+  finally{client.release();}
+}
