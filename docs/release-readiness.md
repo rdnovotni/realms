@@ -35,7 +35,7 @@ bash scripts/database.sh restore-check .state/backups/NAME.dump
 | Recovery on another machine | Not exercised | Configuration/role recovery and application/gameplay/history verification |
 | Safe production migrations | Checksummed transactional migrations | Representative-data rehearsal, lock/downtime limits and server-version compatibility |
 | Typed content mechanics | Shared envelope only | Detailed schemas and semantic validators for every shipped content type |
-| Complete gameplay persistence | Shared primitives | Durable encounter resolution, RNG progress, costs, rewards and defeat/disconnect recovery |
+| Complete gameplay persistence | Ordinary solo encounter journal, durable RNG, costs and atomic settlement | Authored combat/loot/defeat handlers, public projections and complete victory-to-Ascension loop |
 | Inventory/crafting | Custody, ledger grants/consumption and split/merge | Authored recipes, protection/capacity rules, equipment, binding transitions, durability, upgrades and commissions |
 | Progression/Ascension | Fields and lifetime transition | Builds, mastery/Legacy, eligibility, rewards, setup and visible transition plan |
 | Quest/world consequences | Identity, lifecycle and scope primitives | Validated graphs, NPC memory, faction/world consequences and campaign records |
@@ -47,6 +47,8 @@ bash scripts/database.sh restore-check .state/backups/NAME.dump
 | Performance/failure drills | Focused invariant tests | Representative data volumes, query plans, connection budgets, crash/restart and restore drills |
 
 ## Execution order
+
+The encounter journal pass (migration 006) commits an ordinary solo encounter and its Turn cost together, stores server-only checkpoints and named RNG draws, and settles an outcome with domain rewards in one Action transaction. See [encounter persistence](encounter-persistence.md) for authority boundaries and the gameplay work still required.
 
 The account/session pass (migration 005) adds credential storage, scope-checked sessions, password/recovery rotation, revocation race protection, suspension, security history and persistent throttles. The HTTP process uses allowlisted configuration and refuses administration/test secrets or an administrative SQL role. See [accounts and sessions](account-sessions.md) for private enrollment and the remaining identity requirements.
 
