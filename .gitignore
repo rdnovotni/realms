@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.local/
+.state/
+.env
+.env.*
+!.env.example
+coverage/
+*.log
