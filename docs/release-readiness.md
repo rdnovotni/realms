@@ -28,8 +28,8 @@ bash scripts/database.sh restore-check .state/backups/NAME.dump
 |---|---|---|
 | Launch feature coverage | Design-to-foundation map exists | Every launch feature mapped to schema, authority, lifetime, transaction and acceptance tests |
 | Integrity and currency batches | Migration 003 and services implemented | Replay, concurrency, rollback, ownership, upgrade, runtime permissions and live audit checks pass |
-| Real accounts and sessions | Development credential only | Identity/recovery, revocation, staff authorization and cross-account denial tests |
-| Production/staging separation | Development stack only | Separate settings/data/credentials; production runtime excludes administration secrets and dev seeding |
+| Real accounts and sessions | Enrolled passwords, scoped sessions, offline recovery and throttling | Public onboarding/contact policy, compromised-password filtering, stronger staff authentication and granular staff authority |
+| Production/staging separation | Private runtime excludes administration/test secrets and verifies SQL privileges | Separate deployment settings/data/OS identities/credentials; production excludes dev seeding |
 | Automated independent backups | Manual local dumps | Encryption, independent storage, retention, alerts and recovery objectives |
 | Point-in-time recovery | Not configured | Base backups and archived transaction logs; verified recovery to the intended transaction |
 | Recovery on another machine | Not exercised | Configuration/role recovery and application/gameplay/history verification |
@@ -47,6 +47,8 @@ bash scripts/database.sh restore-check .state/backups/NAME.dump
 | Performance/failure drills | Focused invariant tests | Representative data volumes, query plans, connection budgets, crash/restart and restore drills |
 
 ## Execution order
+
+The account/session pass (migration 005) adds credential storage, scope-checked sessions, password/recovery rotation, revocation race protection, suspension, security history and persistent throttles. The HTTP process uses allowlisted configuration and refuses administration/test secrets or an administrative SQL role. See [accounts and sessions](account-sessions.md) for private enrollment and the remaining identity requirements.
 
 The inventory accounting pass (migration 004) adds immutable quantity operations, exact-snapshot typed grants, atomic consumption and conserving stack transfers. Opening balances preserve existing items; consumed identities retain history. Audit and restore checks now reconcile each item's quantity. See [inventory accounting](inventory-accounting.md) for evidence and the item rules still required at launch.
 

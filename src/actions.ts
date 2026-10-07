@@ -2,7 +2,7 @@ import type pg from 'pg';
 import { executeAction, requireActive } from './foundation/action.js';
 import { DomainError } from './foundation/errors.js';
 export { DomainError as ActionError } from './foundation/errors.js';
-export type SpendTurns = { requestId: string; actionType: 'SPEND_TURNS'; amount: number; expectedRevision: number };
+export type SpendTurns = { requestId: string; actionType: 'SPEND_TURNS'; amount: number; expectedRevision: number; principal?:import('./auth/sessions.js').Principal };
 export function spendTurns(pool: pg.Pool, accountId: string, action: SpendTurns) {
   return executeAction(pool, accountId, action, { amount: action.amount }, async context => {
     requireActive(context);

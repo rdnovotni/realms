@@ -7,6 +7,15 @@ export const poolFor = (url: string, schema?:string) => {
   return new pg.Pool({ connectionString: url, ...(schema?{options:`-c search_path=${schema}`} : {}), max: 5, connectionTimeoutMillis: 3000, statement_timeout: 5000, idle_in_transaction_session_timeout: 10000 });
 };
 
+export async function assertRuntimeRole(pool:pg.Pool){
+  const role=(await pool.query(`SELECT rolsuper,rolcreatedb,rolcreaterole,rolreplication,rolbypassrls,
+    has_table_privilege(current_user,'schema_migrations','UPDATE') AS migrations,
+    has_table_privilege(current_user,'auth_credentials','INSERT') AS enrollment,
+    has_column_privilege(current_user,'accounts','access_status','UPDATE') AS suspension
+    FROM pg_roles WHERE rolname=current_user`)).rows[0];
+  if(!role || Object.values(role).some(Boolean)) throw new Error('Runtime database role has administration privileges');
+}
+
 export async function assertSchema(pool:pg.Pool){
   const folder=new URL('../migrations/',import.meta.url),names=(await readdir(folder)).filter(n=>n.endsWith('.sql')).sort();
   const applied=(await pool.query('SELECT name,checksum FROM schema_migrations ORDER BY name')).rows;

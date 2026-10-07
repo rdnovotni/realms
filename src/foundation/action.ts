@@ -3,9 +3,10 @@ import type pg from 'pg';
 import { checksum, type Json } from './json.js';
 import { transaction } from './transaction.js';
 import { DomainError } from './errors.js';
+import { authorizeSession,type Principal } from '../auth/sessions.js';
 export type RunState = { id: string; turns: number; revision: number; status: 'ACTIVE' | 'AFTERCORE' | 'ARCHIVED' | 'ABANDONED'; character_id: string; rules_version: string; content_release_id: string | null; mode: string };
 export type ActionContext = { client: pg.PoolClient; accountId: string; actionId: string; requestId: string; run: RunState };
-export type Envelope = { requestId: string; actionType: string; expectedRevision: number; authorizationSource?: 'MANUAL_UI' | 'PARSER' | 'AUTOMATION' | 'API' | 'ADMIN' };
+export type Envelope = { requestId: string; actionType: string; expectedRevision: number; authorizationSource?: 'MANUAL_UI' | 'PARSER' | 'AUTOMATION' | 'API' | 'ADMIN'; principal?:Principal };
 export async function executeAction(pool: pg.Pool, accountId: string, envelope: Envelope, parameters: Json,
   handler: (context: ActionContext) => Promise<{ [key: string]: Json }>) {
   if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(envelope.requestId) ||
@@ -14,8 +15,13 @@ export async function executeAction(pool: pg.Pool, accountId: string, envelope: 
   const hash = checksum({ type: envelope.actionType, revision: envelope.expectedRevision, parameters, source: envelope.authorizationSource ?? 'MANUAL_UI' });
   const actionId = randomUUID();
   return transaction(pool, async client => {
-    const account = await client.query('SELECT id FROM accounts WHERE id=$1 FOR UPDATE', [accountId]);
+    const account = await client.query('SELECT * FROM accounts WHERE id=$1 FOR UPDATE', [accountId]);
     if (!account.rows.length) throw new DomainError(404, 'ACCOUNT_NOT_FOUND');
+    if((account.rows[0].access_status??'ACTIVE')!=='ACTIVE') throw new DomainError(403,'ACCOUNT_SUSPENDED');
+    if(envelope.principal){
+      if(envelope.principal.accountId!==accountId) throw new DomainError(403,'SESSION_NOT_AUTHORIZED');
+      await authorizeSession(client,envelope.principal,'GAME_WRITE');
+    }
     const prior = await client.query('SELECT payload_hash,result,envelope_version FROM action_receipts WHERE account_id=$1 AND request_id=$2', [accountId, envelope.requestId]);
     if (prior.rows.length) {
       const legacy = prior.rows[0].envelope_version===1 && envelope.actionType==='SPEND_TURNS' && (envelope.authorizationSource??'MANUAL_UI')==='MANUAL_UI';

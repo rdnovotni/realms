@@ -10,7 +10,7 @@ test('transactional action: concurrent retries, restart, auth, stale input, roll
   const database=await testDatabase(),pool=database.pool;
   const account = randomUUID(), character = randomUUID(), run = randomUUID(), requestId = randomUUID();
   const token = 'integration-only-token'.repeat(2);
-  let app = buildApp(pool, token, account);
+  let app = buildApp(pool, {mode:'development',token,accountId:account});
   try {
     await migrate(pool); await migrate(pool);
     await pool.query('INSERT INTO accounts(id) VALUES($1)', [account]);
@@ -31,7 +31,7 @@ test('transactional action: concurrent retries, restart, auth, stale input, roll
     assert.equal((await post({ ...action, requestId: randomUUID() })).json().error, 'STALE_REVISION');
     assert.equal((await post({ ...action, requestId: randomUUID(), expectedRevision: 1, amount: 3 })).json().error, 'INSUFFICIENT_TURNS');
     await app.close();
-    app = buildApp(pool, token, account);
+    app = buildApp(pool, {mode:'development',token,accountId:account});
     assert.equal((await post(action)).json().replayed, true);
     const ledger = await pool.query('SELECT count(*)::int AS count, sum(delta)::int AS delta FROM turn_ledger WHERE run_id=$1', [run]);
     assert.deepEqual(ledger.rows[0], { count: 1, delta: -1 });

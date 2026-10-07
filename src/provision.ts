@@ -24,7 +24,12 @@ try{
       inventory_containers,inventory_items,wallets,discoveries,quest_states,effect_instances,instances,instance_participants,
       guilds,guild_members,world_events,scoped_state,outbox_events,durable_jobs TO realms_app;
     GRANT INSERT ON action_receipts,turn_ledger,currency_transfers,inventory_movements,inventory_quantity_operations,run_history,audit_events,run_rollovers TO realms_app;
-    GRANT DELETE ON effect_instances TO realms_app;`);
+    REVOKE UPDATE ON accounts FROM realms_app;
+    GRANT UPDATE(security_epoch) ON accounts TO realms_app;
+    GRANT INSERT,UPDATE ON auth_sessions,auth_recovery_codes,auth_throttle TO realms_app;
+    GRANT UPDATE(salt,verifier) ON auth_credentials TO realms_app;
+    GRANT INSERT ON auth_events TO realms_app;
+    GRANT DELETE ON effect_instances,auth_throttle TO realms_app;`);
   await client.query('COMMIT');
   const appUrl=new URL(adminUrl);appUrl.username='realms_app';appUrl.password=password;
   const text=await readFile('.env','utf8'),values=text.split('\n').filter(line=>!line.startsWith('DATABASE_URL=')&&!line.startsWith('DATABASE_ADMIN_URL='));
