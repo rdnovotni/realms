@@ -1,13 +1,13 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
-import { migrate, poolFor } from '../src/database.js';
+import { migrate } from '../src/database.js';
+import { testDatabase } from './helpers.js';
+import { publishContent } from '../src/domains/content.js';
 import { buildApp } from '../src/app.js';
 
 test('transactional action: concurrent retries, restart, auth, stale input, rollback', async () => {
-  const url = process.env.TEST_DATABASE_URL;
-  if (!url || new URL(url).pathname !== '/realms_test') throw new Error('Integration tests require a separate realms_test database.');
-  const pool = poolFor(url);
+  const database=await testDatabase(),pool=database.pool;
   const account = randomUUID(), character = randomUUID(), run = randomUUID(), requestId = randomUUID();
   const token = 'integration-only-token'.repeat(2);
   let app = buildApp(pool, token, account);
@@ -15,7 +15,8 @@ test('transactional action: concurrent retries, restart, auth, stale input, roll
     await migrate(pool); await migrate(pool);
     await pool.query('INSERT INTO accounts(id) VALUES($1)', [account]);
     await pool.query('INSERT INTO characters(id,account_id) VALUES($1,$2)', [character, account]);
-    await pool.query('INSERT INTO runs(id,character_id,turns) VALUES($1,$2,3)', [run, character]);
+    const release=await publishContent(pool,{version:'integration-fixture',engineVersion:'foundation-1',entities:[]});
+    await pool.query('INSERT INTO runs(id,character_id,turns,content_release_id) VALUES($1,$2,3,$3)', [run, character,release]);
     const action = { requestId, actionType: 'SPEND_TURNS', amount: 1, expectedRevision: 0 };
     const post = (payload: Record<string, unknown>) => app.inject({ method: 'POST', url: '/api/v1/actions', headers: { authorization: `Bearer ${token}` }, payload });
     assert.equal((await app.inject({ method: 'POST', url: '/api/v1/actions', payload: action })).statusCode, 401);
@@ -44,7 +45,6 @@ test('transactional action: concurrent retries, restart, auth, stale input, roll
     assert.equal(receipts.rows[0].count, 1);
   } finally {
     await app.close();
-    await pool.query('DELETE FROM accounts WHERE id=$1', [account]);
-    await pool.end();
+    await database.close();
   }
 });

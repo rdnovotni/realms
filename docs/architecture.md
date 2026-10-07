@@ -1,16 +1,21 @@
-# Initial server decisions
+# Server architecture
 
-Status: private-development implementation baseline, October 7, 2026.
+Private-development foundation, October 7, 2026.
 
-- TypeScript/Fastify and PostgreSQL implement the first authoritative Action boundary. This is a modular-monolith starting point, not a complete rules engine.
-- Account, persistent character identity, and current run are separate records. Encounter/instance/world/Guild scopes will be added deliberately as their features arrive.
-- Requests derive identity from a private single-user development token. Real account sessions and permission scopes are required before broader access.
-- PostgreSQL transactions own costs, revisions, receipts, and ledgers. A per-account lock serializes current prototype mutations; more granular ordered locks can follow actual shared-state requirements.
-- Request keys are account-scoped and checked against payload hashes. Replays return the original result; changed payloads under the same key are rejected.
-- Database migrations are versioned/checksummed and applied under a transactional advisory lock. Existing migrations must not be edited after application.
-- Local configuration and database data are ignored by Git. Private services listen on loopback only.
-- Rootless Ubuntu package extraction is a workstation development convenience. It does not receive automatic system-package security updates; tool upgrades require rerunning a reviewed installer/update process. A managed service installation is later operational work.
-- Node/PostgreSQL versions and package lock are explicit. The workstation's existing libraries remain prerequisites for extracted PostgreSQL binaries.
-- No client renderer, AI provider, public deployment, payment service, or production authentication choice is committed by this bootstrap.
+The server is an authoritative modular monolith: strict TypeScript, Fastify, explicit SQL, and PostgreSQL. SQL remains visible where ownership, lock ordering, transactions, and constraints matter. No ORM or additional service is required for the initial implementation.
 
-Next vertical slice: validated content definitions → seeded encounter creation → real Turn commitment and outcome → quest/check/effect integration → campaign completion → minimal Ascension reset with one persistent reward. Add rollover scope tests early rather than interpreting the initial seed as the final daily economy.
+`foundation/action.ts` serializes each account's mutations, checks a stable request envelope and expected revision, and commits state, immutable receipt, audit and outbox together. Retries return the recorded result. Database work may retry deadlocks or serialization conflicts up to three attempts; external side effects must use the outbox.
+
+Domain modules own content, scoped state, economy, inventory, instances, lifecycle and jobs. Shared persistence does not imply shared permission: future Guild, trade, combat and admin modules must check their own authority and eligibility before calling these internal services. Clients never connect to the database or write arbitrary state keys.
+
+Queries use projections tailored to the account's knowledge. Content views require both discovery and a run containing the requested release. Instance views require participation. Seeds, mechanics and hidden definitions do not enter those response objects.
+
+Content identities remain stable and cannot be recycled. Definitions and release entries are immutable; publication validates dependencies and seals the exact manifest. Runs and instances pin their rules. Content updates affect new snapshots, never silently rewrite existing ones.
+
+Seven explicit state scopes distinguish account, character, run, instance, Guild, event and world. Each has a real foreign key. Versioned state contracts declare the owning module, scope, schema, default and reset policy. Larger relational domain models should use dedicated tables rather than an untyped flag store.
+
+Migrations are append-only and checksummed. Readiness verifies exact compatibility. The development server has a restricted SQL role; administration is separate. Local credentials and persistent data are ignored by Git, and both services bind to loopback.
+
+The protocol is independent of the client presentation technology. Native OS clients, browser clients and later mobile clients can all use the same authenticated queries and Actions. No renderer, AI provider, payment provider or public deployment is chosen by this foundation.
+
+See [database foundation](database-foundation.md) for contracts, coverage and operations. The next vertical slice is a real seeded encounter with committed Turn cost and outcome, a quest reward, and campaign completion through a visible Ascension transition.

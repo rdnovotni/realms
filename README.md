@@ -1,6 +1,6 @@
 # Realms
 
-Private development foundation for KoL 2.0: a TypeScript/Fastify server and PostgreSQL persistence on Ubuntu. This is an initial server prototype; there is no playable client yet.
+Private development foundation for KoL 2.0: a TypeScript/Fastify server and PostgreSQL persistence on Ubuntu. The shared database and server foundation is implemented and tested. Gameplay modules and a playable client are the next layer. See [database foundation](docs/database-foundation.md) for the schema, invariants, and implementation boundaries.
 
 ## This workstation
 
@@ -22,7 +22,7 @@ bash scripts/database.sh stop
 bash scripts/database.sh backup
 ```
 
-Stopping the application leaves PostgreSQL running unless explicitly stopped. Do not remove `.state/`: it contains persistent data. Backups currently remain on this machine; an independent backup destination and restore drill are later work.
+Stopping the application leaves PostgreSQL running unless explicitly stopped. Do not remove `.state/`: it contains persistent data. Backups remain on this machine. Verify recovery with `bash scripts/database.sh restore-check .state/backups/NAME.dump`; this restores into a disposable database, checks migrations, constraints and currency conservation, then removes it. An independent backup destination is still needed.
 
 ## Checks
 
@@ -33,14 +33,16 @@ bash scripts/runtime.sh npm run test:integration
 bash scripts/runtime.sh npm run build
 ```
 
-Integration tests only accept the separate `realms_test` database. They exercise concurrent duplicate requests, stale revisions, authentication, invalid inputs, state recovery after application recreation, and full rollback after an intentionally failed ledger write.
+Integration tests only accept the separate `realms_test` database. Each suite creates and removes a disposable schema. They exercise migration upgrades, concurrent duplicate requests and spending, stale revisions, authentication, rollback, sealed content, discovery filtering, item custody, rollover, Ascension, outbox delivery and worker leases.
 
 The same checks run on GitHub-hosted runners with an isolated PostgreSQL service. The workflow does not deploy to this workstation.
 
 ## Prototype API
 
 - `GET /health/live`: application liveness.
-- `GET /health/ready`: database/migration availability.
+- `GET /health/ready`: exact migration version and checksum compatibility.
+- `GET /api/v1/instances/:id`: authenticated participant view; excludes seeds and internal state.
+- `GET /api/v1/content/:release/:entity`: authenticated, discovery-filtered view within an account’s run snapshots.
 - `GET /api/v1/state`: current development run; requires `Authorization: Bearer <DEV_API_TOKEN>`.
 - `POST /api/v1/actions`: authenticated prototype `SPEND_TURNS` action.
 
@@ -55,10 +57,14 @@ The same checks run on GitHub-hosted runners with an isolated PostgreSQL service
 
 Configuration is generated in `.env` with random credentials and restrictive permissions. Never commit it. The server derives the account from local configuration, not request input. This is a single-user development credential, not production account authentication. `SPEND_TURNS` only proves the transaction pipeline; it does not represent a completed encounter or gameplay feature.
 
-The first seed grants 400 prototype Turns. Running seed/start again preserves existing state. An account, persistent character identity, and current run are separate database records. One transaction commits Turn cost, revision, receipt, and ledger. Reusing a request ID with a changed payload fails. Retrying a committed Action returns its recorded result, even when the current revision has advanced.
+New development accounts start with 100 Turns; existing prototype balances are preserved. Running seed/start again preserves existing state. An account, persistent character identity, and current run are separate database records. One transaction commits Turn cost, revision, receipt, and ledger. Reusing a request ID with a changed payload fails. Retrying a committed Action returns its recorded result, even when the current revision has advanced.
 
-## Next work
+## Foundation services
 
-Real account authentication; content/schema package validation; deterministic encounters and RNG; scoped rollover; minimal Ascension; player/admin interfaces. Desktop packaging is a separate decision and is not installed by this server bootstrap.
+The server uses `realms_app`, a restricted database role. Migrations and seeding use the separate `DATABASE_ADMIN_URL`. Startup provisions the role; `npm run db:permissions` verifies its restrictions. Configuration and both credentials remain private in `.env`.
 
-The supplied design documents remain outside this repository in the ChatGPT project reference mirror. The game architecture follows Systems 23 and 46; this prototype is only its first tested boundary.
+Domain services implement sealed content publication, explicit state contracts, integer currency transfers, inventory movement, isolated deterministic RNG, instance snapshots, rollover and a minimal completed-run transition. These are internal server contracts; only the documented routes are exposed. Durable jobs and the transactional outbox are ready for module workers. No automatic rollover scheduler or external delivery handler is enabled yet.
+
+Build the first full vertical slice next: typed encounter content, Turn commitment, deterministic resolution, quest/reward/effect integration, victory, and a player-visible Ascension manifest. Add real authentication and administration before access beyond this workstation. The client can use the same protocol from native desktop, browser, or mobile implementations.
+
+The supplied design documents remain outside this repository in the ChatGPT project reference mirror. Systems 23 and 46 govern the shared architecture; each gameplay module will add versioned migrations and validate its own mechanics.

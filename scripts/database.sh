@@ -31,5 +31,18 @@ case "$task_operation" in
     pg_dump -h 127.0.0.1 -p 55432 -U realms -Fc -f "$task_backup" realms_dev
     printf 'Backup created: %s\n' "$task_backup"
     ;;
-  *) printf 'Usage: bash scripts/database.sh start|stop|status|backup\n' >&2; exit 2 ;;
+  restore-check)
+    task_backup=${2:?Provide a backup path}
+    [[ -f "$task_backup" ]] || { printf 'Backup does not exist.\n' >&2; exit 2; }
+    export PGPASSWORD
+    PGPASSWORD=$(cat .state/db-password)
+    task_suffix=$(node -e "process.stdout.write(require('node:crypto').randomBytes(8).toString('hex'))")
+    task_restore="realms_restore_$task_suffix"
+    createdb -h 127.0.0.1 -p 55432 -U realms "$task_restore"
+    trap 'dropdb -h 127.0.0.1 -p 55432 -U realms "$task_restore"' EXIT
+    pg_restore --exit-on-error --no-owner --no-privileges -h 127.0.0.1 -p 55432 -U realms -d "$task_restore" "$task_backup"
+    export RESTORE_DATABASE_URL="postgresql://realms:$PGPASSWORD@127.0.0.1:55432/$task_restore"
+    node --import tsx src/restore-check.ts
+    ;;
+  *) printf 'Usage: bash scripts/database.sh start|stop|status|backup|restore-check BACKUP\n' >&2; exit 2 ;;
 esac
