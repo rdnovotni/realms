@@ -38,10 +38,20 @@ export async function integrityReport(pool:pg.Pool){
       OR (i.binding='RUN_BOUND' AND s.run_id IS DISTINCT FROM i.bound_run_id)`)).rows[0].n as number;
     const collisions=(await client.query(`SELECT count(*)::int AS n FROM outbox_events e JOIN durable_jobs j ON j.job_key='outbox:'||e.id::text
       WHERE j.kind<>e.event_type OR j.payload<>e.payload`)).rows[0].n as number;
+    const encounters=(await client.query(`SELECT count(*)::int AS n FROM encounter_records e
+      JOIN instances i ON i.id=e.instance_id JOIN state_scopes s ON s.instance_id=i.id
+      JOIN runs r ON r.id=e.run_id JOIN characters c ON c.id=r.character_id
+      LEFT JOIN action_receipts a ON a.action_id=e.start_action_id
+      LEFT JOIN turn_ledger t ON t.run_id=e.run_id AND t.request_id=a.request_id
+      LEFT JOIN action_receipts f ON f.action_id=e.finish_action_id
+      WHERE i.kind<>'ENCOUNTER' OR i.revision<>e.revision OR i.content_release_id<>e.release_id OR r.content_release_id<>e.release_id
+        OR a.account_id IS DISTINCT FROM c.account_id OR t.delta IS DISTINCT FROM -e.turn_cost OR t.reason IS DISTINCT FROM 'ENCOUNTER_START'
+        OR (e.outcome IS NULL AND (i.lifecycle<>'ACTIVE' OR s.lifecycle<>'ACTIVE'))
+        OR (e.outcome IS NOT NULL AND (i.lifecycle<>'RESOLVED' OR s.lifecycle<>'ARCHIVED' OR f.account_id IS DISTINCT FROM c.account_id))`)).rows[0].n as number;
     const constraints=(await client.query(`SELECT count(*)::int AS n FROM pg_constraint c JOIN pg_class t ON t.oid=c.conrelid
       JOIN pg_namespace s ON s.oid=t.relnamespace WHERE s.nspname=current_schema() AND c.contype IN('c','f') AND NOT c.convalidated`)).rows[0].n as number;
     await client.query('COMMIT');
-    return {walletBalanceMismatches:balances,itemQuantityMismatches:itemQuantities,runScopeMismatches:lifetimes,malformedJobLeases:leases,itemBindingMismatches:bindings,outboxJobCollisions:collisions,unvalidatedConstraints:constraints};
+    return {encounterMismatches:encounters,walletBalanceMismatches:balances,itemQuantityMismatches:itemQuantities,runScopeMismatches:lifetimes,malformedJobLeases:leases,itemBindingMismatches:bindings,outboxJobCollisions:collisions,unvalidatedConstraints:constraints};
   }catch(error){await client.query('ROLLBACK');throw error;}
   finally{client.release();}
 }
