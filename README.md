@@ -61,7 +61,7 @@ New development accounts start with 100 Turns; existing prototype balances are p
 
 ## Foundation services
 
-The first release-readiness pass adds atomic multi-leg currency settlement, tighter ownership/lifetime checks, renewable fenced leases and outbox collision detection. Run `npm run db:audit` through the local runtime to reconcile wallet history, bindings, run scopes, job leases and foreign-key index coverage. The [release checklist](docs/release-readiness.md) separates these completed primitives from public-launch work.
+Release-readiness passes add atomic multi-leg currency settlement, tighter ownership/lifetime checks, renewable fenced leases, outbox collision detection, and [inventory quantity accounting](docs/inventory-accounting.md) for grants, consumption and stack transfers. Run `npm run db:audit` through the local runtime to reconcile wallet and item history, bindings, run scopes, job leases and foreign-key index coverage. The [release checklist](docs/release-readiness.md) separates these completed primitives from public-launch work.
 
 The server uses `realms_app`, a restricted database role. Migrations and seeding use the separate `DATABASE_ADMIN_URL`. Startup provisions the role; `npm run db:permissions` verifies its restrictions. Configuration and both credentials remain private in `.env`.
 

@@ -23,6 +23,11 @@ export async function integrityReport(pool:pg.Pool){
       WHERE w.balance::numeric<>coalesce(l.total,0)`)).rows[0].n as number;
     const lifetimes=(await client.query(`SELECT count(*)::int AS n FROM runs r LEFT JOIN state_scopes s ON s.run_id=r.id
       WHERE s.lifecycle IS DISTINCT FROM CASE WHEN r.status IN('ARCHIVED','ABANDONED') THEN 'ARCHIVED' ELSE 'ACTIVE' END`)).rows[0].n as number;
+    const itemQuantities=(await client.query(`WITH legs AS (
+      SELECT from_item_id AS id,-quantity::numeric AS delta FROM inventory_quantity_operations WHERE from_item_id IS NOT NULL
+      UNION ALL SELECT to_item_id,quantity::numeric FROM inventory_quantity_operations WHERE to_item_id IS NOT NULL)
+      SELECT count(*)::int AS n FROM inventory_items i LEFT JOIN(SELECT id,sum(delta) AS total FROM legs GROUP BY id) l ON l.id=i.id
+      WHERE i.quantity::numeric<>coalesce(l.total,0) OR l.id IS NULL`)).rows[0].n as number;
     const leases=(await client.query(`SELECT count(*)::int AS n FROM durable_jobs WHERE
       (status='RUNNING' AND (lease_token IS NULL OR lease_until IS NULL)) OR
       (status<>'RUNNING' AND (lease_token IS NOT NULL OR lease_until IS NOT NULL))`)).rows[0].n as number;
@@ -36,7 +41,7 @@ export async function integrityReport(pool:pg.Pool){
     const constraints=(await client.query(`SELECT count(*)::int AS n FROM pg_constraint c JOIN pg_class t ON t.oid=c.conrelid
       JOIN pg_namespace s ON s.oid=t.relnamespace WHERE s.nspname=current_schema() AND c.contype IN('c','f') AND NOT c.convalidated`)).rows[0].n as number;
     await client.query('COMMIT');
-    return {walletBalanceMismatches:balances,runScopeMismatches:lifetimes,malformedJobLeases:leases,itemBindingMismatches:bindings,outboxJobCollisions:collisions,unvalidatedConstraints:constraints};
+    return {walletBalanceMismatches:balances,itemQuantityMismatches:itemQuantities,runScopeMismatches:lifetimes,malformedJobLeases:leases,itemBindingMismatches:bindings,outboxJobCollisions:collisions,unvalidatedConstraints:constraints};
   }catch(error){await client.query('ROLLBACK');throw error;}
   finally{client.release();}
 }

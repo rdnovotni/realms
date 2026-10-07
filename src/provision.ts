@@ -23,7 +23,7 @@ try{
     GRANT INSERT,UPDATE ON accounts,characters,runs,state_scopes,run_progression,run_class_levels,resource_pools,run_consumption,
       inventory_containers,inventory_items,wallets,discoveries,quest_states,effect_instances,instances,instance_participants,
       guilds,guild_members,world_events,scoped_state,outbox_events,durable_jobs TO realms_app;
-    GRANT INSERT ON action_receipts,turn_ledger,currency_transfers,inventory_movements,run_history,audit_events,run_rollovers TO realms_app;
+    GRANT INSERT ON action_receipts,turn_ledger,currency_transfers,inventory_movements,inventory_quantity_operations,run_history,audit_events,run_rollovers TO realms_app;
     GRANT DELETE ON effect_instances TO realms_app;`);
   await client.query('COMMIT');
   const appUrl=new URL(adminUrl);appUrl.username='realms_app';appUrl.password=password;

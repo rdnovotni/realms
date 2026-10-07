@@ -4,7 +4,7 @@ Status: implemented shared infrastructure, not a completed catalog of all game m
 
 ## Model and ownership
 
-Migration 001 retains account, character, run, request receipts and the Turn ledger. Migration 002 adds 33 tables: immutable content, seven state scopes, progression and consumption, daily rollover, inventory custody, integer wallets and transfers, discovery, quest/effect instances, shared worlds/Guilds/events, encounter instances, run history, audit, outbox, durable jobs and flags. Together with migration bookkeeping there are 39 tables.
+Migration 001 retains account, character, run, request receipts and the Turn ledger. Migration 002 adds 33 tables: immutable content, seven state scopes, progression and consumption, daily rollover, inventory custody, integer wallets and transfers, discovery, quest/effect instances, shared worlds/Guilds/events, encounter instances, run history, audit, outbox, durable jobs and flags. Migration 004 adds an item quantity ledger, bringing the total with migration bookkeeping to 40 tables.
 
 ```mermaid
 erDiagram
@@ -44,7 +44,7 @@ Every scope has exactly one typed owner and a real foreign key. Scope IDs and ow
 
 **Knowledge.** Content queries require discovery and a release belonging to an account's run. They project only explicitly public fields; advanced fields require advanced knowledge. They do not expose mechanics or secrets. Instance queries require participation and omit seed and internal state. Future list/search/tool endpoints must apply the same filtering before counting or projecting hidden data.
 
-**Inventory.** Definitions and physical instances are separate. A row has one container, an exact release/revision, a positive quantity, explicit binding and source. Instance items have quantity one. Binding must match the container's account/run ownership. Movement requires ownership of both containers, active scope, current-run legality and an immutable movement record. Special custody such as Guild vaults, museums and escrow requires its own service. Generic storage movement does not bypass those rules. Stack splitting/merging, equipment, durability, trading and grants remain item-module operations.
+**Inventory.** Definitions and physical instances are separate. A live row has one container, an exact release/revision, positive quantity, explicit binding and source. Instance items issue one unit. Grants, consumption and stack splitting/merging use an immutable quantity ledger; consumed identities persist at zero for history. Direct quantity changes, deletion and provenance edits fail. Binding must match actual account/run custody. Movement requires ownership of both containers, active scope, current-run legality and an immutable movement record. Special custody requires its own service. See [inventory accounting](inventory-accounting.md) for the typed grant contract, transaction authority and remaining equipment/crafting work.
 
 **Currency.** Gold and fractional supporter units use integer minor units, never floating-point balances. Wallets start at zero; an immutable transfer row locks both wallets in UUID order and changes both balances atomically. Direct balance mutation and wallet identity changes fail. Ordinary wallets cannot go negative. Faucet/sink wallets balance issuance and destruction so totals remain conserved. Generic player Gold transfer is conservatively limited to Casual account wealth until Standard trade milestones are implemented. Payments, exchange fees, settlement and refunds are not enabled.
 
@@ -69,7 +69,7 @@ The table below maps every design system to an existing foundation. It is an imp
 | 03 Progression; 10 Ascension; 13 Aftercore | Run progression/class identity, storage transition and immutable history | Build/mastery formulas, eligibility, rewards, setup and transition preview |
 | 04 Combat; 05 Encounters; 25 Defeat; 26 Difficulty; 27 Monsters; 28 Loot; 29 Checks | Pinned instances, isolated seeded RNG, content and Action commitment | Ordered resolution, tactical state, checks, rewards, loss/recovery and typed mechanics |
 | 06 Quests | Typed quest identity, versioned graph snapshot and lifecycle state | Graph compiler, objectives, rewards and fail-forward transitions |
-| 07 Items; 08 Crafting | Item custody/binding, exact definitions, materials storage and movement provenance | Grants, stacks, equipment, recipes/Focus, quality and commission escrow |
+| 07 Items; 08 Crafting | Item custody/binding, exact definitions, materials storage, quantity ledger, grants/consumption and stack transfers | Equipment, binding transitions, protection/capacity, recipes/Focus, durability/evolution and commission escrow |
 | 09 Helpers | Persistent/account and current-run/instance scopes | Companion/Familiar state, progression, slots and tactical behavior |
 | 11 Economy; 17 Supporter economy | Wallets, atomic integer transfers and immutable provenance | Listings/order books, fees, market eligibility, provider settlement and fraud holds |
 | 12 Guilds | Membership roles, Guild scope, vault/treasury building blocks | Fine-grained permissions, contribution budgets, withdrawals and campaigns |

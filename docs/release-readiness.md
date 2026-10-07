@@ -36,7 +36,7 @@ bash scripts/database.sh restore-check .state/backups/NAME.dump
 | Safe production migrations | Checksummed transactional migrations | Representative-data rehearsal, lock/downtime limits and server-version compatibility |
 | Typed content mechanics | Shared envelope only | Detailed schemas and semantic validators for every shipped content type |
 | Complete gameplay persistence | Shared primitives | Durable encounter resolution, RNG progress, costs, rewards and defeat/disconnect recovery |
-| Inventory/crafting | Custody and movement | Atomic grants/consumption, split/merge, equipment, durability, upgrades and commissions |
+| Inventory/crafting | Custody, ledger grants/consumption and split/merge | Authored recipes, protection/capacity rules, equipment, binding transitions, durability, upgrades and commissions |
 | Progression/Ascension | Fields and lifetime transition | Builds, mastery/Legacy, eligibility, rewards, setup and visible transition plan |
 | Quest/world consequences | Identity, lifecycle and scope primitives | Validated graphs, NPC memory, faction/world consequences and campaign records |
 | Dailies/effects | Rollover and worker primitives | Supervised scheduler/workers, banking, production and complete effect clocks |
@@ -47,5 +47,7 @@ bash scripts/database.sh restore-check .state/backups/NAME.dump
 | Performance/failure drills | Focused invariant tests | Representative data volumes, query plans, connection budgets, crash/restart and restore drills |
 
 ## Execution order
+
+The inventory accounting pass (migration 004) adds immutable quantity operations, exact-snapshot typed grants, atomic consumption and conserving stack transfers. Opening balances preserve existing items; consumed identities retain history. Audit and restore checks now reconcile each item's quantity. See [inventory accounting](inventory-accounting.md) for evidence and the item rules still required at launch.
 
 Deploy the integrity pass, then separate production runtime administration and implement real authentication. Establish independent automatic backups and recovery targets before inviting testers whose progress must be preserved. Build one complete encounter-to-reward-to-victory-to-Ascension loop, then add the remaining launch modules. Performance and disaster-recovery evidence are required before declaring the database release-ready.

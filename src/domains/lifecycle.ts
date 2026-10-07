@@ -42,10 +42,10 @@ export function ascend(pool:pg.Pool,accountId:string,envelope:Envelope){
     if(!context.run.content_release_id) throw new DomainError(409,'CONTENT_RELEASE_REQUIRED');
     // Ordinary possessions retain custody in account storage. Run-bound and system quest items
     // remain in the archived run for provenance; they cannot be accessed by the new run.
-    const possessions=await context.client.query(`SELECT i.id,i.binding,v.definition->'mechanics'->>'inventoryCategory' AS category,i.container_id
+    const possessions=await context.client.query(`SELECT i.id,i.binding,coalesce(v.definition->'mechanics'->'inventory'->>'category',v.definition->'mechanics'->>'inventoryCategory') AS category,i.container_id
       FROM inventory_items i JOIN inventory_containers c ON c.id=i.container_id JOIN state_scopes s ON s.id=c.scope_id
       JOIN content_versions v ON v.entity_id=i.definition_id AND v.revision=i.definition_revision
-      WHERE s.run_id=$1 AND i.binding IN ('TRADEABLE','ACCOUNT_BOUND') ORDER BY i.id FOR UPDATE OF i`,[context.run.id]);
+      WHERE s.run_id=$1 AND i.quantity>0 AND i.binding IN ('TRADEABLE','ACCOUNT_BOUND') ORDER BY i.id FOR UPDATE OF i`,[context.run.id]);
     const accountScope=(await context.client.query('SELECT id FROM state_scopes WHERE account_id=$1',[accountId])).rows[0].id;
     const storage=await context.client.query(`INSERT INTO inventory_containers(scope_id,kind) VALUES($1,'HOME'),($1,'MATERIAL_VAULT')
       ON CONFLICT(scope_id,kind,label) DO UPDATE SET label=EXCLUDED.label RETURNING id,kind`,[accountScope]);

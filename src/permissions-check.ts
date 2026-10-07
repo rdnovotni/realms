@@ -6,7 +6,12 @@ const pool=poolFor(config().databaseUrl);
 try{
   const role=(await pool.query('SELECT rolname,rolsuper,rolcreatedb,rolcreaterole,rolbypassrls FROM pg_roles WHERE rolname=current_user')).rows[0];
   if(role.rolname!=='realms_app' || role.rolsuper || role.rolcreatedb || role.rolcreaterole || role.rolbypassrls)throw new Error('Server role is overprivileged');
-  for(const statement of ['CREATE TABLE permission_probe(id integer)','UPDATE schema_migrations SET checksum=checksum','DELETE FROM action_receipts','UPDATE content_releases SET sealed=sealed']){
+  const quantityPermissions=(await pool.query(`SELECT has_table_privilege(current_user,'inventory_quantity_operations','SELECT') AS readable,
+    has_table_privilege(current_user,'inventory_quantity_operations','INSERT') AS appendable,
+    has_table_privilege(current_user,'inventory_quantity_operations','UPDATE') AS editable,
+    has_table_privilege(current_user,'inventory_quantity_operations','DELETE') AS deletable`)).rows[0];
+  if(!quantityPermissions.readable || !quantityPermissions.appendable || quantityPermissions.editable || quantityPermissions.deletable)throw new Error('Inventory quantity ledger privileges are incorrect');
+  for(const statement of ['CREATE TABLE permission_probe(id integer)','UPDATE schema_migrations SET checksum=checksum','DELETE FROM action_receipts','DELETE FROM inventory_quantity_operations','UPDATE content_releases SET sealed=sealed']){
     const client=await pool.connect();
     try{
       await client.query('BEGIN');let denied=false;

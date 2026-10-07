@@ -8,13 +8,14 @@ import { executeAction } from '../src/foundation/action.js';
 import { transferGold } from '../src/domains/economy.js';
 import { createInstance,getInstanceView } from '../src/domains/instances.js';
 import { moveItem } from '../src/domains/inventory.js';
+import { grantItem } from '../src/domains/item-accounting.js';
 import { applyRollover,ascend } from '../src/domains/lifecycle.js';
 import { registerContract,writeState } from '../src/domains/state.js';
 import { enqueue,claimJob,finishJob,reapExhaustedJobs,dispatchOutbox } from '../src/domains/jobs.js';
 import { transaction } from '../src/foundation/transaction.js';
 import { assertSchema,migrate } from '../src/database.js';
 import { spendTurns } from '../src/actions.js';
-const packageV1:ContentPackage={version:'fixture-1',engineVersion:'foundation-1',entities:[{id:'item.fixture',kind:'ITEM',revision:1,schemaVersion:1,definition:{name:'Fixture',dependencies:[],public:{description:'Known item'},advanced:{hint:'Advanced hint'},mechanics:{power:10},secrets:{dropRate:0.03}}}]};
+const packageV1:ContentPackage={version:'fixture-1',engineVersion:'foundation-1',entities:[{id:'item.fixture',kind:'ITEM',revision:1,schemaVersion:1,definition:{name:'Fixture',dependencies:[],public:{description:'Known item'},advanced:{hint:'Advanced hint'},mechanics:{power:10,inventory:{version:1,storageMode:'INSTANCE',category:'OTHER'}},secrets:{dropRate:0.03}}}]};
 const envelope=(type:string,revision=0)=>({requestId:randomUUID(),actionType:type,expectedRevision:revision});
 
 test('migration, sealed content, knowledge boundary and validated state contracts',async()=>{
@@ -99,12 +100,15 @@ test('inventory custody, encounter privacy, rollover deferral and Ascension life
     assert.equal((await pool.query('SELECT turns FROM runs WHERE id=$1',[user.run])).rows[0].turns,400);
     const scope=(await pool.query('SELECT id FROM state_scopes WHERE run_id=$1',[user.run])).rows[0].id;
     const containers=await pool.query("INSERT INTO inventory_containers(scope_id,kind,label) VALUES($1,'CARRIED','a'),($1,'CARRIED','b') RETURNING id",[scope]);
-    const item=randomUUID();
-    await pool.query("INSERT INTO inventory_items(id,container_id,definition_id,release_id,definition_revision,storage_mode,quantity,binding,bound_run_id,source_code) VALUES($1,$2,'item.fixture',$3,1,'INSTANCE',1,'RUN_BOUND',$4,'TEST')",[item,containers.rows[0].id,release,user.run]);
+    const granted=await executeAction(pool,user.account,envelope('FIXTURE_ITEMS',2),{},async context=>{
+      const bound=await grantItem(context,'bound',{containerId:containers.rows[0].id,definitionId:'item.fixture',quantity:'1',binding:'RUN_BOUND',sourceCode:'TEST'},'FIXTURE');
+      const ordinary=await grantItem(context,'ordinary',{containerId:containers.rows[0].id,definitionId:'item.fixture',quantity:'1',sourceCode:'TEST'},'FIXTURE');
+      return {bound:bound.itemId,ordinary:ordinary.itemId};
+    });
+    const item=granted.bound as string;
     const moved=await moveItem(pool,user.account,envelope('MOVE_ITEM',2),item,containers.rows[1].id);assert.equal(moved.revision,3);
-    await assert.rejects(pool.query('UPDATE inventory_items SET quantity=2 WHERE id=$1',[item]),/check constraint/);
-    const ordinary=randomUUID();
-    await pool.query("INSERT INTO inventory_items(id,container_id,definition_id,release_id,definition_revision,storage_mode,quantity,source_code) VALUES($1,$2,'item.fixture',$3,1,'INSTANCE',1,'TEST')",[ordinary,containers.rows[0].id,release]);
+    await assert.rejects(pool.query('UPDATE inventory_items SET quantity=2 WHERE id=$1',[item]),/ledger operations/);
+    const ordinary=granted.ordinary as string;
     await pool.query("INSERT INTO discoveries(account_id,entity_id,knowledge_level) VALUES($1,'item.fixture','LEARNED')",[user.account]);
     await pool.query("UPDATE runs SET status='AFTERCORE' WHERE id=$1",[user.run]);
     await pool.query('UPDATE run_consumption SET fullness=6 WHERE run_id=$1',[user.run]);
