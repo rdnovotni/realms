@@ -11,7 +11,8 @@ case "$task_operation" in
     bash scripts/runtime.sh npm run db:seed
     bash scripts/runtime.sh npm run db:provision
     bash scripts/runtime.sh npm run build
-    setsid bash scripts/runtime.sh node --env-file=.env dist/main.js > .state/server.log 2>&1 < /dev/null &
+    bash scripts/runtime.sh node scripts/runtime-config.mjs
+    setsid env -u DATABASE_ADMIN_URL -u TEST_DATABASE_URL -u TEST_DATABASE_ADMIN_URL -u DATABASE_URL -u HOST -u PORT -u AUTH_MODE -u DEV_API_TOKEN -u DEV_ACCOUNT_ID -u AUTH_THROTTLE_KEY bash scripts/runtime.sh node --env-file=.state/runtime.env dist/main.js > .state/server.log 2>&1 < /dev/null &
     task_pid=$!
     printf '%s\n' "$task_pid" > "$node_pid_file"
     for task_attempt in {1..30}; do
@@ -25,7 +26,7 @@ case "$task_operation" in
     if [[ -f .state/server.pid ]]; then
       task_pid=$(cat .state/server.pid)
       # Do not signal an unrelated process after PID reuse.
-      if [[ -r /proc/$task_pid/cmdline ]] && tr '\0' ' ' < "/proc/$task_pid/cmdline" | grep -q 'node --env-file=.env dist/main.js'; then kill "$task_pid"; fi
+      if [[ -r /proc/$task_pid/cmdline ]] && tr '\0' ' ' < "/proc/$task_pid/cmdline" | grep -Eq 'node --env-file=(\.env|\.state/runtime\.env) dist/main.js'; then kill "$task_pid"; fi
       rm .state/server.pid
     fi
     ;;

@@ -1,9 +1,10 @@
-import { poolFor } from './database.js';
+import { poolFor,assertRuntimeRole } from './database.js';
 import { config } from './config.js';
 import { randomUUID,randomBytes } from 'node:crypto';
 import { postTransfers } from './domains/ledger.js';
 const pool=poolFor(config().databaseUrl);
 try{
+  await assertRuntimeRole(pool);
   const role=(await pool.query('SELECT rolname,rolsuper,rolcreatedb,rolcreaterole,rolbypassrls FROM pg_roles WHERE rolname=current_user')).rows[0];
   if(role.rolname!=='realms_app' || role.rolsuper || role.rolcreatedb || role.rolcreaterole || role.rolbypassrls)throw new Error('Server role is overprivileged');
   const quantityPermissions=(await pool.query(`SELECT has_table_privilege(current_user,'inventory_quantity_operations','SELECT') AS readable,
@@ -11,7 +12,7 @@ try{
     has_table_privilege(current_user,'inventory_quantity_operations','UPDATE') AS editable,
     has_table_privilege(current_user,'inventory_quantity_operations','DELETE') AS deletable`)).rows[0];
   if(!quantityPermissions.readable || !quantityPermissions.appendable || quantityPermissions.editable || quantityPermissions.deletable)throw new Error('Inventory quantity ledger privileges are incorrect');
-  for(const statement of ['CREATE TABLE permission_probe(id integer)','UPDATE schema_migrations SET checksum=checksum','DELETE FROM action_receipts','DELETE FROM inventory_quantity_operations','UPDATE content_releases SET sealed=sealed']){
+  for(const statement of ['CREATE TABLE permission_probe(id integer)','UPDATE schema_migrations SET checksum=checksum','DELETE FROM action_receipts','DELETE FROM inventory_quantity_operations','UPDATE content_releases SET sealed=sealed',"UPDATE accounts SET access_status='SUSPENDED'",'UPDATE auth_credentials SET handle=handle','DELETE FROM auth_events']){
     const client=await pool.connect();
     try{
       await client.query('BEGIN');let denied=false;
@@ -34,6 +35,10 @@ try{
     await client.query("INSERT INTO outbox_events(action_id,event_type,payload) VALUES($1,'PROBE','{}')",[action]);
     await client.query("INSERT INTO instances(id,kind,content_release_id,seed) VALUES($1,'COMBAT',$2,$3)",[instance,run.content_release_id,randomBytes(32)]);
     await client.query('INSERT INTO instance_participants(instance_id,run_id) VALUES($1,$2)',[instance,run.id]);
+    const authSession=randomUUID();
+    await client.query(`INSERT INTO auth_sessions(id,account_id,token_digest,security_epoch,scopes,device_label,expires_at)
+      SELECT $1,id,$3,security_epoch,ARRAY['GAME_READ'],'PERMISSION_PROBE',now()+interval '1 hour' FROM accounts WHERE id=$2`,[authSession,config().accountId,randomBytes(32).toString('hex')]);
+    await client.query('UPDATE auth_sessions SET revoked_at=clock_timestamp() WHERE id=$1',[authSession]);
     const source=(await client.query("SELECT id FROM wallets WHERE currency_id='GOLD' AND purpose='FAUCET_SINK' LIMIT 1")).rows[0]?.id;
     const target=(await client.query("SELECT w.id FROM wallets w JOIN state_scopes s ON s.id=w.scope_id WHERE s.account_id=$1 AND w.currency_id='GOLD' AND w.purpose='PLAYER'",[config().accountId])).rows[0]?.id;
     if(!source || !target)throw new Error('Development economy wallets are missing');

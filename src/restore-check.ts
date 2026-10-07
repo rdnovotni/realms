@@ -1,5 +1,5 @@
 import { poolFor,assertSchema } from './database.js';
-import { integrityReport } from './foundation/integrity.js';
+import { integrityReport,unindexedForeignKeys } from './foundation/integrity.js';
 const url=process.env.RESTORE_DATABASE_URL;
 if(!url || !/^\/realms_restore_[a-f0-9]{16}$/.test(new URL(url).pathname)) throw new Error('Restore verification requires its disposable database');
 const pool=poolFor(url);
@@ -12,5 +12,6 @@ try{
   if(totals.length)throw new Error('Restored currency totals are not conserved');
   const integrity=await integrityReport(pool);
   if(Object.values(integrity).some(n=>n!==0))throw new Error('Restored domain invariants do not match their ledgers and lifetimes');
+  if((await unindexedForeignKeys(pool)).length)throw new Error('Restored foreign-key index coverage is incomplete');
   console.log(`Restore verified: ${count} tables, matching migrations, validated constraints, conserved currencies and reconciled domain invariants.`);
 }finally{await pool.end();}

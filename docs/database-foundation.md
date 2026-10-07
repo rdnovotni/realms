@@ -4,7 +4,7 @@ Status: implemented shared infrastructure, not a completed catalog of all game m
 
 ## Model and ownership
 
-Migration 001 retains account, character, run, request receipts and the Turn ledger. Migration 002 adds 33 tables: immutable content, seven state scopes, progression and consumption, daily rollover, inventory custody, integer wallets and transfers, discovery, quest/effect instances, shared worlds/Guilds/events, encounter instances, run history, audit, outbox, durable jobs and flags. Migration 004 adds an item quantity ledger, bringing the total with migration bookkeeping to 40 tables.
+Migration 001 retains account, character, run, request receipts and the Turn ledger. Migration 002 adds 33 tables: immutable content, seven state scopes, progression and consumption, daily rollover, inventory custody, integer wallets and transfers, discovery, quest/effect instances, shared worlds/Guilds/events, encounter instances, run history, audit, outbox, durable jobs and flags. Migration 004 adds an item quantity ledger; migration 005 adds five authentication tables. The total with migration bookkeeping is 45 tables.
 
 ```mermaid
 erDiagram
@@ -100,9 +100,11 @@ All systems share the transaction/version/scope boundaries; feature-specific per
 
 ## Administration and recovery
 
+Migration 005 adds scoped device sessions, password/recovery storage, security epochs, persistent throttles and security history. HTTP Actions recheck session authority inside their transaction before replay. See [accounts and sessions](account-sessions.md) for the mode switch, private enrollment and remaining public identity requirements.
+
 Start the private development stack with `bash scripts/server.sh start`. It starts PostgreSQL, applies append-only migrations, initializes missing development records, provisions `realms_app`, builds, and starts the loopback server. Existing Turns are preserved. Existing migrations must never change after application; subsequent schema changes use new numbered files.
 
-The server role has no superuser, role/database creation, schema creation, temporary-table creation, content publication, migration edits or immutable-ledger update/delete privilege. `DATABASE_ADMIN_URL` is used only by administration scripts; `DATABASE_URL` uses the restricted server role. Both live in a private local `.env`. This is SQL privilege separation, not isolation from another process running as the workstation user. Keep credentials out of logs and source control.
+The server role has no superuser, role/database creation, schema creation, temporary-table creation, content publication, migration edits, credential enrollment, account suspension or immutable-ledger update/delete privilege. Administration scripts use private .env; startup generates an owner-only .state/runtime.env excluding administration/test credentials for the HTTP process. Runtime configuration and SQL privilege checks reject administrative access. Both files remain under the same workstation OS identity; stronger production isolation remains required.
 
 Readiness verifies every migration name/checksum and rejects missing, changed or newer schemas. Integration tests require `realms_test` and create disposable schemas. Test artifacts are removed through schema teardown rather than deleting immutable audit history. CI uses its own PostgreSQL service and never deploys here.
 

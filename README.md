@@ -57,13 +57,15 @@ The same checks run on GitHub-hosted runners with an isolated PostgreSQL service
 
 Configuration is generated in `.env` with random credentials and restrictive permissions. Never commit it. The server derives the account from local configuration, not request input. This is a single-user development credential, not production account authentication. `SPEND_TURNS` only proves the transaction pipeline; it does not represent a completed encounter or gameplay feature.
 
+An optional [account/session mode](docs/account-sessions.md) now supports enrolled passwords, revocable scoped device sessions and one-use recovery codes. It derives each request's account from its session and rechecks write authority inside the Action transaction. The workstation retains development mode until a password is deliberately enrolled. Startup generates `.state/runtime.env` without administration/test secrets, and the HTTP process refuses administrative SQL privileges.
+
 New development accounts start with 100 Turns; existing prototype balances are preserved. Running seed/start again preserves existing state. An account, persistent character identity, and current run are separate database records. One transaction commits Turn cost, revision, receipt, and ledger. Reusing a request ID with a changed payload fails. Retrying a committed Action returns its recorded result, even when the current revision has advanced.
 
 ## Foundation services
 
 Release-readiness passes add atomic multi-leg currency settlement, tighter ownership/lifetime checks, renewable fenced leases, outbox collision detection, and [inventory quantity accounting](docs/inventory-accounting.md) for grants, consumption and stack transfers. Run `npm run db:audit` through the local runtime to reconcile wallet and item history, bindings, run scopes, job leases and foreign-key index coverage. The [release checklist](docs/release-readiness.md) separates these completed primitives from public-launch work.
 
-The server uses `realms_app`, a restricted database role. Migrations and seeding use the separate `DATABASE_ADMIN_URL`. Startup provisions the role; `npm run db:permissions` verifies its restrictions. Configuration and both credentials remain private in `.env`.
+The server uses `realms_app`, a restricted database role. Migrations and seeding use the separate `DATABASE_ADMIN_URL`. Startup provisions the role; `npm run db:permissions` verifies its restrictions. Administration credentials remain private in `.env`; the HTTP process receives only the allowed settings in owner-only `.state/runtime.env`.
 
 Domain services implement sealed content publication, explicit state contracts, integer currency transfers, inventory movement, isolated deterministic RNG, instance snapshots, rollover and a minimal completed-run transition. These are internal server contracts; only the documented routes are exposed. Durable jobs and the transactional outbox are ready for module workers. No automatic rollover scheduler or external delivery handler is enabled yet.
 
