@@ -5,9 +5,9 @@ export function moveItem(pool: pg.Pool, accountId: string, envelope: Envelope, i
   return executeAction(pool, accountId, envelope, { itemId,destinationId }, async context => {
     requireActive(context);
     const item = (await context.client.query('SELECT * FROM inventory_items WHERE id=$1 FOR UPDATE', [itemId])).rows[0];
-    if (!item) throw new DomainError(404,'ITEM_NOT_FOUND');
+    if (!item || BigInt(item.quantity)===0n) throw new DomainError(404,'ITEM_NOT_FOUND');
     const containers = await context.client.query(`SELECT c.*,s.account_id,s.run_id,s.lifecycle FROM inventory_containers c
-      JOIN state_scopes s ON s.id=c.scope_id WHERE c.id=ANY($1::uuid[]) ORDER BY c.id FOR UPDATE OF c`, [[item.container_id,destinationId]]);
+      JOIN state_scopes s ON s.id=c.scope_id WHERE c.id=ANY($1::uuid[]) ORDER BY c.id FOR UPDATE OF c FOR SHARE OF s`, [[item.container_id,destinationId]]);
     const from = containers.rows.find(c=>c.id===item.container_id), to = containers.rows.find(c=>c.id===destinationId);
     const owns = (c: { account_id:string; run_id:string; lifecycle:string } | undefined) => c && c.lifecycle==='ACTIVE' && (c.account_id===accountId || c.run_id===context.run.id);
     if (!owns(from) || !owns(to)) throw new DomainError(403,'CONTAINER_NOT_OWNED');

@@ -16,7 +16,7 @@
     "db:permissions": "node --env-file=.env --import tsx src/permissions-check.ts",
     "db:audit": "node --env-file=.env --import tsx src/audit.ts",
     "test": "node --import tsx --test test/unit.test.ts",
-    "test:integration": "node --env-file=.env --import tsx --test test/integration.test.ts test/foundation.test.ts test/hardening.test.ts",
+    "test:integration": "node --env-file=.env --import tsx --test test/integration.test.ts test/foundation.test.ts test/hardening.test.ts test/inventory.test.ts",
     "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.test.json"
   },
   "dependencies": {

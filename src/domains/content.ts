@@ -4,6 +4,7 @@ import type pg from 'pg';
 import { checksum, type Json } from '../foundation/json.js';
 import { transaction } from '../foundation/transaction.js';
 import { DomainError } from '../foundation/errors.js';
+import { validateInventorySpec } from './item-accounting.js';
 
 export const kinds = ['ITEM','EFFECT','ABILITY','CLASS','SPECIES','MONSTER','NPC','ENCOUNTER','QUEST','RECIPE','LOCATION','ROUTE','FACTION','PATH','EVENT','ACTIVITY','CARD','FAMILIAR','BOSS','LOOT_TABLE','LORE','TUNING'] as const;
 export type ContentEntity = { id:string; kind:typeof kinds[number]; revision:number; schemaVersion:number; definition:{ name:string; dependencies:string[]; public:Record<string,Json>; advanced?:Record<string,Json>; mechanics?:Record<string,Json>; secrets?:Record<string,Json> } };
@@ -24,6 +25,10 @@ const validate = ajv.compile({ type:'object',additionalProperties:false,required
 export function validateContent(input:unknown): asserts input is ContentPackage {
   if (!validate(input)) throw new DomainError(400,'INVALID_CONTENT_PACKAGE');
   const pkg=input as ContentPackage, entities=new Map(pkg.entities.map(e=>[e.id,e]));
+  for(const entity of pkg.entities) {
+    const inventory=entity.definition.mechanics?.inventory;
+    if(entity.kind==='ITEM' && inventory!==undefined) validateInventorySpec(inventory);
+  }
   if (entities.size!==pkg.entities.length) throw new DomainError(400,'DUPLICATE_CONTENT_ID');
   const visiting=new Set<string>(),done=new Set<string>();
   const visit=(id:string) => {
