@@ -2,7 +2,21 @@ import { createHash } from 'node:crypto';
 import { readFile, readdir } from 'node:fs/promises';
 import pg from 'pg';
 
-export const poolFor = (url: string) => new pg.Pool({ connectionString: url, max: 5, connectionTimeoutMillis: 3000, statement_timeout: 5000, idle_in_transaction_session_timeout: 10000 });
+export const poolFor = (url: string, schema?:string) => {
+  if(schema && !/^[a-z][a-z0-9_]{0,62}$/.test(schema)) throw new Error('Invalid database schema');
+  return new pg.Pool({ connectionString: url, ...(schema?{options:`-c search_path=${schema}`} : {}), max: 5, connectionTimeoutMillis: 3000, statement_timeout: 5000, idle_in_transaction_session_timeout: 10000 });
+};
+
+export async function assertSchema(pool:pg.Pool){
+  const folder=new URL('../migrations/',import.meta.url),names=(await readdir(folder)).filter(n=>n.endsWith('.sql')).sort();
+  const applied=(await pool.query('SELECT name,checksum FROM schema_migrations ORDER BY name')).rows;
+  if(applied.length!==names.length) throw new Error('Database migration version mismatch');
+  for(let i=0;i<names.length;i++){
+    const name=names[i]!;
+    const hash=createHash('sha256').update(await readFile(new URL(name,folder),'utf8')).digest('hex');
+    if(applied[i].name!==name || applied[i].checksum!==hash) throw new Error('Database migration checksum mismatch');
+  }
+}
 
 export async function migrate(pool: pg.Pool) {
   const client = await pool.connect();

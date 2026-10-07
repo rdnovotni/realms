@@ -4,12 +4,13 @@ cd "$(dirname "$0")/.."
 task_operation=${1:-status}
 case "$task_operation" in
   start)
+    node_pid_file=.state/server.pid
+    if [[ -f "$node_pid_file" ]] && kill -0 "$(cat "$node_pid_file")" 2>/dev/null; then printf 'Server already running.\n'; exit 0; fi
     bash scripts/database.sh start
     bash scripts/runtime.sh npm run db:migrate
     bash scripts/runtime.sh npm run db:seed
+    bash scripts/runtime.sh npm run db:provision
     bash scripts/runtime.sh npm run build
-    node_pid_file=.state/server.pid
-    if [[ -f "$node_pid_file" ]] && kill -0 "$(cat "$node_pid_file")" 2>/dev/null; then printf 'Server already running.\n'; exit 0; fi
     setsid bash scripts/runtime.sh node --env-file=.env dist/main.js > .state/server.log 2>&1 < /dev/null &
     task_pid=$!
     printf '%s\n' "$task_pid" > "$node_pid_file"
