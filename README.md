@@ -61,6 +61,8 @@ New development accounts start with 100 Turns; existing prototype balances are p
 
 ## Foundation services
 
+The first release-readiness pass adds atomic multi-leg currency settlement, tighter ownership/lifetime checks, renewable fenced leases and outbox collision detection. Run `npm run db:audit` through the local runtime to reconcile wallet history, bindings, run scopes, job leases and foreign-key index coverage. The [release checklist](docs/release-readiness.md) separates these completed primitives from public-launch work.
+
 The server uses `realms_app`, a restricted database role. Migrations and seeding use the separate `DATABASE_ADMIN_URL`. Startup provisions the role; `npm run db:permissions` verifies its restrictions. Configuration and both credentials remain private in `.env`.
 
 Domain services implement sealed content publication, explicit state contracts, integer currency transfers, inventory movement, isolated deterministic RNG, instance snapshots, rollover and a minimal completed-run transition. These are internal server contracts; only the documented routes are exposed. Durable jobs and the transactional outbox are ready for module workers. No automatic rollover scheduler or external delivery handler is enabled yet.
