@@ -78,3 +78,5 @@ The supplied design documents remain outside this repository in the ChatGPT proj
 Routine trivial processing recipes now have atomic batches, binding preservation and ledger-linked history. See [routine crafting](docs/routine-crafting.md) for the supported policy and remaining crafting release work.
 
 Durable player item locks block consumption, crafting and stack transfers and survive storage/Ascension. See [item protection](docs/item-locks.md) for authority, history and remaining protection rules.
+
+Equipment snapshots now persist worn slots and two prepared weapon sets, protect equipped items and clear safely during Ascension. See [equipment persistence](docs/equipment-persistence.md) for the supported rules and remaining combat integration.
