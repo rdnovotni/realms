@@ -45,3 +45,5 @@ The read-only integrity audit reconciles each item against incoming and outgoing
 Tests cover duplicate rewards, split/merge conservation, incompatible provenance, int64 limits, concurrent consumption, cross-account and restricted-custody denial, atomic crafting rollback with a Turn cost, SQL mutation denial, retired identity protection, opening-balance upgrades, corruption detection, Ascension handling and restricted runtime privileges.
 
 Before declaring Items/Crafting complete, add authored recipes and yield rules, protection/automatic-consumption policy, capacity and weight/bulk, slot/anatomy requirements, equipment/loadouts, binding transitions, durability/repair, audited item evolution, salvage, loans, market/commission custody and knowledge-filtered inventory queries. These require their owning design rules and acceptance tests; the accounting primitives alone do not complete them.
+
+Migration 012 permits one strictly recorded binding transition for selected equipment, while retaining all other identity and provenance guards. See [permanent equipment binding](item-binding.md).

@@ -80,3 +80,5 @@ Routine trivial processing recipes now have atomic batches, binding preservation
 Durable player item locks block consumption, crafting and stack transfers and survive storage/Ascension. See [item protection](docs/item-locks.md) for authority, history and remaining protection rules.
 
 Equipment snapshots now persist worn slots and two prepared weapon sets, protect equipped items and clear safely during Ascension. See [equipment persistence](docs/equipment-persistence.md) for the supported rules and remaining combat integration.
+
+Selected gear can now opt into permanent account binding on active equipping, with atomic history and preserved original reward commitments. See [permanent item binding](docs/item-binding.md).
