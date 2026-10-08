@@ -92,3 +92,5 @@ Selected gear can now opt into permanent account binding on active equipping, wi
 Named equipment loadouts now persist across Ascension and protect referenced gear until explicit release. Applying a loadout uses the ordinary current-run equipment rules. See [saved loadouts](docs/saved-loadouts.md).
 
 Authored encounters can now opt into immutable XP budgets and cumulative level curves. Successful resolution awards XP in the same transaction as the encounter; readiness leaves build choices and campaign completion separate. See [encounter XP persistence](docs/encounter-xp-persistence.md).
+
+Run skill ranks and explicit proficiency milestones: [proficiency persistence](docs/proficiency-persistence.md).

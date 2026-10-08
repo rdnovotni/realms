@@ -15,8 +15,9 @@ import { validateAttributeReferences } from './attribute-content.js';
 import { validateFeatContent } from './feat-content.js';
 import { validateSubclassReferences } from './subclasses.js';
 import { validateBuildReferences } from './build-content.js';
+import { validateProficiencyContent } from './proficiency-content.js';
 
-export const kinds = ['ITEM','EFFECT','ABILITY','CLASS','SPECIES','MONSTER','NPC','ENCOUNTER','QUEST','RECIPE','LOCATION','ROUTE','FACTION','PATH','EVENT','ACTIVITY','CARD','FAMILIAR','BOSS','LOOT_TABLE','LORE','TUNING'] as const;
+export const kinds = ['ITEM','EFFECT','ABILITY','CLASS','SPECIES','MONSTER','NPC','ENCOUNTER','QUEST','RECIPE','LOCATION','ROUTE','FACTION','PATH','EVENT','ACTIVITY','CARD','FAMILIAR','BOSS','LOOT_TABLE','LORE','TUNING','SKILL'] as const;
 export type ContentEntity = { id:string; kind:typeof kinds[number]; revision:number; schemaVersion:number; definition:{ name:string; dependencies:string[]; public:Record<string,Json>; advanced?:Record<string,Json>; mechanics?:Record<string,Json>; secrets?:Record<string,Json> } };
 export type ContentPackage = { version:string; engineVersion:string; entities:ContentEntity[] };
 const ajv = new Ajv({ strict:true, allErrors:true });
@@ -36,6 +37,7 @@ export function validateContent(input:unknown): asserts input is ContentPackage 
   if (!validate(input)) throw new DomainError(400,'INVALID_CONTENT_PACKAGE');
   const pkg=input as ContentPackage, entities=new Map(pkg.entities.map(e=>[e.id,e]));
   validateFeatContent(entities);
+  validateProficiencyContent(entities);
   for(const entity of pkg.entities) {
     validateAttributeReferences(entity,entities);
     validateSubclassReferences(entity,entities);
