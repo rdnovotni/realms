@@ -19,3 +19,5 @@ The equipment milestone passed 96 tests: seven unit tests and 89 integration tes
 The private development upgrade was rehearsed with preservation hashes for every pre-existing game table. All prior table contents remained unchanged after migration and server restart. The live permission probe, integrity audit and endpoint smoke checks passed. Restoring the post-upgrade backup into a disposable database verified all 64 tables, matching migrations and reconciled invariants. Production readiness still requires the launch gates in [release readiness](release-readiness.md).
 
 Migration 013 adds [named saved equipment loadouts and item protection](saved-loadouts.md), using the same equipment legality service.
+
+Migration 020 adds optional [skill-rank prerequisites and immutable qualification evidence](proficiency-requirements.md), enforced for worn gear, both prepared sets and saved-loadout application. Class/weapon/armor capability tags remain future work.

@@ -17,7 +17,8 @@ export function chooseFeat(pool:pg.Pool,accountId:string,envelope:Envelope,featI
       'Feat milestone has not been earned or authored':[409,'FEAT_MILESTONE_NOT_READY'],
       'Feat milestone already has a choice':[409,'FEAT_MILESTONE_USED'],
       'Feat has already been selected':[409,'FEAT_ALREADY_CHOSEN'],
-      'Feat prerequisites are not satisfied':[409,'FEAT_PREREQUISITES_NOT_MET']
+      'Feat prerequisites are not satisfied':[409,'FEAT_PREREQUISITES_NOT_MET'],
+      'Proficiency requirements are not satisfied':[409,'FEAT_PROFICIENCY_NOT_MET']
     };const failure=codes[e.message??''];if(e.code==='P0001' && failure)throw new DomainError(...failure);throw error;}
     return {featId:row.feat_id as string,featRevision:row.feat_revision as number,milestone:row.milestone as number,choiceNumber:row.choice_no as number,revision:await advanceRevision(c)};
   });
@@ -33,6 +34,7 @@ export async function featView(pool:pg.Pool,accountId:string) {
         AND NOT EXISTS(SELECT 1 FROM run_feats chosen WHERE chosen.run_id=r.id AND chosen.milestone=m::integer)) AS "availableMilestones",
       CASE WHEN EXISTS(SELECT 1 FROM run_feats chosen WHERE chosen.run_id=r.id AND chosen.feat_id=e.entity_id) THEN 'ALREADY_CHOSEN'
         WHEN NOT feat_eligible(v.definition->'mechanics'->'feat',b.state,ARRAY(SELECT feat_id FROM run_feats WHERE run_id=r.id)) THEN 'PREREQUISITES_NOT_MET'
+        WHEN NOT proficiency_requirements_met(r.id,v.definition->'mechanics'->'proficiencyRequirements') THEN 'PROFICIENCY_NOT_MET'
         WHEN EXISTS(SELECT 1 FROM instance_participants ip JOIN instances i ON i.id=ip.instance_id WHERE ip.run_id=r.id AND i.lifecycle='ACTIVE') THEN 'ACTIVE_INSTANCE' ELSE 'ELIGIBLE' END AS eligibility
       FROM runs r JOIN characters c ON c.id=r.character_id JOIN run_builds b ON b.run_id=r.id JOIN run_progression p ON p.run_id=r.id
       JOIN release_entries e ON e.release_id=r.content_release_id JOIN content_entities ce ON ce.id=e.entity_id AND ce.kind='ABILITY'

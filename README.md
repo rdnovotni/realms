@@ -94,3 +94,5 @@ Named equipment loadouts now persist across Ascension and protect referenced gea
 Authored encounters can now opt into immutable XP budgets and cumulative level curves. Successful resolution awards XP in the same transaction as the encounter; readiness leaves build choices and campaign completion separate. See [encounter XP persistence](docs/encounter-xp-persistence.md).
 
 Run skill ranks and explicit proficiency milestones: [proficiency persistence](docs/proficiency-persistence.md).
+
+Authored skill-rank gates for feats and equipment: [proficiency prerequisites](docs/proficiency-requirements.md).
