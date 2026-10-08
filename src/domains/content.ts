@@ -11,6 +11,7 @@ import { validateLootReferences } from './loot.js';
 import { validateEncounterSpec } from './encounters.js';
 import { validateInventorySpec } from './item-accounting.js';
 import { validateProgressionReferences } from './progression-content.js';
+import { validateAttributeReferences } from './attribute-content.js';
 import { validateFeatContent } from './feat-content.js';
 import { validateSubclassReferences } from './subclasses.js';
 import { validateBuildReferences } from './build-content.js';
@@ -36,6 +37,7 @@ export function validateContent(input:unknown): asserts input is ContentPackage 
   const pkg=input as ContentPackage, entities=new Map(pkg.entities.map(e=>[e.id,e]));
   validateFeatContent(entities);
   for(const entity of pkg.entities) {
+    validateAttributeReferences(entity,entities);
     validateSubclassReferences(entity,entities);
     validateBuildReferences(entity,entities);
     validateProgressionReferences(entity,entities);

@@ -27,4 +27,4 @@ Pre-existing runs receive frozen LEGACY build snapshots preserving their recorde
 
 SQL derives every event transition and validates receipts, ownership, pinned content, XP eligibility, event chains and projections. `db:audit` reports `buildMismatches`; routine runtime privileges deny journal modification and deletion. Migration 015 adds two tables, bringing the foundation to 73 tables.
 
-This milestone persists build decisions. Full class kits, derived combat statistics, feats, subclasses, proficiency and attribute milestones, respec, mastery/Legacy rewards, special challenge starts and class initiation gameplay remain release work.
+Later migrations add [subclass choices](subclass-persistence.md), [feat choices](feat-persistence.md), and [attribute milestones](attribute-milestones.md). The internal class journal retains starting attributes; earned growth is an independently reconciled overlay, and public progression/class-choice responses show effective scores. Full class/subclass/feat execution, derived combat statistics, proficiency, respec, mastery/Legacy rewards, special starts and class initiation gameplay remain release work.
