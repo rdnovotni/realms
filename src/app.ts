@@ -1,3 +1,4 @@
+import { chooseFeat,featView } from './domains/feats.js';
 import { chooseSubclass,subclassView } from './domains/subclasses.js';
 import { createHash, timingSafeEqual } from 'node:crypto';
 import Fastify,{type FastifyRequest} from 'fastify';
@@ -61,11 +62,13 @@ export function buildApp(pool: pg.Pool, auth:Authentication, logger = false) {
         const client=await pool.connect();try{await authorizeSession(client,request.principal,'GAME_READ');}finally{client.release();}
       }
     });
+    protectedApp.get('/api/v1/progression/feats',async request=>featView(pool,actor(request)));
     protectedApp.get('/api/v1/progression/subclasses',async request=>subclassView(pool,actor(request)));
     protectedApp.get('/api/v1/progression',async request=>progressionView(pool,actor(request)));
     protectedApp.get('/api/v1/progression/options',async request=>buildOptions(pool,actor(request)));
     const envelopeProperties={requestId:{type:'string',format:'uuid'},expectedRevision:{type:'integer',minimum:0,maximum:2147483646}};
     const classIdField={type:'string',pattern:'^[a-z][a-z0-9_.-]{2,119}$'};
+    protectedApp.post<{Body:Envelope & {featId:string;milestone:number}}>('/api/v1/progression/feats',{schema:{body:{type:'object',additionalProperties:false,required:['requestId','actionType','expectedRevision','featId','milestone'],properties:{...envelopeProperties,actionType:{type:'string',const:'CHOOSE_FEAT'},featId:classIdField,milestone:{type:'integer',minimum:1,maximum:999}}}}},async request=>chooseFeat(pool,actor(request),{...request.body,...(request.principal?{principal:request.principal}:{})},request.body.featId,request.body.milestone));
     protectedApp.post<{Body:Envelope & {subclassId:string}}>('/api/v1/progression/subclasses',{schema:{body:{type:'object',additionalProperties:false,required:['requestId','actionType','expectedRevision','subclassId'],properties:{...envelopeProperties,actionType:{type:'string',const:'CHOOSE_SUBCLASS'},subclassId:classIdField}}}},async request=>chooseSubclass(pool,actor(request),{...request.body,...(request.principal?{principal:request.principal}:{})},request.body.subclassId));
     protectedApp.post<{Body:Envelope & {classId:string;presetKey:string}}>('/api/v1/progression/start',{schema:{body:{type:'object',additionalProperties:false,required:['requestId','actionType','expectedRevision','classId','presetKey'],properties:{...envelopeProperties,actionType:{type:'string',const:'START_BUILD'},classId:classIdField,presetKey:{type:'string',pattern:'^[a-z][a-z0-9_-]{0,39}$'}}}}},async request=>startBuild(pool,actor(request),{...request.body,...(request.principal?{principal:request.principal}:{})},request.body.classId,request.body.presetKey));
     protectedApp.post<{Body:Envelope & {classId:string}}>('/api/v1/progression/level',{schema:{body:{type:'object',additionalProperties:false,required:['requestId','actionType','expectedRevision','classId'],properties:{...envelopeProperties,actionType:{type:'string',const:'LEVEL_UP'},classId:classIdField}}}},async request=>levelUp(pool,actor(request),{...request.body,...(request.principal?{principal:request.principal}:{})},request.body.classId));

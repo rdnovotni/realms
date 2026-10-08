@@ -45,6 +45,7 @@ The same checks run on GitHub-hosted runners with an isolated PostgreSQL service
 - `POST /api/v1/ascend`: authenticated, eligibility-checked run transition. See [basic combat and campaign completion](docs/basic-combat-loop.md).
 - `GET /api/v1/instances/:id`: authenticated participant view; excludes seeds and internal state.
 - `GET /api/v1/content/:release/:entity`: authenticated, discovery-filtered view within an account’s run snapshots.
+- `GET` and `POST /api/v1/progression/feats`: authored milestones, prerequisite eligibility and explicit feat choices. See [feat persistence](docs/feat-persistence.md).
 - `GET` and `POST /api/v1/progression/subclasses`: discovered native-level eligibility and explicit subclass selection. See [subclass persistence](docs/subclass-persistence.md).
 - `GET /api/v1/progression/options`: discovered starting classes and authored presets.
 - `POST /api/v1/progression/start` and `/api/v1/progression/level`: explicit starting setup and earned class-level choices. See [class progression](docs/run-class-progression.md).
