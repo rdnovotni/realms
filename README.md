@@ -41,6 +41,8 @@ The same checks run on GitHub-hosted runners with an isolated PostgreSQL service
 
 - `GET /health/live`: application liveness.
 - `GET /health/ready`: exact migration version and checksum compatibility.
+- `POST /api/v1/combat/start`, `POST /api/v1/combat/actions`, `GET /api/v1/combat/:id`: opted-in authored basic solo combat; clients submit intents, never outcomes or rewards.
+- `POST /api/v1/ascend`: authenticated, eligibility-checked run transition. See [basic combat and campaign completion](docs/basic-combat-loop.md).
 - `GET /api/v1/instances/:id`: authenticated participant view; excludes seeds and internal state.
 - `GET /api/v1/content/:release/:entity`: authenticated, discovery-filtered view within an account’s run snapshots.
 - `GET /api/v1/state`: current development run; requires `Authorization: Bearer <DEV_API_TOKEN>`.

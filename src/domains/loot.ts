@@ -74,7 +74,7 @@ export async function beginAuthoredEncounter(context:ActionContext,definitionId:
   await commitLoot(context,started.instanceId);
   return started;
 }
-export async function settleAuthoredVictory(context:ActionContext,id:string,expectedRevision:number){
+export async function settleAuthoredVictory(context:ActionContext,id:string,expectedRevision:number,additional:(context:ActionContext)=>Promise<Record<string,Json>>=async()=>({})){
   const encounter=await definition(context,id);
   return finishEncounter(context,id,expectedRevision,'VICTORY',async c=>{
     const plan=(await c.client.query('SELECT * FROM encounter_reward_plans WHERE instance_id=$1',[encounter.instance_id])).rows[0];
@@ -91,6 +91,6 @@ export async function settleAuthoredVictory(context:ActionContext,id:string,expe
       await c.client.query('INSERT INTO encounter_reward_items(instance_id,reward_key,operation_id) VALUES($1,$2,$3)',[encounter.instance_id,reward.key,item.operationId]);
       issued.push({key:reward.key,...item});
     }
-    return {items:issued};
+    return {items:issued,additional:await additional(c)};
   });
 }

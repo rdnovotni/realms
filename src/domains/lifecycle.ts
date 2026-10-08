@@ -63,8 +63,8 @@ export function ascend(pool:pg.Pool,accountId:string,envelope:Envelope){
     }
     await context.client.query('UPDATE state_scopes SET lifecycle=$1 WHERE run_id=$2',['ARCHIVED',context.run.id]);
     await context.client.query(`UPDATE runs SET status='ARCHIVED',completed_at=coalesce(completed_at,now()) WHERE id=$1`,[context.run.id]);
-    await context.client.query(`INSERT INTO runs(id,character_id,turns,mode,content_release_id,rules_version,rules_manifest)
-      SELECT $1,character_id,turns,mode,content_release_id,rules_version,rules_manifest FROM runs WHERE id=$2`,[nextId,context.run.id]);
+    await context.client.query(`INSERT INTO runs(id,character_id,turns,mode,content_release_id,rules_version,rules_manifest,completion_policy)
+      SELECT $1,character_id,turns,mode,content_release_id,rules_version,rules_manifest,completion_policy FROM runs WHERE id=$2`,[nextId,context.run.id]);
     await context.client.query('INSERT INTO run_progression(run_id) VALUES($1)',[nextId]);
     await context.client.query(`INSERT INTO run_consumption(run_id,fullness,drunkenness,tolerance)
       SELECT $1,fullness,drunkenness,tolerance FROM run_consumption WHERE run_id=$2`,[nextId,context.run.id]);
