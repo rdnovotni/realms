@@ -1,3 +1,4 @@
+import { advanceProficiency,proficiencyView } from './domains/proficiencies.js';
 import { allocateAttributes,attributeView } from './domains/attributes.js';
 import { attributes as attributeNames } from './domains/build-content.js';
 import type { AttributeAllocation } from './domains/attribute-content.js';
@@ -65,6 +66,7 @@ export function buildApp(pool: pg.Pool, auth:Authentication, logger = false) {
         const client=await pool.connect();try{await authorizeSession(client,request.principal,'GAME_READ');}finally{client.release();}
       }
     });
+    protectedApp.get('/api/v1/progression/proficiencies',async request=>proficiencyView(pool,actor(request)));
     protectedApp.get('/api/v1/progression/attributes',async request=>attributeView(pool,actor(request)));
     protectedApp.get('/api/v1/progression/feats',async request=>featView(pool,actor(request)));
     protectedApp.get('/api/v1/progression/subclasses',async request=>subclassView(pool,actor(request)));
@@ -72,6 +74,7 @@ export function buildApp(pool: pg.Pool, auth:Authentication, logger = false) {
     protectedApp.get('/api/v1/progression/options',async request=>buildOptions(pool,actor(request)));
     const envelopeProperties={requestId:{type:'string',format:'uuid'},expectedRevision:{type:'integer',minimum:0,maximum:2147483646}};
     const classIdField={type:'string',pattern:'^[a-z][a-z0-9_.-]{2,119}$'};
+    protectedApp.post<{Body:Envelope & {rulesId:string;skillId:string;milestone:number}}>('/api/v1/progression/proficiencies',{schema:{body:{type:'object',additionalProperties:false,required:['requestId','actionType','expectedRevision','rulesId','skillId','milestone'],properties:{...envelopeProperties,actionType:{type:'string',const:'ADVANCE_PROFICIENCY'},rulesId:classIdField,skillId:classIdField,milestone:{type:'integer',minimum:1,maximum:999}}}}},async request=>advanceProficiency(pool,actor(request),{...request.body,...(request.principal?{principal:request.principal}:{})},request.body.rulesId,request.body.skillId,request.body.milestone));
     protectedApp.post<{Body:Envelope & {rulesId:string;milestone:number;allocation:AttributeAllocation}}>('/api/v1/progression/attributes',{schema:{body:{type:'object',additionalProperties:false,required:['requestId','actionType','expectedRevision','rulesId','milestone','allocation'],properties:{...envelopeProperties,actionType:{type:'string',const:'ALLOCATE_ATTRIBUTES'},rulesId:classIdField,milestone:{type:'integer',minimum:1,maximum:999},allocation:{type:'object',additionalProperties:false,minProperties:1,properties:Object.fromEntries(attributeNames.map(a=>[a,{type:'integer',minimum:1,maximum:30}]))}}}}},async request=>allocateAttributes(pool,actor(request),{...request.body,...(request.principal?{principal:request.principal}:{})},request.body.rulesId,request.body.milestone,request.body.allocation));
     protectedApp.post<{Body:Envelope & {featId:string;milestone:number}}>('/api/v1/progression/feats',{schema:{body:{type:'object',additionalProperties:false,required:['requestId','actionType','expectedRevision','featId','milestone'],properties:{...envelopeProperties,actionType:{type:'string',const:'CHOOSE_FEAT'},featId:classIdField,milestone:{type:'integer',minimum:1,maximum:999}}}}},async request=>chooseFeat(pool,actor(request),{...request.body,...(request.principal?{principal:request.principal}:{})},request.body.featId,request.body.milestone));
     protectedApp.post<{Body:Envelope & {subclassId:string}}>('/api/v1/progression/subclasses',{schema:{body:{type:'object',additionalProperties:false,required:['requestId','actionType','expectedRevision','subclassId'],properties:{...envelopeProperties,actionType:{type:'string',const:'CHOOSE_SUBCLASS'},subclassId:classIdField}}}},async request=>chooseSubclass(pool,actor(request),{...request.body,...(request.principal?{principal:request.principal}:{})},request.body.subclassId));

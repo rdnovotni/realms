@@ -31,6 +31,8 @@ try{
     GRANT INSERT ON auth_events,encounter_draws,encounter_reward_plans,encounter_reward_claims,encounter_reward_items TO realms_app;
     GRANT INSERT,UPDATE ON encounter_records,combat_run_state,combat_states TO realms_app;
     GRANT INSERT,UPDATE ON run_builds TO realms_app;
+    GRANT INSERT ON run_proficiency_choices TO realms_app;
+    GRANT INSERT,UPDATE ON run_skill_ranks TO realms_app;
     GRANT INSERT ON run_attribute_choices TO realms_app;
     GRANT INSERT ON run_feat_choices,run_feats TO realms_app;
     GRANT INSERT ON run_subclass_choices,run_subclasses TO realms_app;
