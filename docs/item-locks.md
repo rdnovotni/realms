@@ -26,3 +26,5 @@ The read-only audit and restore checks reconcile projection, consecutive history
 - POST `/api/v1/inventory/lock`: SET_ITEM_LOCK requestId/expectedRevision, itemId and locked boolean. Client overrides for actor, history, revision, bypass or authorization source are rejected.
 
 Clients still need the visible lock/unlock control and clear confirmation before destructive actions. Saved-loadout automatic protection, favorites/collection reservations, operation-specific automation flags, identified-item rules, Keep-N/capacity controls, sale/salvage/trade policies, shared reservation authority and equipment remain distinct release work. Future destructive domains must consult the lock before custody/sink changes; quantity protection alone does not yet implement those absent domains.
+
+Saved equipment templates now add independent automatic protection through [migration 013](saved-loadouts.md). Disabling a template’s protection does not remove a manual item lock.
