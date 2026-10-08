@@ -42,6 +42,9 @@ async function lockItems(context:ActionContext,ids:string[]){
   for(const containerId of [...new Set(rows.map(i=>i.container_id))].sort()) await lockPersonalContainer(context,containerId);
   return rows;
 }
+async function assertUnlocked(context:ActionContext,ids:string[]){
+  if((await context.client.query('SELECT 1 FROM inventory_item_locks WHERE item_id=ANY($1::uuid[]) AND locked LIMIT 1',[ids])).rows.length)throw new DomainError(409,'ITEM_LOCKED');
+}
 async function record(context:ActionContext,key:string,kind:string,from:string|null,to:string|null,amount:string,reason:string){
   return (await context.client.query(`INSERT INTO inventory_quantity_operations(action_id,operation_key,kind,from_item_id,to_item_id,quantity,reason)
     VALUES($1,$2,$3,$4,$5,$6,$7) RETURNING id`,[context.actionId,key,kind,from,to,amount,reason])).rows[0].id as string;
@@ -75,6 +78,7 @@ export async function grantItem(context:ActionContext,key:string,input:ItemGrant
 export async function consumeItem(context:ActionContext,key:string,itemId:string,amount:string,reason:string){
   operation(key,reason);const count=quantity(amount);
   const item=(await lockItems(context,[itemId]))[0]!;
+  await assertUnlocked(context,[item.id]);
   if(count>BigInt(item.quantity)) throw new DomainError(409,'INSUFFICIENT_ITEM_QUANTITY');
   return {itemId:item.id,operationId:await record(context,key,'CONSUME',item.id,null,amount,reason),remaining:(BigInt(item.quantity)-count).toString()};
 }
@@ -82,6 +86,7 @@ export function splitStack(pool:pg.Pool,accountId:string,envelope:Envelope,itemI
   const id=identity(itemId);quantity(amount);
   return executeAction(pool,accountId,envelope,{itemId:id,amount},async context=>{
     const item=(await lockItems(context,[id]))[0]!;
+    await assertUnlocked(context,[item.id]);
     if(item.storage_mode!=='STACK' || BigInt(amount)>=BigInt(item.quantity)) throw new DomainError(409,'INVALID_STACK_SPLIT');
     const child=randomUUID();
     await context.client.query(`INSERT INTO inventory_items(id,container_id,definition_id,definition_kind,release_id,definition_revision,storage_mode,quantity,quality,binding,bound_account_id,bound_run_id,source_code,metadata)
@@ -94,6 +99,7 @@ export function mergeStacks(pool:pg.Pool,accountId:string,envelope:Envelope,sour
   const from=identity(sourceId),to=identity(targetId);if(from===to) throw new DomainError(400,'SAME_ITEM');
   return executeAction(pool,accountId,envelope,{sourceId:from,targetId:to},async context=>{
     const items=await lockItems(context,[from,to]),source=items.find(i=>i.id===from)!,target=items.find(i=>i.id===to)!;
+    await assertUnlocked(context,[from,to]);
     const compatible=(await context.client.query(`SELECT (to_jsonb(a)-ARRAY['id','quantity','created_at'])=(to_jsonb(b)-ARRAY['id','quantity','created_at']) AS matches FROM inventory_items a,inventory_items b WHERE a.id=$1 AND b.id=$2`,[from,to])).rows[0].matches;
     if(source.storage_mode!=='STACK' || target.storage_mode!=='STACK' || !compatible) throw new DomainError(409,'INCOMPATIBLE_STACKS');
     if(BigInt(source.quantity)+BigInt(target.quantity)>maxQuantity) throw new DomainError(409,'ITEM_QUANTITY_OVERFLOW');

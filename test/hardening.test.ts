@@ -41,7 +41,7 @@ test('three-leg settlement is atomic, duplicate-safe and conserved',async()=>{
     const balance=(id:string)=>balances.find(w=>w.id===id)!.balance;
     assert.equal(balance(f.buyer),'10');assert.equal(balance(f.escrow),'0');assert.equal(balance(f.seller),'9');assert.equal(balance(f.fees),'1');assert.equal(balance(f.faucet),'-20');
     assert.equal((await pool.query('SELECT count(*)::int AS n FROM currency_transfers WHERE action_id=$1',[results[0]!.actionId])).rows[0].n,3);
-    assert.deepEqual(await integrityReport(pool),{craftMismatches:0,combatMismatches:0,completionMismatches:0,rewardMismatches:0,encounterMismatches:0,walletBalanceMismatches:0,itemQuantityMismatches:0,runScopeMismatches:0,malformedJobLeases:0,itemBindingMismatches:0,outboxJobCollisions:0,unvalidatedConstraints:0});
+    assert.deepEqual(await integrityReport(pool),{itemLockMismatches:0,craftMismatches:0,combatMismatches:0,completionMismatches:0,rewardMismatches:0,encounterMismatches:0,walletBalanceMismatches:0,itemQuantityMismatches:0,runScopeMismatches:0,malformedJobLeases:0,itemBindingMismatches:0,outboxJobCollisions:0,unvalidatedConstraints:0});
     assert.deepEqual(await unindexedForeignKeys(pool),[]);
   }finally{await db.close();}
 });
