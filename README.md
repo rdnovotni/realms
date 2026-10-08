@@ -45,6 +45,8 @@ The same checks run on GitHub-hosted runners with an isolated PostgreSQL service
 - `POST /api/v1/ascend`: authenticated, eligibility-checked run transition. See [basic combat and campaign completion](docs/basic-combat-loop.md).
 - `GET /api/v1/instances/:id`: authenticated participant view; excludes seeds and internal state.
 - `GET /api/v1/content/:release/:entity`: authenticated, discovery-filtered view within an account’s run snapshots.
+- `GET /api/v1/progression/options`: discovered starting classes and authored presets.
+- `POST /api/v1/progression/start` and `/api/v1/progression/level`: explicit starting setup and earned class-level choices. See [class progression](docs/run-class-progression.md).
 - `GET /api/v1/progression`: authenticated current-run XP, committed level and pending level readiness; no reward-write endpoint. See [encounter XP](docs/encounter-xp-persistence.md).
 - `GET /api/v1/state`: current development run; requires `Authorization: Bearer <DEV_API_TOKEN>`.
 - `POST /api/v1/actions`: authenticated prototype `SPEND_TURNS` action.

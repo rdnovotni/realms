@@ -1,4 +1,7 @@
 import { test } from 'node:test';
+import { buildPackage } from './build-fixture.js';
+import { startBuild,levelUp } from '../src/domains/builds.js';
+import { beginEncounter,finishEncounter } from '../src/domains/encounters.js';
 import assert from 'node:assert/strict';
 import { randomUUID,randomBytes,createHash } from 'node:crypto';
 import type pg from 'pg';
@@ -14,7 +17,7 @@ import { moveItem } from '../src/domains/inventory.js';
 import { ascend } from '../src/domains/lifecycle.js';
 import { integrityReport,unindexedForeignKeys } from '../src/foundation/integrity.js';
 const definitions=[['sword',['MAIN_HAND','OFF_HAND'],1,1],['shield',['OFF_HAND'],1,1],['greatsword',['MAIN_HAND'],2,1],['ring',['RING_1','RING_2'],0,1],['helm',['HEAD'],0,2]] as const;
-const pkg:ContentPackage={version:'equipment-fixture',engineVersion:'foundation-1',entities:definitions.map(([name,slots,hands,minimumLevel])=>({id:`item.${name}`,kind:'ITEM',revision:1,schemaVersion:1,definition:{name,dependencies:[],public:{},mechanics:{inventory:{version:1,storageMode:'INSTANCE',category:'EQUIPMENT'},equipment:{version:1,slots:[...slots],hands,minimumLevel,bindingPolicy:'PRESERVE'}}}}))};
+const pkg:ContentPackage={version:'equipment-fixture',engineVersion:'foundation-1',entities:[...buildPackage.entities,...definitions.map(([name,slots,hands,minimumLevel])=>({id:`item.${name}`,kind:'ITEM' as const,revision:1,schemaVersion:1,definition:{name,dependencies:[],public:{},mechanics:{inventory:{version:1,storageMode:'INSTANCE',category:'EQUIPMENT'},equipment:{version:1,slots:[...slots],hands,minimumLevel,bindingPolicy:'PRESERVE'}}}}))]};
 const env=(expectedRevision:number,actionType='SET_EQUIPMENT')=>({requestId:randomUUID(),expectedRevision,actionType});
 async function fixture(pool:Awaited<ReturnType<typeof testDatabase>>['pool']){
  const release=await publishContent(pool,pkg),f=await actor(pool,release,5,'CASUAL');
@@ -35,7 +38,11 @@ test('two handed conflicts, level requirements and duplicated rings fail atomica
  const plans:EquipmentPlan[]=[{activeSet:'A',slots:[{set:'A',slot:'MAIN_HAND',itemId:f.items.greatsword!},{set:'A',slot:'OFF_HAND',itemId:f.items.shield!}]},{activeSet:'A',slots:[{set:'WORN',slot:'HEAD',itemId:f.items.helm!}]},{activeSet:'A',slots:[{set:'WORN',slot:'RING_1',itemId:f.items.ring!},{set:'WORN',slot:'RING_2',itemId:f.items.ring!}]}];
  for(const p of plans)await assert.rejects(setEquipment(db.pool,f.account,env(1),p),/TWO_HANDED_CONFLICT|EQUIPMENT_REQUIREMENT_NOT_MET|EQUIPMENT_DUPLICATE_IDENTITY/);
  assert.equal((await db.pool.query('SELECT count(*)::int AS n FROM equipment_events')).rows[0].n,0);
- await db.pool.query('UPDATE run_progression SET level=2 WHERE run_id=$1',[f.run]);await setEquipment(db.pool,f.account,env(1),plans[1]!);
+ await db.pool.query("INSERT INTO discoveries(account_id,entity_id,knowledge_level) VALUES($1,'class.one','DISCOVERED')",[f.account]);
+ await startBuild(db.pool,f.account,env(1,'START_BUILD'),'class.one','balanced');
+ const encounter=await executeAction(db.pool,f.account,env(2,'GEAR_FIXTURE'),{},async c=>({...await beginEncounter(c,'encounter.build',{}),revision:await advanceRevision(c)}));
+ await executeAction(db.pool,f.account,env(3,'GEAR_FIXTURE'),{},async c=>({...await finishEncounter(c,encounter.instanceId as string,0,'VICTORY',async()=>({})),revision:await advanceRevision(c)}));
+ await levelUp(db.pool,f.account,env(4,'LEVEL_UP'),'class.one');await setEquipment(db.pool,f.account,env(5),plans[1]!);
  await assert.rejects(db.pool.query('UPDATE run_progression SET level=1 WHERE run_id=$1',[f.run]),/inconsistent/);
  }finally{await db.close();}
 });
@@ -71,7 +78,7 @@ test('equipment history and projections reject direct edits and late failures ro
  }finally{await db.close();}
 });
 test('published equipment rejects incompatible storage and illegal hand declarations',async()=>{
- const db=await testDatabase();try{for(const mutate of [(m:any)=>{m.inventory.storageMode='STACK';},(m:any)=>{m.equipment.hands=2;m.equipment.slots=['OFF_HAND'];},(m:any)=>{m.equipment.minimumLevel=0;}]){const p=structuredClone(pkg);mutate(p.entities[0]!.definition.mechanics);await assert.rejects(publishContent(db.pool,p));}}finally{await db.close();}
+ const db=await testDatabase();try{for(const mutate of [(m:any)=>{m.inventory.storageMode='STACK';},(m:any)=>{m.equipment.hands=2;m.equipment.slots=['OFF_HAND'];},(m:any)=>{m.equipment.minimumLevel=0;}]){const p=structuredClone(pkg);mutate(p.entities.find(e=>e.id==='item.sword')!.definition.mechanics);await assert.rejects(publishContent(db.pool,p));}}finally{await db.close();}
 });
 test('active instances prevent setup changes and selecting another prepared set',async()=>{
  const db=await testDatabase();try{const f=await fixture(db.pool);await setEquipment(db.pool,f.account,env(1),sword(f.items.sword!));

@@ -11,6 +11,7 @@ import { validateLootReferences } from './loot.js';
 import { validateEncounterSpec } from './encounters.js';
 import { validateInventorySpec } from './item-accounting.js';
 import { validateProgressionReferences } from './progression-content.js';
+import { validateBuildReferences } from './build-content.js';
 
 export const kinds = ['ITEM','EFFECT','ABILITY','CLASS','SPECIES','MONSTER','NPC','ENCOUNTER','QUEST','RECIPE','LOCATION','ROUTE','FACTION','PATH','EVENT','ACTIVITY','CARD','FAMILIAR','BOSS','LOOT_TABLE','LORE','TUNING'] as const;
 export type ContentEntity = { id:string; kind:typeof kinds[number]; revision:number; schemaVersion:number; definition:{ name:string; dependencies:string[]; public:Record<string,Json>; advanced?:Record<string,Json>; mechanics?:Record<string,Json>; secrets?:Record<string,Json> } };
@@ -32,6 +33,7 @@ export function validateContent(input:unknown): asserts input is ContentPackage 
   if (!validate(input)) throw new DomainError(400,'INVALID_CONTENT_PACKAGE');
   const pkg=input as ContentPackage, entities=new Map(pkg.entities.map(e=>[e.id,e]));
   for(const entity of pkg.entities) {
+    validateBuildReferences(entity,entities);
     validateProgressionReferences(entity,entities);
     validateLootReferences(entity,entities);
     validateCombatReferences(entity,entities);

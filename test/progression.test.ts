@@ -141,7 +141,7 @@ test('upgrade preserves existing XP as a baseline without inventing historical a
     }
     const f=await actor(db.pool);await db.pool.query('UPDATE run_progression SET xp=9007199254740993 WHERE run_id=$1',[f.run]);
     const before=(await db.pool.query('SELECT * FROM run_progression WHERE run_id=$1',[f.run])).rows;
-    await migrate(db.pool);assert.deepEqual((await db.pool.query('SELECT * FROM run_progression WHERE run_id=$1',[f.run])).rows,before);
+    await migrate(db.pool);assert.deepEqual((await db.pool.query('SELECT * FROM run_progression WHERE run_id=$1',[f.run])).rows.map(({luck,...prior})=>prior),before);
     assert.deepEqual((await db.pool.query('SELECT xp::text,origin FROM run_xp_baselines WHERE run_id=$1',[f.run])).rows[0],{xp:'9007199254740993',origin:'MIGRATION_014'});
     assert.equal((await db.pool.query('SELECT count(*)::int AS n FROM run_xp_awards')).rows[0].n,0);
     assert.equal((await integrityReport(db.pool)).xpMismatches,0);
@@ -174,7 +174,7 @@ test('restricted runtime can start, award and open new zero-XP progression but c
     await db.pool.query(`CREATE ROLE ${role} NOLOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS`);created=true;
     await db.pool.query(`GRANT USAGE ON SCHEMA ${db.schema} TO ${role}; GRANT SELECT ON ALL TABLES IN SCHEMA ${db.schema} TO ${role};
       GRANT INSERT,UPDATE ON instances,instance_participants,state_scopes,encounter_records,run_progression TO ${role}; GRANT UPDATE ON runs TO ${role};
-      GRANT INSERT ON action_receipts,turn_ledger,run_xp_baselines,encounter_xp_plans,run_xp_awards TO ${role};
+      GRANT INSERT ON action_receipts,turn_ledger,run_builds,run_xp_baselines,encounter_xp_plans,run_xp_awards TO ${role};
       GRANT USAGE,SELECT ON ALL SEQUENCES IN SCHEMA ${db.schema} TO ${role}`);
     const client=await db.pool.connect();try {
       await client.query('BEGIN');await client.query(`SET LOCAL ROLE ${role}`);
