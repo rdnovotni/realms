@@ -74,3 +74,5 @@ Domain services implement sealed content publication, explicit state contracts, 
 Build the first full vertical slice next: typed encounter content, Turn commitment, deterministic resolution, quest/reward/effect integration, victory, and a player-visible Ascension manifest. Add real authentication and administration before access beyond this workstation. The client can use the same protocol from native desktop, browser, or mobile implementations.
 
 The supplied design documents remain outside this repository in the ChatGPT project reference mirror. Systems 23 and 46 govern the shared architecture; each gameplay module will add versioned migrations and validate its own mechanics.
+
+Routine trivial processing recipes now have atomic batches, binding preservation and ledger-linked history. See [routine crafting](docs/routine-crafting.md) for the supported policy and remaining crafting release work.
