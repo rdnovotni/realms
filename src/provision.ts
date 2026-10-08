@@ -30,6 +30,8 @@ try{
     GRANT UPDATE(salt,verifier) ON auth_credentials TO realms_app;
     GRANT INSERT ON auth_events,encounter_draws,encounter_reward_plans,encounter_reward_claims,encounter_reward_items TO realms_app;
     GRANT INSERT,UPDATE ON encounter_records,combat_run_state,combat_states TO realms_app;
+    GRANT INSERT ON inventory_lock_events TO realms_app;
+    GRANT INSERT,UPDATE ON inventory_item_locks TO realms_app;
     GRANT INSERT ON craft_records,craft_inputs TO realms_app;
     GRANT INSERT ON combat_steps,combat_recoveries,combat_gold_plans,combat_gold_claims,run_completions TO realms_app;
     GRANT DELETE ON effect_instances,auth_throttle TO realms_app;`);
