@@ -1,6 +1,6 @@
 # Progression persistence: next implementation pass
 
-Status: the encounter XP journal is implemented in migration 014; see [encounter XP persistence](encounter-xp-persistence.md). The broader progression work below remains a release plan. Content must explicitly declare XP budgets; existing definitions do not acquire invented rewards.
+Status: the encounter XP journal is implemented in migration 014; see [encounter XP persistence](encounter-xp-persistence.md). Starting attributes and class allocation are implemented in migration 015; subclass selection is implemented in migration 016. The broader gameplay work below remains a release plan. Content must explicitly declare XP budgets; existing definitions do not acquire invented rewards.
 
 ## Design requirements
 
