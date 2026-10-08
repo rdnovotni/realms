@@ -11,6 +11,7 @@ import { validateLootReferences } from './loot.js';
 import { validateEncounterSpec } from './encounters.js';
 import { validateInventorySpec } from './item-accounting.js';
 import { validateProgressionReferences } from './progression-content.js';
+import { validateFeatContent } from './feat-content.js';
 import { validateSubclassReferences } from './subclasses.js';
 import { validateBuildReferences } from './build-content.js';
 
@@ -33,6 +34,7 @@ const validate = ajv.compile({ type:'object',additionalProperties:false,required
 export function validateContent(input:unknown): asserts input is ContentPackage {
   if (!validate(input)) throw new DomainError(400,'INVALID_CONTENT_PACKAGE');
   const pkg=input as ContentPackage, entities=new Map(pkg.entities.map(e=>[e.id,e]));
+  validateFeatContent(entities);
   for(const entity of pkg.entities) {
     validateSubclassReferences(entity,entities);
     validateBuildReferences(entity,entities);
