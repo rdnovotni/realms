@@ -167,7 +167,7 @@ test('restricted runtime completes combat, currency, campaign and Ascension whil
   await pool.query(`GRANT USAGE ON SCHEMA ${db.schema} TO ${role};GRANT SELECT ON ALL TABLES IN SCHEMA ${db.schema} TO ${role};
     GRANT UPDATE(security_epoch) ON accounts TO ${role};
     GRANT INSERT,UPDATE ON runs,state_scopes,run_progression,run_consumption,inventory_containers,inventory_items,wallets,instances,instance_participants,encounter_records,combat_run_state,combat_states TO ${role};
-    GRANT INSERT ON run_xp_baselines,encounter_xp_plans,run_xp_awards TO ${role};
+    GRANT INSERT ON run_builds,run_xp_baselines,encounter_xp_plans,run_xp_awards TO ${role};
     GRANT INSERT ON action_receipts,turn_ledger,currency_transfers,inventory_movements,inventory_quantity_operations,run_history,audit_events,outbox_events,encounter_draws,encounter_reward_plans,encounter_reward_claims,encounter_reward_items,combat_steps,combat_recoveries,combat_gold_plans,combat_gold_claims,run_completions TO ${role};
     GRANT USAGE,SELECT ON ALL SEQUENCES IN SCHEMA ${db.schema} TO ${role}`);
   const client=await pool.connect();

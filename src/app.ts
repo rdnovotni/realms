@@ -9,6 +9,7 @@ import { craftRoutine,routineRecipeView } from './domains/crafting.js';
 import { saveLoadout,setLoadoutProtection,deleteLoadout,applyLoadout,loadoutsView,itemProtectionView } from './domains/loadouts.js';
 import { itemBindingView } from './domains/item-binding.js';
 import { setItemLock,itemLockView } from './domains/item-locks.js';
+import { startBuild,levelUp,buildOptions } from './domains/builds.js';
 import { progressionView } from './domains/progression.js';
 import { setEquipment,equipmentView,type EquipmentPlan } from './domains/equipment.js';
 import { equipmentSlots } from './domains/equipment-content.js';
@@ -60,7 +61,11 @@ export function buildApp(pool: pg.Pool, auth:Authentication, logger = false) {
       }
     });
     protectedApp.get('/api/v1/progression',async request=>progressionView(pool,actor(request)));
+    protectedApp.get('/api/v1/progression/options',async request=>buildOptions(pool,actor(request)));
     const envelopeProperties={requestId:{type:'string',format:'uuid'},expectedRevision:{type:'integer',minimum:0,maximum:2147483646}};
+    const classIdField={type:'string',pattern:'^[a-z][a-z0-9_.-]{2,119}$'};
+    protectedApp.post<{Body:Envelope & {classId:string;presetKey:string}}>('/api/v1/progression/start',{schema:{body:{type:'object',additionalProperties:false,required:['requestId','actionType','expectedRevision','classId','presetKey'],properties:{...envelopeProperties,actionType:{type:'string',const:'START_BUILD'},classId:classIdField,presetKey:{type:'string',pattern:'^[a-z][a-z0-9_-]{0,39}$'}}}}},async request=>startBuild(pool,actor(request),{...request.body,...(request.principal?{principal:request.principal}:{})},request.body.classId,request.body.presetKey));
+    protectedApp.post<{Body:Envelope & {classId:string}}>('/api/v1/progression/level',{schema:{body:{type:'object',additionalProperties:false,required:['requestId','actionType','expectedRevision','classId'],properties:{...envelopeProperties,actionType:{type:'string',const:'LEVEL_UP'},classId:classIdField}}}},async request=>levelUp(pool,actor(request),{...request.body,...(request.principal?{principal:request.principal}:{})},request.body.classId));
     protectedApp.post<{Body:Envelope & {definitionId:string}}>('/api/v1/combat/start',{schema:{body:{type:'object',additionalProperties:false,required:['requestId','actionType','expectedRevision','definitionId'],properties:{...envelopeProperties,actionType:{type:'string',const:'START_COMBAT'},definitionId:{type:'string',pattern:'^[a-z][a-z0-9_.-]{2,119}$'}}}}},async request=>startCombat(pool,actor(request),{...request.body,...(request.principal?{principal:request.principal}:{})},request.body.definitionId));
     protectedApp.post<{Body:Envelope & {instanceId:string;expectedRound:number;intent:CombatIntent}}>('/api/v1/combat/actions',{schema:{body:{type:'object',additionalProperties:false,required:['requestId','actionType','expectedRevision','instanceId','expectedRound','intent'],properties:{...envelopeProperties,actionType:{type:'string',const:'COMBAT_ACTION'},instanceId:{type:'string',format:'uuid'},expectedRound:{type:'integer',minimum:0,maximum:1000},intent:{type:'string',enum:['ATTACK','GUARD','RETREAT']}}}}},async request=>takeCombatAction(pool,actor(request),{...request.body,...(request.principal?{principal:request.principal}:{})},request.body.instanceId,request.body.expectedRound,request.body.intent));
     protectedApp.get<{Params:{id:string}}>('/api/v1/combat/:id',{schema:{params:{type:'object',additionalProperties:false,required:['id'],properties:{id:{type:'string',format:'uuid'}}}}},async request=>combatView(pool,actor(request),request.params.id));
