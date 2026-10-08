@@ -1,3 +1,4 @@
+import { clearEquipmentForAscension } from './equipment.js';
 import { randomUUID } from 'node:crypto';
 import type pg from 'pg';
 import { executeAction,type Envelope } from '../foundation/action.js';
@@ -40,6 +41,7 @@ export function ascend(pool:pg.Pool,accountId:string,envelope:Envelope){
     if(context.run.status!=='AFTERCORE') throw new DomainError(409,'ASCENSION_NOT_READY');
     if((await context.client.query(`SELECT 1 FROM instances i JOIN instance_participants p ON p.instance_id=i.id WHERE p.run_id=$1 AND i.lifecycle='ACTIVE' LIMIT 1`,[context.run.id])).rows.length) throw new DomainError(409,'INSTANCE_STILL_ACTIVE');
     if(!context.run.content_release_id) throw new DomainError(409,'CONTENT_RELEASE_REQUIRED');
+    await clearEquipmentForAscension(context);
     // Ordinary possessions retain custody in account storage. Run-bound and system quest items
     // remain in the archived run for provenance; they cannot be accessed by the new run.
     const possessions=await context.client.query(`SELECT i.id,i.binding,coalesce(v.definition->'mechanics'->'inventory'->>'category',v.definition->'mechanics'->>'inventoryCategory') AS category,i.container_id

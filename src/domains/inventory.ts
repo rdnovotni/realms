@@ -11,6 +11,7 @@ export function moveItem(pool: pg.Pool, accountId: string, envelope: Envelope, i
     const from = containers.rows.find(c=>c.id===item.container_id), to = containers.rows.find(c=>c.id===destinationId);
     const owns = (c: { account_id:string; run_id:string; lifecycle:string } | undefined) => c && c.lifecycle==='ACTIVE' && (c.account_id===accountId || c.run_id===context.run.id);
     if (!owns(from) || !owns(to)) throw new DomainError(403,'CONTAINER_NOT_OWNED');
+    if((await context.client.query('SELECT 1 FROM equipment_slots WHERE item_id=$1 LIMIT 1',[itemId])).rows.length)throw new DomainError(409,'ITEM_EQUIPPED');
     if (item.container_id===destinationId) throw new DomainError(409,'SAME_CONTAINER');
     if (['ESCROW','GUILD_VAULT','MUSEUM'].includes(from.kind) || ['ESCROW','GUILD_VAULT','MUSEUM'].includes(to.kind)) throw new DomainError(409,'SPECIAL_CUSTODY_REQUIRED');
     if (item.binding==='SYSTEM_UNTRADEABLE' || (item.bound_account_id && item.bound_account_id!==accountId) || (item.bound_run_id && to.run_id!==item.bound_run_id)) throw new DomainError(409,'BINDING_RESTRICTED');

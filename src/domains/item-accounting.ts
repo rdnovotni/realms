@@ -43,6 +43,7 @@ async function lockItems(context:ActionContext,ids:string[]){
   return rows;
 }
 async function assertUnlocked(context:ActionContext,ids:string[]){
+  if((await context.client.query('SELECT 1 FROM equipment_slots WHERE item_id=ANY($1::uuid[]) LIMIT 1',[ids])).rows.length)throw new DomainError(409,'ITEM_EQUIPPED');
   if((await context.client.query('SELECT 1 FROM inventory_item_locks WHERE item_id=ANY($1::uuid[]) AND locked LIMIT 1',[ids])).rows.length)throw new DomainError(409,'ITEM_LOCKED');
 }
 async function record(context:ActionContext,key:string,kind:string,from:string|null,to:string|null,amount:string,reason:string){
