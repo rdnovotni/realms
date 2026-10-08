@@ -12,7 +12,7 @@ try{
     has_table_privilege(current_user,'inventory_quantity_operations','UPDATE') AS editable,
     has_table_privilege(current_user,'inventory_quantity_operations','DELETE') AS deletable`)).rows[0];
   if(!quantityPermissions.readable || !quantityPermissions.appendable || quantityPermissions.editable || quantityPermissions.deletable)throw new Error('Inventory quantity ledger privileges are incorrect');
-  for(const statement of ['CREATE TABLE permission_probe(id integer)','UPDATE schema_migrations SET checksum=checksum','DELETE FROM action_receipts','DELETE FROM inventory_quantity_operations','UPDATE content_releases SET sealed=sealed',"UPDATE accounts SET access_status='SUSPENDED'",'UPDATE auth_credentials SET handle=handle','DELETE FROM auth_events','UPDATE encounter_draws SET value=value','DELETE FROM encounter_records']){
+  for(const statement of ['CREATE TABLE permission_probe(id integer)','UPDATE schema_migrations SET checksum=checksum','DELETE FROM action_receipts','DELETE FROM inventory_quantity_operations','UPDATE content_releases SET sealed=sealed',"UPDATE accounts SET access_status='SUSPENDED'",'UPDATE auth_credentials SET handle=handle','DELETE FROM auth_events','UPDATE encounter_draws SET value=value','DELETE FROM encounter_records','UPDATE encounter_reward_plans SET rewards=rewards','DELETE FROM encounter_reward_claims','UPDATE encounter_reward_items SET reward_key=reward_key']){
     const client=await pool.connect();
     try{
       await client.query('BEGIN');let denied=false;

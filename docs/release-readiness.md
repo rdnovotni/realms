@@ -34,8 +34,8 @@ bash scripts/database.sh restore-check .state/backups/NAME.dump
 | Point-in-time recovery | Not configured | Base backups and archived transaction logs; verified recovery to the intended transaction |
 | Recovery on another machine | Not exercised | Configuration/role recovery and application/gameplay/history verification |
 | Safe production migrations | Checksummed transactional migrations | Representative-data rehearsal, lock/downtime limits and server-version compatibility |
-| Typed content mechanics | Shared envelope only | Detailed schemas and semantic validators for every shipped content type |
-| Complete gameplay persistence | Ordinary solo encounter journal, durable RNG, costs and atomic settlement | Authored combat/loot/defeat handlers, public projections and complete victory-to-Ascension loop |
+| Typed content mechanics | Shared envelope, inventory declarations, encounter costs and ordinary item loot | Detailed schemas and semantic validators for every shipped content type |
+| Complete gameplay persistence | Ordinary solo encounter journal, durable RNG, costs and authored item reward settlement | Authored combat/loot/defeat handlers, public projections and complete victory-to-Ascension loop |
 | Inventory/crafting | Custody, ledger grants/consumption and split/merge | Authored recipes, protection/capacity rules, equipment, binding transitions, durability, upgrades and commissions |
 | Progression/Ascension | Fields and lifetime transition | Builds, mastery/Legacy, eligibility, rewards, setup and visible transition plan |
 | Quest/world consequences | Identity, lifecycle and scope primitives | Validated graphs, NPC memory, faction/world consequences and campaign records |
@@ -47,6 +47,8 @@ bash scripts/database.sh restore-check .state/backups/NAME.dump
 | Performance/failure drills | Focused invariant tests | Representative data volumes, query plans, connection budgets, crash/restart and restore drills |
 
 ## Execution order
+
+The authored item loot pass (migration 007) validates typed loot tables, commits hidden reward plans at encounter start and settles exact inventory grants with victory. See [authored item loot](authored-item-loot.md); combat still must establish victory before calling this internal service.
 
 The encounter journal pass (migration 006) commits an ordinary solo encounter and its Turn cost together, stores server-only checkpoints and named RNG draws, and settles an outcome with domain rewards in one Action transaction. See [encounter persistence](encounter-persistence.md) for authority boundaries and the gameplay work still required.
 

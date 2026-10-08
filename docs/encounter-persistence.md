@@ -26,6 +26,10 @@ Success stores the private settlement, resolves the instance and archives its sc
 
 Deferred constraints reconcile participant/content pins, start/finish account authority, start cost, journal/instance revisions and lifetimes. Audit and restore checks repeat these checks. Draw history cannot be rewritten; SQL enforces consecutive counters and bounded results. This does not replace a gameplay replay verifier or a full Turn balance reconciliation system.
 
+## Authored item loot
+
+Migration 007 extends encounter mechanics with version 2 and a pinned `lootTableId`. These encounters must use `beginAuthoredEncounter` to commit their item reward plan and `settleAuthoredVictory` after the owning combat handler establishes victory. Deferred constraints reject a missing plan or incomplete victory claim. Version 1 remains available for the generic foundation. See [authored item loot](authored-item-loot.md).
+
 ## Verification and remaining release work
 
 Tests exercise concurrent receipt replay, reconnect locks, stream isolation, named draw reuse, stale checkpoints, foreign access, failed reward settlement, double settlement, retreat cost, direct SQL tampering and invalid content/costs. Runtime permits journal writes and draw insertion but cannot delete journal history or rewrite draws.

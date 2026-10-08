@@ -4,6 +4,7 @@ import type pg from 'pg';
 import { checksum, type Json } from '../foundation/json.js';
 import { transaction } from '../foundation/transaction.js';
 import { DomainError } from '../foundation/errors.js';
+import { validateLootReferences } from './loot.js';
 import { validateEncounterSpec } from './encounters.js';
 import { validateInventorySpec } from './item-accounting.js';
 
@@ -27,6 +28,7 @@ export function validateContent(input:unknown): asserts input is ContentPackage 
   if (!validate(input)) throw new DomainError(400,'INVALID_CONTENT_PACKAGE');
   const pkg=input as ContentPackage, entities=new Map(pkg.entities.map(e=>[e.id,e]));
   for(const entity of pkg.entities) {
+    validateLootReferences(entity,entities);
     const encounter=entity.definition.mechanics?.encounter;
     if(entity.kind==='ENCOUNTER' && encounter!==undefined) validateEncounterSpec(encounter);
     const inventory=entity.definition.mechanics?.inventory;
