@@ -45,6 +45,7 @@ The same checks run on GitHub-hosted runners with an isolated PostgreSQL service
 - `POST /api/v1/ascend`: authenticated, eligibility-checked run transition. See [basic combat and campaign completion](docs/basic-combat-loop.md).
 - `GET /api/v1/instances/:id`: authenticated participant view; excludes seeds and internal state.
 - `GET /api/v1/content/:release/:entity`: authenticated, discovery-filtered view within an account’s run snapshots.
+- `GET /api/v1/progression`: authenticated current-run XP, committed level and pending level readiness; no reward-write endpoint. See [encounter XP](docs/encounter-xp-persistence.md).
 - `GET /api/v1/state`: current development run; requires `Authorization: Bearer <DEV_API_TOKEN>`.
 - `POST /api/v1/actions`: authenticated prototype `SPEND_TURNS` action.
 
@@ -84,3 +85,5 @@ Equipment snapshots now persist worn slots and two prepared weapon sets, protect
 Selected gear can now opt into permanent account binding on active equipping, with atomic history and preserved original reward commitments. See [permanent item binding](docs/item-binding.md).
 
 Named equipment loadouts now persist across Ascension and protect referenced gear until explicit release. Applying a loadout uses the ordinary current-run equipment rules. See [saved loadouts](docs/saved-loadouts.md).
+
+Authored encounters can now opt into immutable XP budgets and cumulative level curves. Successful resolution awards XP in the same transaction as the encounter; readiness leaves build choices and campaign completion separate. See [encounter XP persistence](docs/encounter-xp-persistence.md).

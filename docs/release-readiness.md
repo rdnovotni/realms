@@ -37,7 +37,7 @@ bash scripts/database.sh restore-check .state/backups/NAME.dump
 | Typed content mechanics | Shared envelope, inventory declarations, encounter costs and ordinary item loot | Detailed schemas and semantic validators for every shipped content type |
 | Complete gameplay persistence | Basic solo combat-to-item/Gold-to-campaign-to-Ascension loop; Home recovery and safe intent/resume API | Full tactical/party/defeat mechanics, live content, complete progression/Legacy/setup and replay/crash drills |
 | Inventory/crafting | Custody, quantity ledger, split/merge, trivial recipe batches, durable item locks, equipment snapshots, opt-in account binding and protected saved loadouts | Full profession/station/quality recipes, broader automation protection and capacity rules, derived equipment stats, remaining binding policies, durability, upgrades and commissions |
-| Progression/Ascension | Fields and lifetime transition | Builds, mastery/Legacy, eligibility, rewards, setup and visible transition plan |
+| Progression/Ascension | Reconciled XP history, pinned encounter budgets, level readiness and lifetime transition | Authored starting attributes including Luck, class/level decisions, builds, mastery/Legacy, eligibility, rewards, setup and visible transition plan |
 | Quest/world consequences | Identity, lifecycle and scope primitives | Validated graphs, NPC memory, faction/world consequences and campaign records |
 | Dailies/effects | Rollover and worker primitives | Supervised scheduler/workers, banking, production and complete effect clocks |
 | Shared launch systems | Guild/event/instance primitives | Permissions, markets, claims and the social/game modules included at launch |
@@ -47,6 +47,8 @@ bash scripts/database.sh restore-check .state/backups/NAME.dump
 | Performance/failure drills | Focused invariant tests | Representative data volumes, query plans, connection budgets, crash/restart and restore drills |
 
 ## Execution order
+
+The XP pass (migration 014) preserves opening balances, commits authored encounter XP budgets, awards successful resolutions exactly once, and reconciles totals to immutable history. It exposes pending level readiness without committing classes/build choices or changing campaign state. See [encounter XP persistence](encounter-xp-persistence.md). Class allocation, Luck/start rules, non-encounter objective identities and mastery/Legacy remain launch work.
 
 The loadout pass (migration 013) captures named current equipment setups, applies them through ordinary equipment legality, and protects referenced item identities until an explicit override or deletion. Templates and protection persist through storage and Ascension. See [saved equipment loadouts](saved-loadouts.md). Build/disguise templates and broader inventory automation remain launch work.
 

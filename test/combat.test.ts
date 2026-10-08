@@ -6,6 +6,7 @@ import { actor,testDatabase } from './helpers.js';
 import { publishContent,validateContent,type ContentPackage } from '../src/domains/content.js';
 import { startCombat,takeCombatAction,combatView } from '../src/domains/combat.js';
 import { beginAuthoredEncounter,settleAuthoredVictory } from '../src/domains/loot.js';
+import { beginEncounter,finishEncounter } from '../src/domains/encounters.js';
 import { grantItem } from '../src/domains/item-accounting.js';
 import { executeAction,advanceRevision } from '../src/foundation/action.js';
 import { ascend } from '../src/domains/lifecycle.js';
@@ -77,7 +78,9 @@ test('solo defeat returns functional health at Home with capped Turn loss and no
  try{
   const custom=structuredClone(pkg);custom.entities[1]!.definition.mechanics!.combatMonster=fighter(50,100);
   custom.entities.push({id:'item.test_gear',kind:'ITEM',revision:1,schemaVersion:1,definition:{name:'Existing gear',dependencies:[],public:{},mechanics:{inventory:{version:1,storageMode:'INSTANCE',category:'EQUIPMENT'}}}});
-  const f=await fixture(pool,custom,2);await pool.query('UPDATE run_progression SET xp=37 WHERE run_id=$1',[f.run]);
+  custom.entities.push({id:'curve.test',kind:'TUNING',revision:1,schemaVersion:1,definition:{name:'Curve',dependencies:[],public:{},mechanics:{xpCurve:{version:1,thresholds:Array.from({length:25},(_,i)=>String(i*100))}}}},
+    {id:'encounter.xp',kind:'ENCOUNTER',revision:1,schemaVersion:1,definition:{name:'Prior resolution',dependencies:['curve.test'],public:{},mechanics:{encounter:{version:1,turnCost:1},resolutionXP:{version:1,amount:'37',curveId:'curve.test'}}}});
+  const f=await fixture(pool,custom,3);await executeAction(pool,f.account,env(0,'FIXTURE_XP'),{},async c=>{const start=await beginEncounter(c,'encounter.xp',{});return finishEncounter(c,start.instanceId,0,'VICTORY',async()=>({}));});
   const container=(await pool.query("SELECT c.id FROM inventory_containers c JOIN state_scopes s ON s.id=c.scope_id WHERE s.run_id=$1",[f.run])).rows[0].id;
   const gear=await executeAction(pool,f.account,env(0,'FIXTURE_GEAR'),{},async c=>({...await grantItem(c,'gear',{containerId:container,definitionId:'item.test_gear',quantity:'1',quality:'10',sourceCode:'FIXTURE'},'FIXTURE'),revision:await advanceRevision(c)}));
   const start=await startCombat(pool,f.account,env(1,'START_COMBAT'),'encounter.first');
@@ -164,6 +167,7 @@ test('restricted runtime completes combat, currency, campaign and Ascension whil
   await pool.query(`GRANT USAGE ON SCHEMA ${db.schema} TO ${role};GRANT SELECT ON ALL TABLES IN SCHEMA ${db.schema} TO ${role};
     GRANT UPDATE(security_epoch) ON accounts TO ${role};
     GRANT INSERT,UPDATE ON runs,state_scopes,run_progression,run_consumption,inventory_containers,inventory_items,wallets,instances,instance_participants,encounter_records,combat_run_state,combat_states TO ${role};
+    GRANT INSERT ON run_xp_baselines,encounter_xp_plans,run_xp_awards TO ${role};
     GRANT INSERT ON action_receipts,turn_ledger,currency_transfers,inventory_movements,inventory_quantity_operations,run_history,audit_events,outbox_events,encounter_draws,encounter_reward_plans,encounter_reward_claims,encounter_reward_items,combat_steps,combat_recoveries,combat_gold_plans,combat_gold_claims,run_completions TO ${role};
     GRANT USAGE,SELECT ON ALL SEQUENCES IN SCHEMA ${db.schema} TO ${role}`);
   const client=await pool.connect();
