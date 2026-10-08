@@ -82,3 +82,5 @@ Durable player item locks block consumption, crafting and stack transfers and su
 Equipment snapshots now persist worn slots and two prepared weapon sets, protect equipped items and clear safely during Ascension. See [equipment persistence](docs/equipment-persistence.md) for the supported rules and remaining combat integration.
 
 Selected gear can now opt into permanent account binding on active equipping, with atomic history and preserved original reward commitments. See [permanent item binding](docs/item-binding.md).
+
+Named equipment loadouts now persist across Ascension and protect referenced gear until explicit release. Applying a loadout uses the ordinary current-run equipment rules. See [saved loadouts](docs/saved-loadouts.md).

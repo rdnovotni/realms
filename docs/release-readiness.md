@@ -36,7 +36,7 @@ bash scripts/database.sh restore-check .state/backups/NAME.dump
 | Safe production migrations | Checksummed transactional migrations | Representative-data rehearsal, lock/downtime limits and server-version compatibility |
 | Typed content mechanics | Shared envelope, inventory declarations, encounter costs and ordinary item loot | Detailed schemas and semantic validators for every shipped content type |
 | Complete gameplay persistence | Basic solo combat-to-item/Gold-to-campaign-to-Ascension loop; Home recovery and safe intent/resume API | Full tactical/party/defeat mechanics, live content, complete progression/Legacy/setup and replay/crash drills |
-| Inventory/crafting | Custody, quantity ledger, split/merge, trivial recipe batches, durable item locks, equipment snapshots and opt-in account binding | Full profession/station/quality recipes, loadout/automation protection and capacity rules, derived equipment stats, remaining binding policies, durability, upgrades and commissions |
+| Inventory/crafting | Custody, quantity ledger, split/merge, trivial recipe batches, durable item locks, equipment snapshots, opt-in account binding and protected saved loadouts | Full profession/station/quality recipes, broader automation protection and capacity rules, derived equipment stats, remaining binding policies, durability, upgrades and commissions |
 | Progression/Ascension | Fields and lifetime transition | Builds, mastery/Legacy, eligibility, rewards, setup and visible transition plan |
 | Quest/world consequences | Identity, lifecycle and scope primitives | Validated graphs, NPC memory, faction/world consequences and campaign records |
 | Dailies/effects | Rollover and worker primitives | Supervised scheduler/workers, banking, production and complete effect clocks |
@@ -48,11 +48,13 @@ bash scripts/database.sh restore-check .state/backups/NAME.dump
 
 ## Execution order
 
+The loadout pass (migration 013) captures named current equipment setups, applies them through ordinary equipment legality, and protects referenced item identities until an explicit override or deletion. Templates and protection persist through storage and Ascension. See [saved equipment loadouts](saved-loadouts.md). Build/disguise templates and broader inventory automation remain launch work.
+
 The binding pass (migration 012) makes selected version 2 gear account-bound when worn or placed in the active weapon set, with immutable history and original-loot reconciliation. Existing gear policies are preserved. See [permanent item binding](item-binding.md). Acquisition grants already support explicit account binding; challenge-path rules and combat-use binding remain future work.
 
 The equipment pass (migration 011) adds immutable setup snapshots, worn slots and two prepared weapon sets. Equipped items require explicit unequipping before movement or consumption; Ascension clears the setup in its transaction. See [equipment persistence](equipment-persistence.md). Derived combat statistics, combat weapon-swap actions and additional binding policies remain separate release work.
 
-The item protection pass (migration 010) adds explicit, auditable locks that block consumption, crafting and stack transfers at both service and SQL boundaries. Locks persist through storage and Ascension. See [item locks](item-locks.md). Loadout/automation protection and other destructive domains remain release work.
+The item protection pass (migration 010) adds explicit, auditable locks that block consumption, crafting and stack transfers at both service and SQL boundaries. Locks persist through storage and Ascension. See [item locks](item-locks.md). Saved equipment loadout protection is implemented in migration 013; broader automation protection and other destructive domains remain release work.
 
 The routine crafting pass (migration 009) adds explicitly trivial zero-Turn processing with discovered, pinned recipes, player-selected current-run materials, binding inheritance and exact ledger-linked history. See [routine crafting](routine-crafting.md). It does not implement profession skills, stations, quality formulas or commissions.
 

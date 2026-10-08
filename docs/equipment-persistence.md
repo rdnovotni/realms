@@ -10,10 +10,12 @@ Equipped identities cannot move between containers or change quantity until uneq
 
 Repeated requests replay their committed receipt. An unchanged setup creates no new equipment event or run revision. Event chains, projections, ownership, custody, requirements and Ascension linkage participate in the read-only integrity audit and deferred database checks. Direct projection edits and rewritten event history are rejected.
 
-This is the persistence and legality foundation. It does not yet implement class proficiency, derived combat statistics, encumbrance, durability, upgrades, additional binding policies, saved loadout templates or Quick Action weapon swapping. The basic duel prototype continues to use its authored combat profile. These rules must be implemented before equipment can be advertised as affecting the final combat engine.
+This is the persistence and legality foundation. It does not yet implement class proficiency, derived combat statistics, encumbrance, durability, upgrades, additional binding policies or Quick Action weapon swapping. The basic duel prototype continues to use its authored combat profile. These rules must be implemented before equipment can be advertised as affecting the final combat engine.
 
 ## Verification
 
 The equipment milestone passed 96 tests: seven unit tests and 89 integration tests, including 12 equipment tests. Equipment coverage includes duplicate requests, canonical noops, shared weapon identity, hand and level requirements, ownership and storage, consumption and custody protection, lock-preserving Ascension, transaction rollback, immutable history, strict API authorization, active-instance restrictions, restricted SQL permissions, forged events and corruption detection. Type checking and the server build pass.
 
 The private development upgrade was rehearsed with preservation hashes for every pre-existing game table. All prior table contents remained unchanged after migration and server restart. The live permission probe, integrity audit and endpoint smoke checks passed. Restoring the post-upgrade backup into a disposable database verified all 64 tables, matching migrations and reconciled invariants. Production readiness still requires the launch gates in [release readiness](release-readiness.md).
+
+Migration 013 adds [named saved equipment loadouts and item protection](saved-loadouts.md), using the same equipment legality service.
