@@ -32,7 +32,8 @@ function record(pool:pg.Pool,accountId:string,envelope:Envelope,classId:string,p
       if(pgError.code==='P0001' && failure) throw new DomainError(...failure);
       throw error;
     }
-    return {build:row.after_state,buildRevision:row.revision as number,revision:await advanceRevision(c)};
+    const effective=(await c.client.query("SELECT jsonb_build_object('strength',strength,'dexterity',dexterity,'constitution',constitution,'intelligence',intelligence,'wisdom',wisdom,'charisma',charisma,'luck',luck) AS attributes FROM run_progression WHERE run_id=$1",[c.run.id])).rows[0].attributes;
+    return {build:{...row.after_state,attributes:effective},buildRevision:row.revision as number,revision:await advanceRevision(c)};
   });
 }
 export function startBuild(pool:pg.Pool,accountId:string,envelope:Envelope,classId:string,presetKey:string) {

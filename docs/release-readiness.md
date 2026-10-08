@@ -37,7 +37,7 @@ bash scripts/database.sh restore-check .state/backups/NAME.dump
 | Typed content mechanics | Shared envelope, inventory declarations, encounter costs and ordinary item loot | Detailed schemas and semantic validators for every shipped content type |
 | Complete gameplay persistence | Basic solo combat-to-item/Gold-to-campaign-to-Ascension loop; Home recovery and safe intent/resume API | Full tactical/party/defeat mechanics, live content, complete progression/Legacy/setup and replay/crash drills |
 | Inventory/crafting | Custody, quantity ledger, split/merge, trivial recipe batches, durable item locks, equipment snapshots, opt-in account binding and protected saved loadouts | Full profession/station/quality recipes, broader automation protection and capacity rules, derived equipment stats, remaining binding policies, durability, upgrades and commissions |
-| Progression/Ascension | Reconciled XP history, pinned budgets, authored starting presets including Luck, explicit native class allocation, level-five subclass selection, authored feat milestones and lifetime transition | Full class/subclass/feat gameplay, capability/proficiency prerequisites, attribute milestones, respec, special starts, mastery/Legacy, initiation eligibility, rewards and visible transition plan |
+| Progression/Ascension | Reconciled XP history, pinned budgets, authored starting presets including Luck, explicit native class allocation, level-five subclass selection, authored feat and attribute milestones and lifetime transition | Full class/subclass/feat gameplay, capability/proficiency prerequisites, derived statistics, respec, special starts, mastery/Legacy, initiation eligibility, rewards and visible transition plan |
 | Quest/world consequences | Identity, lifecycle and scope primitives | Validated graphs, NPC memory, faction/world consequences and campaign records |
 | Dailies/effects | Rollover and worker primitives | Supervised scheduler/workers, banking, production and complete effect clocks |
 | Shared launch systems | Guild/event/instance primitives | Permissions, markets, claims and the social/game modules included at launch |
@@ -47,6 +47,8 @@ bash scripts/database.sh restore-check .state/backups/NAME.dump
 | Performance/failure drills | Focused invariant tests | Representative data volumes, query plans, connection budgets, crash/restart and restore drills |
 
 ## Execution order
+
+The attribute pass (migration 018) journals earned point allocations independently from feats and starting presets, preserves growth at later native level-ups, and validates budgets, caps and capacity for remaining milestones. See [attribute milestones](attribute-milestones.md). Derived statistics, special-source bonuses, respec and path-specific growth remain authored gameplay work.
 
 The feat pass (migration 017) persists discovered choices at authored committed-level milestones, checks native class and prior-feat prerequisites, limits short chains, and pins one feat schedule per run. See [feat persistence](feat-persistence.md). Effects, capability expressions, special sources, respec and the production catalog remain authored gameplay work.
 

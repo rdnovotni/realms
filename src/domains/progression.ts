@@ -8,7 +8,7 @@ import { progressionReadiness,type ProgressionCurve } from './progression-rules.
 export async function progressionView(pool:pg.Pool,accountId:string) {
   return transaction(pool,async client=>{
     const row=(await client.query(`SELECT r.id,r.revision,r.status,p.level,p.xp::text,
-      coalesce(plan.curve_id,b.state->'rules'->>'curveId') AS curve_id,coalesce(plan.curve_revision,(b.state->'rules'->>'curveRevision')::integer) AS curve_revision,b.state AS build,v.definition->'mechanics'->'xpCurve' AS curve
+      coalesce(plan.curve_id,b.state->'rules'->>'curveId') AS curve_id,coalesce(plan.curve_revision,(b.state->'rules'->>'curveRevision')::integer) AS curve_revision,jsonb_set(b.state,'{attributes}',attribute_projection(p.run_id)) AS build,v.definition->'mechanics'->'xpCurve' AS curve
       FROM runs r JOIN characters c ON c.id=r.character_id JOIN run_progression p ON p.run_id=r.id
       LEFT JOIN run_builds b ON b.run_id=r.id
       LEFT JOIN LATERAL (SELECT curve_id,curve_revision FROM encounter_xp_plans WHERE run_id=r.id ORDER BY instance_id LIMIT 1) plan ON true
