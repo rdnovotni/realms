@@ -34,7 +34,7 @@ export function setEquipment(pool:pg.Pool,accountId:string,envelope:Envelope,inp
  const repeats=plan.slots.filter(s=>s.itemId===slot.itemId);if(repeats.length>1&&(repeats.some(s=>s.set==='WORN')||new Set(repeats.map(s=>s.set)).size!==repeats.length||new Set(repeats.map(s=>s.slot)).size!==1))throw new DomainError(409,'EQUIPMENT_DUPLICATE_IDENTITY');
  if(spec.hands===2&&plan.slots.some(s=>s.set===slot.set&&s.slot==='OFF_HAND'))throw new DomainError(409,'TWO_HANDED_CONFLICT');
  }
- const changed=await record(c,plan,'PLAYER_SETUP');return {activeSet:plan.activeSet,slots:plan.slots,changed,revision:changed?await advanceRevision(c):c.run.revision};
+ const changed=await record(c,plan,'PLAYER_SETUP');const boundItemIds=(await c.client.query('SELECT item_id FROM item_binding_events WHERE action_id=$1 ORDER BY item_id',[c.actionId])).rows.map(r=>r.item_id as string);return {activeSet:plan.activeSet,slots:plan.slots,boundItemIds,changed,revision:changed?await advanceRevision(c):c.run.revision};
  });
 }
 export async function clearEquipmentForAscension(c:ActionContext){await record(c,emptyEquipment(),'ASCENSION_CLEAR');}

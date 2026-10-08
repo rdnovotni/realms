@@ -6,6 +6,7 @@ import { assertSchema } from './database.js';
 import { getInstanceView } from './domains/instances.js';
 import { startCombat,takeCombatAction,combatView,type CombatIntent } from './domains/combat.js';
 import { craftRoutine,routineRecipeView } from './domains/crafting.js';
+import { itemBindingView } from './domains/item-binding.js';
 import { setItemLock,itemLockView } from './domains/item-locks.js';
 import { setEquipment,equipmentView,type EquipmentPlan } from './domains/equipment.js';
 import { equipmentSlots } from './domains/equipment-content.js';
@@ -62,6 +63,7 @@ export function buildApp(pool: pg.Pool, auth:Authentication, logger = false) {
     protectedApp.get<{Params:{id:string}}>('/api/v1/combat/:id',{schema:{params:{type:'object',additionalProperties:false,required:['id'],properties:{id:{type:'string',format:'uuid'}}}}},async request=>combatView(pool,actor(request),request.params.id));
     protectedApp.get<{Params:{id:string}}>('/api/v1/crafting/recipes/:id',{schema:{params:{type:'object',additionalProperties:false,required:['id'],properties:{id:{type:'string',pattern:'^[a-z][a-z0-9_.-]{2,119}$'}}}}},async request=>routineRecipeView(pool,actor(request),request.params.id));
     protectedApp.post<{Body:Envelope & {recipeId:string;batches:number;itemIds:string[]}}>('/api/v1/crafting/routine',{schema:{body:{type:'object',additionalProperties:false,required:['requestId','actionType','expectedRevision','recipeId','batches','itemIds'],properties:{...envelopeProperties,actionType:{type:'string',const:'CRAFT_ROUTINE'},recipeId:{type:'string',pattern:'^[a-z][a-z0-9_.-]{2,119}$'},batches:{type:'integer',minimum:1,maximum:100},itemIds:{type:'array',minItems:1,maxItems:16,uniqueItems:true,items:{type:'string',format:'uuid'}}}}}},async request=>craftRoutine(pool,actor(request),{...request.body,...(request.principal?{principal:request.principal}:{})},request.body.recipeId,request.body.batches,request.body.itemIds));
+    protectedApp.get<{Params:{id:string}}>('/api/v1/inventory/:id/binding',{schema:{params:{type:'object',additionalProperties:false,required:['id'],properties:{id:{type:'string',format:'uuid'}}}}},async request=>itemBindingView(pool,actor(request),request.params.id));
     protectedApp.get<{Params:{id:string}}>('/api/v1/inventory/:id/lock',{schema:{params:{type:'object',additionalProperties:false,required:['id'],properties:{id:{type:'string',format:'uuid'}}}}},async request=>itemLockView(pool,actor(request),request.params.id));
     protectedApp.post<{Body:Envelope & {itemId:string;locked:boolean}}>('/api/v1/inventory/lock',{schema:{body:{type:'object',additionalProperties:false,required:['requestId','actionType','expectedRevision','itemId','locked'],properties:{...envelopeProperties,actionType:{type:'string',const:'SET_ITEM_LOCK'},itemId:{type:'string',format:'uuid'},locked:{type:'boolean'}}}}},async request=>setItemLock(pool,actor(request),{...request.body,...(request.principal?{principal:request.principal}:{})},request.body.itemId,request.body.locked));
     protectedApp.get('/api/v1/equipment',async request=>equipmentView(pool,actor(request)));
