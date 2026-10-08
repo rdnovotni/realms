@@ -49,6 +49,7 @@ export async function integrityReport(pool:pg.Pool){
         OR (e.outcome IS NULL AND (i.lifecycle<>'ACTIVE' OR s.lifecycle<>'ACTIVE'))
         OR (e.outcome IS NOT NULL AND (i.lifecycle<>'RESOLVED' OR s.lifecycle<>'ARCHIVED' OR f.account_id IS DISTINCT FROM c.account_id))`)).rows[0].n as number;
     const rewards=(await client.query('SELECT count(*)::int AS n FROM encounter_reward_issues')).rows[0].n as number;
+    const xp=(await client.query('SELECT count(*)::int AS n FROM run_xp_integrity_issues')).rows[0].n as number;
     const loadouts=(await client.query('SELECT count(*)::int AS n FROM equipment_loadout_integrity_issues')).rows[0].n as number;
     const bindingHistory=(await client.query('SELECT count(*)::int AS n FROM item_binding_integrity_issues')).rows[0].n as number;
     const equipment=(await client.query('SELECT count(*)::int AS n FROM equipment_integrity_issues')).rows[0].n as number;
@@ -59,7 +60,7 @@ export async function integrityReport(pool:pg.Pool){
     const constraints=(await client.query(`SELECT count(*)::int AS n FROM pg_constraint c JOIN pg_class t ON t.oid=c.conrelid
       JOIN pg_namespace s ON s.oid=t.relnamespace WHERE s.nspname=current_schema() AND c.contype IN('c','f') AND NOT c.convalidated`)).rows[0].n as number;
     await client.query('COMMIT');
-    return {loadoutMismatches:loadouts,itemBindingHistoryMismatches:bindingHistory,equipmentMismatches:equipment,itemLockMismatches:locks,craftMismatches:Number(crafts),combatMismatches:combat,completionMismatches:completions,rewardMismatches:rewards,encounterMismatches:encounters,walletBalanceMismatches:balances,itemQuantityMismatches:itemQuantities,runScopeMismatches:lifetimes,malformedJobLeases:leases,itemBindingMismatches:bindings,outboxJobCollisions:collisions,unvalidatedConstraints:constraints};
+    return {xpMismatches:xp,loadoutMismatches:loadouts,itemBindingHistoryMismatches:bindingHistory,equipmentMismatches:equipment,itemLockMismatches:locks,craftMismatches:Number(crafts),combatMismatches:combat,completionMismatches:completions,rewardMismatches:rewards,encounterMismatches:encounters,walletBalanceMismatches:balances,itemQuantityMismatches:itemQuantities,runScopeMismatches:lifetimes,malformedJobLeases:leases,itemBindingMismatches:bindings,outboxJobCollisions:collisions,unvalidatedConstraints:constraints};
   }catch(error){await client.query('ROLLBACK');throw error;}
   finally{client.release();}
 }

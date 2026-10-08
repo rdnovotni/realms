@@ -1,0 +1,21 @@
+import type pg from 'pg';
+import { transaction } from '../foundation/transaction.js';
+import { DomainError } from '../foundation/errors.js';
+import { progressionReadiness,type ProgressionCurve } from './progression-rules.js';
+
+// Public read model only. Awards are produced by the terminal encounter journal;
+// no public endpoint accepts an XP amount or a successful-resolution assertion.
+export async function progressionView(pool:pg.Pool,accountId:string) {
+  return transaction(pool,async client=>{
+    const row=(await client.query(`SELECT r.id,r.revision,r.status,p.level,p.xp::text,
+      plan.curve_id,plan.curve_revision,v.definition->'mechanics'->'xpCurve' AS curve
+      FROM runs r JOIN characters c ON c.id=r.character_id JOIN run_progression p ON p.run_id=r.id
+      LEFT JOIN LATERAL (SELECT curve_id,curve_revision FROM encounter_xp_plans WHERE run_id=r.id ORDER BY instance_id LIMIT 1) plan ON true
+      LEFT JOIN content_versions v ON v.entity_id=plan.curve_id AND v.revision=plan.curve_revision
+      WHERE c.account_id=$1 AND r.status IN('ACTIVE','AFTERCORE')`,[accountId])).rows[0];
+    if(!row) throw new DomainError(404,'PROGRESSION_NOT_FOUND');
+    return {runId:row.id as string,revision:row.revision as number,campaignState:row.status as string,
+      xp:row.xp as string,level:row.level as number,curveId:row.curve_id as string|null,curveRevision:row.curve_revision as number|null,
+      readiness:row.curve ? progressionReadiness(row.curve as ProgressionCurve,row.xp,row.level) : null};
+  });
+}
