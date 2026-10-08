@@ -8,7 +8,7 @@ TUNING `mechanics.featRules` declares `version: 1`, `ruleset: FEAT_CHOICES_V1`, 
 
 An ABILITY `mechanics.feat` declares `version: 1`, `rulesId`, `access: DISCOVERED`, `antiTaxReview: PASS`, and `prerequisites` containing `classes` and `feats` arrays. Class requirements specify `classId` and `nativeLevel`; prior feat requirements specify feat IDs. Empty arrays represent a universal feat. All requirements are conjunctive. Every reference is an explicit dependency; prior feats must use the same feat rulebook, and class requirements must use the same build rulebook and be reachable within their native caps.
 
-Publication rejects malformed references, cycles, chains deeper than two prerequisite steps, impossible class combinations, prerequisite families larger than the available slots, and milestones beyond the curve. PASS records an author's anti-tax review declaration; it is not an automated proof of balance or mandatory-math behavior. Capability-tag, proficiency, subclass, alternative-expression and special-source prerequisites need future execution contracts. Unknown fields are rejected.
+Publication rejects malformed references, cycles, chains deeper than two prerequisite steps, impossible class combinations, prerequisite families larger than the available slots, and milestones beyond the curve. PASS records an author's anti-tax review declaration; it is not an automated proof of balance or mandatory-math behavior. Migration 020 adds optional [skill-rank prerequisites](proficiency-requirements.md) with immutable supporting rank evidence. Capability-tag, subclass, alternative-expression and special-source prerequisites need future execution contracts. Unknown fields are rejected.
 
 ## Authority and lifetime
 

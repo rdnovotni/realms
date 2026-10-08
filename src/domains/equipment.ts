@@ -24,12 +24,13 @@ async function record(c:ActionContext,after:EquipmentPlan,reason:'PLAYER_SETUP'|
 export async function applyEquipment(c:ActionContext,input:EquipmentPlan){
  const plan=normalize(input);
  if((await c.client.query("SELECT 1 FROM instances i JOIN instance_participants p ON p.instance_id=i.id WHERE p.run_id=$1 AND i.lifecycle='ACTIVE' LIMIT 1",[c.run.id])).rows.length)throw new DomainError(409,'INSTANCE_STILL_ACTIVE');
- const ids=[...new Set(plan.slots.map(s=>s.itemId))],items=(await c.client.query(`SELECT i.*,s.run_id,s.lifecycle,b.kind,v.definition->'mechanics'->'equipment' AS spec FROM inventory_items i JOIN inventory_containers b ON b.id=i.container_id JOIN state_scopes s ON s.id=b.scope_id JOIN content_versions v ON v.entity_id=i.definition_id AND v.revision=i.definition_revision WHERE i.id=ANY($1::uuid[]) ORDER BY i.id FOR UPDATE OF i FOR SHARE OF b,s`,[ids])).rows;
+ const ids=[...new Set(plan.slots.map(s=>s.itemId))],items=(await c.client.query(`SELECT i.*,s.run_id,s.lifecycle,b.kind,v.definition->'mechanics'->'equipment' AS spec,v.definition->'mechanics'->'proficiencyRequirements' AS proficiency_requirements FROM inventory_items i JOIN inventory_containers b ON b.id=i.container_id JOIN state_scopes s ON s.id=b.scope_id JOIN content_versions v ON v.entity_id=i.definition_id AND v.revision=i.definition_revision WHERE i.id=ANY($1::uuid[]) ORDER BY i.id FOR UPDATE OF i FOR SHARE OF b,s`,[ids])).rows;
  const level=(await c.client.query('SELECT level FROM run_progression WHERE run_id=$1 FOR SHARE',[c.run.id])).rows[0]?.level;
  for(const slot of plan.slots){const item=items.find(i=>i.id===slot.itemId);
  if(!item||item.run_id!==c.run.id||item.lifecycle!=='ACTIVE'||item.kind!=='CARRIED')throw new DomainError(403,'EQUIPMENT_NOT_OWNED');
  if(item.quantity!=='1'||item.storage_mode!=='INSTANCE'||item.release_id!==c.run.content_release_id||item.binding==='SYSTEM_UNTRADEABLE')throw new DomainError(409,'EQUIPMENT_INELIGIBLE');
  const spec=equipmentSpec(item.spec);if(!spec.slots.includes(slot.slot)||!level||level<spec.minimumLevel)throw new DomainError(409,'EQUIPMENT_REQUIREMENT_NOT_MET');
+ if(item.proficiency_requirements!==null && !(await c.client.query('SELECT proficiency_requirements_met($1,$2) AS ok',[c.run.id,item.proficiency_requirements])).rows[0].ok)throw new DomainError(409,'EQUIPMENT_PROFICIENCY_NOT_MET');
  const repeats=plan.slots.filter(s=>s.itemId===slot.itemId);if(repeats.length>1&&(repeats.some(s=>s.set==='WORN')||new Set(repeats.map(s=>s.set)).size!==repeats.length||new Set(repeats.map(s=>s.slot)).size!==1))throw new DomainError(409,'EQUIPMENT_DUPLICATE_IDENTITY');
  if(spec.hands===2&&plan.slots.some(s=>s.set===slot.set&&s.slot==='OFF_HAND'))throw new DomainError(409,'TWO_HANDED_CONFLICT');
  }

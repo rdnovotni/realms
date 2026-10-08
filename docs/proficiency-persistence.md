@@ -28,4 +28,6 @@ Ascension retains old-run history and opens a run without earned ranks. Owner re
 
 Focused tests cover the complete rank ladder, authored caps, replay/concurrency, level evidence, discovery, policy pinning, active instances, out-of-order milestones, later class levels, atomic rollback, SQL forgery, restricted runtime access, HTTP scopes, upgrade preservation, corruption detection and Ascension history/reset.
 
-This foundation covers explicit level-milestone allocations only. Class/species starting packages, tutors and training costs, meaningful practice with diminishing returns, rank-gated feat/equipment capabilities, contextual checks/DCs, RNG/retry contracts, party assistance, profession skills, mastery starting options and respec remain separate authored gameplay work. The game is not yet ready for public release.
+This foundation covers explicit level-milestone allocations only. Class/species starting packages, tutors and training costs, meaningful practice with diminishing returns, broader capability expressions, contextual checks/DCs, RNG/retry contracts, party assistance, profession skills, mastery starting options and respec remain separate authored gameplay work. The game is not yet ready for public release.
+
+Migration 020 implements [minimum skill-rank gates for feats and equipment](proficiency-requirements.md); general capability tags remain separate gameplay work.

@@ -15,6 +15,7 @@ import { validateAttributeReferences } from './attribute-content.js';
 import { validateFeatContent } from './feat-content.js';
 import { validateSubclassReferences } from './subclasses.js';
 import { validateBuildReferences } from './build-content.js';
+import { validateProficiencyRequirements } from './proficiency-requirements.js';
 import { validateProficiencyContent } from './proficiency-content.js';
 
 export const kinds = ['ITEM','EFFECT','ABILITY','CLASS','SPECIES','MONSTER','NPC','ENCOUNTER','QUEST','RECIPE','LOCATION','ROUTE','FACTION','PATH','EVENT','ACTIVITY','CARD','FAMILIAR','BOSS','LOOT_TABLE','LORE','TUNING','SKILL'] as const;
@@ -52,6 +53,7 @@ export function validateContent(input:unknown): asserts input is ContentPackage 
     const inventory=entity.definition.mechanics?.inventory;
     if(entity.kind==='ITEM' && inventory!==undefined) validateInventorySpec(inventory);
   }
+  validateProficiencyRequirements(entities);
   if (entities.size!==pkg.entities.length) throw new DomainError(400,'DUPLICATE_CONTENT_ID');
   const visiting=new Set<string>(),done=new Set<string>();
   const visit=(id:string) => {
