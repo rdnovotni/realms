@@ -4,7 +4,7 @@ Status: implemented shared infrastructure, not a completed catalog of all game m
 
 ## Model and ownership
 
-Migration 001 retains account, character, run, request receipts and the Turn ledger. Migration 002 adds 33 tables: immutable content, seven state scopes, progression and consumption, daily rollover, inventory custody, integer wallets and transfers, discovery, quest/effect instances, shared worlds/Guilds/events, encounter instances, run history, audit, outbox, durable jobs and flags. Migration 004 adds an item quantity ledger; migration 005 adds five authentication tables. Migration 006 adds the ordinary encounter journal and draw history. Migration 007 adds three authored item reward tables. Migration 008 adds seven basic combat/campaign tables. The total with migration bookkeeping is 57 tables.
+Migration 001 retains account, character, run, request receipts and the Turn ledger. Migration 002 adds 33 tables: immutable content, seven state scopes, progression and consumption, daily rollover, inventory custody, integer wallets and transfers, discovery, quest/effect instances, shared worlds/Guilds/events, encounter instances, run history, audit, outbox, durable jobs and flags. Migration 004 adds an item quantity ledger; migration 005 adds five authentication tables. Migration 006 adds the ordinary encounter journal and draw history. Migration 007 adds three authored item reward tables. Migration 008 adds seven basic combat/campaign tables. Migration 009 adds two routine crafting history tables. The total with migration bookkeeping is 59 tables.
 
 ```mermaid
 erDiagram

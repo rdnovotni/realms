@@ -36,7 +36,7 @@ bash scripts/database.sh restore-check .state/backups/NAME.dump
 | Safe production migrations | Checksummed transactional migrations | Representative-data rehearsal, lock/downtime limits and server-version compatibility |
 | Typed content mechanics | Shared envelope, inventory declarations, encounter costs and ordinary item loot | Detailed schemas and semantic validators for every shipped content type |
 | Complete gameplay persistence | Basic solo combat-to-item/Gold-to-campaign-to-Ascension loop; Home recovery and safe intent/resume API | Full tactical/party/defeat mechanics, live content, complete progression/Legacy/setup and replay/crash drills |
-| Inventory/crafting | Custody, ledger grants/consumption and split/merge | Authored recipes, protection/capacity rules, equipment, binding transitions, durability, upgrades and commissions |
+| Inventory/crafting | Custody, ledger grants/consumption and split/merge | Trivial routine recipe batching and ledger history implemented; full profession/station/quality recipes, protection/capacity rules, equipment, binding transitions, durability, upgrades and commissions |
 | Progression/Ascension | Fields and lifetime transition | Builds, mastery/Legacy, eligibility, rewards, setup and visible transition plan |
 | Quest/world consequences | Identity, lifecycle and scope primitives | Validated graphs, NPC memory, faction/world consequences and campaign records |
 | Dailies/effects | Rollover and worker primitives | Supervised scheduler/workers, banking, production and complete effect clocks |
@@ -47,6 +47,8 @@ bash scripts/database.sh restore-check .state/backups/NAME.dump
 | Performance/failure drills | Focused invariant tests | Representative data volumes, query plans, connection budgets, crash/restart and restore drills |
 
 ## Execution order
+
+The routine crafting pass (migration 009) adds explicitly trivial zero-Turn processing with discovered, pinned recipes, player-selected current-run materials, binding inheritance and exact ledger-linked history. See [routine crafting](routine-crafting.md). It does not implement profession skills, stations, quality formulas or commissions.
 
 The basic combat pass (migration 008) connects an explicit prototype duel ruleset to item/Gold rewards, capped Home recovery, campaign victory proof, authenticated intent/resume routes and Ascension. See [basic combat](basic-combat-loop.md). This exercises the complete persistence loop; it does not complete the final tactical engine or production balancing.
 
