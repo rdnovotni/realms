@@ -28,7 +28,7 @@ try{
     GRANT UPDATE(security_epoch) ON accounts TO realms_app;
     GRANT INSERT,UPDATE ON auth_sessions,auth_recovery_codes,auth_throttle TO realms_app;
     GRANT UPDATE(salt,verifier) ON auth_credentials TO realms_app;
-    GRANT INSERT ON auth_events,encounter_draws TO realms_app;
+    GRANT INSERT ON auth_events,encounter_draws,encounter_reward_plans,encounter_reward_claims,encounter_reward_items TO realms_app;
     GRANT INSERT,UPDATE ON encounter_records TO realms_app;
     GRANT DELETE ON effect_instances,auth_throttle TO realms_app;`);
   await client.query('COMMIT');

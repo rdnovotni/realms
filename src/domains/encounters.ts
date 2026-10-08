@@ -5,11 +5,13 @@ import { DomainError } from '../foundation/errors.js';
 import { checksum,type Json } from '../foundation/json.js';
 import { randomInteger } from '../foundation/rng.js';
 
-export type EncounterSpec={version:1;turnCost:1};
+export type EncounterSpec={version:1;turnCost:1}|{version:2;turnCost:1;lootTableId:string};
 export function validateEncounterSpec(value:unknown): asserts value is EncounterSpec {
-  if(!value || typeof value!=='object' || Array.isArray(value) ||
-    Object.keys(value).some(k=>!['version','turnCost'].includes(k)) ||
-    (value as EncounterSpec).version!==1 || (value as EncounterSpec).turnCost!==1) throw new DomainError(400,'INVALID_ENCOUNTER_SPEC');
+  if(!value || typeof value!=='object' || Array.isArray(value)) throw new DomainError(400,'INVALID_ENCOUNTER_SPEC');
+  const spec=value as EncounterSpec;
+  const keys=spec.version===2?['version','turnCost','lootTableId']:['version','turnCost'];
+  if(Object.keys(value).some(k=>!keys.includes(k)) || ![1,2].includes(spec.version) || spec.turnCost!==1 ||
+    (spec.version===2 && (typeof spec.lootTableId!=='string' || !/^[a-z][a-z0-9_.-]{2,119}$/.test(spec.lootTableId)))) throw new DomainError(400,'INVALID_ENCOUNTER_SPEC');
 }
 function object(value:Record<string,Json>){
   if(!value || typeof value!=='object' || Array.isArray(value)) throw new DomainError(400,'INVALID_ENCOUNTER_STATE');
