@@ -51,4 +51,6 @@ Owner views expose party damage profiles. Enemy numeric defense, source definiti
 
 Type checking, build and all 38 unit tests passed. Database coverage verifies all 233 integration scenarios: 216 other scenarios passed in the full regression run, and all 17 tactical scenarios passed after correcting the new enemy-target test fixture. The published GitHub workflow repeats the full suite. An independent comparison against merged main also passed 539 exact untyped state/evidence comparisons. New tests cover pinned-source traits, duplicate actions, enemy damage, replay corruption, native gates and atomic conflicting-type rejection.
 
-Pass 1 remains open for broader authored abilities/check integration, conditions/stacking/expiration, damage-family inheritance, resistance reduction/immunity bypass, surprise/opportunity reactions, stabilization/resurrection, injury/failure contracts, tactical campaign proofs and owned/shared participants. The vocabulary and trait fixtures are development examples, not final release tuning or content.
+Pass 1 remains open for broader authored abilities/check integration, conditions/stacking/expiration, damage-family inheritance, resistance reduction/immunity bypass, surprise/opportunity reactions, stabilization/resurrection, injury/failure contracts and owned/shared participants. The vocabulary and trait fixtures are development examples, not final release tuning or content.
+
+Authored [tactical campaign proofs](tactical-campaign-proofs.md) subsequently close the final-victory-to-Aftercore boundary.

@@ -130,3 +130,5 @@ Local backups are not protection against workstation loss. Independent backup st
 Run proficiency allocations, rank reconciliation and Ascension reset: [proficiency persistence](proficiency-persistence.md).
 
 Authored rank requirements and immutable supporting evidence: [proficiency prerequisites](proficiency-requirements.md).
+
+Migration 023 adds append-only tactical campaign prerequisite evidence and extends existing completion records with an engine discriminator. It preserves all original basic proof fields and adds no historical tactical claims. The total is now 86 tables including migration bookkeeping. See [tactical campaign proofs](tactical-campaign-proofs.md) for final-victory settlement, SQL validation and remaining campaign work.

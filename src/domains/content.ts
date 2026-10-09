@@ -1,3 +1,4 @@
+import { validateTacticalCampaignContent } from './tactical-campaign.js';
 import { validateTacticalContent } from './tactical-content.js';
 import { randomUUID } from 'node:crypto';
 import { Ajv } from 'ajv';
@@ -53,6 +54,7 @@ export function validateContent(input:unknown): asserts input is ContentPackage 
     validateCharacterMechanics(entity);
     validateCharacterProfileReferences(entity,entities);
     validateTacticalContent(entity,entities);
+    validateTacticalCampaignContent(entity,entities);
     if(entity.definition.mechanics?.checkRules!==undefined) {
       if(entity.kind!=='TUNING')throw new DomainError(400,'INVALID_CHECK_RULES_KIND');
       validateCheckRules(entity.definition.mechanics.checkRules);

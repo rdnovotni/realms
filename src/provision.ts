@@ -50,7 +50,7 @@ try{
     GRANT INSERT ON inventory_lock_events TO realms_app;
     GRANT INSERT,UPDATE ON inventory_item_locks TO realms_app;
     GRANT INSERT ON craft_records,craft_inputs TO realms_app;
-    GRANT INSERT ON combat_steps,combat_recoveries,combat_gold_plans,combat_gold_claims,run_completions TO realms_app;
+    GRANT INSERT ON combat_steps,combat_recoveries,combat_gold_plans,combat_gold_claims,run_completions,tactical_campaign_prerequisites TO realms_app;
     GRANT DELETE ON effect_instances,auth_throttle TO realms_app;`);
   await client.query('COMMIT');
   const appUrl=new URL(adminUrl);appUrl.username='realms_app';appUrl.password=password;

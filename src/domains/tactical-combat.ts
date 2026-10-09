@@ -1,3 +1,4 @@
+import { tacticalCampaignPrerequisites,completeTacticalCampaign } from './tactical-campaign.js';
 import { deriveDamageProfile } from './tactical-damage.js';
 import type pg from 'pg';
 import { executeAction,advanceRevision,type ActionContext,type Envelope } from '../foundation/action.js';
@@ -29,7 +30,7 @@ export function tacticalPublic(state:TacticalState,encounterRevision:number,spec
   units:state.units.map(u=>({id:u.id,side:u.side,zone:u.zone,health:u.health,maxHealth:u.stats.maxHealth,mana:u.mana??0,maxMana:u.stats.maxMana,state:u.state,strikes:u.strikes,guardReady:u.guardReady??false})),budgets:state.budgets,
   actionRules:{attackRange:spec.rules.attackRange,healRange:spec.rules.healRange,healAmount:spec.rules.healAmount,healManaCost:spec.rules.healManaCost!,guardArmorBonus:spec.rules.guardArmorBonus!},
   partyCapabilities:state.units.filter(u=>u.side==='PARTY').map(u=>({id:u.id,heal:u.canHeal??false,guard:u.canGuard??false,...(u.damageProfile?{damageProfile:u.damageProfile}:{})})),
-  battlefield:{zones:spec.rules.zones,edges:spec.rules.edges},failureContract:spec.failure};
+  battlefield:{zones:spec.rules.zones,edges:spec.rules.edges},failureContract:spec.failure,...(spec.campaignId?{campaignCompleted:state.outcome==='VICTORY'}:{})};
 }
 export function enemyCommand(checkpoint:TacticalCheckpoint):TacticalCommand {
  const s=checkpoint.state,actor=s.units.find(u=>u.id===s.order[s.cursor])!;
@@ -59,7 +60,11 @@ async function settle(c:ActionContext,id:string,spec:TacticalSpec,state:Tactical
   await c.client.query('UPDATE tactical_run_state SET health=$2,mana=$3,last_instance_id=$4 WHERE run_id=$1',[c.run.id,health,mana,id]);
   return {destination,health,mana,turnCost};
  };
- if(state.outcome==='VICTORY')await settleAuthoredVictory(c,id,encounterRevision,recovery);
+ if(state.outcome==='VICTORY')await settleAuthoredVictory(c,id,encounterRevision,async()=>{
+  const result=await recovery();
+  if(spec.campaignId){await completeTacticalCampaign(c,id,spec.campaignId);return {...result,campaignCompleted:true};}
+  return result;
+ });
  else await finishEncounter(c,id,encounterRevision,state.outcome,recovery);
  return encounterRevision+1;
 }
@@ -79,9 +84,12 @@ async function recoveryView(c:ActionContext,id:string) {
 export function startTacticalCombat(pool:pg.Pool,accountId:string,envelope:Envelope,definitionId:string) {
  return executeAction(pool,accountId,envelope,{definitionId},async c=>{
   if(!(await c.client.query('SELECT 1 FROM discoveries WHERE account_id=$1 AND entity_id=$2',[accountId,definitionId])).rows.length)throw new DomainError(404,'TACTICAL_NOT_DISCOVERED');
-  const spec=await authored(c,definitionId),units=await spawned(c,spec);
+  const spec=await authored(c,definitionId);
+  if(spec.campaignId)await tacticalCampaignPrerequisites(c,definitionId,spec.campaignId);
+  const units=await spawned(c,spec);
   const prior=(await c.client.query('SELECT health,mana,last_instance_id FROM tactical_run_state WHERE run_id=$1 FOR UPDATE',[c.run.id])).rows[0];
   const started=await beginTacticalEncounter(c,definitionId,spec.rules,{id:'hero',zone:spec.playerZone,loadKit:true,...(prior?{health:prior.health as number,mana:prior.mana as number}:{})},units,['hero',...spec.allies.map(u=>u.id)],true);
+  if(c.run.status==='ACTIVE')await c.client.query("UPDATE runs SET completion_policy='CAMPAIGN' WHERE id=$1",[c.run.id]);
   const record=await encounterCheckpoint(c,started.instanceId);
   await c.client.query('INSERT INTO tactical_encounter_origins(instance_id,run_id,spec,initial_checkpoint,previous_instance_id) VALUES($1,$2,$3,$4,$5)',[started.instanceId,c.run.id,spec,record.checkpoint,prior?.last_instance_id??null]);
   const hero=started.state.units[0]!;
