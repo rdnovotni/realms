@@ -1,3 +1,4 @@
+import type { RemovalSpec } from './tactical-cleansing.js';
 import { Ajv } from 'ajv';
 import type pg from 'pg';
 import { DomainError } from '../foundation/errors.js';
@@ -8,17 +9,18 @@ import type { MechanicsSource,CharacterStats } from './character-mechanics.js';
 /** Pinned encounter-local effects. Version 1 numeric history stays frozen. */
 export type PeriodicEffect={kind:'DAMAGE';timing:'OWNER_END';amount:number;damageType:string;armor:'APPLY'|'BYPASS';penetration:number}|{kind:'HEAL';timing:'OWNER_START';amount:number};
 type RoundEffectBase={clock:'ROUNDS';tick:'OWNER_END';family:string;stacking:'REPLACE'|'REFRESH';rounds:number;polarity:'BENEFICIAL'|'HARMFUL'|'MIXED'|'NEUTRAL';tags:string[];modifiers:{stat:'accuracy'|'evasion'|'armor';amount:number}[]};
-export type RoundEffect=RoundEffectBase&({version:1;periodic?:never}|{version:2;periodic:PeriodicEffect});
+export type RoundEffect=RoundEffectBase&({version:1;periodic?:never;removal?:never}|{version:2;periodic:PeriodicEffect;removal?:never}|{version:3;periodic?:PeriodicEffect;removal:RemovalSpec});
 export type OnHitEffects={version:1;minimumNativeLevel:number;effectIds:string[]};
 export type EffectGrant={effectId:string;effectRevision:number;sourceId:string;sourceRevision:number;sourceInstanceId?:string;effect:RoundEffect};
 export type ActiveRoundEffect=EffectGrant&{sourceUnitId:string;appliedRevision:number;refreshedRevision?:number;remaining:number};
 export type EffectEvent={kind:'APPLIED'|'REPLACED'|'REFRESHED'|'TICKED'|'EXPIRED';ownerId:string;effectId:string;sourceUnitId:string;sourceId:string;sourceRevision:number;effectRevision:number;remaining:number};
 const id={type:'string',pattern:'^[a-z][a-z0-9_.-]{2,119}$'},tag={type:'string',pattern:'^[a-z][a-z0-9_.-]{0,63}$'};
 const ajv=new Ajv({strict:true});
-const effectValidator=ajv.compile({type:'object',additionalProperties:false,required:['version','clock','tick','family','stacking','rounds','polarity','tags','modifiers'],properties:{version:{enum:[1,2]},clock:{const:'ROUNDS'},tick:{const:'OWNER_END'},family:tag,stacking:{enum:['REPLACE','REFRESH']},rounds:{type:'integer',minimum:1,maximum:100},polarity:{enum:['BENEFICIAL','HARMFUL','MIXED','NEUTRAL']},tags:{type:'array',minItems:1,maxItems:16,uniqueItems:true,items:tag},modifiers:{type:'array',maxItems:3,items:{type:'object',additionalProperties:false,required:['stat','amount'],properties:{stat:{enum:['accuracy','evasion','armor']},amount:{type:'integer',minimum:-1000,maximum:1000}}}},periodic:{oneOf:[{type:'object',additionalProperties:false,required:['kind','timing','amount','damageType','armor','penetration'],properties:{kind:{const:'DAMAGE'},timing:{const:'OWNER_END'},amount:{type:'integer',minimum:1,maximum:1000000},damageType:tag,armor:{enum:['APPLY','BYPASS']},penetration:{type:'integer',minimum:0,maximum:1000000}}},{type:'object',additionalProperties:false,required:['kind','timing','amount'],properties:{kind:{const:'HEAL'},timing:{const:'OWNER_START'},amount:{type:'integer',minimum:1,maximum:1000000}}}]}}});
+const effectValidator=ajv.compile({type:'object',additionalProperties:false,required:['version','clock','tick','family','stacking','rounds','polarity','tags','modifiers'],properties:{version:{enum:[1,2,3]},clock:{const:'ROUNDS'},tick:{const:'OWNER_END'},family:tag,stacking:{enum:['REPLACE','REFRESH']},rounds:{type:'integer',minimum:1,maximum:100},polarity:{enum:['BENEFICIAL','HARMFUL','MIXED','NEUTRAL']},tags:{type:'array',minItems:1,maxItems:16,uniqueItems:true,items:tag},removal:{type:'object',additionalProperties:false,required:['method','difficulty'],properties:{method:{enum:['CLEANSE','DISPEL','CURE','NONE']},difficulty:{type:'integer',minimum:0,maximum:1000}}},modifiers:{type:'array',maxItems:3,items:{type:'object',additionalProperties:false,required:['stat','amount'],properties:{stat:{enum:['accuracy','evasion','armor']},amount:{type:'integer',minimum:-1000,maximum:1000}}}},periodic:{oneOf:[{type:'object',additionalProperties:false,required:['kind','timing','amount','damageType','armor','penetration'],properties:{kind:{const:'DAMAGE'},timing:{const:'OWNER_END'},amount:{type:'integer',minimum:1,maximum:1000000},damageType:tag,armor:{enum:['APPLY','BYPASS']},penetration:{type:'integer',minimum:0,maximum:1000000}}},{type:'object',additionalProperties:false,required:['kind','timing','amount'],properties:{kind:{const:'HEAL'},timing:{const:'OWNER_START'},amount:{type:'integer',minimum:1,maximum:1000000}}}]}}});
 const grantsValidator=ajv.compile({type:'object',additionalProperties:false,required:['version','minimumNativeLevel','effectIds'],properties:{version:{const:1},minimumNativeLevel:{type:'integer',minimum:0,maximum:999},effectIds:{type:'array',minItems:1,maxItems:8,uniqueItems:true,items:id}}});
 export function validateRoundEffect(value:unknown):asserts value is RoundEffect {
- if(!effectValidator(value)||((value as RoundEffect).version===1?((value as RoundEffect).periodic!==undefined||(value as RoundEffect).modifiers.length===0):!(value as RoundEffect).periodic)||new Set((value as RoundEffect).modifiers.map(m=>m.stat)).size!==(value as RoundEffect).modifiers.length||(value as RoundEffect).modifiers.some(m=>m.amount===0))throw new DomainError(400,'INVALID_TACTICAL_ROUND_EFFECT');
+ if(!effectValidator(value)||((value as RoundEffect).version===1?((value as RoundEffect).periodic!==undefined||(value as RoundEffect).modifiers.length===0):(value as RoundEffect).version===2?!(value as RoundEffect).periodic:(!(value as RoundEffect).removal||(!(value as RoundEffect).periodic&&(value as RoundEffect).modifiers.length===0)))||((value as RoundEffect).version!==3&&(value as RoundEffect).removal!==undefined)||new Set((value as RoundEffect).modifiers.map(m=>m.stat)).size!==(value as RoundEffect).modifiers.length||(value as RoundEffect).modifiers.some(m=>m.amount===0))throw new DomainError(400,'INVALID_TACTICAL_ROUND_EFFECT');
+ const removal=(value as RoundEffect).removal;if(removal&&(removal.method==='NONE'?removal.difficulty!==0:removal.difficulty===0))throw new DomainError(400,'INVALID_TACTICAL_REMOVAL');
  const p=(value as RoundEffect).periodic;if(p?.kind==='DAMAGE'&&p.armor==='BYPASS'&&p.penetration!==0)throw new DomainError(400,'INVALID_TACTICAL_PERIODIC_DAMAGE');
 }
 export function validateOnHitEffects(value:unknown):asserts value is OnHitEffects {
@@ -109,9 +111,11 @@ function applyEffects(owner:{id:string;effects?:ActiveRoundEffect[]},sourceId:st
 }
 export function applyOnHitEffects(owner:{id:string;effects?:ActiveRoundEffect[]},source:{id:string;onHitEffects?:EffectGrant[]},revision:number) {return applyEffects(owner,source.id,source.onHitEffects??[],revision);}
 export function applyOnHealEffects(owner:{id:string;effects?:ActiveRoundEffect[]},source:{id:string;onHealEffects?:EffectGrant[]},revision:number) {return applyEffects(owner,source.id,source.onHealEffects??[],revision);}
-export function validatePeriodicGrants(grants:EffectGrant[],version:1|2,types:string[]|undefined) {
- for(const g of grants)if(g.effect.periodic){
-  if(version!==2)throw new DomainError(409,'TACTICAL_PERIODIC_EFFECTS_DISABLED');
+export function validatePeriodicGrants(grants:EffectGrant[],version:1|2|3,types:string[]|undefined) {
+ for(const g of grants){
+  if(g.effect.version===3&&version!==3)throw new DomainError(409,'TACTICAL_CLEANSING_EFFECTS_DISABLED');
+  if(!g.effect.periodic)continue;
+  if(version===1)throw new DomainError(409,'TACTICAL_PERIODIC_EFFECTS_DISABLED');
   const p=g.effect.periodic;
   if(p.kind==='DAMAGE'&&(!types?.includes(p.damageType)||(p.armor==='BYPASS'&&p.penetration!==0)))throw new DomainError(400,'INVALID_TACTICAL_PERIODIC_DAMAGE');
  }
