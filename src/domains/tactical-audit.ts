@@ -1,3 +1,4 @@
+import { loadDamageProfile,deriveDamageProfile } from './tactical-damage.js';
 import type pg from 'pg';
 import { checksum,type Json } from '../foundation/json.js';
 import { randomInteger } from '../foundation/rng.js';
@@ -23,11 +24,11 @@ export async function tacticalMismatchCount(client:pg.PoolClient) {
     if(kit&&source.nativeLevel>=kit.minimumNativeLevel){canHeal ||=kit.heal;canGuard ||=kit.guard;}}
    const prior=row.previous_instance_id?(await client.query('SELECT health,mana FROM tactical_recoveries WHERE instance_id=$1',[row.previous_instance_id])).rows[0]:null;
    if(row.previous_instance_id&&!prior)throw Error('unsettled predecessor');
-   const units:TacticalUnit[]=[{id:'hero',side:'PARTY',zone:spec.playerZone,stats,health:Math.min(prior?.health??stats.maxHealth,stats.maxHealth),mana:Math.min(prior?.mana??stats.maxMana,stats.maxMana),canHeal,canGuard,strikes:0,state:'ACTIVE'}];
+   const units:TacticalUnit[]=[{id:'hero',side:'PARTY',zone:spec.playerZone,stats,health:Math.min(prior?.health??stats.maxHealth,stats.maxHealth),mana:Math.min(prior?.mana??stats.maxMana,stats.maxMana),canHeal,canGuard,strikes:0,state:'ACTIVE',...(spec.rules.typedDamage?{damageProfile:await loadDamageProfile(client,spec.rules.typedDamage,snapshot.inputs.sources)}:{})}];
    for(const u of [...spec.allies.map(u=>({...u,side:'PARTY' as const})),...spec.enemies.map(u=>({...u,side:'ENEMY' as const}))]){
     const template=(await client.query(`SELECT v.definition->'mechanics'->'tacticalUnit' AS spec FROM release_entries e JOIN content_versions v ON v.entity_id=e.entity_id AND v.revision=e.revision WHERE e.release_id=$1 AND e.entity_id=$2`,[row.release_id,u.definitionId])).rows[0]?.spec;
     validateTacticalTemplate(template);const t=template as TacticalTemplate;
-    units.push({id:u.id,side:u.side,zone:u.zone,stats:t.stats,health:t.stats.maxHealth,canHeal:t.canHeal,canGuard:t.canGuard,strikes:0,state:'ACTIVE'});
+    units.push({id:u.id,side:u.side,zone:u.zone,stats:t.stats,health:t.stats.maxHealth,canHeal:t.canHeal,canGuard:t.canGuard,strikes:0,state:'ACTIVE',...(spec.rules.typedDamage?{damageProfile:deriveDamageProfile(spec.rules.typedDamage,t.damageTraits?[{traits:t.damageTraits,nativeLevel:0}]:[])}:{})});
    }
    let state=startTactical(spec.rules,units);
    const controlled=['hero',...spec.allies.map(u=>u.id)];if(!equal(origin.controlledIds,controlled)||!equal(origin.state,state))throw Error('origin');

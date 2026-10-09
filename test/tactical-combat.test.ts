@@ -208,3 +208,65 @@ test('restricted runtime can play and settle tactical combat while journal edits
   assert.ok(Object.values(await integrityReport(db.pool)).every(n=>n===0));
  }finally{await db.close();if(created){const admin=(await import('../src/database.js')).poolFor(process.env.TEST_DATABASE_URL!);try{await admin.query(`DROP ROLE ${role}`);}finally{await admin.end();}}}
 });
+
+function typedPackage(){
+ const p=tacticalPackage();p.version='typed-damage-fixture';
+ specOf(p).rules.typedDamage={version:1,types:['slashing','fire','cold'],defaultType:'slashing',resistanceStacking:'SUM_CAPPED'};
+ const mechanics=(id:string)=>p.entities.find(e=>e.id===id)!.definition.mechanics!;
+ mechanics('class.one').tacticalDamageTraits={version:1,minimumNativeLevel:1,penetration:1,resistances:{fire:1000}};
+ mechanics('feat.vigor').tacticalDamageTraits={version:1,minimumNativeLevel:0,resistances:{fire:1000}};
+ mechanics('item.sword').tacticalDamageTraits={version:1,minimumNativeLevel:0,attackType:'fire',penetration:2};
+ mechanics('item.shield').tacticalDamageTraits={version:1,minimumNativeLevel:0,resistances:{fire:4000}};
+ // Keep the hero the lowest-health active party target for the enemy-pipeline assertion.
+ (mechanics('npc.ally').tacticalUnit as any).stats.maxHealth=50;
+ const enemy=mechanics('monster.tactical').tacticalUnit as any;enemy.stats.armor=5;
+ enemy.damageTraits={version:1,minimumNativeLevel:0,attackType:'fire',penetration:2,resistances:{fire:5000,cold:10000}};
+ return p;
+}
+test('typed traits from pinned class/feat/active gear execute, reconnect and independently replay; enemy defense stays hidden',async()=>{
+ const db=await testDatabase();try{
+  const p=typedPackage(),f=await tacticalFixture(db.pool,p),b=await fight(db.pool,f);
+  const profile=b.get().partyCapabilities[0].damageProfile;
+  assert.equal(profile.attackType,'fire');assert.equal(profile.penetration,3);assert.equal(profile.resistances.fire,6000);
+  const republished=structuredClone(p);republished.version='typed-damage-new';for(const e of republished.entities)e.revision=2;
+  republished.entities.find(e=>e.id==='item.sword')!.definition.mechanics!.tacticalDamageTraits={version:1,minimumNativeLevel:0,attackType:'cold',penetration:20};
+  await (await import('../src/domains/content.js')).publishContent(db.pool,republished);
+  const read=json(await tacticalView(db.pool,f.account,b.get().instanceId));assert.deepEqual(read.partyCapabilities,b.get().partyCapabilities);
+  assert.ok(read.units.every((u:any)=>!Object.hasOwn(u,'damageProfile')));
+  const request=envelope(b.get().revision),v=b.get(),command={actorId:'hero',kind:'ATTACK' as const,targetId:'enemy'};
+  const results=await Promise.all([0,1,2].map(()=>takeTacticalAction(db.pool,f.account,request,v.instanceId,v.encounterRevision,v.tacticalRevision,command)));
+  assert.equal(results.filter(r=>!r.replayed).length,1);
+  const step=(await db.pool.query('SELECT evidence,state FROM tactical_steps ORDER BY revision LIMIT 1')).rows[0];
+  assert.equal(step.evidence.damageType,'fire');assert.equal(step.evidence.attack.effectiveArmor,2);assert.equal(step.evidence.attack.damage,3);assert.equal(step.state.units[2].health,9);
+  const now=json(await tacticalView(db.pool,f.account,v.instanceId));
+  const end=async(actorId:string)=>{const n=json(await tacticalView(db.pool,f.account,v.instanceId));return takeTacticalAction(db.pool,f.account,envelope(n.revision),n.instanceId,n.encounterRevision,n.tacticalRevision,{actorId,kind:'END'});};
+  assert.equal(now.tacticalRevision,1);await end('hero');await end('ally');
+  const enemyStep=(await db.pool.query("SELECT evidence,state FROM tactical_steps WHERE control='SERVER' AND intent->>'kind'='ATTACK'")).rows[0];
+  assert.equal(enemyStep.evidence.damageType,'fire');assert.equal(enemyStep.evidence.attack.effectiveArmor,1);assert.equal(enemyStep.evidence.attack.damage,2);assert.equal(enemyStep.state.units[0].health,33);
+  assert.ok(Object.values(await integrityReport(db.pool)).every(n=>n===0));
+  await db.pool.query('ALTER TABLE tactical_steps DISABLE TRIGGER tactical_step_immutable');
+  await db.pool.query("UPDATE tactical_steps SET evidence=jsonb_set(evidence,'{damageType}','\"cold\"'::jsonb) WHERE revision=1");
+  await db.pool.query('ALTER TABLE tactical_steps ENABLE TRIGGER tactical_step_immutable');
+  assert.ok((await integrityReport(db.pool)).tacticalMismatches>0);
+ }finally{await db.close();}
+});
+test('conflicting owned attack types reject start atomically and native-level traits stay locked',async()=>{
+ const db=await testDatabase();try{
+  const p=typedPackage();p.entities.find(e=>e.id==='class.one')!.definition.mechanics!.tacticalDamageTraits={version:1,minimumNativeLevel:1,attackType:'cold'};
+  const f=await tacticalFixture(db.pool,p);const before=(await db.pool.query('SELECT turns,revision FROM runs WHERE id=$1',[f.run])).rows[0];
+  await assert.rejects(startTacticalCombat(db.pool,f.account,envelope(f.revision,'START_TACTICAL'),'encounter.tactical'),/CONFLICTING_TACTICAL_ATTACK_TYPES/);
+  assert.deepEqual((await db.pool.query('SELECT turns,revision FROM runs WHERE id=$1',[f.run])).rows[0],before);
+  for(const table of ['encounter_records','tactical_encounter_origins','character_encounter_snapshots','encounter_reward_plans'])assert.equal((await db.pool.query(`SELECT count(*)::int AS n FROM ${table}`)).rows[0].n,0);
+  const gated=typedPackage();gated.version='typed-damage-gated';for(const e of gated.entities)e.revision=2;
+  gated.entities.find(e=>e.id==='class.one')!.definition.mechanics!.tacticalDamageTraits={version:1,minimumNativeLevel:5,attackType:'cold',penetration:100};
+  const fresh=await tacticalFixture(db.pool,gated),b=await fight(db.pool,fresh);
+  assert.equal(b.get().partyCapabilities[0].damageProfile.attackType,'fire');assert.equal(b.get().partyCapabilities[0].damageProfile.penetration,2);
+  assert.ok(Object.values(await integrityReport(db.pool)).every(n=>n===0));
+ }finally{await db.close();}
+});
+test('typed publication rejects undeclared template types, invalid traits/sources/gates and implicit stacking',()=>{
+ const good=typedPackage();assert.doesNotThrow(()=>validateContent(good));
+ for(const mutate of [(p:typeof good)=>{(specOf(p).rules.typedDamage as any).resistanceStacking='AUTO';},(p:typeof good)=>{(p.entities.find(e=>e.id==='monster.tactical')!.definition.mechanics!.tacticalUnit as any).damageTraits.attackType='psychic';},(p:typeof good)=>{p.entities.find(e=>e.id==='item.ore')!.definition.mechanics!.tacticalDamageTraits={version:1,minimumNativeLevel:0,penetration:3};},(p:typeof good)=>{(p.entities.find(e=>e.id==='item.shield')!.definition.mechanics!.tacticalDamageTraits as any).minimumNativeLevel=1;},(p:typeof good)=>{(p.entities.find(e=>e.id==='item.shield')!.definition.mechanics!.tacticalDamageTraits as any).resistances.fire=10001;},(p:typeof good)=>{delete p.entities.find(e=>e.id==='item.sword')!.definition.mechanics!.combatModifiers;}]){
+  const p=structuredClone(good);mutate(p);assert.throws(()=>validateContent(p));
+ }
+});

@@ -8,7 +8,7 @@ Release pass 1 introduces versioned numerical evaluators and immutable character
 
 `deriveCharacterStats` returns totals and entity/revision/instance attribution for each applied contribution. Distinct item instances contribute separately; duplicate source identities reject, preventing a two-handed item from counting once per occupied hand. Invalid final totals reject without hidden clamping. Input objects are preserved.
 
-Authority boundary: the pure evaluator accepts internal inputs. The transactional snapshot loader selects the owned native classes, selected feats/subclasses and distinct worn/active-set item instances from the run's pinned release. Inactive prepared weapons do not contribute. Base stats and source lists never come from a client payload. Owned healing and guard capabilities now execute through tacticalKit source pins. Conditional passives, resistance stacking and the broader ability library remain work.
+Authority boundary: the pure evaluator accepts internal inputs. The transactional snapshot loader selects the owned native classes, selected feats/subclasses and distinct worn/active-set item instances from the run's pinned release. Inactive prepared weapons do not contribute. Base stats and source lists never come from a client payload. Owned healing and guard capabilities now execute through tacticalKit source pins. [Typed damage traits](tactical-typed-damage.md) now derive owned encounter-start offense and resistance with an explicitly authored sum-and-cap policy. Conditional passives and the broader ability library remain work.
 
 ## Authored profiles and encounter snapshots
 
