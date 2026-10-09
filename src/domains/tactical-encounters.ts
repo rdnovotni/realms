@@ -1,3 +1,4 @@
+import { loadAttackAbilities } from './tactical-abilities.js';
 import { loadStatusProfile } from './tactical-status.js';
 import { loadCleanseAbilities } from './tactical-cleansing.js';
 import { loadEffectGrants } from './tactical-effects.js';
@@ -11,7 +12,7 @@ import { beginEncounter,encounterCheckpoint,drawEncounter,saveEncounterCheckpoin
 import { readCharacterSnapshot } from './character-snapshots.js';
 import { startTactical,stepTactical,type TacticalRules,type TacticalState,type TacticalUnit,type TacticalIntent } from './tactical-engine.js';
 
-export type TacticalCommand={actorId:string;kind:'CLEANSE';targetId:string;abilityId:string;effectId:string}|{actorId:string;kind:'END'|'GUARD'|'RETREAT'}|{actorId:string;kind:'MOVE';zone:string}|{actorId:string;kind:'ATTACK'|'HEAL';targetId:string};
+export type TacticalCommand={actorId:string;kind:'USE_ABILITY';targetId:string;abilityId:string}|{actorId:string;kind:'CLEANSE';targetId:string;abilityId:string;effectId:string}|{actorId:string;kind:'END'|'GUARD'|'RETREAT'}|{actorId:string;kind:'MOVE';zone:string}|{actorId:string;kind:'ATTACK'|'HEAL';targetId:string};
 export type TacticalCheckpoint={engine:'TACTICAL_TRANSITION_V1';rules:TacticalRules;state:TacticalState;controlledIds:string[]};
 const json=(value:unknown)=>value as Record<string,Json>;
 /** Internal only: the authored encounter loader must authorize discovery, party
@@ -28,7 +29,7 @@ export async function beginTacticalEncounter(c:ActionContext,definitionId:string
     const kit=row?.kit as TacticalKit|undefined;
     if(kit&&source.nativeLevel>=kit.minimumNativeLevel){canHeal ||=kit.heal;canGuard ||=kit.guard;}
   }
-  const state=startTactical(rules,[{id:player.id,zone:player.zone,side:'PARTY',stats,health:Math.min(player.health??stats.maxHealth,stats.maxHealth),mana:Math.min(player.mana??stats.maxMana,stats.maxMana),canHeal:player.loadKit?canHeal:true,canGuard,strikes:0,state:'ACTIVE',...(rules.roundEffects?{onHitEffects:await loadEffectGrants(c.client,c.run.content_release_id,snapshot.inputs.sources)}:{}),...((rules.roundEffects?.version??0)>=2?{onHealEffects:await loadEffectGrants(c.client,c.run.content_release_id,snapshot.inputs.sources,'HEAL')}:{}),...(rules.roundEffects?.version===3?{cleansingAbilities:await loadCleanseAbilities(c.client,snapshot.inputs.sources)}:{}),...(rules.statusDefense?{statusProfile:await loadStatusProfile(c.client,rules.statusDefense,snapshot.inputs.sources)}:{}),...(rules.typedDamage?{damageProfile:await loadDamageProfile(c.client,rules.typedDamage,snapshot.inputs.sources)}:{})},...otherUnits]);
+  const state=startTactical(rules,[{id:player.id,zone:player.zone,side:'PARTY',stats,health:Math.min(player.health??stats.maxHealth,stats.maxHealth),mana:Math.min(player.mana??stats.maxMana,stats.maxMana),canHeal:player.loadKit?canHeal:true,canGuard,strikes:0,state:'ACTIVE',...(rules.roundEffects?{onHitEffects:await loadEffectGrants(c.client,c.run.content_release_id,snapshot.inputs.sources)}:{}),...((rules.roundEffects?.version??0)>=2?{onHealEffects:await loadEffectGrants(c.client,c.run.content_release_id,snapshot.inputs.sources,'HEAL')}:{}),...(rules.roundEffects?.version===3?{cleansingAbilities:await loadCleanseAbilities(c.client,snapshot.inputs.sources)}:{}),...(rules.abilities?{attackAbilities:await loadAttackAbilities(c.client,rules.typedDamage!,snapshot.inputs.sources)}:{}),...(rules.statusDefense?{statusProfile:await loadStatusProfile(c.client,rules.statusDefense,snapshot.inputs.sources)}:{}),...(rules.typedDamage?{damageProfile:await loadDamageProfile(c.client,rules.typedDamage,snapshot.inputs.sources)}:{})},...otherUnits]);
   if(controlledIds.some(id=>!state.units.some(u=>u.id===id&&u.side==='PARTY')))throw new DomainError(409,'INVALID_TACTICAL_CONTROL');
   const checkpoint:TacticalCheckpoint={engine:'TACTICAL_TRANSITION_V1',rules:structuredClone(rules),state,controlledIds:[...controlledIds]};
   // Encounter revision includes initialization; engine revision counts intents.
@@ -49,11 +50,14 @@ export async function executeTacticalCommand(c:ActionContext,instanceId:string,e
   const actor=checkpoint.state.units.find(u=>u.id===command.actorId);
   if(!actor || (serverControlled?actor.side!=='ENEMY':!checkpoint.controlledIds.includes(actor.id)))throw new DomainError(403,'TACTICAL_ACTOR_NOT_CONTROLLED');
   let intent:TacticalIntent;
-  if(command.kind==='ATTACK') {
+  if(command.kind==='ATTACK'||command.kind==='USE_ABILITY') {
+    const ability=command.kind==='USE_ABILITY'?actor.attackAbilities?.find(a=>a.id===command.abilityId):undefined;
+    if(command.kind==='USE_ABILITY'&&(!checkpoint.rules.abilities||!ability))throw new DomainError(409,'ILLEGAL_TACTICAL_ABILITY');
+    const min=ability?.spec.damage.min??actor.stats.attackMin,max=ability?.spec.damage.max??actor.stats.attackMax;
     const prefix=`action.${expectedTacticalRevision}`;
     const roll=1+await drawEncounter(c,instanceId,'tactical',`${prefix}.hit`,20);
-    const rawDamage=actor.stats.attackMin+await drawEncounter(c,instanceId,'tactical',`${prefix}.damage`,actor.stats.attackMax-actor.stats.attackMin+1);
-    intent={...command,kind:'ATTACK',roll,rawDamage};
+    const rawDamage=min+await drawEncounter(c,instanceId,'tactical',`${prefix}.damage`,max-min+1);
+    intent={...command,roll,rawDamage};
   }else if(command.kind==='RETREAT') {
     intent={actorId:command.actorId,kind:'RETREAT',roll:1+await drawEncounter(c,instanceId,'tactical',`action.${expectedTacticalRevision}.retreat`,20)};
   }else intent=command as TacticalIntent;
