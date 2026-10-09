@@ -1,3 +1,4 @@
+import { loadStatusProfile } from './tactical-status.js';
 import { loadCleanseAbilities } from './tactical-cleansing.js';
 import { loadEffectGrants } from './tactical-effects.js';
 import { loadDamageProfile } from './tactical-damage.js';
@@ -27,7 +28,7 @@ export async function beginTacticalEncounter(c:ActionContext,definitionId:string
     const kit=row?.kit as TacticalKit|undefined;
     if(kit&&source.nativeLevel>=kit.minimumNativeLevel){canHeal ||=kit.heal;canGuard ||=kit.guard;}
   }
-  const state=startTactical(rules,[{id:player.id,zone:player.zone,side:'PARTY',stats,health:Math.min(player.health??stats.maxHealth,stats.maxHealth),mana:Math.min(player.mana??stats.maxMana,stats.maxMana),canHeal:player.loadKit?canHeal:true,canGuard,strikes:0,state:'ACTIVE',...(rules.roundEffects?{onHitEffects:await loadEffectGrants(c.client,c.run.content_release_id,snapshot.inputs.sources)}:{}),...((rules.roundEffects?.version??0)>=2?{onHealEffects:await loadEffectGrants(c.client,c.run.content_release_id,snapshot.inputs.sources,'HEAL')}:{}),...(rules.roundEffects?.version===3?{cleansingAbilities:await loadCleanseAbilities(c.client,snapshot.inputs.sources)}:{}),...(rules.typedDamage?{damageProfile:await loadDamageProfile(c.client,rules.typedDamage,snapshot.inputs.sources)}:{})},...otherUnits]);
+  const state=startTactical(rules,[{id:player.id,zone:player.zone,side:'PARTY',stats,health:Math.min(player.health??stats.maxHealth,stats.maxHealth),mana:Math.min(player.mana??stats.maxMana,stats.maxMana),canHeal:player.loadKit?canHeal:true,canGuard,strikes:0,state:'ACTIVE',...(rules.roundEffects?{onHitEffects:await loadEffectGrants(c.client,c.run.content_release_id,snapshot.inputs.sources)}:{}),...((rules.roundEffects?.version??0)>=2?{onHealEffects:await loadEffectGrants(c.client,c.run.content_release_id,snapshot.inputs.sources,'HEAL')}:{}),...(rules.roundEffects?.version===3?{cleansingAbilities:await loadCleanseAbilities(c.client,snapshot.inputs.sources)}:{}),...(rules.statusDefense?{statusProfile:await loadStatusProfile(c.client,rules.statusDefense,snapshot.inputs.sources)}:{}),...(rules.typedDamage?{damageProfile:await loadDamageProfile(c.client,rules.typedDamage,snapshot.inputs.sources)}:{})},...otherUnits]);
   if(controlledIds.some(id=>!state.units.some(u=>u.id===id&&u.side==='PARTY')))throw new DomainError(409,'INVALID_TACTICAL_CONTROL');
   const checkpoint:TacticalCheckpoint={engine:'TACTICAL_TRANSITION_V1',rules:structuredClone(rules),state,controlledIds:[...controlledIds]};
   // Encounter revision includes initialization; engine revision counts intents.

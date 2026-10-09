@@ -1,3 +1,4 @@
+import { validateStatusContent } from './tactical-status.js';
 import { validateCleansingContent } from './tactical-cleansing.js';
 import { validateEffectContent,validateEffectFamilies } from './tactical-effects.js';
 import { validateTacticalCampaignContent } from './tactical-campaign.js';
@@ -59,6 +60,7 @@ export function validateContent(input:unknown): asserts input is ContentPackage 
     validateTacticalContent(entity,entities);
     validateEffectContent(entity,entities);
     validateCleansingContent(entity);
+    validateStatusContent(entity);
     validateTacticalCampaignContent(entity,entities);
     if(entity.definition.mechanics?.checkRules!==undefined) {
       if(entity.kind!=='TUNING')throw new DomainError(400,'INVALID_CHECK_RULES_KIND');

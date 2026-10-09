@@ -1,3 +1,4 @@
+import { immuneStatus,type StatusProfile,type StatusEvent } from './tactical-status.js';
 import type { RemovalSpec } from './tactical-cleansing.js';
 import { Ajv } from 'ajv';
 import type pg from 'pg';
@@ -92,9 +93,11 @@ export function normalizeEffectGrants(grants:EffectGrant[]) {
 function event(kind:EffectEvent['kind'],ownerId:string,e:ActiveRoundEffect):EffectEvent {
  return {kind,ownerId,effectId:e.effectId,sourceUnitId:e.sourceUnitId,sourceId:e.sourceId,sourceRevision:e.sourceRevision,effectRevision:e.effectRevision,remaining:e.remaining};
 }
-function applyEffects(owner:{id:string;effects?:ActiveRoundEffect[]},sourceId:string,grants:EffectGrant[],revision:number) {
+function applyEffects(owner:{id:string;effects?:ActiveRoundEffect[];statusProfile?:StatusProfile},sourceId:string,grants:EffectGrant[],revision:number,statusEvents?:StatusEvent[]) {
  const events:EffectEvent[]=[];
  for(const grant of grants){
+  const matchedTags=statusEvents?immuneStatus(owner.statusProfile,grant):[];
+  if(matchedTags.length){statusEvents!.push({kind:'IMMUNE',ownerId:owner.id,sourceUnitId:sourceId,matchedTags,blocked:structuredClone(grant)});continue;}
   const effects=owner.effects!,old=effects.find(e=>e.effect.family===grant.effect.family);
   if(old&&old.effect.stacking!==grant.effect.stacking)throw new DomainError(409,'CONFLICTING_TACTICAL_EFFECT_STACKING');
   if(old&&grant.effect.stacking==='REFRESH'){
@@ -109,8 +112,8 @@ function applyEffects(owner:{id:string;effects?:ActiveRoundEffect[]},sourceId:st
  }
  return events;
 }
-export function applyOnHitEffects(owner:{id:string;effects?:ActiveRoundEffect[]},source:{id:string;onHitEffects?:EffectGrant[]},revision:number) {return applyEffects(owner,source.id,source.onHitEffects??[],revision);}
-export function applyOnHealEffects(owner:{id:string;effects?:ActiveRoundEffect[]},source:{id:string;onHealEffects?:EffectGrant[]},revision:number) {return applyEffects(owner,source.id,source.onHealEffects??[],revision);}
+export function applyOnHitEffects(owner:{id:string;effects?:ActiveRoundEffect[];statusProfile?:StatusProfile},source:{id:string;onHitEffects?:EffectGrant[]},revision:number,statusEvents?:StatusEvent[]) {return applyEffects(owner,source.id,source.onHitEffects??[],revision,statusEvents);}
+export function applyOnHealEffects(owner:{id:string;effects?:ActiveRoundEffect[];statusProfile?:StatusProfile},source:{id:string;onHealEffects?:EffectGrant[]},revision:number,statusEvents?:StatusEvent[]) {return applyEffects(owner,source.id,source.onHealEffects??[],revision,statusEvents);}
 export function validatePeriodicGrants(grants:EffectGrant[],version:1|2|3,types:string[]|undefined) {
  for(const g of grants){
   if(g.effect.version===3&&version!==3)throw new DomainError(409,'TACTICAL_CLEANSING_EFFECTS_DISABLED');
