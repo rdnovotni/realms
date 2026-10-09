@@ -87,6 +87,7 @@ export function buildApp(pool: pg.Pool, auth:Authentication, logger = false) {
       {type:'object',additionalProperties:false,required:['actorId','kind'],properties:{actorId:tacticalId,kind:{type:'string',enum:['END','GUARD','RETREAT','CONTINUE']}}},
       {type:'object',additionalProperties:false,required:['actorId','kind','zone'],properties:{actorId:tacticalId,kind:{type:'string',const:'MOVE'},zone:tacticalId}},
       {type:'object',additionalProperties:false,required:['actorId','kind','targetId'],properties:{actorId:tacticalId,kind:{type:'string',enum:['ATTACK','HEAL']},targetId:tacticalId}},
+      {type:'object',additionalProperties:false,required:['actorId','kind','targetId','abilityId'],properties:{actorId:tacticalId,kind:{type:'string',const:'USE_ABILITY'},targetId:tacticalId,abilityId:classIdField}},
       {type:'object',additionalProperties:false,required:['actorId','kind','targetId','abilityId','effectId'],properties:{actorId:tacticalId,kind:{type:'string',const:'CLEANSE'},targetId:tacticalId,abilityId:classIdField,effectId:classIdField}}
     ]};
     protectedApp.post<{Body:Envelope & {definitionId:string}}>('/api/v1/tactical/start',{schema:{body:{type:'object',additionalProperties:false,required:['requestId','actionType','expectedRevision','definitionId'],properties:{...envelopeProperties,actionType:{type:'string',const:'START_TACTICAL'},definitionId:classIdField}}}},async request=>startTacticalCombat(pool,actor(request),{...request.body,...(request.principal?{principal:request.principal}:{})},request.body.definitionId));
