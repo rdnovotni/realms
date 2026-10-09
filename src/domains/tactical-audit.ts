@@ -63,7 +63,7 @@ export async function tacticalMismatchCount(client:pg.PoolClient) {
     const hero=state.units[0]!,failure=['DEFEAT','FAILED_FORWARD'].includes(state.outcome);
     if(!recovery||recovery.health!==(hero.health>0?hero.health:Math.min(hero.stats.maxHealth,spec.failure.recoveryHealth))||recovery.mana!==hero.mana||recovery.destination!==(failure?'HOME':'FIELD')||recovery.turn_cost>spec.failure.turnCost||(!failure&&recovery.turn_cost!==0)||(failure&&(recovery.reason!=='TACTICAL_RECOVERY'||recovery.delta!==-recovery.turn_cost)))throw Error('recovery');
     const expected={destination:recovery.destination,health:recovery.health,mana:recovery.mana,turnCost:recovery.turn_cost};
-    if(!equal(state.outcome==='VICTORY'?row.settlement.additional:row.settlement,expected))throw Error('settlement');
+    if(!equal(state.outcome==='VICTORY'?row.settlement.additional:row.settlement,state.outcome==='VICTORY'&&spec.campaignId?{...expected,campaignCompleted:true}:expected))throw Error('settlement');
    }
   }catch{mismatches++;}
  }}finally{await client.query('CLOSE tactical_audit');}
