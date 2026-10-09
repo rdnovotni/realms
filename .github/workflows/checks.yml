@@ -8,7 +8,8 @@ jobs:
     timeout-minutes: 10
     services:
       postgres:
-        image: postgres:18
+        # Docker Official Images mirror avoids Docker Hub's shared runner pull limits.
+        image: public.ecr.aws/docker/library/postgres:18
         env:
           POSTGRES_USER: realms
           POSTGRES_PASSWORD: ci-only-password

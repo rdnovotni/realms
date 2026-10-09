@@ -1,3 +1,4 @@
+import { normalizeHealingAbilities,validateHealingAbility,type HealingAbilitySpec } from './tactical-healing-abilities.js';
 import { normalizeAttackAbilities,validateAttackAbility,type AttackAbilitySpec } from './tactical-abilities.js';
 import { deriveStatusProfile,validateStatusTraits,type StatusTraits } from './tactical-status.js';
 import { validateCleanseSpec,type CleanseAbility } from './tactical-cleansing.js';
@@ -60,12 +61,13 @@ export function validateTacticalContent(entity:ContentEntity,entities:Map<string
   const onHitEffects=s.rules.roundEffects?effectGrants('tacticalOnHitEffects'):undefined,onHealEffects=(s.rules.roundEffects?.version??0)>=2?effectGrants('tacticalOnHealEffects'):undefined;
   if(onHitEffects)validatePeriodicGrants(onHitEffects,s.rules.roundEffects!.version,s.rules.typedDamage?.types);
   if(onHealEffects)validatePeriodicGrants(onHealEffects,s.rules.roundEffects!.version,s.rules.typedDamage?.types);
+  const healingAbility=source.definition.mechanics?.tacticalHealingAbility;if(healingAbility!==undefined)validateHealingAbility(healingAbility);
   const attackAbility=source.definition.mechanics?.tacticalAttackAbility;if(attackAbility!==undefined)validateAttackAbility(attackAbility);
   const statusTraits=source.definition.mechanics?.tacticalStatusTraits;if(statusTraits!==undefined)validateStatusTraits(statusTraits);
   const cleansing=source.definition.mechanics?.tacticalCleansing;
   if(cleansing!==undefined)validateCleanseSpec(cleansing);
   const cleansingAbilities:CleanseAbility[]|undefined=s.rules.roundEffects?.version===3?(cleansing?[{id:source.id,sourceRevision:source.revision,sourceInstanceIds:[],spec:cleansing}]:[]):undefined;
-  return {id:u.id,side:u.side,zone:u.zone,stats:t.stats,health:t.stats.maxHealth,strikes:0,state:'ACTIVE' as const,canHeal:t.canHeal,canGuard:t.canGuard,...(cleansingAbilities?{cleansingAbilities}:{}),...(onHitEffects?{onHitEffects}:{}),...(onHealEffects?{onHealEffects}:{}),...(s.rules.abilities?{attackAbilities:normalizeAttackAbilities(attackAbility?[{id:source.id,sourceRevision:source.revision,sourceInstanceIds:[],spec:attackAbility as AttackAbilitySpec}]:[],s.rules.typedDamage!)}:{}),...(s.rules.statusDefense?{statusProfile:deriveStatusProfile(s.rules.statusDefense,statusTraits?[{traits:statusTraits as StatusTraits,nativeLevel:0}]:[])}:{}),...(s.rules.typedDamage?{damageProfile:deriveDamageProfile(s.rules.typedDamage,t.damageTraits?[{traits:t.damageTraits,nativeLevel:0}]:[])}:{})};
+  return {id:u.id,side:u.side,zone:u.zone,stats:t.stats,health:t.stats.maxHealth,strikes:0,state:'ACTIVE' as const,canHeal:t.canHeal,canGuard:t.canGuard,...(cleansingAbilities?{cleansingAbilities}:{}),...(onHitEffects?{onHitEffects}:{}),...(onHealEffects?{onHealEffects}:{}),...(s.rules.healingAbilities?{healingAbilities:normalizeHealingAbilities(healingAbility?[{id:source.id,sourceRevision:source.revision,sourceInstanceIds:[],spec:healingAbility as HealingAbilitySpec}]:[])}:{}),...(s.rules.abilities?{attackAbilities:normalizeAttackAbilities(attackAbility?[{id:source.id,sourceRevision:source.revision,sourceInstanceIds:[],spec:attackAbility as AttackAbilitySpec}]:[],s.rules.typedDamage!)}:{}),...(s.rules.statusDefense?{statusProfile:deriveStatusProfile(s.rules.statusDefense,statusTraits?[{traits:statusTraits as StatusTraits,nativeLevel:0}]:[])}:{}),...(s.rules.typedDamage?{damageProfile:deriveDamageProfile(s.rules.typedDamage,t.damageTraits?[{traits:t.damageTraits,nativeLevel:0}]:[])}:{})};
  });
  // Validate the full initial party and reject unbounded/invalid derived stats now.
  startTactical(s.rules,[{id:'hero',side:'PARTY',zone:s.playerZone,stats:profile.base,health:profile.base.maxHealth,strikes:0,state:'ACTIVE'},...units]);
