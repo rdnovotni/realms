@@ -17,6 +17,7 @@ import { validateSubclassReferences } from './subclasses.js';
 import { validateBuildReferences } from './build-content.js';
 import { validateProficiencyRequirements } from './proficiency-requirements.js';
 import { validateProficiencyContent } from './proficiency-content.js';
+import { validateCharacterMechanics,validateCheckRules,validateDamageRules,validateCharacterProfileReferences } from './character-mechanics.js';
 
 export const kinds = ['ITEM','EFFECT','ABILITY','CLASS','SPECIES','MONSTER','NPC','ENCOUNTER','QUEST','RECIPE','LOCATION','ROUTE','FACTION','PATH','EVENT','ACTIVITY','CARD','FAMILIAR','BOSS','LOOT_TABLE','LORE','TUNING','SKILL'] as const;
 export type ContentEntity = { id:string; kind:typeof kinds[number]; revision:number; schemaVersion:number; definition:{ name:string; dependencies:string[]; public:Record<string,Json>; advanced?:Record<string,Json>; mechanics?:Record<string,Json>; secrets?:Record<string,Json> } };
@@ -48,6 +49,16 @@ export function validateContent(input:unknown): asserts input is ContentPackage 
     validateCombatReferences(entity,entities);
     validateRecipeReferences(entity,entities);
     validateEquipmentContent(entity);
+    validateCharacterMechanics(entity);
+    validateCharacterProfileReferences(entity,entities);
+    if(entity.definition.mechanics?.checkRules!==undefined) {
+      if(entity.kind!=='TUNING')throw new DomainError(400,'INVALID_CHECK_RULES_KIND');
+      validateCheckRules(entity.definition.mechanics.checkRules);
+    }
+    if(entity.definition.mechanics?.damageRules!==undefined) {
+      if(entity.kind!=='TUNING')throw new DomainError(400,'INVALID_DAMAGE_RULES_KIND');
+      validateDamageRules(entity.definition.mechanics.damageRules);
+    }
     const encounter=entity.definition.mechanics?.encounter;
     if(entity.kind==='ENCOUNTER' && encounter!==undefined) validateEncounterSpec(encounter);
     const inventory=entity.definition.mechanics?.inventory;

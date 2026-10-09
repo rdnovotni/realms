@@ -4,6 +4,7 @@ import { requireActive } from '../foundation/action.js';
 import { DomainError } from '../foundation/errors.js';
 import { checksum,type Json } from '../foundation/json.js';
 import { randomInteger } from '../foundation/rng.js';
+import { captureCharacterSnapshot } from './character-snapshots.js';
 
 export type EncounterSpec={version:1;turnCost:1}|{version:2;turnCost:1;lootTableId:string};
 export function validateEncounterSpec(value:unknown): asserts value is EncounterSpec {
@@ -27,7 +28,7 @@ function identity(value:string){
 // state transitions and rewards. Neither checkpoints nor settlements are client payloads.
 export async function beginEncounter(context:ActionContext,definitionId:string,initial:Record<string,Json>){
   requireActive(context);const checkpoint=object(initial);
-  const content=(await context.client.query(`SELECT e.revision,v.definition->'mechanics'->'encounter' AS spec
+  const content=(await context.client.query(`SELECT e.revision,v.definition->'mechanics'->'encounter' AS spec,v.definition->'mechanics'->>'characterProfileId' AS character_profile_id
     FROM release_entries e JOIN content_entities c ON c.id=e.entity_id AND c.kind='ENCOUNTER'
     JOIN content_versions v ON v.entity_id=e.entity_id AND v.revision=e.revision
     WHERE e.release_id=$1 AND e.entity_id=$2`,[context.run.content_release_id,definitionId])).rows[0];
@@ -41,6 +42,7 @@ export async function beginEncounter(context:ActionContext,definitionId:string,i
   await context.client.query('INSERT INTO instance_participants(instance_id,run_id) VALUES($1,$2)',[id,context.run.id]);
   await context.client.query(`INSERT INTO encounter_records(instance_id,run_id,release_id,definition_id,definition_revision,start_action_id,turn_cost,checkpoint)
     VALUES($1,$2,$3,$4,$5,$6,$7,$8)`,[id,context.run.id,context.run.content_release_id,definitionId,content.revision,context.actionId,content.spec.turnCost,checkpoint]);
+  if(content.character_profile_id!==null)await captureCharacterSnapshot(context,id,content.character_profile_id);
   await context.client.query('UPDATE runs SET turns=turns-$2 WHERE id=$1',[context.run.id,content.spec.turnCost]);
   context.run.turns-=content.spec.turnCost;
   await context.client.query("INSERT INTO turn_ledger(run_id,request_id,delta,reason) VALUES($1,$2,$3,'ENCOUNTER_START')",[context.run.id,context.requestId,-content.spec.turnCost]);

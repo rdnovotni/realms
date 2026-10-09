@@ -16,8 +16,8 @@
     "db:permissions": "node --env-file=.env --import tsx src/permissions-check.ts",
     "db:audit": "node --env-file=.env --import tsx src/audit.ts",
     "db:auth-enroll": "node --env-file=.env --import tsx src/auth-enroll.ts",
-    "test": "node --import tsx --test test/unit.test.ts test/progression-rules.test.ts",
-    "test:integration": "node --env-file=.env --import tsx --test --test-concurrency=2 test/integration.test.ts test/foundation.test.ts test/hardening.test.ts test/inventory.test.ts test/auth.test.ts test/encounters.test.ts test/loot.test.ts test/combat.test.ts test/crafting.test.ts test/item-locks.test.ts test/equipment.test.ts test/item-binding.test.ts test/loadouts.test.ts test/progression.test.ts test/builds.test.ts test/subclasses.test.ts test/feats.test.ts test/attributes.test.ts test/proficiencies.test.ts test/proficiency-requirements.test.ts",
+    "test": "node --import tsx --test test/unit.test.ts test/progression-rules.test.ts test/character-mechanics.test.ts",
+    "test:integration": "node --env-file=.env --import tsx --test --test-concurrency=2 test/integration.test.ts test/foundation.test.ts test/hardening.test.ts test/inventory.test.ts test/auth.test.ts test/encounters.test.ts test/loot.test.ts test/combat.test.ts test/crafting.test.ts test/item-locks.test.ts test/equipment.test.ts test/item-binding.test.ts test/loadouts.test.ts test/progression.test.ts test/builds.test.ts test/subclasses.test.ts test/feats.test.ts test/attributes.test.ts test/proficiencies.test.ts test/proficiency-requirements.test.ts test/character-snapshots.test.ts",
     "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.test.json"
   },
   "dependencies": {
