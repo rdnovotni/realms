@@ -1,0 +1,113 @@
+import { Ajv } from 'ajv';
+import type pg from 'pg';
+import { DomainError } from '../foundation/errors.js';
+import type { ContentEntity } from './content.js';
+import type { MechanicsSource,CharacterStats } from './character-mechanics.js';
+
+/** Encounter-local, numeric conditions only; other effect hooks remain unsupported. */
+export type RoundEffect={version:1;clock:'ROUNDS';tick:'OWNER_END';family:string;stacking:'REPLACE'|'REFRESH';rounds:number;polarity:'BENEFICIAL'|'HARMFUL'|'MIXED'|'NEUTRAL';tags:string[];modifiers:{stat:'accuracy'|'evasion'|'armor';amount:number}[]};
+export type OnHitEffects={version:1;minimumNativeLevel:number;effectIds:string[]};
+export type EffectGrant={effectId:string;effectRevision:number;sourceId:string;sourceRevision:number;sourceInstanceId?:string;effect:RoundEffect};
+export type ActiveRoundEffect=EffectGrant&{sourceUnitId:string;appliedRevision:number;refreshedRevision?:number;remaining:number};
+export type EffectEvent={kind:'APPLIED'|'REPLACED'|'REFRESHED'|'TICKED'|'EXPIRED';ownerId:string;effectId:string;sourceUnitId:string;sourceId:string;sourceRevision:number;effectRevision:number;remaining:number};
+const id={type:'string',pattern:'^[a-z][a-z0-9_.-]{2,119}$'},tag={type:'string',pattern:'^[a-z][a-z0-9_.-]{0,63}$'};
+const ajv=new Ajv({strict:true});
+const effectValidator=ajv.compile({type:'object',additionalProperties:false,required:['version','clock','tick','family','stacking','rounds','polarity','tags','modifiers'],properties:{version:{const:1},clock:{const:'ROUNDS'},tick:{const:'OWNER_END'},family:tag,stacking:{enum:['REPLACE','REFRESH']},rounds:{type:'integer',minimum:1,maximum:100},polarity:{enum:['BENEFICIAL','HARMFUL','MIXED','NEUTRAL']},tags:{type:'array',minItems:1,maxItems:16,uniqueItems:true,items:tag},modifiers:{type:'array',minItems:1,maxItems:3,items:{type:'object',additionalProperties:false,required:['stat','amount'],properties:{stat:{enum:['accuracy','evasion','armor']},amount:{type:'integer',minimum:-1000,maximum:1000}}}}}});
+const grantsValidator=ajv.compile({type:'object',additionalProperties:false,required:['version','minimumNativeLevel','effectIds'],properties:{version:{const:1},minimumNativeLevel:{type:'integer',minimum:0,maximum:999},effectIds:{type:'array',minItems:1,maxItems:8,uniqueItems:true,items:id}}});
+export function validateRoundEffect(value:unknown):asserts value is RoundEffect {
+ if(!effectValidator(value)||new Set((value as RoundEffect).modifiers.map(m=>m.stat)).size!==(value as RoundEffect).modifiers.length||(value as RoundEffect).modifiers.some(m=>m.amount===0))throw new DomainError(400,'INVALID_TACTICAL_ROUND_EFFECT');
+}
+export function validateOnHitEffects(value:unknown):asserts value is OnHitEffects {
+ if(!grantsValidator(value))throw new DomainError(400,'INVALID_TACTICAL_ON_HIT_EFFECTS');
+}
+export function validateEffectFamilies(entities:Map<string,ContentEntity>) {
+ const policies=new Map<string,string>();
+ for(const e of entities.values()){
+  const value=e.definition.mechanics?.tacticalRoundEffect;if(value===undefined)continue;
+  validateRoundEffect(value);
+  const prior=policies.get(value.family);
+  if(prior&&prior!==value.stacking)throw new DomainError(400,'CONFLICTING_TACTICAL_EFFECT_STACKING');
+  policies.set(value.family,value.stacking);
+ }
+}
+export function validateEffectContent(entity:ContentEntity,entities:Map<string,ContentEntity>) {
+ const m=entity.definition.mechanics;
+ if(m?.tacticalRoundEffect!==undefined){
+  if(entity.kind!=='EFFECT')throw new DomainError(400,'INVALID_TACTICAL_EFFECT_KIND');
+  validateRoundEffect(m.tacticalRoundEffect);
+
+ }
+ if(m?.tacticalOnHitEffects===undefined)return;
+ validateOnHitEffects(m.tacticalOnHitEffects);const grant=m.tacticalOnHitEffects;
+ const native=entity.kind==='CLASS'&&m.classProgression!==undefined;
+ const template=['NPC','MONSTER'].includes(entity.kind)&&m.tacticalUnit!==undefined;
+ const selected=(entity.kind==='ABILITY'&&(m.feat!==undefined||m.subclass!==undefined))||(entity.kind==='ITEM'&&m.equipment!==undefined);
+ if(!(template||((native||selected)&&m.combatModifiers!==undefined))||(!native&&grant.minimumNativeLevel!==0)||(native&&(grant.minimumNativeLevel<1||grant.minimumNativeLevel>(m.classProgression as {maximumNativeLevel:number}).maximumNativeLevel)))throw new DomainError(400,'INVALID_TACTICAL_EFFECT_SOURCE');
+ const families=new Set<string>();
+ for(const effectId of grant.effectIds){
+  const e=entities.get(effectId);
+  if(!e||e.kind!=='EFFECT'||!entity.definition.dependencies.includes(effectId))throw new DomainError(400,'INVALID_TACTICAL_EFFECT_REFERENCE');
+  validateRoundEffect(e.definition.mechanics?.tacticalRoundEffect);
+  const family=e.definition.mechanics!.tacticalRoundEffect.family;
+  if(families.has(family))throw new DomainError(400,'CONFLICTING_TACTICAL_EFFECT_GRANTS');families.add(family);
+ }
+}
+/** Uses the encounter's release and immutable selected source revisions. */
+export async function loadEffectGrants(client:pg.PoolClient,releaseId:string|null,sources:Pick<MechanicsSource,'entityId'|'revision'|'nativeLevel'|'instanceId'>[]):Promise<EffectGrant[]> {
+ const grants:EffectGrant[]=[];
+ for(const source of sources){
+  const value=(await client.query("SELECT definition->'mechanics'->'tacticalOnHitEffects' AS spec FROM content_versions WHERE entity_id=$1 AND revision=$2",[source.entityId,source.revision])).rows[0]?.spec;
+  if(!value)continue;validateOnHitEffects(value);if(source.nativeLevel<value.minimumNativeLevel)continue;
+  for(const effectId of value.effectIds){
+   const row=(await client.query("SELECT e.revision,v.definition->'mechanics'->'tacticalRoundEffect' AS effect FROM release_entries e JOIN content_versions v ON v.entity_id=e.entity_id AND v.revision=e.revision WHERE e.release_id=$1 AND e.entity_id=$2",[releaseId,effectId])).rows[0];
+   validateRoundEffect(row?.effect);
+   grants.push({effectId,effectRevision:row!.revision as number,sourceId:source.entityId,sourceRevision:source.revision,...(source.instanceId?{sourceInstanceId:source.instanceId}:{}),effect:row!.effect as RoundEffect});
+  }
+ }
+ return normalizeEffectGrants(grants);
+}
+export function normalizeEffectGrants(grants:EffectGrant[]) {
+ if(grants.length>32)throw new DomainError(409,'TOO_MANY_TACTICAL_EFFECT_GRANTS');
+ const families=new Set<string>();
+ for(const g of grants){
+  validateRoundEffect(g.effect);
+  if(!/^[a-z][a-z0-9_.-]{2,119}$/.test(g.effectId)||!/^[a-z][a-z0-9_.-]{2,119}$/.test(g.sourceId)||!Number.isInteger(g.effectRevision)||g.effectRevision<1||!Number.isInteger(g.sourceRevision)||g.sourceRevision<1)throw new DomainError(409,'INVALID_TACTICAL_EFFECT_GRANT');
+  // Reject ambiguous owned contributions instead of choosing by source iteration.
+  if(families.has(g.effect.family))throw new DomainError(409,'CONFLICTING_TACTICAL_EFFECT_GRANTS');families.add(g.effect.family);
+ }
+ return structuredClone(grants).sort((a,b)=>a.effect.family<b.effect.family?-1:1);
+}
+function event(kind:EffectEvent['kind'],ownerId:string,e:ActiveRoundEffect):EffectEvent {
+ return {kind,ownerId,effectId:e.effectId,sourceUnitId:e.sourceUnitId,sourceId:e.sourceId,sourceRevision:e.sourceRevision,effectRevision:e.effectRevision,remaining:e.remaining};
+}
+export function applyOnHitEffects(owner:{id:string;effects?:ActiveRoundEffect[]},source:{id:string;onHitEffects?:EffectGrant[]},revision:number) {
+ const events:EffectEvent[]=[];
+ for(const grant of source.onHitEffects??[]){
+  const effects=owner.effects!,old=effects.find(e=>e.effect.family===grant.effect.family);
+  if(old&&old.effect.stacking!==grant.effect.stacking)throw new DomainError(409,'CONFLICTING_TACTICAL_EFFECT_STACKING');
+  if(old&&grant.effect.stacking==='REFRESH'){
+   old.remaining=Math.max(old.remaining,grant.effect.rounds);old.refreshedRevision=revision;
+   events.push(event('REFRESHED',owner.id,old));
+  }else{
+   const next:ActiveRoundEffect={...structuredClone(grant),sourceUnitId:source.id,appliedRevision:revision,remaining:grant.effect.rounds};
+   if(old)effects.splice(effects.indexOf(old),1,next);else {if(effects.length>=32)throw new DomainError(409,'TOO_MANY_TACTICAL_EFFECTS');effects.push(next);}
+   effects.sort((a,b)=>a.effect.family<b.effect.family?-1:1);
+   events.push(event(old?'REPLACED':'APPLIED',owner.id,next));
+  }
+ }
+ return events;
+}
+export function tickRoundEffects(owner:{id:string;effects?:ActiveRoundEffect[]}) {
+ const events:EffectEvent[]=[];
+ for(const e of owner.effects??[]){e.remaining--;events.push(event(e.remaining===0?'EXPIRED':'TICKED',owner.id,e));}
+ if(owner.effects)owner.effects=owner.effects.filter(e=>e.remaining>0);
+ return events;
+}
+/** Saturate supported effective stats, preserving the immutable base stats. */
+export function effectStats(unit:{stats:CharacterStats;effects?:ActiveRoundEffect[]}) {
+ const stats={...unit.stats};
+ for(const e of unit.effects??[])for(const m of e.effect.modifiers)stats[m.stat]+=m.amount;
+ stats.accuracy=Math.max(-1000000,Math.min(1000000,stats.accuracy));
+ stats.evasion=Math.max(-1000000,Math.min(1000000,stats.evasion));
+ stats.armor=Math.max(0,Math.min(1000000,stats.armor));return stats;
+}

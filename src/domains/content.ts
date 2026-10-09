@@ -1,3 +1,4 @@
+import { validateEffectContent,validateEffectFamilies } from './tactical-effects.js';
 import { validateTacticalCampaignContent } from './tactical-campaign.js';
 import { validateTacticalContent } from './tactical-content.js';
 import { randomUUID } from 'node:crypto';
@@ -41,6 +42,7 @@ export function validateContent(input:unknown): asserts input is ContentPackage 
   if (!validate(input)) throw new DomainError(400,'INVALID_CONTENT_PACKAGE');
   const pkg=input as ContentPackage, entities=new Map(pkg.entities.map(e=>[e.id,e]));
   validateFeatContent(entities);
+  validateEffectFamilies(entities);
   validateProficiencyContent(entities);
   for(const entity of pkg.entities) {
     validateAttributeReferences(entity,entities);
@@ -54,6 +56,7 @@ export function validateContent(input:unknown): asserts input is ContentPackage 
     validateCharacterMechanics(entity);
     validateCharacterProfileReferences(entity,entities);
     validateTacticalContent(entity,entities);
+    validateEffectContent(entity,entities);
     validateTacticalCampaignContent(entity,entities);
     if(entity.definition.mechanics?.checkRules!==undefined) {
       if(entity.kind!=='TUNING')throw new DomainError(400,'INVALID_CHECK_RULES_KIND');
