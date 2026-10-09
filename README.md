@@ -1,6 +1,6 @@
 # Realms
 
-Release implementation follows the [eight-pass plan](docs/eight-pass-release-plan.md), starting with combat and character mechanics. Pass 1 is in progress; see [mechanics contracts and remaining acceptance work](docs/character-mechanics.md).
+Release implementation follows the [eight-pass plan](docs/eight-pass-release-plan.md), starting with combat and character mechanics. Pass 1 is in progress; see [saved tactical combat](docs/tactical-engine.md) and [remaining acceptance work](docs/eight-pass-release-plan.md).
 
 Private development foundation for KoL 2.0: a TypeScript/Fastify server and PostgreSQL persistence on Ubuntu. The shared database and server foundation is implemented and tested. Gameplay modules and a playable client are the next layer. See [database foundation](docs/database-foundation.md) for the schema, invariants, and implementation boundaries.
 

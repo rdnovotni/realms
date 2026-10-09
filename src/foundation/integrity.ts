@@ -1,3 +1,4 @@
+import { tacticalMismatchCount } from '../domains/tactical-audit.js';
 import type pg from 'pg';
 import { characterSnapshotMismatchCount } from '../domains/character-snapshots.js';
 
@@ -67,8 +68,9 @@ export async function integrityReport(pool:pg.Pool){
     const constraints=(await client.query(`SELECT count(*)::int AS n FROM pg_constraint c JOIN pg_class t ON t.oid=c.conrelid
       JOIN pg_namespace s ON s.oid=t.relnamespace WHERE s.nspname=current_schema() AND c.contype IN('c','f') AND NOT c.convalidated`)).rows[0].n as number;
     const characterSnapshots=await characterSnapshotMismatchCount(client)+(await client.query('SELECT count(*)::int AS n FROM character_snapshot_integrity_issues')).rows[0].n;
+    const tactical=await tacticalMismatchCount(client)+(await client.query('SELECT count(*)::int AS n FROM tactical_integrity_issues')).rows[0].n;
     await client.query('COMMIT');
-    return {characterSnapshotMismatches:characterSnapshots,proficiencyRequirementMismatches:prerequisiteEvidence,proficiencyMismatches:proficiencies,attributeMismatches:attributeGrowth,featMismatches:feats,subclassMismatches:subclasses,buildMismatches:builds,xpMismatches:xp,loadoutMismatches:loadouts,itemBindingHistoryMismatches:bindingHistory,equipmentMismatches:equipment,itemLockMismatches:locks,craftMismatches:Number(crafts),combatMismatches:combat,completionMismatches:completions,rewardMismatches:rewards,encounterMismatches:encounters,walletBalanceMismatches:balances,itemQuantityMismatches:itemQuantities,runScopeMismatches:lifetimes,malformedJobLeases:leases,itemBindingMismatches:bindings,outboxJobCollisions:collisions,unvalidatedConstraints:constraints};
+    return {tacticalMismatches:tactical,characterSnapshotMismatches:characterSnapshots,proficiencyRequirementMismatches:prerequisiteEvidence,proficiencyMismatches:proficiencies,attributeMismatches:attributeGrowth,featMismatches:feats,subclassMismatches:subclasses,buildMismatches:builds,xpMismatches:xp,loadoutMismatches:loadouts,itemBindingHistoryMismatches:bindingHistory,equipmentMismatches:equipment,itemLockMismatches:locks,craftMismatches:Number(crafts),combatMismatches:combat,completionMismatches:completions,rewardMismatches:rewards,encounterMismatches:encounters,walletBalanceMismatches:balances,itemQuantityMismatches:itemQuantities,runScopeMismatches:lifetimes,malformedJobLeases:leases,itemBindingMismatches:bindings,outboxJobCollisions:collisions,unvalidatedConstraints:constraints};
   }catch(error){await client.query('ROLLBACK');throw error;}
   finally{client.release();}
 }

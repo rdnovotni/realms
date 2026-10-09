@@ -1,6 +1,6 @@
 # Character mechanics evaluation contracts
 
-Release pass 1 introduces versioned numerical evaluators and immutable character snapshots validated at content publication and encounter start. Migration 021 adds one snapshot table with indexed references to pinned content, build, attribute and equipment evidence. Historical encounters receive no fabricated snapshots. BASIC_DUEL_V1 retains its behavior; a playable tactical endpoint remains work.
+Release pass 1 introduces versioned numerical evaluators and immutable character snapshots validated at content publication and encounter start. Migration 021 adds one snapshot table with indexed references to pinned content, build, attribute and equipment evidence. Historical encounters receive no fabricated snapshots. BASIC_DUEL_V1 retains its behavior. Migration 022 now connects these snapshots to the [saved tactical loop](tactical-engine.md); broader Pass 1 mechanics remain open.
 
 ## Passive contributions
 
@@ -8,7 +8,7 @@ Release pass 1 introduces versioned numerical evaluators and immutable character
 
 `deriveCharacterStats` returns totals and entity/revision/instance attribution for each applied contribution. Distinct item instances contribute separately; duplicate source identities reject, preventing a two-handed item from counting once per occupied hand. Invalid final totals reject without hidden clamping. Input objects are preserved.
 
-Authority boundary: the pure evaluator accepts internal inputs. The transactional snapshot loader selects the owned native classes, selected feats/subclasses and distinct worn/active-set item instances from the run's pinned release. Inactive prepared weapons do not contribute. Base stats and source lists never come from a client payload. Conditional passives, resistance stacking and executable abilities remain work.
+Authority boundary: the pure evaluator accepts internal inputs. The transactional snapshot loader selects the owned native classes, selected feats/subclasses and distinct worn/active-set item instances from the run's pinned release. Inactive prepared weapons do not contribute. Base stats and source lists never come from a client payload. Owned healing and guard capabilities now execute through tacticalKit source pins. Conditional passives, resistance stacking and the broader ability library remain work.
 
 ## Authored profiles and encounter snapshots
 
@@ -36,12 +36,12 @@ These are configurable contracts, not production balance. Rolls and raw damage m
 
 ## Remaining acceptance work
 
-Implement replayable tactical action evidence, actors, initiative, Main/Quick/Reaction budgets, zones, abilities and conditions; implement party Downed/Defeated/revival and failure settlement; expose authenticated intent-only APIs and test reconnect, concurrency and rollback end to end. Prepared-set changes during tactical combat need a versioned snapshot policy for both sets and their Quick-action costs. Current snapshots freeze the starting active set.
+The tactical loop now implements replayable history, actors, initiative, action budgets, zones, basic healing/guard, Downed/Defeated/revival and reward/recovery settlement through authenticated intent-only APIs. Complete the broader authored ability/check, resistance/condition and failure/injury systems. Prepared-set changes during tactical combat need a versioned snapshot policy for both sets and their Quick-action costs. Current snapshots freeze the starting active set.
 
 See [the eight-pass plan](eight-pass-release-plan.md). These supporting evaluators alone do not complete pass 1.
 
 ## Validation of this increment
 
-The final suite passed 26 unit and 215 database integration tests (241 total), including 15 focused evaluator tests and 12 focused snapshot tests. Type checks, build and whitespace checks passed. Snapshot cases cover current attribute growth, selected class/feat/subclass sources, worn versus active/prepared equipment, duplicate starts, immutable history, forged evidence, foreign-run access, rollback, pinned publications, least-privilege runtime writes, migration preservation, missing snapshots and invalid scaled totals.
+At the migration 021 snapshot milestone, the suite passed 26 unit and 215 database integration tests (241 total), including 15 focused evaluator tests and 12 focused snapshot tests. Type checks, build and whitespace checks passed. Snapshot cases cover current attribute growth, selected class/feat/subclass sources, worn versus active/prepared equipment, duplicate starts, immutable history, forged evidence, foreign-run access, rollback, pinned publications, least-privilege runtime writes, migration preservation, missing snapshots and invalid scaled totals.
 
-The verified snapshot foundation is applied to the private loopback server. Full hashes confirmed that every pre-existing game table was preserved exactly, and no historical snapshots were fabricated. Runtime privileges, authenticated reads, unauthenticated denial, all integrity checks and foreign-key index coverage passed. The post-upgrade backup restored successfully with 81 tables and matching migration checksums. Migration 021 is now applied and must remain unchanged; subsequent schema fixes or extensions require a new migration. Pass 1 remains open for tactical execution and party recovery. These checks do not certify the forthcoming tactical engine or public release.
+The verified snapshot foundation is applied to the private loopback server. Full hashes confirmed that every pre-existing game table was preserved exactly, and no historical snapshots were fabricated. Runtime privileges, authenticated reads, unauthenticated denial, all integrity checks and foreign-key index coverage passed. The post-upgrade backup restored successfully with 81 tables and matching migration checksums. Migration 021 is now applied and must remain unchanged; subsequent schema fixes or extensions require a new migration. The subsequent tactical milestone and remaining Pass 1 gates are documented in [saved tactical combat](tactical-engine.md). This snapshot evidence alone does not certify tactical execution or public release.

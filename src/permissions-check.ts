@@ -12,6 +12,10 @@ try{
     has_table_privilege(current_user,'inventory_quantity_operations','UPDATE') AS editable,
     has_table_privilege(current_user,'inventory_quantity_operations','DELETE') AS deletable`)).rows[0];
   if(!quantityPermissions.readable || !quantityPermissions.appendable || quantityPermissions.editable || quantityPermissions.deletable)throw new Error('Inventory quantity ledger privileges are incorrect');
+  for(const table of ['tactical_encounter_origins','tactical_steps','tactical_recoveries']){
+    const p=(await pool.query("SELECT has_table_privilege(current_user,$1,'SELECT') AS readable,has_table_privilege(current_user,$1,'INSERT') AS appendable,has_table_privilege(current_user,$1,'UPDATE') AS editable,has_table_privilege(current_user,$1,'DELETE') AS deletable",[table])).rows[0];
+    if(!p.readable||!p.appendable||p.editable||p.deletable)throw new Error('Tactical journal privileges are incorrect');
+  }
   const snapshotPermissions=(await pool.query(`SELECT has_table_privilege(current_user,'character_encounter_snapshots','SELECT') AS readable,
     has_table_privilege(current_user,'character_encounter_snapshots','INSERT') AS appendable,
     has_table_privilege(current_user,'character_encounter_snapshots','UPDATE') AS editable,

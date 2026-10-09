@@ -181,3 +181,47 @@ test('invalid scaled totals reject atomically in both independent evaluators',as
     assert.equal((await db.pool.query('SELECT count(*)::int AS n FROM encounter_records')).rows[0].n,0);
   }finally{await db.close();}
 });
+
+test('tactical adapter pins character stats, journals rolls, resumes and rejects replayed or foreign intents',async()=>{
+ const {beginTacticalEncounter,executeTacticalCommand}=await import('../src/domains/tactical-encounters.js');
+ const {stepTactical}=await import('../src/domains/tactical-engine.js');
+ const db=await testDatabase();try {
+  const f=await fixture(db.pool);
+  const rules={damage:{version:1 as const,ruleset:'TACTICAL_DAMAGE_V1' as const,check:{version:1 as const,ruleset:'D20_CHECK_V1' as const,attributeDivisor:2,attributeBaseline:10,proficiencyPerRank:2,natural20:'SUCCESS' as const,natural1:'NORMAL' as const},criticalOn20:false,criticalMultiplierBps:20000,minimumConnectedDamage:1 as const},zones:['floor'],edges:[] as [string,string][],attackRange:0,healRange:0,healAmount:5,roundLimit:10};
+  const enemy={id:'enemy',side:'ENEMY' as const,zone:'floor',health:100,strikes:0,state:'ACTIVE' as const,stats:{maxHealth:100,maxMana:0,accuracy:2,evasion:10,armor:0,initiative:0,attackMin:1,attackMax:3}};
+  const started=await executeAction(db.pool,f.account,f.next(),{},async c=>{
+   const result=await beginTacticalEncounter(c,'encounter.character',rules,{id:'hero',zone:'floor'},[enemy],['hero']);
+   return {...result,state:result.state as unknown as import('../src/foundation/json.js').Json,revision:await advanceRevision(c)};
+  });
+  const id=started.instanceId as string;
+  const before=(await db.pool.query('SELECT checkpoint FROM encounter_records WHERE instance_id=$1',[id])).rows[0].checkpoint;
+  assert.equal(before.state.units[0].stats.maxHealth,130);
+  const request=f.next(),command={actorId:'hero',kind:'ATTACK' as const,targetId:'enemy'};
+  const act=()=>executeAction(db.pool,f.account,request,{id,command},async c=>{
+   const result=await executeTacticalCommand(c,id,1,0,command);
+   return {result:result as unknown as import('../src/foundation/json.js').Json,revision:await advanceRevision(c)};
+  });
+  const first=await act(),retry=await act();assert.equal(retry.replayed,true);assert.deepEqual(retry.result,first.result);
+  const after=(await db.pool.query('SELECT checkpoint,revision FROM encounter_records WHERE instance_id=$1',[id])).rows[0];
+  assert.equal(after.revision,2);assert.equal(after.checkpoint.state.revision,1);
+  const result=first.result as unknown as Awaited<ReturnType<typeof executeTacticalCommand>>;
+  assert.deepEqual(stepTactical(rules,before.state,0,result.evidence.intent).state,after.checkpoint.state);
+  assert.equal((await db.pool.query("SELECT count(*)::int AS n FROM encounter_draws WHERE instance_id=$1 AND stream='tactical'",[id])).rows[0].n,2);
+  const invalidRequest=f.next();
+  await assert.rejects(executeAction(db.pool,f.account,invalidRequest,{},async c=>{
+   await executeTacticalCommand(c,id,1,0,{actorId:'hero',kind:'END'});return {revision:await advanceRevision(c)};
+  }),/STALE_ENCOUNTER_REVISION/);
+  const other=await actor(db.pool,f.release);
+  await assert.rejects(executeAction(db.pool,other.account,env(0),{},async c=>{
+   await executeTacticalCommand(c,id,2,1,{actorId:'hero',kind:'END'});return {revision:await advanceRevision(c)};
+  }),/ENCOUNTER_NOT_FOUND/);
+  await assert.rejects(executeAction(db.pool,f.account,invalidRequest,{},async c=>{
+   await executeTacticalCommand(c,id,2,1,command);return {revision:await advanceRevision(c)};
+  }),/MAIN_SPENT/);
+  assert.equal((await db.pool.query("SELECT count(*)::int AS n FROM encounter_draws WHERE instance_id=$1 AND stream='tactical'",[id])).rows[0].n,2);
+  assert.equal((await db.pool.query('SELECT count(*)::int AS n FROM action_receipts WHERE request_id=$1',[invalidRequest.requestId])).rows[0].n,0);
+  await assert.rejects(executeAction(db.pool,f.account,invalidRequest,{},async c=>{
+   await executeTacticalCommand(c,id,2,1,{actorId:'enemy',kind:'END'});return {revision:await advanceRevision(c)};
+  }),/NOT_CONTROLLED/);
+ }finally{await db.close();}
+});
