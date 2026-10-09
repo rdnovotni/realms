@@ -1,0 +1,46 @@
+import { Ajv } from 'ajv';
+import { DomainError } from '../foundation/errors.js';
+import type { ContentEntity } from './content.js';
+import { validateStats,type CharacterStats } from './character-mechanics.js';
+import { startTactical,validateTacticalRules,type TacticalRules } from './tactical-engine.js';
+
+export type TacticalSpec={version:1;ruleset:'TACTICAL_ENCOUNTER_V1';rules:TacticalRules;playerZone:string;allies:{id:string;definitionId:string;zone:string}[];enemies:{id:string;definitionId:string;zone:string}[];failure:{destination:'HOME';turnCost:number;recoveryHealth:number}};
+export type TacticalTemplate={version:1;stats:CharacterStats;canHeal:boolean;canGuard:boolean};
+export type TacticalKit={version:1;minimumNativeLevel:number;heal:boolean;guard:boolean};
+const ajv=new Ajv({strict:true});
+const spawn={type:'object',additionalProperties:false,required:['id','definitionId','zone'],properties:{id:{type:'string',pattern:'^[a-z][a-z0-9_.-]{0,63}$'},definitionId:{type:'string',pattern:'^[a-z][a-z0-9_.-]{2,119}$'},zone:{type:'string'}}};
+const encounter=ajv.compile({type:'object',additionalProperties:false,required:['version','ruleset','rules','playerZone','allies','enemies','failure'],properties:{version:{type:'integer',const:1},ruleset:{type:'string',const:'TACTICAL_ENCOUNTER_V1'},rules:{type:'object'},playerZone:{type:'string'},allies:{type:'array',maxItems:7,items:spawn},enemies:{type:'array',minItems:1,maxItems:8,items:spawn},failure:{type:'object',additionalProperties:false,required:['destination','turnCost','recoveryHealth'],properties:{destination:{type:'string',const:'HOME'},turnCost:{type:'integer',minimum:1,maximum:3},recoveryHealth:{type:'integer',minimum:1,maximum:1000000}}}}});
+const template=ajv.compile({type:'object',additionalProperties:false,required:['version','stats','canHeal','canGuard'],properties:{version:{type:'integer',const:1},stats:{type:'object'},canHeal:{type:'boolean'},canGuard:{type:'boolean'}}});
+const kit=ajv.compile({type:'object',additionalProperties:false,required:['version','minimumNativeLevel','heal','guard'],properties:{version:{type:'integer',const:1},minimumNativeLevel:{type:'integer',minimum:0,maximum:999},heal:{type:'boolean'},guard:{type:'boolean'}}});
+export function validateTacticalSpec(value:unknown):asserts value is TacticalSpec {
+ if(!encounter(value))throw new DomainError(400,'INVALID_TACTICAL_SPEC');
+ const s=value as TacticalSpec;validateTacticalRules(s.rules);
+ if(s.rules.healManaCost===undefined||s.rules.guardArmorBonus===undefined||s.rules.retreatDifficulty===undefined||!s.rules.zones.includes(s.playerZone)||[...s.allies,...s.enemies].some(u=>!s.rules.zones.includes(u.zone))||new Set(['hero',...s.allies.map(u=>u.id),...s.enemies.map(u=>u.id)]).size!==1+s.allies.length+s.enemies.length)throw new DomainError(400,'INVALID_TACTICAL_SPEC');
+}
+export function validateTacticalTemplate(value:unknown):asserts value is TacticalTemplate {
+ if(!template(value))throw new DomainError(400,'INVALID_TACTICAL_TEMPLATE');validateStats((value as TacticalTemplate).stats);
+}
+export function validateTacticalContent(entity:ContentEntity,entities:Map<string,ContentEntity>) {
+ const m=entity.definition.mechanics;
+ if(m?.tacticalKit!==undefined){
+  if(!kit(m.tacticalKit)||m.combatModifiers===undefined)throw new DomainError(400,'INVALID_TACTICAL_KIT');
+  const k=m.tacticalKit as unknown as TacticalKit;
+  const isClass=entity.kind==='CLASS'&&m.classProgression!==undefined;
+  if(!(isClass||(entity.kind==='ABILITY'&&(m.feat!==undefined||m.subclass!==undefined))||(entity.kind==='ITEM'&&m.equipment!==undefined))||(!isClass&&k.minimumNativeLevel!==0)||(isClass&&(k.minimumNativeLevel<1||k.minimumNativeLevel>(m.classProgression as {maximumNativeLevel:number}).maximumNativeLevel)))throw new DomainError(400,'INVALID_TACTICAL_KIT_SOURCE');
+ }
+ if(m?.tacticalUnit!==undefined){if(!['NPC','MONSTER'].includes(entity.kind))throw new DomainError(400,'INVALID_TACTICAL_TEMPLATE_KIND');validateTacticalTemplate(m.tacticalUnit);}
+ if(m?.tacticalCombat===undefined)return;
+ if(entity.kind!=='ENCOUNTER'||m.combat!==undefined||typeof m.characterProfileId!=='string'||(m.encounter as {version?:number})?.version!==2)throw new DomainError(400,'INVALID_TACTICAL_ENCOUNTER');
+ validateTacticalSpec(m.tacticalCombat);const s=m.tacticalCombat;
+ const profile=entities.get(m.characterProfileId)?.definition.mechanics?.characterProfile as unknown as {base:CharacterStats};
+ if(!profile||s.failure.recoveryHealth>profile.base.maxHealth)throw new DomainError(400,'INVALID_TACTICAL_RECOVERY');
+ const units=[...s.allies.map(u=>({...u,side:'PARTY' as const})),...s.enemies.map(u=>({...u,side:'ENEMY' as const}))].map(u=>{
+  const source=entities.get(u.definitionId);
+  if(!source||source.kind!==(u.side==='PARTY'?'NPC':'MONSTER')||!entity.definition.dependencies.includes(source.id))throw new DomainError(400,'INVALID_TACTICAL_UNIT_REFERENCE');
+  validateTacticalTemplate(source.definition.mechanics?.tacticalUnit);
+  const t=source.definition.mechanics!.tacticalUnit as unknown as TacticalTemplate;
+  return {id:u.id,side:u.side,zone:u.zone,stats:t.stats,health:t.stats.maxHealth,strikes:0,state:'ACTIVE' as const,canHeal:t.canHeal,canGuard:t.canGuard};
+ });
+ // Validate the full initial party and reject unbounded/invalid derived stats now.
+ startTactical(s.rules,[{id:'hero',side:'PARTY',zone:s.playerZone,stats:profile.base,health:profile.base.maxHealth,strikes:0,state:'ACTIVE'},...units]);
+}

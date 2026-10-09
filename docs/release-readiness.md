@@ -1,5 +1,9 @@
 # Database release readiness
 
+Work is organized into [eight release passes](eight-pass-release-plan.md). Pass 1 is in progress; its [character mechanics evaluators](character-mechanics.md) and [saved tactical loop](tactical-engine.md) now support playable authored party fights; the broader release mechanics remain open.
+
+Migration 021 adds SQL-verified immutable character stat snapshots to explicitly opted-in encounter starts. Authored attribute scaling, selected passive class/feat/subclass effects and worn/active equipment contributions are captured from the pinned run release. Migration 022 connects authored party actions, public intent/resume routes, guard/healing, retained pools, atomic settlement and independently replayed action history. Advanced conditions, typed resistance families, broader abilities and full recovery contracts remain Pass 1 gates.
+
 The database is a tested private development foundation. Public release requires the remaining gates below; passing the foundation suite alone is not sufficient.
 
 ## Integrity pass
