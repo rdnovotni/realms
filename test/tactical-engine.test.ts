@@ -61,3 +61,41 @@ test('incapacitated targets cannot spend defensive reactions',()=>{
  const result=stepTactical(r,s,0,{actorId:'enemy',kind:'ATTACK',targetId:'hero',roll:20,rawDamage:10});
  assert.equal(result.evidence.attack!.effectiveArmor,0);assert.equal(result.state.budgets.hero!.reaction,1);assert.equal(result.state.units[0]!.strikes,1);
 });
+
+import { deriveDamageProfile,validateDamageTraits } from '../src/domains/tactical-damage.js';
+const typed={...rules,typedDamage:{version:1 as const,types:['slashing','fire','cold'],defaultType:'slashing',resistanceStacking:'SUM_CAPPED' as const}};
+const damageTraits=(value:Record<string,unknown>)=>({version:1 as const,minimumNativeLevel:0,...value});
+test('typed armor penetration precedes matching resistance; misses, immunity and vulnerability retain exact integer rules',()=>{
+ for(const [resistance,roll,expected] of [[5000,20,3],[10000,20,0],[-10000,20,12],[5000,1,0]]){
+  const hero=unit('hero','PARTY',2),enemy=unit('enemy','ENEMY',1);enemy.stats.armor=6;
+  hero.damageProfile=deriveDamageProfile(typed.typedDamage,[{traits:damageTraits({attackType:'fire',penetration:2}),nativeLevel:0}]);
+  enemy.damageProfile=deriveDamageProfile(typed.typedDamage,[{traits:damageTraits({resistances:{fire:resistance,cold:10000}}),nativeLevel:0}]);
+  const result=stepTactical(typed,startTactical(typed,[hero,enemy]),0,{actorId:'hero',kind:'ATTACK',targetId:'enemy',roll:roll!,rawDamage:10});
+  assert.equal(result.evidence.attack!.damage,expected);assert.equal(result.evidence.damageType,'fire');assert.equal(result.evidence.attack!.effectiveArmor,4);
+ }
+});
+test('typed resistance sums before capping, applies native gates and rejects ambiguous offense/overflow',()=>{
+ const contributions=[damageTraits({resistances:{fire:9000}}),damageTraits({resistances:{fire:9000}}),damageTraits({resistances:{fire:-9000}})].map(traits=>({traits,nativeLevel:0}));
+ const result=deriveDamageProfile(typed.typedDamage,contributions);
+ assert.equal(result.resistances.fire,9000);assert.deepEqual(deriveDamageProfile(typed.typedDamage,contributions.reverse()),result);
+ assert.equal(deriveDamageProfile(typed.typedDamage,[{traits:{...damageTraits({penetration:5}),minimumNativeLevel:5},nativeLevel:4}]).penetration,0);
+ assert.equal(deriveDamageProfile(typed.typedDamage,[{traits:damageTraits({resistances:{fire:10000}}),nativeLevel:0},{traits:damageTraits({resistances:{fire:10000}}),nativeLevel:0}]).resistances.fire,10000);
+ assert.throws(()=>deriveDamageProfile(typed.typedDamage,['fire','cold'].map(attackType=>({traits:damageTraits({attackType}),nativeLevel:0}))),/CONFLICTING/);
+ assert.throws(()=>deriveDamageProfile(typed.typedDamage,[0,1].map(()=>({traits:damageTraits({penetration:1000000}),nativeLevel:0}))),/INVALID_TACTICAL_DAMAGE_PROFILE/);
+});
+test('damage vocabularies, numeric bounds, profile opt-in and unknown trait fields are validated',()=>{
+ for(const bad of [{},damageTraits({resistances:{fire:10001}}),damageTraits({penetration:-1}),damageTraits({attackType:'fire',clientDamage:9})])assert.throws(()=>validateDamageTraits(bad));
+ assert.throws(()=>deriveDamageProfile(typed.typedDamage,[{traits:damageTraits({attackType:'psychic'}),nativeLevel:0}]),/UNKNOWN/);
+ const hero=unit('hero','PARTY',2);hero.damageProfile=deriveDamageProfile(typed.typedDamage,[]);
+ assert.throws(()=>startTactical(rules,[hero,unit('enemy','ENEMY',1)]),/UNTYPED/);
+ assert.throws(()=>startTactical({...typed,typedDamage:{...typed.typedDamage,defaultType:'psychic'}},[hero,unit('enemy','ENEMY',1)]),/INVALID_TACTICAL_DAMAGE_TYPE/);
+});
+test('guard mitigation and enemy attacks use the same typed pipeline; unrelated immunity gives no protection',()=>{
+ const r={...typed,guardArmorBonus:5},hero=unit('hero','PARTY',1),enemy=unit('enemy','ENEMY',2);
+ hero.canGuard=true;hero.guardReady=true;hero.stats.armor=3;
+ hero.damageProfile=deriveDamageProfile(r.typedDamage,[{traits:damageTraits({resistances:{cold:10000,fire:5000}}),nativeLevel:0}]);
+ enemy.damageProfile=deriveDamageProfile(r.typedDamage,[{traits:damageTraits({attackType:'fire',penetration:4}),nativeLevel:0}]);
+ const s=startTactical(r,[hero,enemy]);s.units[0]!.guardReady=true;
+ const result=stepTactical(r,s,0,{actorId:'enemy',kind:'ATTACK',targetId:'hero',roll:20,rawDamage:10});
+ assert.equal(result.evidence.attack!.effectiveArmor,4);assert.equal(result.evidence.attack!.damage,3);assert.equal(result.state.budgets.hero!.reaction,0);
+});

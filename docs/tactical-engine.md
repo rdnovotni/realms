@@ -40,7 +40,7 @@ Acceptance tests cover a playable party fight; class, feat, subclass, weapon and
 
 ## Remaining Pass 1 work
 
-Broader class/subclass ability kits, explicit proficiency/check-driven abilities, typed resistance families and penetration, conditions/stacking/expiration, surprise, opportunity reactions, stabilization/resurrection, casualty-sensitive retreat, complete recovery/injury contracts and owned companion/multiplayer participants remain open. Basic guard is the currently executed defensive reaction. Attacks currently use zero penetration and resistance. Tactical victory does not yet participate in the historical BASIC_DUEL_V1 campaign completion proof; tactical campaign progression needs its own authored contract. These limits remain visible in the eight-pass plan.
+Broader class/subclass ability kits, explicit proficiency/check-driven abilities, damage-family inheritance, conditional resistance changes and immunity bypass, conditions/stacking/expiration, surprise, opportunity reactions, stabilization/resurrection, casualty-sensitive retreat, complete recovery/injury contracts and owned companion/multiplayer participants remain open. Basic guard is the currently executed defensive reaction. Encounters can now opt into [typed damage traits](tactical-typed-damage.md) with pinned attack types, armor penetration and per-type damage resistance. Untyped encounters retain zero penetration and resistance; family inheritance, conditional changes and immunity bypass remain open. Tactical victory does not yet participate in the historical BASIC_DUEL_V1 campaign completion proof; tactical campaign progression needs its own authored contract. These limits remain visible in the eight-pass plan.
 
 ## Verified development milestone
 
