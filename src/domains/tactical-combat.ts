@@ -1,3 +1,4 @@
+import { loadEffectGrants } from './tactical-effects.js';
 import { tacticalCampaignPrerequisites,completeTacticalCampaign } from './tactical-campaign.js';
 import { deriveDamageProfile } from './tactical-damage.js';
 import type pg from 'pg';
@@ -19,17 +20,17 @@ async function authored(c:ActionContext,id:string) {
 async function spawned(c:ActionContext,spec:TacticalSpec) {
  const units:TacticalUnit[]=[];
  for(const u of [...spec.allies.map(u=>({...u,side:'PARTY' as const})),...spec.enemies.map(u=>({...u,side:'ENEMY' as const}))]){
-  const row=(await c.client.query(`SELECT v.definition->'mechanics'->'tacticalUnit' AS spec FROM release_entries e JOIN content_versions v ON v.entity_id=e.entity_id AND v.revision=e.revision WHERE e.release_id=$1 AND e.entity_id=$2`,[c.run.content_release_id,u.definitionId])).rows[0];
+  const row=(await c.client.query(`SELECT e.revision,v.definition->'mechanics'->'tacticalUnit' AS spec FROM release_entries e JOIN content_versions v ON v.entity_id=e.entity_id AND v.revision=e.revision WHERE e.release_id=$1 AND e.entity_id=$2`,[c.run.content_release_id,u.definitionId])).rows[0];
   validateTacticalTemplate(row?.spec);const t=row!.spec as TacticalTemplate;
-  units.push({id:u.id,side:u.side,zone:u.zone,stats:t.stats,health:t.stats.maxHealth,strikes:0,state:'ACTIVE',canHeal:t.canHeal,canGuard:t.canGuard,...(spec.rules.typedDamage?{damageProfile:deriveDamageProfile(spec.rules.typedDamage,t.damageTraits?[{traits:t.damageTraits,nativeLevel:0}]:[])}:{})});
+  units.push({id:u.id,side:u.side,zone:u.zone,stats:t.stats,health:t.stats.maxHealth,strikes:0,state:'ACTIVE',canHeal:t.canHeal,canGuard:t.canGuard,...(spec.rules.roundEffects?{onHitEffects:await loadEffectGrants(c.client,c.run.content_release_id,[{entityId:u.definitionId,revision:row!.revision as number,nativeLevel:0}])}:{}),...(spec.rules.typedDamage?{damageProfile:deriveDamageProfile(spec.rules.typedDamage,t.damageTraits?[{traits:t.damageTraits,nativeLevel:0}]:[])}:{})});
  }
  return units;
 }
 export function tacticalPublic(state:TacticalState,encounterRevision:number,spec:TacticalSpec) {
  return {encounterRevision,tacticalRevision:state.revision,round:state.round,currentActor:state.outcome===null?state.order[state.cursor]!:null,order:state.order,outcome:state.outcome,
-  units:state.units.map(u=>({id:u.id,side:u.side,zone:u.zone,health:u.health,maxHealth:u.stats.maxHealth,mana:u.mana??0,maxMana:u.stats.maxMana,state:u.state,strikes:u.strikes,guardReady:u.guardReady??false})),budgets:state.budgets,
+  units:state.units.map(u=>({id:u.id,side:u.side,zone:u.zone,health:u.health,maxHealth:u.stats.maxHealth,mana:u.mana??0,maxMana:u.stats.maxMana,state:u.state,strikes:u.strikes,guardReady:u.guardReady??false,...(spec.rules.roundEffects?{effects:(u.effects??[]).map(e=>({effectId:e.effectId,family:e.effect.family,polarity:e.effect.polarity,tags:e.effect.tags,clock:e.effect.clock,tick:e.effect.tick,stacking:e.effect.stacking,remaining:e.remaining,modifiers:e.effect.modifiers,sourceUnitId:e.sourceUnitId}))}:{})})),budgets:state.budgets,
   actionRules:{attackRange:spec.rules.attackRange,healRange:spec.rules.healRange,healAmount:spec.rules.healAmount,healManaCost:spec.rules.healManaCost!,guardArmorBonus:spec.rules.guardArmorBonus!},
-  partyCapabilities:state.units.filter(u=>u.side==='PARTY').map(u=>({id:u.id,heal:u.canHeal??false,guard:u.canGuard??false,...(u.damageProfile?{damageProfile:u.damageProfile}:{})})),
+  partyCapabilities:state.units.filter(u=>u.side==='PARTY').map(u=>({id:u.id,heal:u.canHeal??false,guard:u.canGuard??false,...(spec.rules.roundEffects?{onHitEffects:(u.onHitEffects??[]).map(g=>({effectId:g.effectId,family:g.effect.family,rounds:g.effect.rounds,clock:g.effect.clock,tick:g.effect.tick,stacking:g.effect.stacking,polarity:g.effect.polarity,tags:g.effect.tags,modifiers:g.effect.modifiers}))}:{}),...(u.damageProfile?{damageProfile:u.damageProfile}:{})})),
   battlefield:{zones:spec.rules.zones,edges:spec.rules.edges},failureContract:spec.failure,...(spec.campaignId?{campaignCompleted:state.outcome==='VICTORY'}:{})};
 }
 export function enemyCommand(checkpoint:TacticalCheckpoint):TacticalCommand {
