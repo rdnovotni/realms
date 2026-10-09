@@ -3,7 +3,7 @@ import { normalizeAttackAbilities,type AttackAbility,type AbilityEvent } from '.
 import { validateStatusProfile,deriveStatusProfile,statusTagShape,type StatusRules,type StatusProfile,type StatusEvent } from './tactical-status.js';
 import { normalizeCleanseAbilities,removeRoundEffect,type CleanseAbility,type CleansingEvent } from './tactical-cleansing.js';
 import { normalizeEffectGrants,validatePeriodicGrants,applyOnHitEffects,applyOnHealEffects,pulseRoundEffects,type PeriodicEvent,tickRoundEffects,effectStats,type EffectGrant,type ActiveRoundEffect,type EffectEvent } from './tactical-effects.js';
-import { resistanceFor,validateDamageProfile,type DamageProfile,type TypedDamageRules } from './tactical-damage.js';
+import { typedDamageRulesShape,validateTypedDamageRules,resistanceFor,validateDamageProfile,type DamageProfile,type TypedDamageRules } from './tactical-damage.js';
 import { Ajv } from 'ajv';
 import { DomainError } from '../foundation/errors.js';
 import { resolveAttack,validateStats,validateDamageRules,type CharacterStats,type DamageRules } from './character-mechanics.js';
@@ -18,7 +18,7 @@ const validateRulesShape=new Ajv({strict:true}).compile({type:'object',additiona
  damage:{type:'object'},zones:{type:'array',minItems:1,maxItems:32,uniqueItems:true,items:{type:'string',pattern:'^[a-z][a-z0-9_.-]{0,63}$'}},
  edges:{type:'array',maxItems:128,items:{type:'array',minItems:2,maxItems:2,items:{type:'string'}}},
  attackRange:{type:'integer',minimum:0,maximum:31},healRange:{type:'integer',minimum:0,maximum:31},healAmount:{type:'integer',minimum:1,maximum:1000000},roundLimit:{type:'integer',minimum:1,maximum:1000},
- healingAbilities:{type:'object',additionalProperties:false,required:['version'],properties:{version:{const:1}}},abilities:{type:'object',additionalProperties:false,required:['version'],properties:{version:{const:1}}},statusDefense:{type:'object',additionalProperties:false,required:['version','tags'],properties:{version:{const:1},tags:{type:'array',minItems:1,maxItems:32,uniqueItems:true,items:statusTagShape}}},healManaCost:{type:'integer',minimum:1,maximum:1000000},guardArmorBonus:{type:'integer',minimum:1,maximum:1000000},retreatDifficulty:{type:'integer',minimum:1,maximum:1000000},roundEffects:{type:'object',additionalProperties:false,required:['version'],properties:{version:{enum:[1,2,3]}}},typedDamage:{type:'object',additionalProperties:false,required:['version','types','defaultType','resistanceStacking'],properties:{version:{const:1},types:{type:'array',minItems:1,maxItems:32,uniqueItems:true,items:{type:'string',pattern:'^[a-z][a-z0-9_.-]{0,63}$'}},defaultType:{type:'string'},resistanceStacking:{const:'SUM_CAPPED'}}}
+ healingAbilities:{type:'object',additionalProperties:false,required:['version'],properties:{version:{const:1}}},abilities:{type:'object',additionalProperties:false,required:['version'],properties:{version:{const:1}}},statusDefense:{type:'object',additionalProperties:false,required:['version','tags'],properties:{version:{const:1},tags:{type:'array',minItems:1,maxItems:32,uniqueItems:true,items:statusTagShape}}},healManaCost:{type:'integer',minimum:1,maximum:1000000},guardArmorBonus:{type:'integer',minimum:1,maximum:1000000},retreatDifficulty:{type:'integer',minimum:1,maximum:1000000},roundEffects:{type:'object',additionalProperties:false,required:['version'],properties:{version:{enum:[1,2,3]}}},typedDamage:typedDamageRulesShape
 }});
 export function validateTacticalRules(value:unknown):asserts value is TacticalRules {
  if(!validateRulesShape(value))fail('INVALID_TACTICAL_RULES');
@@ -26,7 +26,7 @@ export function validateTacticalRules(value:unknown):asserts value is TacticalRu
  const r=value as TacticalRules;
   if(r.abilities&&!r.typedDamage)fail('TACTICAL_ABILITIES_REQUIRE_TYPED_DAMAGE');
   validateDamageRules(r.damage);
-  if(r.typedDamage&&!r.typedDamage.types.includes(r.typedDamage.defaultType))fail('INVALID_TACTICAL_DAMAGE_TYPE');
+  if(r.typedDamage)validateTypedDamageRules(r.typedDamage);
   if(r.zones.length<1||r.zones.length>32||new Set(r.zones).size!==r.zones.length||r.zones.some(z=>!/^[a-z][a-z0-9_.-]{0,63}$/.test(z))||r.edges.length>128||
     r.edges.some(([a,b])=>a===b||!r.zones.includes(a)||!r.zones.includes(b))||
     [r.attackRange,r.healRange].some(n=>!Number.isInteger(n)||n<0||n>31)||!Number.isInteger(r.healAmount)||r.healAmount<1||r.healAmount>1000000||!Number.isInteger(r.roundLimit)||r.roundLimit<1||r.roundLimit>1000)fail('INVALID_TACTICAL_RULES');
