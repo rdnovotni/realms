@@ -4,9 +4,9 @@
 
 The uploaded core design bible and **Design Documents.zip** remain the design authority. System 04 §9 places secondary effects after attack connection; System 24 §5 separates authored Effect definitions from source-bearing runtime instances, §7 normally ticks round effects at the affected creature's turn end, and §8 requires explicit stacking and readable behavior. This batch implements that numeric tactical slice using existing `EFFECT` entities and immutable encounter journals.
 
-Supported effects modify **accuracy, evasion or armor**, apply on a connected attack to an active opposing target, and last for an authored number of that target's turn endings. A connected zero-damage hit still fires the on-hit trigger, including damage immunity. Damage resistance does not imply condition immunity. Misses, hits that incapacitate a target, healing and non-attack actions do not apply these effects. No additional action budget or random roll is introduced.
+Version-one supported effects modify **accuracy, evasion or armor**, apply on a connected attack to an active opposing target, and last for an authored number of that target's turn endings. A connected zero-damage hit still fires the on-hit trigger, including damage immunity. Damage resistance does not imply condition immunity. Misses, hits that incapacitate a target, healing and non-attack actions do not apply these effects. No additional action budget or random roll is introduced.
 
-This is not the universal effect engine: damage/healing over time, buildup/hard control, effect resistance, cleansing, auras, cross-encounter or Adventure-Turn clocks and other hooks remain open. Fixture amounts demonstrate execution and are not a balanced launch catalog.
+Version two adds [damage/healing over time](tactical-periodic-effects.md). This is not the universal effect engine: buildup/hard control, effect resistance, cleansing, auras, cross-encounter or Adventure-Turn clocks and other hooks remain open. Fixture amounts demonstrate execution and are not a balanced launch catalog.
 
 ## Authoring contract
 
@@ -62,4 +62,4 @@ Independent tactical replay rebuilds grants from pinned sources, reproduces appl
 
 Focused scenarios exercise actual owned class/feat/gear and creature effects, effective attack changes, both stacking policies, owner-turn ticking, expiry, zero-damage connection, pinned publication, reconnect, concurrent retries, stale/illegal intents, late rollback, immutable-history corruption detection, source gates, inactive gear, ambiguity rejection, authenticated API boundaries, restricted runtime settlement and fresh encounters. The full regression also covers earlier unopted tactical history and basic campaign behavior.
 
-Pass 1 remains open for broader authored abilities/checks, damage-family inheritance/conditional resistance, DoT/HoT, buildup/control, cleansing and other clocks, surprise/opportunity reactions, stabilization/resurrection, full failure/injury contracts and owned/shared participants. The remaining seven release passes and operational certification are unchanged.
+Pass 1 remains open for broader authored abilities/checks, damage-family inheritance/conditional resistance, condition resistance, buildup/control, cleansing and other clocks, surprise/opportunity reactions, stabilization/resurrection, full failure/injury contracts and owned/shared participants. The remaining seven release passes and operational certification are unchanged.
