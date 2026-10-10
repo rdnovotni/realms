@@ -17,6 +17,8 @@ The core bible's earlier preference for tiny boosts is refined by System 17's mo
 
 ## Implementation boundaries
 
+The editorial refinement uses direct first-person language, removes repeated explanations and the promotional closing slogan, and keeps the same commitments. Planned rewards and trading are described in future tense. A distinct current-status panel states that donations are not being accepted yet. The reading column, paragraph contrast, and mobile section-link targets are refined without changing the homepage.
+
 [Database foundation](database-foundation.md) provides integer supporter-unit wallets but explicitly does not enable payments, settlement, fees or refunds. [Release readiness](release-readiness.md) requires verified receipts, idempotent grants, entitlement/reversal handling and reconciliation before supporter purchases launch. The public page therefore describes the intended model and explicitly states that donations, token purchases, supporter shop, token trading and recurring support are unavailable in this build.
 
 The source's approximate $10 unit, fractional amounts, cadence and refund proposals are not published as settled commercial terms. Prices, amounts, reward catalog, payment/refund details, and each reward's mechanics/restrictions must be finalized and disclosed before payments open. Future policy changes must preserve or explicitly reconcile these public commitments.

@@ -48,42 +48,40 @@ function monetizationPage() {
  const page=el('article','','public-page monetization-page');
  const back=link('← Back to the homepage','/');back.className='policy-back';
  const heading=el('header','','policy-heading'),title=el('h1','Monetization policy');title.tabIndex=-1;
- heading.append(el('span','Keeping the hearth alight','eyebrow'),title,
-  el('p','A free adventure, sustained by voluntary support.','policy-lead'));
- const promise=el('div','','policy-promise');promise.append(motif('compass'),el('p','The bulk of Realms will always be free to play for as long as we can maintain the game and cover its hosting and server costs. Supporting it is a choice, never a requirement to enjoy the full core experience.'));
+ heading.append(el('span','How we fund Realms','eyebrow'),title,
+  el('p','Free to play. Supported by players.','policy-lead'));
+ const promise=el('div','','policy-promise');promise.append(motif('compass'),el('p','The bulk of Realms will always be free, as long as we can maintain the game and cover hosting and server costs. You never need to pay to enjoy the full core experience.'));
  const principles=el('ul','','policy-principles');
- for(const [name,text] of [['Voluntary support','Donations help keep the game running.'],['No advertisements','Your adventure is an ad-free space.'],['No data selling','We will never sell your personal data.']] as const){
+ for(const [name,text] of [['Voluntary support','Contribute if you want to and can.'],['No advertisements','We will keep Realms ad-free.'],['No data selling','We will never sell your personal data.']] as const){
   const item=el('li');item.append(el('strong',name),el('span',text));principles.append(item);
  }
  const contents=el('nav','','policy-contents');contents.setAttribute('aria-label','On this page');contents.append(el('span','On this page'));
- for(const [name,id] of [['Free to play','free-to-play'],['Supporter tokens','supporter-tokens'],['Fair play','fair-play'],['What’s available','support-availability']] as const)contents.append(link(name,`#${id}`));
+ for(const [name,id] of [['Free game','free-to-play'],['Supporter tokens','supporter-tokens'],['Fair play','fair-play'],['Current status','support-availability']] as const)contents.append(link(name,`#${id}`));
  page.append(back,heading,promise,principles,contents);
  const blocks: [string,string,string[]][]=[
-  ['free-to-play','An adventure open to everyone',[
-   'Realms is designed to be donation funded. Voluntary contributions help pay for hosting, servers, and the ongoing work of maintaining the game. We want people to support it because they enjoy spending time here.',
-   'The main campaign, core progression, and the substantial majority of the game’s content and systems are intended to remain free. You will not need to donate, buy tokens, or subscribe to play a complete core game.',
-   'Keeping Realms available depends on being able to maintain it and meet its running costs. This is our commitment to a sustainable free game, rather than a guarantee that a service can run forever.'
+  ['free-to-play','The free game',[
+   'We want to fund Realms through voluntary donations. They help cover servers, hosting, and the work of keeping the game running. If you enjoy playing and choose to contribute, your support helps keep it available for everyone.',
+   'The main campaign, core progression, and most content and systems will stay free. Free players should have a complete game to enjoy. Free play will keep receiving new adventures and interesting systems. No donation or subscription is required.',
+   'We can keep that promise for as long as we can keep the game running. Hosting costs and maintenance are real, so we cannot promise the service will exist forever.'
   ]],
-  ['supporter-tokens','Donations & supporter tokens',[
-   'Donations buy supporter tokens. These tokens are the planned way to access optional, unique supporter content while helping fund Realms.',
-   'That content can include cosmetics, titles, music, unusual items or companions, and extra quests or small adventure areas. These are possibilities from our design plans, not a catalog of currently available rewards. Supporter content may offer different ways to play; it is not limited to cosmetic rewards.',
-   'None of it is required for the full core experience. Optional supporter adventures add something extra; they do not put the main story, essential progression, or a satisfying free game behind a paywall. Free content will continue to receive interesting new systems and adventures of its own.',
-   'The design also allows players to trade tokens and eligible supporter goods for in-game Gold, giving free players another route to supporter content. That market is planned, not live. Availability of individual goods and future reissues will vary; we are not promising that every item will always be obtainable.'
+  ['supporter-tokens','What supporter tokens are for',[
+   'When donations open, they will buy supporter tokens. You can spend those tokens on unique, optional content that helps fund Realms.',
+   'We are planning rewards such as cosmetics, titles, music, unusual items or companions, and extra quests or small adventure areas. Some may introduce different ways to play. None will be needed to finish the main story, progress through the core game, or enjoy a full free experience.',
+   'We also plan to let players trade tokens and eligible supporter goods for in-game Gold, so donating will not be the only way to access them. Individual items may be scarce, and reissues will be decided case by case.'
   ]],
-  ['fair-play','Support should never become an obligation',[
-   'Supporter mechanics must stay bounded. They may offer novelty, alternate play styles, or strength in a narrow niche, but cannot become mandatory power for progression, raids, or serious competition. Comparable gameplay power must remain available through free play.',
-   'Basic storage, loadouts, and automation are not paid upgrades. We will not sell raw Turns, directly sell Gold, offer paid loot boxes or gacha, or sell event-score and leaderboard advantages. Serious competitive formats can normalize or exclude supporter mechanics.',
-   'The planned supporter shop will explain what each reward does and its restrictions before you spend tokens. Supporting the game does not exempt an item from balance changes or a player from the rules.'
+  ['fair-play','Keeping support optional',[
+   'Supporter items can be useful or unusual, but they cannot become required for progression, raids, or serious competition. Comparable power must be available through free play. Competitive formats may disable supporter effects or put everyone on equal terms.',
+   'Basic storage, saved loadouts, and automation will stay free. We will not directly sell Gold or Turns, sell loot boxes or gacha, or let payments boost event scores or leaderboard results.',
+   'Before you spend tokens, the shop will explain each reward and its restrictions. Supporter items remain subject to balance changes, and supporters follow the same player rules as everyone else.'
   ]],
-  ['support-availability','Where things stand today',[
-   'Realms is still in development. Donations, token purchases, a supporter shop, player token trading, and recurring support are not available in this build. This page describes our funding policy and intended boundaries.',
-   'No subscription is required. If optional recurring support is introduced, its purpose will be to deliver supporter tokens—not to gate the core game or create subscription-only gameplay.',
-   'Prices, token amounts, the reward catalog, and payment and refund details will be published before payments open. We will announce any material policy changes and keep this page updated.'
+  ['support-availability','Before donations open',[
+   'Realms is still in development. We are not accepting donations or selling tokens yet. The supporter shop, token trading, and recurring support are also not available.',
+   'If we offer recurring support, it will deliver tokens. It will not unlock subscription-only gameplay or be required to play.',
+   'We will publish prices, token amounts, rewards, and payment and refund details before accepting payments. Any material changes to this policy will be announced and reflected here.'
   ]]
  ];
  for(const [id,name,paragraphs] of blocks){const block=section(id,name,'policy-section');for(const text of paragraphs)block.append(el('p',text));page.append(block);}
- const note=el('aside','','policy-closing');note.append(el('strong','A seat at the table, whether you support us or not.'),el('p','Play because you want to. Support because you can. Both are welcome in the Realms.'));
- page.append(note);return page;
+ return page;
 }
 /** Compact public entry screen. Account secrets are submitted only through GameSession. */
 export function renderLanding(session: GameSession): HTMLElement {
