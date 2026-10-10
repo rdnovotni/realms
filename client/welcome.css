@@ -101,6 +101,11 @@
 .policy-section h2{font-size:1.4rem;margin-bottom:12px;color:#454735}
 .monetization-page .policy-section p{max-width:none;font-size:.9rem;color:#484f42;margin:0 0 13px;line-height:1.8;text-wrap:pretty}
 .policy-section+.policy-section{border-top:1px solid #b8a78355;margin-top:13px}
+.policy-token-examples{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:18px 0 0}
+.policy-token-examples>div{border:1px solid #bbaa8580;border-radius:3px;background:#fffdf259;padding:15px}
+.policy-token-examples dt{font:1.5rem Georgia,serif;color:#3a513d;margin-bottom:7px}
+.policy-token-examples dd{margin:0;font-size:.8rem;line-height:1.6;color:#484f42}
+@media(max-width:650px){.policy-token-examples{grid-template-columns:1fr;gap:8px}.policy-token-examples>div{display:grid;grid-template-columns:46px 1fr;align-items:center;gap:12px;padding:12px 15px}.policy-token-examples dt{margin:0;font-size:1.3rem}}
 .monetization-page #support-availability{background:#e5e7d64d;border:1px solid #bbaa8570;border-left:3px solid #587054;border-radius:2px;padding:20px;margin-top:24px}
 .monetization-page #support-availability p:last-child{margin-bottom:0}
 @media(max-width:650px){.policy-heading h1{font-size:1.8rem}.policy-principles{grid-template-columns:1fr}.policy-principles li{padding:13px 16px}.policy-principles li+li{border-left:0;border-top:1px solid #bbaa8570}.policy-promise{gap:12px}.policy-promise .manuscript-icon{width:24px;height:24px}.policy-contents{gap:5px 16px}.policy-contents>span{flex-basis:100%}.policy-contents a{padding:10px 0}.policy-section h2{font-size:1.3rem}.monetization-page #support-availability{padding:17px}}

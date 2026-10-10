@@ -56,7 +56,7 @@ function monetizationPage() {
   const item=el('li');item.append(el('strong',name),el('span',text));principles.append(item);
  }
  const contents=el('nav','','policy-contents');contents.setAttribute('aria-label','On this page');contents.append(el('span','On this page'));
- for(const [name,id] of [['Free game','free-to-play'],['Supporter tokens','supporter-tokens'],['Fair play','fair-play'],['Current status','support-availability']] as const)contents.append(link(name,`#${id}`));
+ for(const [name,id] of [['Free game','free-to-play'],['Supporter tokens','supporter-tokens'],['Prices','supporter-prices'],['Fair play','fair-play'],['Payments & refunds','payments-refunds'],['Current status','support-availability']] as const)contents.append(link(name,`#${id}`));
  page.append(back,heading,promise,principles,contents);
  const blocks: [string,string,string[]][]=[
   ['free-to-play','The free game',[
@@ -69,18 +69,35 @@ function monetizationPage() {
    'We are planning rewards such as cosmetics, titles, music, unusual items or companions, and extra quests or small adventure areas. Some may introduce different ways to play. None will be needed to finish the main story, progress through the core game, or enjoy a full free experience.',
    'We also plan to let players trade tokens and eligible supporter goods for in-game Gold, so donating will not be the only way to access them. Individual items may be scarce, and reissues will be decided case by case.'
   ]],
+  ['supporter-prices','A simple token price',[
+   'One supporter token costs $10 USD. Each full token can be split into 10 mini supporter tokens, so one mini token represents $1 of support.',
+   'You do not need to donate $10 at once. A $3 donation gives you 3 mini supporter tokens. Smaller contributions count, too.'
+  ]],
   ['fair-play','Keeping support optional',[
    'Supporter items can be useful or unusual, but they cannot become required for progression, raids, or serious competition. Comparable power must be available through free play. Competitive formats may disable supporter effects or put everyone on equal terms.',
    'Basic storage, saved loadouts, and automation will stay free. We will not directly sell Gold or Turns, sell loot boxes or gacha, or let payments boost event scores or leaderboard results.',
    'Before you spend tokens, the shop will explain each reward and its restrictions. Supporter items remain subject to balance changes, and supporters follow the same player rules as everyone else.'
   ]],
+  ['payments-refunds','Payments & refunds',[
+   'We expect to use PayPal when donations open, to keep contributing straightforward. We may add other payment options later.',
+   'Refunds will be handled case by case. Reasonable requests are welcome, and we will consider the circumstances of each request. There is no blanket no-refunds policy.',
+   'We will publish the donation and refund-request process before accepting payments.'
+  ]],
   ['support-availability','Before donations open',[
    'Realms is still in development. We are not accepting donations or selling tokens yet. The supporter shop, token trading, and recurring support are also not available.',
    'If we offer recurring support, it will deliver tokens. It will not unlock subscription-only gameplay or be required to play.',
-   'We will publish prices, token amounts, rewards, and payment and refund details before accepting payments. Any material changes to this policy will be announced and reflected here.'
+   'The prices and refund approach above are our policy for launch. The reward catalog and payment process are still being prepared. Any material changes to this policy will be announced and reflected here.'
   ]]
  ];
- for(const [id,name,paragraphs] of blocks){const block=section(id,name,'policy-section');for(const text of paragraphs)block.append(el('p',text));page.append(block);}
+ for(const [id,name,paragraphs] of blocks){
+  const block=section(id,name,'policy-section');for(const text of paragraphs)block.append(el('p',text));
+  if(id==='supporter-prices'){
+   const examples=el('dl','','policy-token-examples');examples.setAttribute('aria-label','Donation examples');
+   for(const [amount,reward] of [['$1','1 mini supporter token'],['$3','3 mini supporter tokens'],['$10','1 supporter token · splits into 10 minis']] as const){const example=el('div');example.append(el('dt',amount),el('dd',reward));examples.append(example);}
+   block.append(examples);
+  }
+  page.append(block);
+ }
  return page;
 }
 /** Compact public entry screen. Account secrets are submitted only through GameSession. */
