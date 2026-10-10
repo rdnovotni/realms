@@ -1,3 +1,5 @@
+import { gameView } from './domains/game-view.js';
+import { registerClient } from './client-assets.js';
 import { createSharedTactical,joinSharedTactical,startSharedTactical,takeSharedTacticalAction,claimSharedTactical,cancelSharedTactical,sharedTacticalView,sharedInvitationView } from './domains/tactical-shared.js';
 import { recruitCompanion,companionsView } from './domains/tactical-companions.js';
 import { startTacticalCombat,takeTacticalAction,tacticalView } from './domains/tactical-combat.js';
@@ -37,6 +39,7 @@ const passwordField={type:'string',minLength:1,maxLength:128};
 export function buildApp(pool: pg.Pool, auth:Authentication, logger = false) {
   const app = Fastify({ logger: logger ? { redact: ['req.headers.authorization','req.body'] } : false, bodyLimit: 16384,
     ajv: { customOptions: { removeAdditional: false, coerceTypes: false } } });
+  registerClient(app,auth);
   app.decorateRequest('accountId',null);app.decorateRequest('principal',null);
   app.addHook('onSend',async (request,reply,payload)=>{if(request.url.startsWith('/api/'))reply.header('Cache-Control','no-store');return payload;});
   app.get('/health/live', async () => ({ status: 'ok', service: 'realms-server' }));
@@ -70,6 +73,7 @@ export function buildApp(pool: pg.Pool, auth:Authentication, logger = false) {
         const client=await pool.connect();try{await authorizeSession(client,request.principal,'GAME_READ');}finally{client.release();}
       }
     });
+    protectedApp.get('/api/v1/client/state',async(request,reply)=>{reply.header('Cache-Control','no-store');return gameView(pool,actor(request),request.principal??undefined);});
     protectedApp.get('/api/v1/progression/proficiencies',async request=>proficiencyView(pool,actor(request)));
     protectedApp.get('/api/v1/progression/attributes',async request=>attributeView(pool,actor(request)));
     protectedApp.get('/api/v1/progression/feats',async request=>featView(pool,actor(request)));
