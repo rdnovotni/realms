@@ -34,11 +34,20 @@ The bootstrap projects only owned carried gear names, position/level/binding con
 
 ## Boundaries and modules
 
+### Public main screen
+
+The signed-out screen provides game information, account-access tabs, announcements, a current-build changelog, expandable onboarding help, and a newsletter availability area. The landscape is drawn with local CSS; it needs no external images, fonts, scripts, or network requests. Content remains accessible when the account configuration request fails.
+
+Log in uses the existing session API (or private development key). A newly connected account whose build is unconfigured opens the Character screen automatically; returning configured characters retain the existing adventure/combat routing. The account-access tabs support arrow keys, Home, and End.
+
+Public account signup, email-based password recovery, and newsletter delivery are not implemented by this screen. Their panels state that explicitly and do not collect credentials or email addresses for nonexistent services. Account enrollment remains an administrator operation. The newsletter section can be replaced with a real subscription form when an approved delivery service and consent/unsubscribe flow exist. Announcements and changelog summaries are authored in `client/landing.ts`; update them alongside game releases. They describe the development build and do not imply scheduled releases, player counts, or service uptime.
+
 - `client/types.ts`: version-one public read contracts. Browser compilation has DOM libraries and excludes Node types/server modules.
 - `client/api.ts`: same-origin JSON transport, in-memory bearer token, no credential persistence, bounded request timeout and explicit errors.
 - `client/session.ts`: saved-state loading, revision agreement, one pending action, exact-envelope retry after an uncertain response, stale-state resync, explicit session revocation on sign-out. A confirmed action followed by a failed read requires refresh and cannot be resubmitted.
 - `client/equipment.ts`: equipment drafts, binding acknowledgement and saved-template controls, all submitted through the central session.
 - `client/views.ts` and `client/app.ts`: semantic, text-safe DOM, navigation and structured intents. All server-provided text is inserted with `textContent`, never HTML. UI target/range/resource hints support clicks; the server decides legality.
+- `client/landing.ts`: public main screen, account-access navigation, and authored development updates.
 - `src/domains/game-view.ts`: authenticated bounded bootstrap: owned current run, effective write permission, saved encounter identity, latest solo tactical outcome, discovered solo adventures and carried item names/counts. Uses account/run read locks in action-compatible order. Lists return the first 100 entries and an explicit overflow indicator. Mechanics, loot tables, unrevealed definitions, seeds and other accounts are excluded.
 - `src/client-assets.ts`: explicit asset allowlist, same-origin Content Security Policy, no caching of the shell/config, no credential-bearing templates or arbitrary file paths. Assets are plain browser ES modules compiled by TypeScript; no framework/bundler or external fonts are required.
 

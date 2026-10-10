@@ -1,8 +1,10 @@
 import { GameSession } from './session.js';
 import { render,type Screen } from './views.js';
 const root=document.getElementById('app');if(!root)throw new Error('Missing client root');
-const session=new GameSession();let screen:Screen='adventure',previousActive:string|null=null;
+const session=new GameSession();let screen:Screen='adventure',previousActive:string|null=null,previousConnected=false;
 const draw=()=>{
+ if(session.snapshot&&!previousConnected&&session.snapshot.progression.build.mode==='UNCONFIGURED')screen='character';
+ previousConnected=!!session.snapshot;
  const active=session.snapshot?.game.activeEncounter;
  if(active?.kind==='TACTICAL'&&active.id!==previousActive)screen='combat';
  previousActive=active?.id??null;
