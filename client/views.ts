@@ -12,6 +12,7 @@ function heading(text:string){const h=el('h1',text);h.tabIndex=-1;return h;}
 function section(title:string){return add(el('section','','panel'),el('h2',title));}
 function field(text:string,name:string,type='text'){const l=el('label',text),input=el('input');input.name=name;input.type=type;input.required=true;input.autocomplete=name==='token'?'off':type==='password'?'current-password':name==='handle'?'username':'off';l.append(input);return {label:l,input};}
 export function render(root:HTMLElement,session:GameSession,screen:Screen,navigate:(screen:Screen)=>void,onCommand:(command:Command)=>void){
+ root.classList.toggle('public-shell',!session.snapshot);
  const previousFocus=document.activeElement instanceof HTMLElement?document.activeElement.dataset.focus:null;
  if(previousFocus)retainedFocus=previousFocus;
  const fragment=document.createDocumentFragment(),top=el('header','','topbar');add(top,add(el('div','','wordmark'),el('span','REALMS'),el('small','A world worth wandering')));

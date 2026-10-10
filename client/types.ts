@@ -1,4 +1,4 @@
-export type Config={protocolVersion:1;authMode:'development'|'sessions'};
+export type Config={protocolVersion:1;authMode:'development'|'sessions';previewOnly?:boolean};
 export type Failure={destination:string;turnCost:number;recoveryHealth:number;allowSurrender?:boolean;goldLossBps?:number;goldLossCap?:number;durabilityWearBps?:number;injuryEffectId?:string};
 export type GameView={equipment?:EquipmentPlan;gear?:Gear[];loadouts?:Loadout[];hasMoreGear?:boolean;protocolVersion:1;run:{runId:string;turns:number;revision:number;status:string;mode:string};canWrite:boolean;activeEncounter:{id:string;kind:'TACTICAL'|'OTHER'}|null;latestEncounter:{id:string;name:string;outcome:string}|null;adventures:{id:string;name:string;description:Record<string,unknown>;turnCost:number;failure:Failure}[];inventory:{id:string;name:string;quantity:string;binding:string}[];hasMoreAdventures:boolean;hasMoreItems:boolean};
 export type Progression={revision:number;level:number;xp:string;build:{mode:'CONFIGURED'|'UNCONFIGURED';classes?:{classId:string;nativeLevel:number}[];attributes?:Record<string,number>};readiness:{pendingLevels:number;nextThreshold:string|null}|null};

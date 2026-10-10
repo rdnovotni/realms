@@ -1,0 +1,7 @@
+# Realms front-page artwork
+
+`realms-dawn.webp` is original concept artwork generated with the built-in imagegen tool, then resized to 1280 pixels wide and encoded as WebP at quality 78 without cropping or altering the composition. It is atmosphere for the public welcome screen, not a gameplay screenshot or a promise of specific playable locations. The browser loads it from the same origin through the explicit client-asset allowlist.
+
+## Generation prompt
+
+Use case: illustration. Asset type: wide landscape hero artwork for the browser fantasy role-playing game Realms. Create an original painterly fantasy landscape, no text, no logos, no UI. A quiet winding stone road through a lush ancient forest leads to a distant small medieval citadel and watchtower on a rocky ridge, waterfalls and misty blue-green mountains behind, soft golden dawn light in the sky. A tiny cloaked traveler seen from behind on the path suggests an invitation to adventure, not combat. Elegant hand-painted book-cover illustration, detailed natural foliage and weathered architecture, atmospheric depth, sophisticated earthy evergreen, sage, ivory and antique-gold palette, luminous but restrained. Wide 3:2 composition suitable for a panoramic crop, keep the road, citadel and strongest focal details toward the center and right; upper left is calmer mist and trees. No weapons closeups, no identifiable existing fantasy franchises, no typography, no border, no watermark. This is aspirational visual atmosphere, not a screenshot of gameplay.

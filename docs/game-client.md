@@ -36,7 +36,9 @@ The bootstrap projects only owned carried gear names, position/level/binding con
 
 ### Public main screen
 
-The signed-out screen provides game information, account-access tabs, announcements, a current-build changelog, expandable onboarding help, and a newsletter availability area. The landscape is drawn with local CSS; it needs no external images, fonts, scripts, or network requests. Content remains accessible when the account configuration request fails.
+The signed-out screen provides an illustrated game introduction, account-access tabs with a password visibility control, an interactive field guide for character/combat/equipment systems, announcements, a filterable current-build changelog, onboarding FAQs, and a newsletter availability area. The original landscape illustration is an optimized local WebP, explicitly labeled concept artwork. Its prompt and provenance are in `client/art/README.md`. `client/welcome.css` scopes the public theme; authenticated gameplay retains its existing layout. No externally hosted images, fonts, scripts, or services are required. Content remains accessible when the account configuration request fails.
+
+For a database-free visual preview, run `npm run preview:welcome` (or through `scripts/runtime.sh` with the local runtime installed) and open `http://127.0.0.1:3010/`. This builds the browser modules and serves only the public client, marks configuration as `previewOnly`, and disables login submission. It never registers authentication or gameplay endpoints. To actually play, use the game server or disposable playtest instructions above. Opening `client/index.html` directly as a file cannot load server asset routes; its loading fallback explains the required server and links to the local preview.
 
 Log in uses the existing session API (or private development key). A newly connected account whose build is unconfigured opens the Character screen automatically; returning configured characters retain the existing adventure/combat routing. The account-access tabs support arrow keys, Home, and End.
 
