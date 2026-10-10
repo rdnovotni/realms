@@ -1,6 +1,6 @@
 export type Config={protocolVersion:1;authMode:'development'|'sessions'};
 export type Failure={destination:string;turnCost:number;recoveryHealth:number;allowSurrender?:boolean;goldLossBps?:number;goldLossCap?:number;durabilityWearBps?:number;injuryEffectId?:string};
-export type GameView={protocolVersion:1;run:{runId:string;turns:number;revision:number;status:string;mode:string};canWrite:boolean;activeEncounter:{id:string;kind:'TACTICAL'|'OTHER'}|null;latestEncounter:{id:string;name:string;outcome:string}|null;adventures:{id:string;name:string;description:Record<string,unknown>;turnCost:number;failure:Failure}[];inventory:{id:string;name:string;quantity:string;binding:string}[];hasMoreAdventures:boolean;hasMoreItems:boolean};
+export type GameView={equipment?:EquipmentPlan;gear?:Gear[];loadouts?:Loadout[];hasMoreGear?:boolean;protocolVersion:1;run:{runId:string;turns:number;revision:number;status:string;mode:string};canWrite:boolean;activeEncounter:{id:string;kind:'TACTICAL'|'OTHER'}|null;latestEncounter:{id:string;name:string;outcome:string}|null;adventures:{id:string;name:string;description:Record<string,unknown>;turnCost:number;failure:Failure}[];inventory:{id:string;name:string;quantity:string;binding:string}[];hasMoreAdventures:boolean;hasMoreItems:boolean};
 export type Progression={revision:number;level:number;xp:string;build:{mode:'CONFIGURED'|'UNCONFIGURED';classes?:{classId:string;nativeLevel:number}[];attributes?:Record<string,number>};readiness:{pendingLevels:number;nextThreshold:string|null}|null};
 export type BuildOptions={classes:{classId:string;name:string;rulesId:string;maximumNativeLevel:number}[];rules:{rulesId:string;presets:{key:string;attributes:Record<string,number>}[]}[]};
 export type Unit={id:string;side:'PARTY'|'ENEMY';zone:string;health:number;maxHealth:number;mana:number;maxMana:number;state:string;strikes:number;effects?:{effectId:string;family:string;polarity:string;remaining:number;clock:string;control?:string;removal?:{method:string;difficulty:number}}[];resources?:Record<string,number>;cooldowns?:Record<string,number>;concentration?:{token:string;abilityId:string}|null};
@@ -9,3 +9,8 @@ export type Tactical={instanceId:string;revision:number;encounterRevision:number
 export type Command={actorId:string;kind:string;targetId?:string;abilityId?:string;effectId?:string;zone?:string};
 export type Snapshot={game:GameView;progression:Progression;options:BuildOptions;battle:Tactical|null};
 export type Notice={text:string;kind:'info'|'error'|'success'};
+
+export type EquipmentAssignment={set:'WORN'|'A'|'B';slot:string;itemId:string};
+export type EquipmentPlan={activeSet:'A'|'B';slots:EquipmentAssignment[]};
+export type Gear={id:string;name:string;binding:string;slots:string[];hands:number;minimumLevel:number;bindingPolicy:string;eligible:boolean;proficiencyMet:boolean;manualLocked:boolean;protectedLoadouts:string[];condition:number|null;maximumCondition:number|null};
+export type Loadout={key:string;name:string;plan:EquipmentPlan;protectItems:boolean};

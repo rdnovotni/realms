@@ -1,3 +1,4 @@
+import { renderEquipment } from './equipment.js';
 import type { GameSession } from './session.js';
 import type { Command,Snapshot,Failure } from './types.js';
 export type Screen='adventure'|'character'|'pack'|'combat';
@@ -27,7 +28,7 @@ export function render(root:HTMLElement,session:GameSession,screen:Screen,naviga
   const help=section('Your next step');add(help,el('p',snapshot.progression.build.mode!=='CONFIGURED'?'Choose a class and starting attributes to shape this life.':snapshot.game.activeEncounter?'Your encounter is saved. Continue from the current turn.':snapshot.progression.readiness?.pendingLevels?'You have earned a level. Choose how your character grows.':'Choose a known adventure. Each entry costs one Turn.','help'),button(snapshot.progression.build.mode!=='CONFIGURED'?'Create your build':'View character',()=>navigate('character'),false,'small'));left.append(help);
   const main=el('main');main.id='main';main.setAttribute('aria-busy',String(session.busy));
   if(screen==='character')renderCharacter(main,snapshot,session,disabled);
-  else if(screen==='pack')renderPack(main,snapshot);
+  else if(screen==='pack')renderPack(main,snapshot,session,disabled);
   else if(screen==='combat'&&snapshot.battle)renderCombat(main,snapshot,disabled,onCommand,navigate);
   else renderAdventure(main,snapshot,session,disabled,navigate);
   const right=el('aside','','right-column'),journal=section('Journey journal');add(journal,el('p','The moments that shape this life.','muted help'));
@@ -58,7 +59,7 @@ function renderCharacter(main:HTMLElement,s:Snapshot,session:GameSession,disable
   else main.append(el('p','Your next level becomes available through earned experience.','empty'));
  }
 }
-function renderPack(main:HTMLElement,s:Snapshot){add(main,heading('What you carry.'),el('p','Equipment, materials, and the small treasures collected along the way.','muted'));const pack=section('Your pack');for(const item of s.game.inventory)add(pack,add(el('div','','pack-row'),add(el('div'),el('strong',item.name),el('small',label(item.binding))),el('strong',`× ${item.quantity}`)));if(!s.game.inventory.length)pack.append(el('p','Your pack is empty.','muted'));if(s.game.hasMoreItems)pack.append(el('p','Showing the first 100 carried items.','help'));main.append(pack);}
+function renderPack(main:HTMLElement,s:Snapshot,session:GameSession,disabled:boolean){add(main,heading('What you carry.'),el('p','Equipment, materials, and the small treasures collected along the way.','muted'));const pack=section('Your pack');for(const item of s.game.inventory)add(pack,add(el('div','','pack-row'),add(el('div'),el('strong',item.name),el('small',label(item.binding))),el('strong',`× ${item.quantity}`)));if(!s.game.inventory.length)pack.append(el('p','Your pack is empty.','muted'));if(s.game.hasMoreItems)pack.append(el('p','Showing the first 100 carried items.','help'));main.append(pack);renderEquipment(main,s,session,disabled);}
 function renderCombat(main:HTMLElement,s:Snapshot,disabled:boolean,send:(c:Command)=>void,navigate:(s:Screen)=>void){
  const b=s.battle!;add(main,add(el('div','','battle-top'),add(el('div'),el('span',`Round ${b.round}`,'eyebrow'),heading(b.outcome?'An encounter remembered.':'Choose your next move.')),el('span',b.outcome?label(b.outcome):b.currentActor==='hero'?'Your turn':`${label(b.currentActor??'')} acts next`,'tag')));
  const battlefield=el('div','','battlefield');for(const zone of b.battlefield.zones){const box=add(el('section','','zone'),el('h3',label(zone))),units=el('div','','units');for(const u of b.units.filter(u=>u.zone===zone)){const card=add(el('article','',`unit ${u.side.toLowerCase()} ${u.id===b.currentActor?'current':''}`),el('strong',label(u.id)),el('p',`${u.health} / ${u.maxHealth} health · ${label(u.state)}`));const meter=el('div','','meter'),filled=el('span'),missing=el('span');filled.style.flexGrow=String(u.health);missing.className='missing';missing.style.flexGrow=String(Math.max(0,u.maxHealth-u.health));add(card,add(meter,filled,missing),el('p',`${u.mana} / ${u.maxMana} Mana`));for(const effect of u.effects??[])card.append(el('p',`${label(effect.family)} · ${effect.remaining} ${label(effect.clock)}`,'tag'));units.append(card);}box.append(units);battlefield.append(box);}main.append(battlefield);

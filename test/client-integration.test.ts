@@ -2,11 +2,13 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { testDatabase,actor } from './helpers.js';
-import { tacticalPackage,envelope } from './tactical-fixture.js';
+import { tacticalPackage,tacticalFixture,envelope } from './tactical-fixture.js';
 import { publishContent } from '../src/domains/content.js';
 import { enrollPassword,requireLogin } from '../src/auth/sessions.js';
 import { buildApp } from '../src/app.js';
 import { integrityReport } from '../src/foundation/integrity.js';
+import { executeAction,advanceRevision } from '../src/foundation/action.js';
+import { grantItem } from '../src/domains/item-accounting.js';
 
 test('client shell is public and inert, while bootstrap protects account discovery, pinned content and session write scope',async()=>{
  const db=await testDatabase(),app=buildApp(db.pool,{mode:'sessions',throttleKey:'a'.repeat(64)});try{
@@ -15,6 +17,29 @@ test('client shell is public and inert, while bootstrap protects account discove
   const login=await requireLogin(db.pool,'client_user','A secure test password 47!','Browser'),headers={authorization:`Bearer ${login.token}`};const snapshot=(await app.inject({url:'/api/v1/client/state',headers})).json();assert.equal(snapshot.canWrite,true);assert.equal(snapshot.run.runId,f.run);assert.deepEqual(snapshot.adventures.map((v:{id:string})=>v.id),['encounter.tactical']);const serialized=JSON.stringify(snapshot);for(const word of ['tacticalCombat','seed','lootTableId','monster.tactical','secret'])assert.ok(!serialized.includes(word),word);
   const ro=await requireLogin(db.pool,'client_user','A secure test password 47!','Read only',true),readonly={authorization:`Bearer ${ro.token}`};assert.equal((await app.inject({url:'/api/v1/client/state',headers:readonly})).json().canWrite,false);assert.equal((await app.inject({method:'POST',url:'/api/v1/tactical/start',headers:readonly,payload:{...envelope(0,'START_TACTICAL'),definitionId:'encounter.tactical'}})).statusCode,403);
   const foreign=await requireLogin(db.pool,'other_client','A secure test password 47!','Other');assert.equal((await app.inject({url:'/api/v1/client/state',headers:{authorization:`Bearer ${foreign.token}`}})).json().adventures.length,0);assert.equal((await db.pool.query('SELECT revision,turns FROM runs WHERE id=$1',[f.run])).rows[0].revision,0);
+ }finally{await app.close();await db.close();}
+});
+
+test('client preparation projects owned gear, preserves binding and loadout protection, and affects the next tactical snapshot',async()=>{
+ const db=await testDatabase(),app=buildApp(db.pool,{mode:'sessions',throttleKey:'c'.repeat(64)});try{
+  const p=tacticalPackage(),bound=structuredClone(p.entities.find(e=>e.id==='item.sword')!);bound.id='item.boundblade';bound.definition.name='Binding blade';bound.definition.mechanics!.equipment={version:2,slots:['MAIN_HAND'],hands:1,minimumLevel:1,bindingPolicy:'ACCOUNT_ON_ACTIVE_EQUIP'};p.entities.push(bound);
+  const f=await tacticalFixture(db.pool,p),other=await actor(db.pool,f.release);await enrollPassword(db.pool,f.account,'client_gear','A secure test password 47!');await enrollPassword(db.pool,other.account,'foreign_gear','A secure test password 47!');
+  const container=(await db.pool.query("SELECT b.id FROM inventory_containers b JOIN state_scopes s ON s.id=b.scope_id WHERE s.run_id=$1 AND b.kind='CARRIED'",[f.run])).rows[0].id;
+  let blade='';await executeAction(db.pool,f.account,envelope(f.revision,'CLIENT_TEST_GEAR'),{},async c=>{blade=(await grantItem(c,'blade',{containerId:container,definitionId:'item.boundblade',quantity:'1',sourceCode:'FIXTURE'},'Fixture')).itemId;return {revision:await advanceRevision(c)};});
+  const login=await requireLogin(db.pool,'client_gear','A secure test password 47!','Browser'),headers={authorization:`Bearer ${login.token}`};
+  async function read(){const r=await app.inject({url:'/api/v1/client/state',headers});assert.equal(r.statusCode,200,r.body);return r.json();}
+  async function action(url:string,type:string,parameters:Record<string,unknown>){const before=await read(),payload={...envelope(before.run.revision,type),...parameters};const r=await app.inject({method:'POST',url,headers,payload});assert.equal(r.statusCode,200,r.body);return {result:r.json(),payload};}
+  let state=await read();assert.equal(state.gear.length,3);assert.equal(state.equipment.slots.length,2);assert.equal(state.gear.find((g:{id:string})=>g.id===blade).bindingPolicy,'ACCOUNT_ON_ACTIVE_EQUIP');assert.equal(state.gear.find((g:{id:string})=>g.id===blade).binding,'TRADEABLE');
+  for(const word of ['combatModifiers','attackMin','tacticalKit','sourceCode'])assert.ok(!JSON.stringify(state.gear).includes(word));
+  const foreign=await requireLogin(db.pool,'foreign_gear','A secure test password 47!','Other');const foreignState=(await app.inject({url:'/api/v1/client/state',headers:{authorization:`Bearer ${foreign.token}`}})).json();assert.deepEqual(foreignState.gear,[]);assert.deepEqual(foreignState.equipment.slots,[]);assert.deepEqual(foreignState.loadouts,[]);
+  const ro=await requireLogin(db.pool,'client_gear','A secure test password 47!','Read only',true);assert.equal((await app.inject({method:'POST',url:'/api/v1/equipment',headers:{authorization:`Bearer ${ro.token}`},payload:{...envelope(state.run.revision,'SET_EQUIPMENT'),activeSet:'A',slots:[]}})).statusCode,403);
+  const slots=[...state.equipment.slots,{set:'B',slot:'MAIN_HAND',itemId:blade},{set:'B',slot:'OFF_HAND',itemId:f.gear.shield}];const applied=await action('/api/v1/equipment','SET_EQUIPMENT',{activeSet:'B',slots});assert.ok(applied.result.boundItemIds.includes(blade));assert.equal((await app.inject({method:'POST',url:'/api/v1/equipment',headers,payload:applied.payload})).json().replayed,true);
+  await action('/api/v1/equipment/loadouts/save','SAVE_LOADOUT',{key:'road',name:'Road kit'});state=await read();assert.equal(state.loadouts[0].protectItems,true);assert.ok(state.gear.find((g:{id:string})=>g.id===blade).protectedLoadouts.includes('road'));
+  await action('/api/v1/equipment','SET_EQUIPMENT',{activeSet:'A',slots:[]});state=await read();assert.equal(state.gear.find((g:{id:string})=>g.id===blade).binding,'ACCOUNT_BOUND');assert.ok(state.gear.find((g:{id:string})=>g.id===blade).protectedLoadouts.includes('road'));
+  await action('/api/v1/equipment/loadouts/road/apply','SET_EQUIPMENT',{});await action('/api/v1/equipment/loadouts/road/protection','SET_LOADOUT_PROTECTION',{protectItems:false});state=await read();assert.equal(state.loadouts[0].protectItems,false);assert.deepEqual(state.gear.find((g:{id:string})=>g.id===blade).protectedLoadouts,[]);assert.equal(state.equipment.activeSet,'B');
+  await action('/api/v1/equipment/loadouts/road/delete','DELETE_LOADOUT',{});assert.deepEqual((await read()).loadouts,[]);
+  const start=await action('/api/v1/tactical/start','START_TACTICAL',{definitionId:'encounter.tactical'});assert.equal(start.result.partyCapabilities.find((u:{id:string})=>u.id==='hero').guard,true);assert.equal(start.result.units.find((u:{id:string})=>u.id==='hero').maxHealth,35);
+  state=await read();const denied=await app.inject({method:'POST',url:'/api/v1/equipment',headers,payload:{...envelope(state.run.revision,'SET_EQUIPMENT'),activeSet:'A',slots:[]}});assert.equal(denied.statusCode,409);assert.equal(denied.json().error,'INSTANCE_STILL_ACTIVE');assert.deepEqual((await read()).equipment,state.equipment);assert.ok(Object.values(await integrityReport(db.pool)).every(n=>n===0));
  }finally{await app.close();await db.close();}
 });
 test('client API completes starting build, saved encounter reconnect, victory rewards, recovery and earned level through authoritative routes',async()=>{

@@ -4,6 +4,8 @@ import { ApiClient,ApiError,type Fetcher } from '../client/api.js';
 import type { Snapshot } from '../client/types.js';
 import { GameSession } from '../client/session.js';
 import { zoneDistance,failureSummary } from '../client/views.js';
+import { equipmentProblems,bindingConsequences } from '../client/equipment.js';
+import type { EquipmentPlan,Gear } from '../client/types.js';
 const json=(value:unknown,status=200)=>new Response(JSON.stringify(value),{status,headers:{'Content-Type':'application/json'}});
 function harness(authMode:'development'|'sessions'='development'){
  let revision=0,canWrite=true,post:(path:string,init:RequestInit)=>Promise<Response>=async(path)=>json(path.endsWith('/login')?{token:'private-token'}:{}),readsFail=false;
@@ -47,4 +49,15 @@ test('default transport calls native fetch with its required global receiver',as
 
 test('sign out forgets credentials and account data after an expired session or lost revocation response',async()=>{
  for(const fail of [async()=>json({error:'UNAUTHORIZED'},401),async()=>{throw Error('response lost after revocation');}]){const h=harness('sessions');await connect(h);h.setPost(fail);await h.session.logout();assert.equal(h.session.snapshot,null);assert.equal(h.session.pending,null);assert.equal(h.session.busy,false);assert.match(h.session.notice.text,/Signed out on this device/);h.setReadFailure(true);await h.session.refresh();assert.equal((h.calls.at(-1)!.init.headers as Record<string,string>).Authorization,'Bearer ');assert.equal(h.session.snapshot,null);}
+});
+
+const equipmentGear:Gear[]=[{id:'sword',name:'Sword',binding:'TRADEABLE',slots:['MAIN_HAND'],hands:1,minimumLevel:1,bindingPolicy:'ACCOUNT_ON_ACTIVE_EQUIP',eligible:true,proficiencyMet:true,manualLocked:false,protectedLoadouts:[],condition:null,maximumCondition:null},{id:'shield',name:'Shield',binding:'TRADEABLE',slots:['OFF_HAND'],hands:1,minimumLevel:1,bindingPolicy:'PRESERVE',eligible:true,proficiencyMet:true,manualLocked:false,protectedLoadouts:[],condition:null,maximumCondition:null},{id:'greatblade',name:'Greatblade',binding:'TRADEABLE',slots:['MAIN_HAND'],hands:2,minimumLevel:1,bindingPolicy:'PRESERVE',eligible:true,proficiencyMet:true,manualLocked:false,protectedLoadouts:[],condition:null,maximumCondition:null}];
+test('preparation accepts shared weapon identities across sets and catches conflicts without changing the draft',()=>{
+ const plan:EquipmentPlan={activeSet:'A',slots:[{set:'A',slot:'MAIN_HAND',itemId:'sword'},{set:'B',slot:'MAIN_HAND',itemId:'sword'}]},before=structuredClone(plan);assert.deepEqual(equipmentProblems(plan,equipmentGear,1),[]);assert.deepEqual(plan,before);
+ const conflict:EquipmentPlan={activeSet:'B',slots:[{set:'B',slot:'MAIN_HAND',itemId:'greatblade'},{set:'B',slot:'OFF_HAND',itemId:'shield'}]};assert.match(equipmentProblems(conflict,equipmentGear,1).join(' '),/clear the off hand/);
+ assert.match(equipmentProblems({activeSet:'A',slots:[{set:'A',slot:'MAIN_HAND',itemId:'missing'}]},equipmentGear,1).join(' '),/not in the available carried gear/);
+ assert.match(equipmentProblems(plan,equipmentGear.map(g=>({...g,proficiencyMet:false})),1).join(' '),/requirements/);
+});
+test('binding preview distinguishes inactive prepared gear from active or already bound gear',()=>{
+ const plan:EquipmentPlan={activeSet:'A',slots:[{set:'B',slot:'MAIN_HAND',itemId:'sword'}]};assert.deepEqual(bindingConsequences(plan,equipmentGear),[]);assert.deepEqual(bindingConsequences({...plan,activeSet:'B'},equipmentGear),['Sword']);assert.deepEqual(bindingConsequences({...plan,activeSet:'B'},equipmentGear.map(g=>({...g,binding:'ACCOUNT_BOUND'}))),[]);
 });

@@ -132,3 +132,17 @@ small,.muted{color:var(--muted)}
 button:disabled{opacity:.7}
 .character small{color:#e5eddc}
 }
+.equipment-panel,.gear-card{margin-top:1rem}
+.equipment-panel fieldset{border:0;padding:0;margin:0;min-width:0}
+.equipment-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem}
+.equipment-grid label{min-width:0}
+.equipment-grid select{width:100%;min-width:0}
+.equipment-set{margin:1.2rem 0}
+.worn-gear summary{cursor:pointer;padding:.75rem 0;font-weight:600}
+.gear-card{border-top:1px solid var(--line);padding-top:1rem}
+.gear-card button{margin:.25rem .4rem .25rem 0}
+.binding-ack{display:flex;align-items:flex-start;gap:.6rem;margin:1rem 0}
+.binding-ack[hidden]{display:none}
+.binding-ack input{width:auto;flex:none;margin:.2rem 0}
+@media(max-width:680px){.equipment-grid{grid-template-columns:1fr}}
+.loadout-confirmation{border:1px solid var(--line);padding:1rem;margin-top:.75rem;background:var(--paper)}
