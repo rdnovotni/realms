@@ -9,7 +9,7 @@ case "$task_operation" in
     node scripts/configure.mjs
     if [[ ! -f .state/postgres/PG_VERSION ]]; then
       initdb -D "$PWD/.state/postgres" -L "$PWD/.local/postgresql/usr/share/postgresql/18" -U realms --pwfile="$PWD/.state/db-password" --auth-local=scram-sha-256 --auth-host=scram-sha-256 --encoding=UTF8 --locale=C
-      printf "\nlisten_addresses = '127.0.0.1'\nport = 55432\nunix_socket_directories = ''\nshared_buffers = '128MB'\nmax_connections = 30\n" >> .state/postgres/postgresql.conf
+      printf "\nlisten_addresses = '127.0.0.1'\nport = 55432\nunix_socket_directories = ''\nshared_buffers = '128MB'\nmax_connections = 30\nmax_locks_per_transaction = 512\n" >> .state/postgres/postgresql.conf
     fi
     if ! pg_ctl -D "$PWD/.state/postgres" status >/dev/null 2>&1; then pg_ctl -D "$PWD/.state/postgres" -l "$PWD/.state/postgres.log" -w start; fi
     export PGPASSWORD

@@ -5,15 +5,15 @@ import { DomainError } from '../foundation/errors.js';
 import type { ContentEntity } from './content.js';
 import type { MechanicsSource } from './character-mechanics.js';
 import type { ActiveRoundEffect } from './tactical-effects.js';
-export type RemovalMethod='CLEANSE'|'DISPEL'|'CURE';
+export type RemovalMethod='CLEANSE'|'DISPEL'|'CURE'|'REMOVE_CURSE';
 export type RemovalSpec={method:RemovalMethod|'NONE';difficulty:number};
-export type CleanseSpec={version:1;minimumNativeLevel:number;method:RemovalMethod;tags:string[];strength:number;manaCost:number;range:number;targetSide:'ALLY'|'ENEMY'};
+export type CleanseSpec={version:1|2;minimumNativeLevel:number;method:RemovalMethod;tags:string[];strength:number;manaCost:number;range:number;targetSide:'ALLY'|'ENEMY'};
 export type CleanseAbility={id:string;sourceRevision:number;sourceInstanceIds:string[];spec:CleanseSpec};
 export type CleansingEvent={ownerId:string;actorId:string;abilityId:string;abilityRevision:number;abilityInstanceIds:string[];method:RemovalMethod;strength:number;difficulty:number;manaCost:number;removed:ActiveRoundEffect};
 const tag={type:'string',pattern:'^[a-z][a-z0-9_.-]{0,63}$'};
-const validate=new Ajv({strict:true}).compile({type:'object',additionalProperties:false,required:['version','minimumNativeLevel','method','tags','strength','manaCost','range','targetSide'],properties:{version:{const:1},minimumNativeLevel:{type:'integer',minimum:0,maximum:999},method:{enum:['CLEANSE','DISPEL','CURE']},tags:{type:'array',minItems:1,maxItems:16,uniqueItems:true,items:tag},strength:{type:'integer',minimum:1,maximum:1000},manaCost:{type:'integer',minimum:1,maximum:1000000},range:{type:'integer',minimum:0,maximum:31},targetSide:{enum:['ALLY','ENEMY']}}});
+const validate=new Ajv({strict:true}).compile({type:'object',additionalProperties:false,required:['version','minimumNativeLevel','method','tags','strength','manaCost','range','targetSide'],properties:{version:{enum:[1,2]},minimumNativeLevel:{type:'integer',minimum:0,maximum:999},method:{enum:['CLEANSE','DISPEL','CURE','REMOVE_CURSE']},tags:{type:'array',minItems:1,maxItems:16,uniqueItems:true,items:tag},strength:{type:'integer',minimum:1,maximum:1000},manaCost:{type:'integer',minimum:1,maximum:1000000},range:{type:'integer',minimum:0,maximum:31},targetSide:{enum:['ALLY','ENEMY']}}});
 export function validateCleanseSpec(value:unknown):asserts value is CleanseSpec {
- if(!validate(value)||((value as CleanseSpec).method!=='DISPEL'&&(value as CleanseSpec).targetSide!=='ALLY'))throw new DomainError(400,'INVALID_TACTICAL_CLEANSING');
+ if(!validate(value)||((value as CleanseSpec).method==='REMOVE_CURSE'&&(value as CleanseSpec).version!==2)||((value as CleanseSpec).method!=='DISPEL'&&(value as CleanseSpec).targetSide!=='ALLY'))throw new DomainError(400,'INVALID_TACTICAL_CLEANSING');
 }
 export function validateCleansingContent(entity:ContentEntity) {
  const m=entity.definition.mechanics;if(m?.tacticalCleansing===undefined)return;validateCleanseSpec(m.tacticalCleansing);const s=m.tacticalCleansing;
@@ -39,12 +39,12 @@ export async function loadCleanseAbilities(client:pg.PoolClient,sources:Pick<Mec
  return normalizeCleanseAbilities(abilities);
 }
 export function cleansingEligible(ability:CleanseAbility,effect:ActiveRoundEffect) {
- const removal=effect.effect.version===3?effect.effect.removal:undefined;
+ const removal=effect.effect.version>=3?effect.effect.removal:undefined;
  return Boolean(removal&&removal.method===ability.spec.method&&removal.difficulty<=ability.spec.strength&&ability.spec.tags.some(t=>effect.effect.tags.includes(t))&&(ability.spec.method==='DISPEL'||['HARMFUL','MIXED'].includes(effect.effect.polarity)));
 }
 export function removeRoundEffect(actor:{id:string;mana?:number;cleansingAbilities?:CleanseAbility[]},target:{id:string;effects?:ActiveRoundEffect[]},abilityId:string,effectId:string):CleansingEvent {
  const ability=actor.cleansingAbilities?.find(a=>a.id===abilityId),effect=target.effects?.find(e=>e.effectId===effectId);
  if(!ability||!effect||!cleansingEligible(ability,effect)||(actor.mana??0)<ability.spec.manaCost)throw new DomainError(409,'ILLEGAL_TACTICAL_CLEANSING');
  actor.mana=(actor.mana??0)-ability.spec.manaCost;target.effects!.splice(target.effects!.indexOf(effect),1);
- return {ownerId:target.id,actorId:actor.id,abilityId,abilityRevision:ability.sourceRevision,abilityInstanceIds:[...ability.sourceInstanceIds],method:ability.spec.method,strength:ability.spec.strength,difficulty:effect.effect.version===3?effect.effect.removal.difficulty:0,manaCost:ability.spec.manaCost,removed:structuredClone(effect)};
+ return {ownerId:target.id,actorId:actor.id,abilityId,abilityRevision:ability.sourceRevision,abilityInstanceIds:[...ability.sourceInstanceIds],method:ability.spec.method,strength:ability.spec.strength,difficulty:effect.effect.version>=3?effect.effect.removal!.difficulty:0,manaCost:ability.spec.manaCost,removed:structuredClone(effect)};
 }

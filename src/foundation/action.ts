@@ -8,13 +8,15 @@ export type RunState = { id: string; turns: number; revision: number; status: 'A
 export type ActionContext = { client: pg.PoolClient; accountId: string; actionId: string; requestId: string; run: RunState };
 export type Envelope = { requestId: string; actionType: string; expectedRevision: number; authorizationSource?: 'MANUAL_UI' | 'PARSER' | 'AUTOMATION' | 'API' | 'ADMIN'; principal?:Principal };
 export async function executeAction(pool: pg.Pool, accountId: string, envelope: Envelope, parameters: Json,
-  handler: (context: ActionContext) => Promise<{ [key: string]: Json }>) {
+  handler: (context: ActionContext) => Promise<{ [key: string]: Json }>, serializationKey?:string) {
   if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(envelope.requestId) ||
     !/^[A-Z][A-Z0-9_]{1,79}$/.test(envelope.actionType) || !Number.isInteger(envelope.expectedRevision) || envelope.expectedRevision<0 || envelope.expectedRevision>2147483646 ||
     !['MANUAL_UI','PARSER','AUTOMATION','API','ADMIN'].includes(envelope.authorizationSource??'MANUAL_UI')) throw new DomainError(400,'INVALID_ACTION_ENVELOPE');
   const hash = checksum({ type: envelope.actionType, revision: envelope.expectedRevision, parameters, source: envelope.authorizationSource ?? 'MANUAL_UI' });
   const actionId = randomUUID();
   return transaction(pool, async client => {
+    // Internal coordinators serialize before account/run locks to avoid cross-owner lock inversion.
+    if(serializationKey)await client.query('SELECT pg_advisory_xact_lock(hashtextextended($1,0))',[serializationKey]);
     const account = await client.query('SELECT * FROM accounts WHERE id=$1 FOR UPDATE', [accountId]);
     if (!account.rows.length) throw new DomainError(404, 'ACCOUNT_NOT_FOUND');
     if((account.rows[0].access_status??'ACTIVE')!=='ACTIVE') throw new DomainError(403,'ACCOUNT_SUSPENDED');

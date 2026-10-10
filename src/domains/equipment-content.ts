@@ -13,7 +13,8 @@ export function equipmentSpec(value:unknown):EquipmentSpec{
  if(s.slots.some(slot=>s.hands===0?!wornSlots.includes(slot as typeof wornSlots[number]):!['MAIN_HAND','OFF_HAND'].includes(slot)) || (s.hands===2 && (s.slots.length!==1||s.slots[0]!=='MAIN_HAND')))throw new DomainError(400,'INVALID_EQUIPMENT_SPEC');
  return s;
 }
-export function validateEquipmentContent(e:ContentEntity){const value=e.definition.mechanics?.equipment;if(value===undefined)return;
+const durabilityShape=new Ajv({strict:true}).compile({type:'object',additionalProperties:false,required:['version','maximum'],properties:{version:{const:1},maximum:{type:'integer',minimum:1,maximum:1000000}}});
+export function validateEquipmentContent(e:ContentEntity){if(e.definition.mechanics?.tacticalDurability!==undefined&&(!durabilityShape(e.definition.mechanics.tacticalDurability)||e.definition.mechanics.equipment===undefined))throw new DomainError(400,'INVALID_TACTICAL_DURABILITY');const value=e.definition.mechanics?.equipment;if(value===undefined)return;
  if(e.kind!=='ITEM')throw new DomainError(400,'INVALID_EQUIPMENT_SPEC');validateInventorySpec(e.definition.mechanics?.inventory);
  const inv=e.definition.mechanics!.inventory as {category:string;storageMode:string};if(inv.category!=='EQUIPMENT'||inv.storageMode!=='INSTANCE')throw new DomainError(400,'INVALID_EQUIPMENT_SPEC');equipmentSpec(value);
 }

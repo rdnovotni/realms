@@ -36,7 +36,9 @@ try{
     GRANT INSERT ON run_attribute_choices TO realms_app;
     GRANT INSERT ON run_feat_choices,run_feats TO realms_app;
     GRANT INSERT,UPDATE ON tactical_run_state TO realms_app;
-    GRANT INSERT ON tactical_encounter_origins,tactical_steps,tactical_recoveries TO realms_app;
+    GRANT INSERT ON shared_tactical_members,shared_tactical_origins,shared_tactical_steps,shared_tactical_draws,shared_tactical_claims TO realms_app;
+    GRANT INSERT,UPDATE ON shared_tactical_sessions TO realms_app;
+    GRANT INSERT ON owned_companions,companion_tactical_recoveries,tactical_failure_costs,tactical_equipment_wear,tactical_effect_carryovers,tactical_encounter_origins,tactical_steps,tactical_recoveries TO realms_app;
     GRANT INSERT ON character_encounter_snapshots TO realms_app;
     GRANT INSERT ON run_subclass_choices,run_subclasses TO realms_app;
     GRANT INSERT ON run_build_events TO realms_app;
