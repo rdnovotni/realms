@@ -79,6 +79,31 @@
 .public-page h1{font-size:2rem;margin:8px 0 16px}
 .public-page p{max-width:500px;color:#64705f;margin-bottom:24px}
 .public-page>a{font-size:.8rem}
+.monetization-page{padding:25px 42px 32px}
+.policy-back{display:inline-block;padding:6px 0;margin-bottom:22px}
+.policy-heading{border-bottom:3px double #b8a783;padding-bottom:18px}
+.policy-heading .eyebrow{text-transform:uppercase}
+.policy-heading h1{margin:8px 0 9px;font-size:2.1rem}
+.monetization-page .policy-lead{font:italic 1.05rem/1.5 Georgia,serif;color:#65543c;margin:0;max-width:none}
+.policy-promise{display:flex;gap:16px;align-items:flex-start;padding:20px 0 18px}
+.policy-promise .manuscript-icon{width:30px;height:30px;margin-top:4px;stroke:#587054}
+.monetization-page .policy-promise p{font-size:.94rem;line-height:1.7;color:#344c3b;max-width:none;margin:0}
+.policy-principles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));list-style:none;padding:0;margin:0 0 24px;border:1px solid #bbaa85;border-top:3px solid #587054;border-radius:3px;background:#e5e7d652}
+.policy-principles li{padding:15px 17px;margin:0;display:flex;flex-direction:column;gap:7px}
+.policy-principles li+li{border-left:1px solid #bbaa8570}
+.policy-principles strong{font:1.05rem Georgia,serif;color:#3a513d}
+.policy-principles span{font-size:.77rem;line-height:1.6;color:#5b624e}
+.policy-contents{display:flex;gap:8px 20px;flex-wrap:wrap;align-items:center;padding:0 0 18px;border-bottom:1px solid #b8a78370;font-size:.77rem}
+.policy-contents>span{font-size:.65rem;letter-spacing:.08em;text-transform:uppercase;color:#75684d}
+.policy-contents a{padding:6px 0}
+.policy-section{padding-top:24px;scroll-margin-top:20px}
+.policy-section h2{font-size:1.4rem;margin-bottom:12px;color:#454735}
+.monetization-page .policy-section p{max-width:72ch;font-size:.86rem;color:#515749;margin:0 0 13px;line-height:1.8}
+.policy-section+.policy-section{border-top:1px solid #b8a78355;margin-top:13px}
+.policy-closing{border-left:3px solid #977647;background:#e9dec550;padding:17px 20px;margin-top:22px}
+.policy-closing strong{font:1.06rem Georgia,serif;color:#5d4932}
+.monetization-page .policy-closing p{max-width:none;font-size:.8rem;margin:8px 0 0;color:#5e604f}
+@media(max-width:650px){.monetization-page{padding:20px}.policy-heading h1{font-size:1.8rem}.policy-principles{grid-template-columns:1fr}.policy-principles li{padding:13px 16px}.policy-principles li+li{border-left:0;border-top:1px solid #bbaa8570}.policy-promise{gap:12px}.policy-promise .manuscript-icon{width:24px;height:24px}.policy-contents{gap:5px 16px}.policy-contents>span{flex-basis:100%}.policy-section h2{font-size:1.3rem}.monetization-page .policy-section p{font-size:.9rem}.policy-closing{padding:15px}}
 @media(max-width:650px){.welcome{margin:12px;border-radius:3px}.welcome-header{height:156px;padding:20px}.welcome-header>img{object-position:62% 63%}.welcome-header:after{background:linear-gradient(90deg,#221b17ed,#2b2116a6 55%,#21171055)}.brand-kicker{font-size:.49rem;letter-spacing:.14em}.welcome-brand .wordmark{font-size:2.7rem}.welcome-intro{padding:18px 16px}.welcome-intro h1{font-size:1.4rem}.welcome-grid{grid-template-columns:1fr;padding:0 14px 18px;gap:16px}.welcome-access,.compact-panel{padding:16px}.welcome-footer{margin:0 14px;flex-direction:column;align-items:center;gap:8px}.welcome-footer nav{justify-content:center;gap:5px 14px}.public-page{padding:30px 20px}.banner-note{font-size:.55rem}}
 
 @media(min-width:651px) and (max-width:850px){.welcome-footer{flex-direction:column;gap:8px}.welcome-footer nav{justify-content:center}}

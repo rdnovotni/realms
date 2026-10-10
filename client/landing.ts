@@ -42,6 +42,49 @@ function motif(kind: 'key' | 'quill' | 'compass') {
  const shapes={key:'M13 14a6 6 0 1 0-8-8 6 6 0 0 0 8 8Zm-5-6h.01M13 13l14 14m-5-5 4-4m-8 0 4-4',quill:'M5 27 16 16M9 23C5 10 19 3 28 4c0 9-7 23-19 19Zm5-5 8-8M17 13l6 1M13 18l1 6',compass:'M16 3a13 13 0 1 0 0 26 13 13 0 0 0 0-26Zm6 7-4 8-8 4 4-8 8-4ZM16 3v3m0 20v3M3 16h3m20 0h3'};
  path.setAttribute('d',shapes[kind]);svg.append(path);return svg;
 }
+
+/** Public funding commitments; payment and entitlement services are not yet live. */
+function monetizationPage() {
+ const page=el('article','','public-page monetization-page');
+ const back=link('← Back to the homepage','/');back.className='policy-back';
+ const heading=el('header','','policy-heading'),title=el('h1','Monetization policy');title.tabIndex=-1;
+ heading.append(el('span','Keeping the hearth alight','eyebrow'),title,
+  el('p','A free adventure, sustained by voluntary support.','policy-lead'));
+ const promise=el('div','','policy-promise');promise.append(motif('compass'),el('p','The bulk of Realms will always be free to play for as long as we can maintain the game and cover its hosting and server costs. Supporting it is a choice, never a requirement to enjoy the full core experience.'));
+ const principles=el('ul','','policy-principles');
+ for(const [name,text] of [['Voluntary support','Donations help keep the game running.'],['No advertisements','Your adventure is an ad-free space.'],['No data selling','We will never sell your personal data.']] as const){
+  const item=el('li');item.append(el('strong',name),el('span',text));principles.append(item);
+ }
+ const contents=el('nav','','policy-contents');contents.setAttribute('aria-label','On this page');contents.append(el('span','On this page'));
+ for(const [name,id] of [['Free to play','free-to-play'],['Supporter tokens','supporter-tokens'],['Fair play','fair-play'],['What’s available','support-availability']] as const)contents.append(link(name,`#${id}`));
+ page.append(back,heading,promise,principles,contents);
+ const blocks: [string,string,string[]][]=[
+  ['free-to-play','An adventure open to everyone',[
+   'Realms is designed to be donation funded. Voluntary contributions help pay for hosting, servers, and the ongoing work of maintaining the game. We want people to support it because they enjoy spending time here.',
+   'The main campaign, core progression, and the substantial majority of the game’s content and systems are intended to remain free. You will not need to donate, buy tokens, or subscribe to play a complete core game.',
+   'Keeping Realms available depends on being able to maintain it and meet its running costs. This is our commitment to a sustainable free game, rather than a guarantee that a service can run forever.'
+  ]],
+  ['supporter-tokens','Donations & supporter tokens',[
+   'Donations buy supporter tokens. These tokens are the planned way to access optional, unique supporter content while helping fund Realms.',
+   'That content can include cosmetics, titles, music, unusual items or companions, and extra quests or small adventure areas. These are possibilities from our design plans, not a catalog of currently available rewards. Supporter content may offer different ways to play; it is not limited to cosmetic rewards.',
+   'None of it is required for the full core experience. Optional supporter adventures add something extra; they do not put the main story, essential progression, or a satisfying free game behind a paywall. Free content will continue to receive interesting new systems and adventures of its own.',
+   'The design also allows players to trade tokens and eligible supporter goods for in-game Gold, giving free players another route to supporter content. That market is planned, not live. Availability of individual goods and future reissues will vary; we are not promising that every item will always be obtainable.'
+  ]],
+  ['fair-play','Support should never become an obligation',[
+   'Supporter mechanics must stay bounded. They may offer novelty, alternate play styles, or strength in a narrow niche, but cannot become mandatory power for progression, raids, or serious competition. Comparable gameplay power must remain available through free play.',
+   'Basic storage, loadouts, and automation are not paid upgrades. We will not sell raw Turns, directly sell Gold, offer paid loot boxes or gacha, or sell event-score and leaderboard advantages. Serious competitive formats can normalize or exclude supporter mechanics.',
+   'The planned supporter shop will explain what each reward does and its restrictions before you spend tokens. Supporting the game does not exempt an item from balance changes or a player from the rules.'
+  ]],
+  ['support-availability','Where things stand today',[
+   'Realms is still in development. Donations, token purchases, a supporter shop, player token trading, and recurring support are not available in this build. This page describes our funding policy and intended boundaries.',
+   'No subscription is required. If optional recurring support is introduced, its purpose will be to deliver supporter tokens—not to gate the core game or create subscription-only gameplay.',
+   'Prices, token amounts, the reward catalog, and payment and refund details will be published before payments open. We will announce any material policy changes and keep this page updated.'
+  ]]
+ ];
+ for(const [id,name,paragraphs] of blocks){const block=section(id,name,'policy-section');for(const text of paragraphs)block.append(el('p',text));page.append(block);}
+ const note=el('aside','','policy-closing');note.append(el('strong','A seat at the table, whether you support us or not.'),el('p','Play because you want to. Support because you can. Both are welcome in the Realms.'));
+ page.append(note);return page;
+}
 /** Compact public entry screen. Account secrets are submitted only through GameSession. */
 export function renderLanding(session: GameSession): HTMLElement {
  const main = el('main', '', 'welcome'); main.id = 'main';
@@ -58,6 +101,7 @@ export function renderLanding(session: GameSession): HTMLElement {
  const pageTitle = pages[location.pathname];
  if (pageTitle) {
   document.title = `${pageTitle} · Realms`;
+  if(location.pathname==='/monetization'){main.append(monetizationPage(),footer);return main;}
   const page = el('section','','public-page');
   const title = el('h1', pageTitle); title.tabIndex=-1;
   page.append(el('span','From the Realms','eyebrow'), title, el('p','This page is being prepared. We’ll expand this section in an upcoming pass.'), link('← Back to the homepage','/'));
