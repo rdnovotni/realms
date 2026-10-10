@@ -25,7 +25,7 @@ test('public page links support direct loads while unknown routes stay unavailab
  const app=Fastify();registerClient(app,{mode:'sessions',throttleKey:'private'},{previewOnly:true});
  try{
   const home=await app.inject({url:'/'});
-  for(const route of ['/about','/announcements','/changelog','/guide','/newsletter','/privacy','/monetization','/contact']){
+  for(const route of ['/about','/announcements','/changelog','/guide','/community','/newsletter','/privacy','/monetization','/contact']){
    const page=await app.inject({url:route});assert.equal(page.statusCode,200,route);assert.equal(page.body,home.body);assert.match(page.headers['content-type']!,/^text\/html/);assert.equal(page.headers['content-security-policy'],home.headers['content-security-policy']);
   }
   assert.equal((await app.inject({url:'/not-a-page'})).statusCode,404);

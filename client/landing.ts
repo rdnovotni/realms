@@ -4,7 +4,7 @@ type AccessTab = 'login' | 'signup' | 'recovery';
 let activeTab: AccessTab = 'login';
 const pages: Record<string, string> = {
  '/about': 'About the game', '/announcements': 'Announcements', '/changelog': 'Changelog',
- '/guide': 'Player guide', '/newsletter': 'Newsletter', '/privacy': 'Privacy policy', '/monetization': 'Monetization policy', '/contact': 'Contact'
+ '/guide': 'Player guide', '/community': 'Community', '/newsletter': 'Newsletter', '/privacy': 'Privacy policy', '/monetization': 'Monetization policy', '/contact': 'Contact'
 };
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, text = '', className = '') {
  const node = document.createElement(tag); node.textContent = text; node.className = className; return node;
@@ -52,7 +52,7 @@ export function renderLanding(session: GameSession): HTMLElement {
  header.append(art, brand, el('span','In development · Tavern concept art','banner-note')); main.append(header);
  const footer = el('footer', '', 'welcome-footer');
  const links = el('nav'); links.setAttribute('aria-label','Information');
- links.append(link('About','/about'),link('Newsletter','/newsletter'),link('Privacy policy','/privacy'),link('Monetization policy','/monetization'),link('Contact','/contact'));
+ links.append(link('About','/about'),link('Community','/community'),link('Newsletter','/newsletter'),link('Privacy policy','/privacy'),link('Monetization policy','/monetization'),link('Contact','/contact'));
  for(const item of links.querySelectorAll('a'))if(item.getAttribute('href')===location.pathname)item.setAttribute('aria-current','page');
  const signature=el('span','REALMS · A journey in the making.','footer-signature');signature.prepend(motif('compass'));footer.append(signature,links);
  const pageTitle = pages[location.pathname];
@@ -74,7 +74,7 @@ export function renderLanding(session: GameSession): HTMLElement {
  intro.append(ornament, title, el('p','Choose a calling. Make your next move. Return to a world that remembers your journey.'));
  main.append(intro);
  const layout=el('div','','welcome-grid'), rail=el('div','','welcome-rail');
- const access = section('access', activeTab === 'recovery' ? 'Account recovery' : 'Log in to Realms', 'panel welcome-access');
+ const access = section('access', activeTab === 'recovery' ? 'Account recovery' : activeTab === 'signup' ? 'Join the adventure' : 'Log in to Realms', 'panel welcome-access');
  access.querySelector('h2')!.prepend(motif('key'));
  const tabs = el('div', '', 'access-tabs'); tabs.setAttribute('role', 'tablist'); tabs.setAttribute('aria-label', 'Account access');
  const choices: [AccessTab, string][] = [['login', 'Log in'], ['signup', 'Sign up']];
@@ -103,7 +103,7 @@ export function renderLanding(session: GameSession): HTMLElement {
   const form = el('form'); form.setAttribute('aria-label', 'Log in to Realms');
   const fields = session.config.authMode === 'sessions' ? [field('Account name', 'handle', 'text', 'username'), field('Password', 'password', 'password', 'current-password')] : [field('Development access key', 'token', 'password', 'off')];
   for (const item of fields) { item.input.disabled = session.busy; form.append(item.label); }
-  const secret=fields.find(f=>f.input.type==='password');if(secret){const toggle=button('Show password',()=>{const visible=secret.input.type==='password';secret.input.type=visible?'text':'password';toggle.textContent=visible?'Hide password':'Show password';toggle.setAttribute('aria-pressed',String(visible));},'password-toggle');toggle.setAttribute('aria-controls',secret.input.id);toggle.setAttribute('aria-pressed','false');toggle.disabled=session.busy;form.append(toggle);}
+  const secret=fields.find(f=>f.input.type==='password');if(secret){const secretLabel=session.config.authMode==='sessions'?'password':'access key';const toggle=button(`Show ${secretLabel}`,()=>{const visible=secret.input.type==='password';secret.input.type=visible?'text':'password';toggle.textContent=`${visible?'Hide':'Show'} ${secretLabel}`;toggle.setAttribute('aria-pressed',String(visible));},'password-toggle');toggle.setAttribute('aria-controls',secret.input.id);toggle.setAttribute('aria-pressed','false');toggle.disabled=session.busy;form.append(toggle);}
   const submit = el('button', session.busy ? 'Connecting…' : 'Enter Realms →', 'primary'); submit.type = 'submit'; submit.disabled = session.busy||!!session.config.previewOnly;
   form.append(submit); form.addEventListener('submit', event => {
    event.preventDefault(); if(session.config?.previewOnly)return; const credentials = Object.fromEntries(new FormData(form).entries()) as Record<string, string>;
