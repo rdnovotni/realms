@@ -141,6 +141,7 @@
 .privacy-data>div{padding:15px 18px}
 .privacy-data>div+div{border-top:1px solid #bbaa8550}
 .privacy-data dt{font:bold .91rem Georgia,serif;color:#3a513d;margin-bottom:6px}
+.privacy-providers dd>a{display:inline-block;margin-top:6px}
 .privacy-data dd{font-size:.84rem;line-height:1.8;margin:0;color:#484f42}
 .policy-page .policy-related{border-left:2px solid #977647;padding-left:13px;font-size:.8rem}
 .privacy-contact{margin-top:18px;padding:17px 19px;border:1px solid #bbaa8570;border-left:3px solid #587054;border-radius:3px;background:#e5e7d64d}

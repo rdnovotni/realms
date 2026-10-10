@@ -121,33 +121,36 @@ function privacyPage() {
   ['privacy-use','3. How we use it',[
    'Account and session records let us sign you in, check permissions, and end expired or revoked access. Gameplay records save characters, resolve encounters, deliver rewards, and restore progress when you reconnect.',
    'Action and security history helps prevent duplicate rewards and investigate errors or suspected abuse. Technical request information helps diagnose connection problems and keep the game running.',
-   'There is no third-party analytics integration in this client. Before adding analytics or another use of personal information, we will explain the collection and the choices available.'
+   'The current client has no third-party analytics integration. The planned Cloudflare service may provide traffic and security metrics. We will describe the enabled features before launch and explain any additional analytics before introducing them.'
   ]],
   ['privacy-browser','4. Browser storage & connection logs',[
    'The current client keeps its login token in browser memory, not cookies, local storage, or session storage. It sends the token to the game server when needed. Reloading clears it and requires you to reconnect.',
-   'There are no advertising cookies or tracking pixels. Artwork, styles, and scripts load from the same server. Your browser may keep ordinary history or downloaded files under its own settings.',
-   'Servers receive connection information, including an IP address. Realms uses it for login rate limits; that rate-limit table stores keyed references rather than raw addresses or handles. Enabled request logs can still contain connection details. Application request logging is disabled in the visual preview. Future hosting and proxy logs will depend on the deployment.'
+   'The current client has no advertising cookies or tracking pixels. The local preview serves artwork, styles, and scripts from the same origin. The public website and downloads are planned for Cloudflare Pages and R2. Cloudflare may set security cookies when its protection features are enabled; we will identify the cookies and their purposes before launch. Your browser may keep ordinary history or downloaded files under its own settings.',
+   'Servers receive connection information, including an IP address. The current server uses connection addresses for login rate limits, storing keyed references in the rate-limit table. Enabled request logs may still contain connection details. Application request logging is disabled in the visual preview. Cloudflare and the dedicated server may keep separate operational logs; their fields and retention will depend on the launch configuration.'
   ]],
-  ['privacy-sharing','5. Who can access it',[
+  ['privacy-sharing','5. Hosting & access',[
    'Administrators can access records needed to operate the game, investigate problems, and secure accounts. The current public site has no player-profile directory or public gameplay-history feed.',
-   'We will not sell personal data or share it for targeted advertising. Future hosting, email, and payment providers may process information needed for their services. We will identify those providers, processing locations, and information involved before the features open.',
+   'We will not sell personal data or share it for targeted advertising. We plan to run the game and its primary PostgreSQL database on a dedicated server managed by the Realms operator. The website and downloads will use Cloudflare Pages and R2; game connections will use Cloudflare Tunnel with Caddy. Email services and encrypted offsite backups will also process information needed to operate the service.',
+   'The planned services are listed below. Self-hosting does not mean that all information stays on one machine: providers may process it in other countries. Before launch, we will confirm the server country, provider processing locations, and any required safeguards for international transfers.',
    'We may disclose relevant information to meet a valid legal requirement or address fraud, abuse, or a serious security threat. Disclosures should be limited to what is needed. We will protect other players’ private information when handling a request.'
   ]],
   ['privacy-optional','6. Planned services',[
-   'Newsletters: the current panel collects no email addresses. A future newsletter will be optional, with its provider, subscription records, and unsubscribe process explained at signup. Playing or donating will not subscribe you.',
+   'Newsletters: the current panel collects no email addresses. A future newsletter will be optional, with subscription records and an unsubscribe process explained at signup. The newsletter provider and any open or click tracking will be disclosed before subscriptions open. Playing or donating will not subscribe you.',
    'Payments: donations are not open. PayPal is the likely provider and will handle payment information under its own notice. Realms will need transaction references, amounts, token grants, and refund or dispute records. We will disclose checkout fields and information returned to us before payments open.',
    'Community: chat, profiles, and player mail are not available on the current public screen. Before adding them, we will explain player visibility, moderation records, and privacy controls. Others may copy information you choose to publish.',
    'AI: no external AI service is connected to the current client or game server. Before enabling a feature that sends player information to a provider, we will explain what is sent, the provider’s practices, and your choices.'
   ]],
   ['privacy-security','7. Account security',[
    'The account database stores salted password verifiers, not readable passwords. Session tokens and recovery codes are stored as one-way digests. These protections do not make account records anonymous or guarantee that a service cannot be compromised.',
-   'The server checks permissions, limits repeated login attempts, and keeps security history. Application logs are configured to redact authorization headers and request bodies. Secure production transport, hosting controls, and incident procedures still need to be established.',
+   'The server checks permissions, limits repeated login attempts, and keeps security history. Application logs are configured to redact authorization headers and request bodies.',
+   'The deployment plan uses HTTPS and secure WebSockets, private VPN access for remote administration, encrypted offsite database backups, and separate production, staging, and personal workloads. These controls and incident procedures still need to be configured and verified before launch.',
    'Keep passwords and recovery codes private. Describe problems without sending those secrets. Report suspected account access to the administrator who enrolled you.'
   ]],
   ['privacy-retention','8. Retention & deletion',[
    'The development database retains account, gameplay, and security history. Some records are deliberately preserved to reconcile rewards and investigate past actions. There is no published retention schedule or automated account-deletion process yet.',
    'Signing out, letting a session expire, or starting a new character run does not erase account history. Clearing a browser token does not remove server records.',
-   'Before public launch, we will define retention and deletion or anonymization for account data, logs, support messages, payment records, and backups. Immediate removal from every copy is not available today. Any retention needed for security, disputes, or legal obligations should have a documented reason and limit.'
+   'Encrypted offsite PostgreSQL backups are planned for recovery and may contain copies of account, gameplay, and security records. The backup storage provider and region, access controls, encryption key management, and expiry schedule still need to be confirmed.',
+   'Before public launch, we will define retention and deletion or anonymization for account data, logs, support messages, payment records, and backups, including how removals are handled after a restore. Immediate removal from every copy is not available today. Any retention needed for security, disputes, or legal obligations should have a documented reason and limit.'
   ]],
   ['privacy-requests','9. Your choices & requests',[
    'You can browse public pages without an account. Donations and future newsletter subscriptions are optional.',
@@ -160,7 +163,7 @@ function privacyPage() {
    'Parents or guardians concerned about an under-16 development account should contact its administrator. We will review the account and information involved. Before signup opens, we need procedures to enforce the age rule and handle younger players’ data. Privacy protections may also apply to players aged 16 and 17.'
   ]],
   ['privacy-changes','11. Launch details & notice updates',[
-   'Before public registration, we still need to confirm the responsible operator, active privacy inbox, hosting and backup locations, retention schedule, and request and age-verification procedures.',
+   'Before public registration, we still need to confirm the responsible operator, active privacy inbox, server country, backup provider and region, provider processing locations, cookie and log settings, retention schedule, and request and age-verification procedures.',
    'We will update this notice when practices change and announce material changes through the game’s announcements. New services will need accurate privacy information before they open. The review date identifies this development notice; it does not certify that launch procedures are complete.'
   ]]
  ];
@@ -179,6 +182,16 @@ function privacyPage() {
     ['Information you send us','Messages and details you send to the administrator. The public client has no support form or ticket service.']
    ] as const){const item=el('div');item.append(el('dt',name),el('dd',detail));categories.append(item);}
    block.append(categories);
+  }
+  if(id==='privacy-sharing'){
+   const providers=el('dl','','privacy-data privacy-providers');
+   for(const [name,detail,url] of [
+    ['Cloudflare · website, downloads & connections','Planned for the public website on Pages, downloads in R2, and game connections through Tunnel. Cloudflare processes visitor IP addresses, request and traffic information, and security signals, and can process request content to deliver and protect these services.','https://www.cloudflare.com/privacypolicy/'],
+    ['Google Workspace · correspondence','Planned for operator mailboxes, including support and privacy correspondence. Messages may include your email address, message contents, attachments, and related mail metadata.','https://workspace.google.com/terms/dpa_terms.html'],
+    ['Resend · account email','Planned for account emails, such as recovery messages. Any newsletter delivery service will be identified at signup. Delivery involves recipient addresses, message contents, and delivery records, such as failures or bounces.','https://resend.com/legal/privacy-policy'],
+    ['Offsite backup storage · recovery','A storage provider will hold encrypted database backups outside the dedicated server. The provider and storage region will be named before backups containing player information are enabled.','']
+   ] as const){const item=el('div'),detailText=el('dd',detail);if(url)detailText.append(' ',link(name.startsWith('Google')?'Google Workspace data terms':name.startsWith('Cloudflare')?'Cloudflare privacy notice':'Resend privacy notice',url));item.append(el('dt',name),detailText);providers.append(item);}
+   block.append(providers);
   }
   if(id==='privacy-requests'){const contact=el('aside','','privacy-contact');contact.setAttribute('aria-label','Planned privacy contact');contact.append(el('strong','Planned privacy contact'),el('span','privacy@realms.game','privacy-address'),el('p','Placeholder — this inbox is not confirmed active. Development players should contact their account administrator.'));block.append(contact);}
   if(id==='privacy-changes'){const top=link('Back to top ↑','#main');top.className='policy-top';block.append(top);}
