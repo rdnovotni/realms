@@ -96,7 +96,7 @@ export function normalizeEffectGrants(grants:EffectGrant[]) {
 function event(kind:EffectEvent['kind'],ownerId:string,e:ActiveRoundEffect):EffectEvent {
  return {kind,ownerId,effectId:e.effectId,sourceUnitId:e.sourceUnitId,sourceId:e.sourceId,sourceRevision:e.sourceRevision,effectRevision:e.effectRevision,remaining:e.remaining};
 }
-function applyEffects(owner:{id:string;effects?:ActiveRoundEffect[];statusProfile?:StatusProfile;buildups?:Record<string,BuildupState>},sourceId:string,grants:EffectGrant[],revision:number,statusEvents?:StatusEvent[]) {
+function applyEffects(owner:{id:string;effects?:ActiveRoundEffect[];statusProfile?:StatusProfile;buildups?:Record<string,BuildupState>},sourceId:string,grants:EffectGrant[],revision:number,statusEvents?:StatusEvent[],replaceRefresh=false) {
  const events:EffectEvent[]=[];
  for(const original of grants){
   const matchedTags=statusEvents?immuneStatus(owner.statusProfile,original):[];
@@ -107,7 +107,9 @@ function applyEffects(owner:{id:string;effects?:ActiveRoundEffect[];statusProfil
   let converted=false;if(grant.effect.version===4&&grant.effect.control==='STUN'){owner.buildups??={};const family=grant.effect.family;const b=(Object.hasOwn(owner.buildups,family)?owner.buildups[family]:undefined)??{value:0,breaks:0,decay:0,threshold:1};owner.buildups[family]=b;const previous=grant.effect.buildup?b.breaks-1:b.breaks;if(!grant.effect.buildup)b.breaks++;if(previous>0){converted=true;grant.effect.control='DAZED';events.push({kind:'CONVERTED',ownerId:owner.id,effectId:grant.effectId,sourceUnitId:sourceId,sourceId:grant.sourceId,sourceRevision:grant.sourceRevision,effectRevision:grant.effectRevision,remaining:grant.effect.rounds,controlBefore:'STUN',controlAfter:'DAZED'});}}
   const effects=owner.effects!,old=effects.find(e=>e.effect.family===grant.effect.family);
   if(old&&old.effect.stacking!==grant.effect.stacking)throw new DomainError(409,'CONFLICTING_TACTICAL_EFFECT_STACKING');
-  if(old&&grant.effect.stacking==='REFRESH'&&!converted){
+  // Sustained casts replace the family to bind it to this cast and its caster.
+  // Ordinary Refresh keeps its original provenance and historical behavior.
+  if(old&&grant.effect.stacking==='REFRESH'&&!converted&&!replaceRefresh){
    old.remaining=Math.max(old.remaining,grant.effect.rounds);old.refreshedRevision=revision;
    events.push(event('REFRESHED',owner.id,old));
   }else{
@@ -119,7 +121,7 @@ function applyEffects(owner:{id:string;effects?:ActiveRoundEffect[];statusProfil
  }
  return events;
 }
-export function applyOnHitEffects(owner:{id:string;effects?:ActiveRoundEffect[];statusProfile?:StatusProfile;buildups?:Record<string,BuildupState>},source:{id:string;onHitEffects?:EffectGrant[]},revision:number,statusEvents?:StatusEvent[]) {return applyEffects(owner,source.id,source.onHitEffects??[],revision,statusEvents);}
+export function applyOnHitEffects(owner:{id:string;effects?:ActiveRoundEffect[];statusProfile?:StatusProfile;buildups?:Record<string,BuildupState>},source:{id:string;onHitEffects?:EffectGrant[]},revision:number,statusEvents?:StatusEvent[],replaceRefresh=false) {return applyEffects(owner,source.id,source.onHitEffects??[],revision,statusEvents,replaceRefresh);}
 export function applyOnHealEffects(owner:{id:string;effects?:ActiveRoundEffect[];statusProfile?:StatusProfile;buildups?:Record<string,BuildupState>},source:{id:string;onHealEffects?:EffectGrant[]},revision:number,statusEvents?:StatusEvent[]) {return applyEffects(owner,source.id,source.onHealEffects??[],revision,statusEvents);}
 export function validatePeriodicGrants(grants:EffectGrant[],version:1|2|3|4,types:string[]|undefined) {
  for(const g of grants){
