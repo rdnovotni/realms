@@ -20,9 +20,18 @@ function field(title: string, name: string, type: string, autocomplete: HTMLInpu
  const label = el('label', title), input = el('input'); input.name = name; input.type = type; input.required = true; input.autocomplete = autocomplete; input.id = `access-${name}`; label.htmlFor = input.id; label.append(input); return { label, input };
 }
 
+/** Decorative twenty-sided die drawn in the same ink as the page ornaments. */
+function die() {
+ const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+ svg.setAttribute('viewBox','0 0 64 68');svg.setAttribute('class','tabletop-die');svg.setAttribute('aria-hidden','true');
+ const lines=document.createElementNS(svg.namespaceURI,'path');
+ lines.setAttribute('d','M32 3 59 18 59 49 32 65 5 49 5 18Z M32 3 18 24 46 24Z M18 24 5 18 M46 24 59 18 M18 24 12 47 32 56 52 47 46 24 M18 24 32 56 46 24 M5 49 12 47 M59 49 52 47 M32 56 32 65');
+ svg.append(lines);const number=document.createElementNS(svg.namespaceURI,'text');number.setAttribute('x','32');number.setAttribute('y','39');number.textContent='20';svg.append(number);return svg;
+}
+
 function navigation(className: string) {
  const nav = el('nav', '', className); nav.setAttribute('aria-label', className === 'welcome-nav' ? 'Main navigation' : 'More about Realms');
- for (const [title, href] of [['Home','/'],['About the game','/about'],['Player guide','/guide'],['Announcements','/announcements'],['Changelog','/changelog']]) {
+ for (const [title, href] of [['Home','/'],['About the game','/about'],['Player guide','/guide']]) {
   const item = link(title!, href!); if (location.pathname === href) item.setAttribute('aria-current','page'); nav.append(item);
  }
  return nav;
@@ -50,16 +59,17 @@ export function renderLanding(session: GameSession): HTMLElement {
  document.title = 'Realms · A world worth wandering';
  const changeTab = (tab: AccessTab) => {
   activeTab = tab; const next = renderLanding(session); main.replaceWith(next);
-  next.querySelector<HTMLElement>(`#access-tab-${tab}`)?.focus();
+  next.querySelector<HTMLElement>(tab === 'recovery' ? '#recovery-title' : `#access-tab-${tab}`)?.focus();
  };
  const intro = el('div','','welcome-intro');
  const title = el('h1','Your next adventure starts here.'); title.tabIndex=-1;
- intro.append(title, el('p','Choose a calling. Make your next move. Return to a world that remembers your journey.'));
+ const ornament=el('span','◆','intro-ornament');ornament.setAttribute('aria-hidden','true');
+ intro.append(ornament, title, el('p','Choose a calling. Make your next move. Return to a world that remembers your journey.'));
  main.append(intro);
  const layout=el('div','','welcome-grid'), rail=el('div','','welcome-rail');
  const access = section('access', 'Log in to Realms', 'panel welcome-access');
  const tabs = el('div', '', 'access-tabs'); tabs.setAttribute('role', 'tablist'); tabs.setAttribute('aria-label', 'Account access');
- const choices: [AccessTab, string][] = [['login', 'Log in'], ['signup', 'Sign up'], ['recovery', 'Password help']];
+ const choices: [AccessTab, string][] = [['login', 'Log in'], ['signup', 'Sign up']];
  for (const [key, text] of choices) {
   const tab = button(text, () => changeTab(key)); tab.id = `access-tab-${key}`; tab.setAttribute('role', 'tab');
   tab.setAttribute('aria-selected', String(activeTab === key)); tab.setAttribute('aria-controls', 'access-content'); tab.tabIndex = activeTab === key ? 0 : -1;
@@ -71,13 +81,14 @@ export function renderLanding(session: GameSession): HTMLElement {
    event.preventDefault(); changeTab(choices[next]![0]);
   }); tabs.append(tab);
  }
- const content = el('div', '', 'access-content'); content.id = 'access-content'; content.setAttribute('role', 'tabpanel'); content.setAttribute('aria-labelledby', `access-tab-${activeTab}`); content.tabIndex = 0;
+ const content = el('div', '', 'access-content'); content.id = 'access-content'; content.setAttribute('role', activeTab === 'recovery' ? 'region' : 'tabpanel'); content.setAttribute('aria-labelledby', activeTab === 'recovery' ? 'recovery-title' : `access-tab-${activeTab}`); content.tabIndex = 0;
  if (activeTab === 'signup') {
   content.append(el('h3', 'Make your first character'), el('p', 'Your account is the home for your adventures. Once you log in, choose your starting class and attributes to create your character.'),
    el('p', 'Public account signup is not open yet. This development build supports accounts enrolled by the game administrator.', 'availability'),
    button('I have an account →', () => changeTab('login'), 'primary'));
  } else if (activeTab === 'recovery') {
-  content.append(el('h3', 'Find your way back'), el('p', 'Forgot your password? Automated password reset emails are not available in this build. Contact the administrator who enrolled your account for help.'),
+  const recoveryTitle=el('h3','Forgot your password?'); recoveryTitle.id='recovery-title'; recoveryTitle.tabIndex=-1;
+  content.append(recoveryTitle, el('p', 'Forgot your password? Automated password reset emails are not available in this build. Contact the administrator who enrolled your account for help.'),
    el('p', 'Never share your password or access key when asking for help.', 'help muted'), button('Back to log in', () => changeTab('login'), 'primary'));
  } else if (session.config) {
 
@@ -97,18 +108,19 @@ export function renderLanding(session: GameSession): HTMLElement {
  } else {
   content.append(el('h3', 'Connecting to Realms'), el('p', 'Account access needs a connection to the game server. You can still explore the updates below.'), button('Try connecting again', () => void session.initialize(), 'primary'));
  }
- access.append(tabs, content); rail.append(access);
+ if(activeTab !== 'recovery')access.append(tabs); access.append(content); rail.append(access);
 
 
  const newsletter = section('newsletter','Letters from the Realms','compact-panel newsletter');
  newsletter.append(el('p','Game news, new adventures, and development updates.'),el('span','Subscriptions coming soon','status-note'),link('Newsletter details →','/newsletter'));rail.append(newsletter);
- const news = section('announcements','News from the Realms','compact-panel news');
- news.prepend(el('span','At the campfire','eyebrow'));
+ const updates=el('div','','welcome-updates');
+ const news = section('announcements','Announcements','compact-panel news');
+ news.prepend(die());
  for (const [label,title,text] of [
   ['Development','The road is taking shape.','Characters, tactical encounters, equipment, and saved progress form the foundations of your journey.'],
   ['Account access','Getting your first character','Use an account enrolled by the game administrator. Choose your starting class and attributes after logging in. Public signup is coming later.']
  ]) { const article=el('article');article.append(el('span',label!,'eyebrow'),el('h3',title!),el('p',text!));news.append(article); }
- news.append(link('All announcements →','/announcements'));
- const changes=el('div','','recent-changes');changes.append(el('h3','Recent development'),el('p','Character progression · Tactical combat · Equipment & loadouts'),link('View the changelog →','/changelog'));news.append(changes);
- layout.append(rail,news);main.append(layout,footer);return main;
+ const archives=el('nav','','announcement-links');archives.setAttribute('aria-label','Announcement archives');
+ archives.append(link('All announcements','/announcements'),el('span','·'),link('Changelog','/changelog'));updates.append(news,archives);
+ layout.append(rail,updates);main.append(layout,footer);return main;
 }
