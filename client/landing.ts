@@ -105,66 +105,63 @@ function privacyPage() {
  const page=el('article','','public-page policy-page privacy-page');
  const back=link('← Back to the homepage','/');back.className='policy-back';
  const heading=el('header','','policy-heading'),title=el('h1','Privacy policy');title.tabIndex=-1;
- const reviewed=el('p','','policy-reviewed'),date=el('time','October 10, 2026');date.dateTime='2026-10-10';reviewed.append('Development notice · Last reviewed ',date);
- heading.append(el('span','Your information in Realms','eyebrow'),title,el('p','What we keep, why we keep it, and what is still being built.','policy-lead'),reviewed);
+ const reviewed=el('p','','policy-reviewed'),date=el('time','October 10, 2026');date.dateTime='2026-10-10';reviewed.append('Last reviewed ',date);
+ heading.append(el('span','Your information in Realms','eyebrow'),title,el('p','What we keep, how we use it, and your choices.','policy-lead'),reviewed);
  const promise=el('div','','policy-promise');promise.append(motif('quill'),el('p','We will not sell your personal data or fund Realms through advertisements. We use information to run the game, keep accounts secure, and help players.'));
- const status=el('aside','','privacy-status');status.setAttribute('aria-label','Development status');status.append(el('strong','This notice covers the development build'),el('p','Public signup, newsletter subscriptions, and payments are not open. Realms is intended for ages 16 and over. The operator’s formal details, active privacy inbox, hosting locations, and retention schedule still need to be finalized before public launch.'));
+ const status=el('aside','','privacy-status');status.setAttribute('aria-label','Development status');status.append(el('strong','Development notice'),el('p','This page describes the current build and our plans. Public signup, newsletters, and payments are closed. Realms is intended for ages 16+. Outstanding launch details are listed at the end of this notice.'));
  const blocks: [string,string,string[]][]=[
-  ['privacy-scope','1. Who this notice covers',[
-   'This notice covers the Realms website and the current game client and server. Visiting the public pages is different from using an account on the game server: the local visual preview has no login or gameplay service and does not save account credentials.',
-   'Development accounts are enrolled by the game administrator. If you already have one, use the administrator who enrolled it as your current contact for privacy questions. Our planned privacy address is privacy@realms.game. It is a placeholder, not a confirmed working inbox yet. The operator’s formal identity will be published before public registration opens.',
-   'Other websites you choose to visit have their own privacy notices. This notice describes Realms; it does not control what an external payment provider or community service does.'
+  ['privacy-scope','1. Scope & responsibility',[
+   'This notice covers the Realms website, game client, and game server. The local visual preview serves public pages only: it has no account login or gameplay service and does not save credentials.',
+   'The game administrator enrolls development accounts and is the current contact for those players. We will publish the responsible operator’s formal identity before public registration opens. External sites and services have their own privacy notices.'
   ]],
-  ['privacy-information','2. Information the current game handles',[
-   'We keep information connected to your account so the server can remember your progress and check that actions are valid. Account identifiers and game records can be personal data when they are linked to a player, even if they do not contain a real name.',
-   'The current account system does not require an email address, date of birth, postal address, or legal name. Public registration and email-based recovery are not implemented. Please avoid putting sensitive personal information into account labels or messages to the administrator.'
+  ['privacy-information','2. Information we keep',[
+   'We keep account-linked information to save your progress and check game actions. Identifiers and gameplay history can be personal information even when they contain no real name.',
+   'The current account system does not ask for an email address, birth date, postal address, or legal name. Avoid putting sensitive personal details in account labels or support messages.'
   ]],
   ['privacy-use','3. How we use it',[
-   'Account and session information lets us authenticate you, enforce account permissions, and end access when a session expires or is revoked. Gameplay records let us save characters, resolve encounters, issue rewards, and restore your progress when you reconnect.',
-   'Action and security history helps us prevent duplicate rewards, investigate errors and suspected abuse, and check the integrity of the game. Technical request information helps identify connection failures and keep the service available. These operational uses are separate from advertising.',
-   'The current client has no third-party analytics or advertising integration. If we add optional analytics or a new use of personal information, we will explain what it collects and the choices available before introducing it.'
+   'Account and session records let us sign you in, check permissions, and end expired or revoked access. Gameplay records save characters, resolve encounters, deliver rewards, and restore progress when you reconnect.',
+   'Action and security history helps prevent duplicate rewards and investigate errors or suspected abuse. Technical request information helps diagnose connection problems and keep the game running.',
+   'There is no third-party analytics integration in this client. Before adding analytics or another use of personal information, we will explain the collection and the choices available.'
   ]],
-  ['privacy-browser','4. Cookies, browser storage & connections',[
-   'The current Realms client does not use cookies, local storage, or session storage to keep you logged in. Its login token stays in browser memory and is sent to the game server when needed. Reloading the page clears that in-memory token and requires you to reconnect.',
-   'There are no advertising cookies, tracking pixels, or embedded third-party analytics in this client. The page’s artwork, styles, and scripts load from the same server as the game. Your browser may still keep ordinary browsing history or downloaded files under its own settings.',
-   'A server receives connection information, including the connecting IP address, when you visit it. The game uses this for login rate limits, and enabled server logs can record request and connection details. The current visual preview has application request logging disabled. Hosting or proxy logs will depend on the eventual deployment; those providers and retention periods have not yet been selected.'
+  ['privacy-browser','4. Browser storage & connection logs',[
+   'The current client keeps its login token in browser memory, not cookies, local storage, or session storage. It sends the token to the game server when needed. Reloading clears it and requires you to reconnect.',
+   'There are no advertising cookies or tracking pixels. Artwork, styles, and scripts load from the same server. Your browser may keep ordinary history or downloaded files under its own settings.',
+   'Servers receive connection information, including an IP address. Realms uses it for login rate limits; that rate-limit table stores keyed references rather than raw addresses or handles. Enabled request logs can still contain connection details. Application request logging is disabled in the visual preview. Future hosting and proxy logs will depend on the deployment.'
   ]],
-  ['privacy-sharing','5. Access to information & sharing',[
-   'Game-server administrators can access records needed to operate the service, investigate technical problems, and handle account security. Access to your saved account data is not the same as making it public to other players. The current public site has no player-profile directory or public gameplay-history feed.',
-   'We will not sell personal data or share it for targeted advertising. When hosting, email, or payment services are introduced, they may process information needed to provide those services. We will identify those providers and the information involved before those features open.',
-   'We may need to disclose relevant information in response to a valid legal requirement or to address fraud, abuse, or a serious security threat. Such disclosures should be limited to what the situation requires. A privacy request should not expose another player’s private information.',
-   'The operating entity, server and backup locations, and any international processing arrangements are not finalized. We will publish them, along with any required safeguards, before public launch rather than promise that all data stays in a particular country.'
+  ['privacy-sharing','5. Who can access it',[
+   'Administrators can access records needed to operate the game, investigate problems, and secure accounts. The current public site has no player-profile directory or public gameplay-history feed.',
+   'We will not sell personal data or share it for targeted advertising. Future hosting, email, and payment providers may process information needed for their services. We will identify those providers, processing locations, and information involved before the features open.',
+   'We may disclose relevant information to meet a valid legal requirement or address fraud, abuse, or a serious security threat. Disclosures should be limited to what is needed. We will protect other players’ private information when handling a request.'
   ]],
-  ['privacy-optional','6. Newsletters, payments & future features',[
-   'Newsletter subscriptions are not available, and the current newsletter panel does not collect email addresses. If we introduce a newsletter, subscribing will be optional. We will explain the email provider, what subscription records are kept, and how to unsubscribe. Playing or donating will not automatically subscribe you.',
-   'Donations and token purchases are not available. PayPal is the likely payment provider when they open. The provider will handle payment information under its own privacy notice. Realms will need transaction references, contribution amounts, token grants, and refund or dispute records to deliver and reconcile support purchases. The exact checkout fields and information returned to us will be disclosed before payments open.',
-   'Community chat, public profiles, player mail, and broader social features are not part of the current public screen. Before adding them, we will explain what other players can see, what moderation records are kept, and which privacy controls are available. Information you deliberately publish in a community may be copied by others.',
-   'There is no external AI service connected to this browser client or current game server. Any future AI feature that sends player information to a provider will need its own clear explanation of the data sent, provider practices, and available choices before it is enabled.'
+  ['privacy-optional','6. Planned services',[
+   'Newsletters: the current panel collects no email addresses. A future newsletter will be optional, with its provider, subscription records, and unsubscribe process explained at signup. Playing or donating will not subscribe you.',
+   'Payments: donations are not open. PayPal is the likely provider and will handle payment information under its own notice. Realms will need transaction references, amounts, token grants, and refund or dispute records. We will disclose checkout fields and information returned to us before payments open.',
+   'Community: chat, profiles, and player mail are not available on the current public screen. Before adding them, we will explain player visibility, moderation records, and privacy controls. Others may copy information you choose to publish.',
+   'AI: no external AI service is connected to the current client or game server. Before enabling a feature that sends player information to a provider, we will explain what is sent, the provider’s practices, and your choices.'
   ]],
-  ['privacy-security','7. Protecting account information',[
-   'Passwords are checked using salted password verifiers; the account database does not store readable passwords. Session tokens and recovery codes are stored as digests on the server. This protects stored secrets, but it does not make all game records anonymous or guarantee that a service cannot be compromised.',
-   'The server checks account access and permissions, limits repeated login attempts, and keeps security-event history. Its application logger is configured to redact authorization headers and request bodies. A production deployment still needs secure transport, hosting controls, and operational security procedures.',
-   'Keep your password and recovery codes private. When asking for help, describe the issue without sending those secrets. If you suspect someone else has accessed your account, tell the administrator who enrolled it. We will confirm an active reporting contact before public signup opens.'
+  ['privacy-security','7. Account security',[
+   'The account database stores salted password verifiers, not readable passwords. Session tokens and recovery codes are stored as one-way digests. These protections do not make account records anonymous or guarantee that a service cannot be compromised.',
+   'The server checks permissions, limits repeated login attempts, and keeps security history. Application logs are configured to redact authorization headers and request bodies. Secure production transport, hosting controls, and incident procedures still need to be established.',
+   'Keep passwords and recovery codes private. Describe problems without sending those secrets. Report suspected account access to the administrator who enrolled you.'
   ]],
-  ['privacy-retention','8. Retention, backups & deletion',[
-   'The development database retains account, gameplay, and security history. Some records are deliberately preserved so we can reconcile rewards, investigate abuse, and verify past actions. There is not yet a published retention schedule or an automatic account-deletion process.',
-   'A session expiring, signing out, or starting a new character run does not erase your saved account history. Login-session expiry and security rate-limit expiry are access controls, not deletion deadlines. Removing a token from browser memory also does not remove server records.',
-   'Before public launch, we will define how long account records, technical logs, security history, support correspondence, and payment records are retained, and how deletion or anonymization works. Backup retention and the time needed to remove data from backups must be specified too. We cannot promise immediate removal from every copy today.',
-   'Some information may need to be retained for a documented security purpose, a dispute, or a legal obligation. A retention exception should have a reason and a limit; it should not become a reason to keep everything indefinitely.'
+  ['privacy-retention','8. Retention & deletion',[
+   'The development database retains account, gameplay, and security history. Some records are deliberately preserved to reconcile rewards and investigate past actions. There is no published retention schedule or automated account-deletion process yet.',
+   'Signing out, letting a session expire, or starting a new character run does not erase account history. Clearing a browser token does not remove server records.',
+   'Before public launch, we will define retention and deletion or anonymization for account data, logs, support messages, payment records, and backups. Immediate removal from every copy is not available today. Any retention needed for security, disputes, or legal obligations should have a documented reason and limit.'
   ]],
-  ['privacy-requests','9. Your choices & privacy requests',[
-   'You can browse the public pages without an account. Donations and future newsletter subscriptions are optional. Signing out stops the current browser client from using its login token; it does not delete your account.',
-   'Depending on the laws that apply, you may have rights to access or receive a copy of personal information, correct it, request deletion, restrict or object to certain uses, withdraw consent where it applies, or complain to a privacy authority. This notice does not take away those rights.',
-   'For an existing development account, contact the administrator who enrolled you and explain what you want to access, correct, or remove. We may need to verify that the request relates to your account, without asking for your password or recovery codes. The current client has no automated export or deletion tool.',
-   'The planned public privacy contact is privacy@realms.game (placeholder). Until we confirm it is active, existing development players should use their administrator. We will publish the request process and applicable response deadlines before public registration. The Contact page is still being prepared and is not a working request form.'
+  ['privacy-requests','9. Your choices & requests',[
+   'You can browse public pages without an account. Donations and future newsletter subscriptions are optional.',
+   'Depending on applicable law, you may have rights to access or receive a copy of personal information, correct or delete it, restrict or object to uses, withdraw consent, or complain to a privacy authority. This notice does not limit those rights.',
+   'For a development account, contact the administrator who enrolled you and explain what you want to access, correct, or remove. We may need to verify account ownership, without asking for passwords or recovery codes. Automated export and deletion tools are not available.',
+   'Before public registration, we will confirm a working request channel, publish the process, and identify applicable response deadlines. The Contact page is still being prepared.'
   ]],
-  ['privacy-age','10. Children & player age rules',[
-   'Realms is intended for players aged 16 and over. Its content is unfiltered and may include mature language and references to sex, drugs, violence, and alcohol. It is not intended for children under 16. Public signup is closed, and an age-verification process is not implemented in this build.',
-   'If you are a parent or guardian and believe someone under 16 has a development account, contact the administrator responsible for it. We will review the account and the information involved. Before public registration opens, we still need procedures for enforcing the age rule and handling younger players’ information. A 16+ age rule does not replace privacy protections that may apply to older teenagers.'
+  ['privacy-age','10. Ages 16+ & mature content',[
+   'Realms is intended for players aged 16 and over. Content is unfiltered and may include mature language and references to sex, drugs, violence, and alcohol. The game is not intended for children under 16. Public signup is closed; age verification is not implemented yet.',
+   'Parents or guardians concerned about an under-16 development account should contact its administrator. We will review the account and information involved. Before signup opens, we need procedures to enforce the age rule and handle younger players’ data. Privacy protections may also apply to players aged 16 and 17.'
   ]],
-  ['privacy-changes','11. Updates to this notice',[
-   'We will update this page when our practices change, and announce material changes through the game’s announcements. New signup, payment, newsletter, community, or AI features will need privacy information that reflects what they actually do before they are opened.',
-   'The review date above identifies this development notice. It is not a declaration that public-launch privacy procedures are complete. The no-advertising and no-data-selling commitments remain part of how we intend to run Realms.'
+  ['privacy-changes','11. Launch details & notice updates',[
+   'Before public registration, we still need to confirm the responsible operator, active privacy inbox, hosting and backup locations, retention schedule, and request and age-verification procedures.',
+   'We will update this notice when practices change and announce material changes through the game’s announcements. New services will need accurate privacy information before they open. The review date identifies this development notice; it does not certify that launch procedures are complete.'
   ]]
  ];
  const contents=el('nav','','policy-contents privacy-contents');contents.setAttribute('aria-label','On this page');contents.append(el('span','On this page'));
@@ -176,13 +173,15 @@ function privacyPage() {
    const categories=el('dl','','privacy-data');
    for(const [name,detail] of [
     ['Account records','Account and character IDs, creation dates, login handle, and account access status.'],
-    ['Authentication records','Password verifiers, session and recovery-code digests, permissions, device labels, and creation, activity, expiry, revocation, or use dates. The browser supplies the label “Realms browser”; it is not a device fingerprint.'],
+    ['Authentication records','Password verifiers, session and recovery-code digests, permissions, device labels, and activity and lifecycle dates. The browser uses the label “Realms browser”; no device fingerprint is generated.'],
     ['Saved gameplay','Character choices, progression, inventory, currency, encounters, action results, and game-history records linked to your account.'],
-    ['Security & technical records','Sign-in and account-security events, request identifiers and operational logs. Login rate limits store keyed identifiers derived from the connecting address and handle, rather than those raw values in the rate-limit table. Other request logs can still contain connection information.'],
-    ['Information you send us','If you contact the administrator, the message and any details you choose to include. There is no support form or ticket service in this public client.']
+    ['Security & technical records','Sign-in and account-security events, request identifiers, rate-limit records, and operational logs that may include connection information.'],
+    ['Information you send us','Messages and details you send to the administrator. The public client has no support form or ticket service.']
    ] as const){const item=el('div');item.append(el('dt',name),el('dd',detail));categories.append(item);}
    block.append(categories);
   }
+  if(id==='privacy-requests'){const contact=el('aside','','privacy-contact');contact.setAttribute('aria-label','Planned privacy contact');contact.append(el('strong','Planned privacy contact'),el('span','privacy@realms.game','privacy-address'),el('p','Placeholder — this inbox is not confirmed active. Development players should contact their account administrator.'));block.append(contact);}
+  if(id==='privacy-changes'){const top=link('Back to top ↑','#main');top.className='policy-top';block.append(top);}
   if(id==='privacy-optional'){const provider=el('p','','policy-related');provider.append('For the planned payment provider, see ',link('PayPal’s privacy statement','https://www.paypal.com/us/legalhub/paypal/privacy-full'),'.');block.append(provider);}
   page.append(block);
  }

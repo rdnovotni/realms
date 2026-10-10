@@ -16,6 +16,8 @@ The `/privacy` page is a detailed **development notice**, authored in `client/la
 | Retention/deletion incomplete | Immutable auth/game records and deletion guards; `docs/account-sessions.md` explicitly reserves retention/redaction procedures for administration. No automated account erase/export exists. Session expiry is not data deletion. Backup/host retention is not yet defined. |
 | Providers/newsletter/payment/social features are planned | Public signup/newsletter/contact shells are unavailable; no payment integration exists. PayPal is tentative under the user's monetization direction. Future checkout-returned fields must be inventoried at implementation time. |
 
+The refinement consolidates launch gaps in the opening status and final section, shortens the contents labels, and removes duplicated explanations. A dedicated request-contact panel makes the placeholder address and current administrator route easy to distinguish. No privacy commitment, 16+ content category, or retention limitation is removed.
+
 ## User decisions
 
 - No advertising and no sale of personal data remain the monetization commitments.
