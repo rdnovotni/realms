@@ -20,10 +20,16 @@ function field(title: string, name: string, type: string, autocomplete: HTMLInpu
  const label = el('label', title), input = el('input'); input.name = name; input.type = type; input.required = true; input.autocomplete = autocomplete; input.id = `access-${name}`; label.htmlFor = input.id; label.append(input); return { label, input };
 }
 
-/** Decorative twenty-sided die drawn in the same ink as the page ornaments. */
+/** Decorative twenty-sided die with colored facets and gold edges. */
 function die() {
  const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
  svg.setAttribute('viewBox','0 0 64 68');svg.setAttribute('class','tabletop-die');svg.setAttribute('aria-hidden','true');
+ for(const [shape,color] of [
+  ['M32 3 59 18 59 49 32 65 5 49 5 18Z','#64314b'],
+  ['M32 3 18 24 46 24Z','#bd6974'],['M5 18 18 24 12 47 5 49Z','#864558'],
+  ['M59 18 46 24 52 47 59 49Z','#482b48'],['M18 24 46 24 32 56Z','#963f59'],
+  ['M12 47 32 56 32 65 5 49Z','#76364e'],['M52 47 32 56 32 65 59 49Z','#512841']
+ ]){const facet=document.createElementNS(svg.namespaceURI,'path');facet.setAttribute('d',shape!);facet.setAttribute('fill',color!);facet.setAttribute('stroke','none');svg.append(facet);}
  const lines=document.createElementNS(svg.namespaceURI,'path');
  lines.setAttribute('d','M32 3 59 18 59 49 32 65 5 49 5 18Z M32 3 18 24 46 24Z M18 24 5 18 M46 24 59 18 M18 24 12 47 32 56 52 47 46 24 M18 24 32 56 46 24 M5 49 12 47 M59 49 52 47 M32 56 32 65');
  svg.append(lines);const number=document.createElementNS(svg.namespaceURI,'text');number.setAttribute('x','32');number.setAttribute('y','39');number.textContent='20';svg.append(number);return svg;
@@ -40,10 +46,10 @@ function navigation(className: string) {
 export function renderLanding(session: GameSession): HTMLElement {
  const main = el('main', '', 'welcome'); main.id = 'main';
  const header = el('header', '', 'welcome-header');
- const art = el('img'); art.src='/assets/realms-dawn.webp'; art.alt=''; art.width=1280; art.height=853;
+ const art = el('img'); art.src='/assets/realms-tavern.webp'; art.alt=''; art.width=1600; art.height=533; art.fetchPriority='high';
  const brand = link('', '/'); brand.className='welcome-brand';
- brand.append(el('span', 'REALMS', 'wordmark'), el('span', 'A world worth wandering.', 'tagline'));
- header.append(art, brand, el('span','Browser RPG · In development','banner-note')); main.append(header, navigation('welcome-nav'));
+ brand.append(el('span','Adventure awaits at your table','brand-kicker'),el('span', 'REALMS', 'wordmark'), el('span', 'A world worth wandering.', 'tagline'));
+ header.append(art, brand, el('span','In development · Tavern concept art','banner-note')); main.append(header, navigation('welcome-nav'));
  const footer = el('footer', '', 'welcome-footer');
  const links = el('nav'); links.setAttribute('aria-label','Information');
  links.append(link('Newsletter','/newsletter'), link('Privacy policy','/privacy'), link('Contact','/contact'));

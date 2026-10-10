@@ -13,7 +13,7 @@ test('public preview marks account access unavailable and serves only approved s
  const app=Fastify();registerClient(app,{mode:'sessions',throttleKey:'must-never-be-public'},{previewOnly:true});
  try{
   const config=await app.inject({url:'/api/v1/client/config'});assert.deepEqual(config.json(),{protocolVersion:1,authMode:'sessions',previewOnly:true});assert.ok(!config.body.includes('must-never-be-public'));
-  const art=await app.inject({url:'/assets/realms-dawn.webp'});assert.equal(art.statusCode,200);assert.match(art.headers['content-type']!,/^image\/webp/);assert.equal(art.rawPayload.subarray(0,4).toString(),'RIFF');assert.match(art.headers['content-security-policy']!,/img-src 'self'/);assert.equal(art.headers['cache-control'],'no-store');
+  const art=await app.inject({url:'/assets/realms-tavern.webp'});assert.equal(art.statusCode,200);assert.match(art.headers['content-type']!,/^image\/webp/);assert.equal(art.rawPayload.subarray(0,4).toString(),'RIFF');assert.match(art.headers['content-security-policy']!,/img-src 'self'/);assert.equal(art.headers['cache-control'],'no-store');
   const css=await app.inject({url:'/assets/welcome.css'});assert.equal(css.statusCode,200);assert.match(css.headers['content-type']!,/^text\/css/);
   assert.equal((await app.inject({method:'POST',url:'/api/v1/auth/login',payload:{handle:'preview',password:'example'}})).statusCode,404);
   assert.equal((await app.inject({url:'/assets/README.md'})).statusCode,404);
