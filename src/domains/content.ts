@@ -1,3 +1,5 @@
+import { validateCompanionContent } from './tactical-companions.js';
+import { validateTechniqueContent } from './tactical-techniques.js';
 import { validateHealingAbilityContent } from './tactical-healing-abilities.js';
 import { validateAbilityContent } from './tactical-abilities.js';
 import { validateStatusContent } from './tactical-status.js';
@@ -59,6 +61,8 @@ export function validateContent(input:unknown): asserts input is ContentPackage 
     validateEquipmentContent(entity);
     validateCharacterMechanics(entity);
     validateCharacterProfileReferences(entity,entities);
+    validateCompanionContent(entity);
+    validateTechniqueContent(entity,entities);
     validateTacticalContent(entity,entities);
     validateEffectContent(entity,entities);
     validateCleansingContent(entity);

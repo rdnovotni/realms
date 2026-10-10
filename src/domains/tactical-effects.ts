@@ -9,19 +9,22 @@ import type { MechanicsSource,CharacterStats } from './character-mechanics.js';
 
 /** Pinned encounter-local effects. Version 1 numeric history stays frozen. */
 export type PeriodicEffect={kind:'DAMAGE';timing:'OWNER_END';amount:number;damageType:string;armor:'APPLY'|'BYPASS';penetration:number}|{kind:'HEAL';timing:'OWNER_START';amount:number};
-type RoundEffectBase={clock:'ROUNDS';tick:'OWNER_END';family:string;stacking:'REPLACE'|'REFRESH';rounds:number;polarity:'BENEFICIAL'|'HARMFUL'|'MIXED'|'NEUTRAL';tags:string[];modifiers:{stat:'accuracy'|'evasion'|'armor';amount:number}[]};
-export type RoundEffect=RoundEffectBase&({version:1;periodic?:never;removal?:never}|{version:2;periodic:PeriodicEffect;removal?:never}|{version:3;periodic?:PeriodicEffect;removal:RemovalSpec});
+type RoundEffectBase={clock:'ROUNDS'|'ENCOUNTERS'|'ADVENTURE_TURNS'|'UNTIL_CLEANSED'|'RUN';tick:'OWNER_END'|'ENCOUNTER_END'|'TURN_SPEND'|'NONE';family:string;stacking:'REPLACE'|'REFRESH';rounds:number;polarity:'BENEFICIAL'|'HARMFUL'|'MIXED'|'NEUTRAL';tags:string[];modifiers:{stat:'accuracy'|'evasion'|'armor';amount:number}[]};
+export type ControlKind='ROOT'|'DISARM'|'SILENCE'|'REACTION_LOCK'|'STUN'|'DAZED';
+export type RoundEffect=RoundEffectBase&({version:1;periodic?:never;removal?:never}|{version:2;periodic:PeriodicEffect;removal?:never}|{version:3;periodic?:PeriodicEffect;removal:RemovalSpec}|{version:4;periodic?:PeriodicEffect;removal:RemovalSpec;control?:ControlKind;buildup?:{amount:number;threshold:number;decay:number;repeatedThresholdStep:number}});
 export type OnHitEffects={version:1;minimumNativeLevel:number;effectIds:string[]};
 export type EffectGrant={effectId:string;effectRevision:number;sourceId:string;sourceRevision:number;sourceInstanceId?:string;effect:RoundEffect};
-export type ActiveRoundEffect=EffectGrant&{sourceUnitId:string;appliedRevision:number;refreshedRevision?:number;remaining:number};
-export type EffectEvent={kind:'APPLIED'|'REPLACED'|'REFRESHED'|'TICKED'|'EXPIRED';ownerId:string;effectId:string;sourceUnitId:string;sourceId:string;sourceRevision:number;effectRevision:number;remaining:number};
+export type ActiveRoundEffect=EffectGrant&{concentrationId?:string;sourceUnitId:string;appliedRevision:number;refreshedRevision?:number;remaining:number};
+export type BuildupState={value:number;breaks:number;decay:number;threshold:number};
+export type EffectEvent={buildup?:number;threshold?:number;controlBefore?:ControlKind;controlAfter?:ControlKind;kind:'CONVERTED'|'BUILT_UP'|'APPLIED'|'REPLACED'|'REFRESHED'|'TICKED'|'EXPIRED';ownerId:string;effectId:string;sourceUnitId:string;sourceId:string;sourceRevision:number;effectRevision:number;remaining:number};
 const id={type:'string',pattern:'^[a-z][a-z0-9_.-]{2,119}$'},tag={type:'string',pattern:'^[a-z][a-z0-9_.-]{0,63}$'};
 const ajv=new Ajv({strict:true});
-const effectValidator=ajv.compile({type:'object',additionalProperties:false,required:['version','clock','tick','family','stacking','rounds','polarity','tags','modifiers'],properties:{version:{enum:[1,2,3]},clock:{const:'ROUNDS'},tick:{const:'OWNER_END'},family:tag,stacking:{enum:['REPLACE','REFRESH']},rounds:{type:'integer',minimum:1,maximum:100},polarity:{enum:['BENEFICIAL','HARMFUL','MIXED','NEUTRAL']},tags:{type:'array',minItems:1,maxItems:16,uniqueItems:true,items:tag},removal:{type:'object',additionalProperties:false,required:['method','difficulty'],properties:{method:{enum:['CLEANSE','DISPEL','CURE','NONE']},difficulty:{type:'integer',minimum:0,maximum:1000}}},modifiers:{type:'array',maxItems:3,items:{type:'object',additionalProperties:false,required:['stat','amount'],properties:{stat:{enum:['accuracy','evasion','armor']},amount:{type:'integer',minimum:-1000,maximum:1000}}}},periodic:{oneOf:[{type:'object',additionalProperties:false,required:['kind','timing','amount','damageType','armor','penetration'],properties:{kind:{const:'DAMAGE'},timing:{const:'OWNER_END'},amount:{type:'integer',minimum:1,maximum:1000000},damageType:tag,armor:{enum:['APPLY','BYPASS']},penetration:{type:'integer',minimum:0,maximum:1000000}}},{type:'object',additionalProperties:false,required:['kind','timing','amount'],properties:{kind:{const:'HEAL'},timing:{const:'OWNER_START'},amount:{type:'integer',minimum:1,maximum:1000000}}}]}}});
+const effectValidator=ajv.compile({type:'object',additionalProperties:false,required:['version','clock','tick','family','stacking','rounds','polarity','tags','modifiers'],properties:{version:{enum:[1,2,3,4]},buildup:{type:'object',additionalProperties:false,required:['amount','threshold','decay','repeatedThresholdStep'],properties:{amount:{type:'integer',minimum:1,maximum:1000},threshold:{type:'integer',minimum:1,maximum:1000},decay:{type:'integer',minimum:0,maximum:1000},repeatedThresholdStep:{type:'integer',minimum:0,maximum:1000}}},control:{enum:['ROOT','DISARM','SILENCE','REACTION_LOCK','STUN','DAZED']},clock:{enum:['ROUNDS','ENCOUNTERS','ADVENTURE_TURNS','UNTIL_CLEANSED','RUN']},tick:{enum:['OWNER_END','ENCOUNTER_END','TURN_SPEND','NONE']},family:tag,stacking:{enum:['REPLACE','REFRESH']},rounds:{type:'integer',minimum:1,maximum:100},polarity:{enum:['BENEFICIAL','HARMFUL','MIXED','NEUTRAL']},tags:{type:'array',minItems:1,maxItems:16,uniqueItems:true,items:tag},removal:{type:'object',additionalProperties:false,required:['method','difficulty'],properties:{method:{enum:['CLEANSE','DISPEL','CURE','REMOVE_CURSE','NONE']},difficulty:{type:'integer',minimum:0,maximum:1000}}},modifiers:{type:'array',maxItems:3,items:{type:'object',additionalProperties:false,required:['stat','amount'],properties:{stat:{enum:['accuracy','evasion','armor']},amount:{type:'integer',minimum:-1000,maximum:1000}}}},periodic:{oneOf:[{type:'object',additionalProperties:false,required:['kind','timing','amount','damageType','armor','penetration'],properties:{kind:{const:'DAMAGE'},timing:{const:'OWNER_END'},amount:{type:'integer',minimum:1,maximum:1000000},damageType:tag,armor:{enum:['APPLY','BYPASS']},penetration:{type:'integer',minimum:0,maximum:1000000}}},{type:'object',additionalProperties:false,required:['kind','timing','amount'],properties:{kind:{const:'HEAL'},timing:{const:'OWNER_START'},amount:{type:'integer',minimum:1,maximum:1000000}}}]}}});
 const grantsValidator=ajv.compile({type:'object',additionalProperties:false,required:['version','minimumNativeLevel','effectIds'],properties:{version:{const:1},minimumNativeLevel:{type:'integer',minimum:0,maximum:999},effectIds:{type:'array',minItems:1,maxItems:8,uniqueItems:true,items:id}}});
 export function validateRoundEffect(value:unknown):asserts value is RoundEffect {
- if(!effectValidator(value)||((value as RoundEffect).version===1?((value as RoundEffect).periodic!==undefined||(value as RoundEffect).modifiers.length===0):(value as RoundEffect).version===2?!(value as RoundEffect).periodic:(!(value as RoundEffect).removal||(!(value as RoundEffect).periodic&&(value as RoundEffect).modifiers.length===0)))||((value as RoundEffect).version!==3&&(value as RoundEffect).removal!==undefined)||new Set((value as RoundEffect).modifiers.map(m=>m.stat)).size!==(value as RoundEffect).modifiers.length||(value as RoundEffect).modifiers.some(m=>m.amount===0))throw new DomainError(400,'INVALID_TACTICAL_ROUND_EFFECT');
- const removal=(value as RoundEffect).removal;if(removal&&(removal.method==='NONE'?removal.difficulty!==0:removal.difficulty===0))throw new DomainError(400,'INVALID_TACTICAL_REMOVAL');
+ if(!effectValidator(value)||((value as RoundEffect).version===1?((value as RoundEffect).periodic!==undefined||(value as RoundEffect).modifiers.length===0):(value as RoundEffect).version===2?!(value as RoundEffect).periodic:(!(value as RoundEffect).removal||(!(value as RoundEffect).periodic&&(value as RoundEffect).modifiers.length===0&&!(value as {control?:ControlKind}).control)))||((value as RoundEffect).version<3&&(value as RoundEffect).removal!==undefined)||new Set((value as RoundEffect).modifiers.map(m=>m.stat)).size!==(value as RoundEffect).modifiers.length||(value as RoundEffect).modifiers.some(m=>m.amount===0))throw new DomainError(400,'INVALID_TACTICAL_ROUND_EFFECT');
+ const e=value as RoundEffect;const expectedTick={ROUNDS:'OWNER_END',ENCOUNTERS:'ENCOUNTER_END',ADVENTURE_TURNS:'TURN_SPEND',UNTIL_CLEANSED:'NONE',RUN:'NONE'}[e.clock];if(e.tick!==expectedTick||(e.version<4&&e.clock!=='ROUNDS')||(e.version===4&&e.clock!=='ROUNDS'&&(e.buildup||e.control==='STUN'||e.control==='DAZED')))throw new DomainError(400,'INVALID_TACTICAL_EFFECT_CLOCK');if((e.version!==4&&((value as {control?:ControlKind}).control!==undefined||(value as {buildup?:unknown}).buildup!==undefined))||(e.version===4&&e.buildup&&!e.control)||(e.version===4&&e.control&&(e.polarity!=='HARMFUL'||(['STUN','DAZED'].includes(e.control)&&e.rounds>2))))throw new DomainError(400,'INVALID_TACTICAL_CONTROL_EFFECT');
+ const removal=(value as RoundEffect).removal;if((e.version<4&&removal?.method==='REMOVE_CURSE')||(removal&&(removal.method==='NONE'?removal.difficulty!==0:removal.difficulty===0)))throw new DomainError(400,'INVALID_TACTICAL_REMOVAL');
  const p=(value as RoundEffect).periodic;if(p?.kind==='DAMAGE'&&p.armor==='BYPASS'&&p.penetration!==0)throw new DomainError(400,'INVALID_TACTICAL_PERIODIC_DAMAGE');
 }
 export function validateOnHitEffects(value:unknown):asserts value is OnHitEffects {
@@ -93,14 +96,18 @@ export function normalizeEffectGrants(grants:EffectGrant[]) {
 function event(kind:EffectEvent['kind'],ownerId:string,e:ActiveRoundEffect):EffectEvent {
  return {kind,ownerId,effectId:e.effectId,sourceUnitId:e.sourceUnitId,sourceId:e.sourceId,sourceRevision:e.sourceRevision,effectRevision:e.effectRevision,remaining:e.remaining};
 }
-function applyEffects(owner:{id:string;effects?:ActiveRoundEffect[];statusProfile?:StatusProfile},sourceId:string,grants:EffectGrant[],revision:number,statusEvents?:StatusEvent[]) {
+function applyEffects(owner:{id:string;effects?:ActiveRoundEffect[];statusProfile?:StatusProfile;buildups?:Record<string,BuildupState>},sourceId:string,grants:EffectGrant[],revision:number,statusEvents?:StatusEvent[]) {
  const events:EffectEvent[]=[];
- for(const grant of grants){
-  const matchedTags=statusEvents?immuneStatus(owner.statusProfile,grant):[];
-  if(matchedTags.length){statusEvents!.push({kind:'IMMUNE',ownerId:owner.id,sourceUnitId:sourceId,matchedTags,blocked:structuredClone(grant)});continue;}
+ for(const original of grants){
+  const matchedTags=statusEvents?immuneStatus(owner.statusProfile,original):[];
+  if(matchedTags.length){statusEvents!.push({kind:'IMMUNE',ownerId:owner.id,sourceUnitId:sourceId,matchedTags,blocked:structuredClone(original)});continue;}
+  const grant=structuredClone(original);const reduction=['HARMFUL','MIXED'].includes(grant.effect.polarity)&&owner.statusProfile?.version===2?Math.max(0,...grant.effect.tags.map(t=>owner.statusProfile?.version===2?Object.hasOwn(owner.statusProfile.durationReductionBps,t)?owner.statusProfile.durationReductionBps[t]!:0:0)):0;
+  if(reduction&&!(grant.effect.version===4&&grant.effect.buildup)){const before=grant.effect.rounds;grant.effect.rounds=Math.max(1,Math.floor(before*(10000-reduction)/10000));if(statusEvents)statusEvents.push({kind:'RESISTED',ownerId:owner.id,sourceUnitId:sourceId,matchedTags:grant.effect.tags.filter(t=>owner.statusProfile?.version===2&&(Object.hasOwn(owner.statusProfile.durationReductionBps,t)?owner.statusProfile.durationReductionBps[t]!:0)>0),roundsBefore:before,roundsAfter:grant.effect.rounds,blocked:structuredClone(original)});}
+  if(grant.effect.version===4&&grant.effect.buildup){const b=grant.effect.buildup;owner.buildups??={};const state=(Object.hasOwn(owner.buildups,grant.effect.family)?owner.buildups[grant.effect.family]:undefined)??{value:0,breaks:0,decay:b.decay,threshold:b.threshold};owner.buildups[grant.effect.family]=state;state.value=Math.min(1000000,state.value+Math.max(1,Math.floor(b.amount*(10000-reduction)/10000)));state.threshold=Math.min(1000000,b.threshold+state.breaks*b.repeatedThresholdStep);state.decay=b.decay;events.push({kind:'BUILT_UP',ownerId:owner.id,effectId:grant.effectId,sourceUnitId:sourceId,sourceId:grant.sourceId,sourceRevision:grant.sourceRevision,effectRevision:grant.effectRevision,remaining:0,buildup:state.value,threshold:state.threshold});if(state.value<state.threshold)continue;state.value=0;state.breaks++;}
+  let converted=false;if(grant.effect.version===4&&grant.effect.control==='STUN'){owner.buildups??={};const family=grant.effect.family;const b=(Object.hasOwn(owner.buildups,family)?owner.buildups[family]:undefined)??{value:0,breaks:0,decay:0,threshold:1};owner.buildups[family]=b;const previous=grant.effect.buildup?b.breaks-1:b.breaks;if(!grant.effect.buildup)b.breaks++;if(previous>0){converted=true;grant.effect.control='DAZED';events.push({kind:'CONVERTED',ownerId:owner.id,effectId:grant.effectId,sourceUnitId:sourceId,sourceId:grant.sourceId,sourceRevision:grant.sourceRevision,effectRevision:grant.effectRevision,remaining:grant.effect.rounds,controlBefore:'STUN',controlAfter:'DAZED'});}}
   const effects=owner.effects!,old=effects.find(e=>e.effect.family===grant.effect.family);
   if(old&&old.effect.stacking!==grant.effect.stacking)throw new DomainError(409,'CONFLICTING_TACTICAL_EFFECT_STACKING');
-  if(old&&grant.effect.stacking==='REFRESH'){
+  if(old&&grant.effect.stacking==='REFRESH'&&!converted){
    old.remaining=Math.max(old.remaining,grant.effect.rounds);old.refreshedRevision=revision;
    events.push(event('REFRESHED',owner.id,old));
   }else{
@@ -112,11 +119,11 @@ function applyEffects(owner:{id:string;effects?:ActiveRoundEffect[];statusProfil
  }
  return events;
 }
-export function applyOnHitEffects(owner:{id:string;effects?:ActiveRoundEffect[];statusProfile?:StatusProfile},source:{id:string;onHitEffects?:EffectGrant[]},revision:number,statusEvents?:StatusEvent[]) {return applyEffects(owner,source.id,source.onHitEffects??[],revision,statusEvents);}
-export function applyOnHealEffects(owner:{id:string;effects?:ActiveRoundEffect[];statusProfile?:StatusProfile},source:{id:string;onHealEffects?:EffectGrant[]},revision:number,statusEvents?:StatusEvent[]) {return applyEffects(owner,source.id,source.onHealEffects??[],revision,statusEvents);}
-export function validatePeriodicGrants(grants:EffectGrant[],version:1|2|3,types:string[]|undefined) {
+export function applyOnHitEffects(owner:{id:string;effects?:ActiveRoundEffect[];statusProfile?:StatusProfile;buildups?:Record<string,BuildupState>},source:{id:string;onHitEffects?:EffectGrant[]},revision:number,statusEvents?:StatusEvent[]) {return applyEffects(owner,source.id,source.onHitEffects??[],revision,statusEvents);}
+export function applyOnHealEffects(owner:{id:string;effects?:ActiveRoundEffect[];statusProfile?:StatusProfile;buildups?:Record<string,BuildupState>},source:{id:string;onHealEffects?:EffectGrant[]},revision:number,statusEvents?:StatusEvent[]) {return applyEffects(owner,source.id,source.onHealEffects??[],revision,statusEvents);}
+export function validatePeriodicGrants(grants:EffectGrant[],version:1|2|3|4,types:string[]|undefined) {
  for(const g of grants){
-  if(g.effect.version===3&&version!==3)throw new DomainError(409,'TACTICAL_CLEANSING_EFFECTS_DISABLED');
+  if(g.effect.version>=3&&version<g.effect.version)throw new DomainError(409,'TACTICAL_CLEANSING_EFFECTS_DISABLED');
   if(!g.effect.periodic)continue;
   if(version===1)throw new DomainError(409,'TACTICAL_PERIODIC_EFFECTS_DISABLED');
   const p=g.effect.periodic;
@@ -135,7 +142,7 @@ export function pulseRoundEffects(owner:{id:string;side:'PARTY'|'ENEMY';stats:Ch
   let amount=p.amount,mitigation:Pick<PeriodicEvent,'damageType'|'effectiveArmor'|'resistanceBps'|'afterArmor'>={};
   if(p.kind==='DAMAGE'){
    const effectiveArmor=p.armor==='APPLY'?Math.max(0,effectStats(owner).armor-p.penetration):0;
-   const resistanceBps=resistanceFor(owner.damageProfile,p.damageType),afterArmor=Math.max(0,p.amount-effectiveArmor);
+   const resistanceBps=resistanceFor(owner.damageProfile,p.damageType,owner.effects?.flatMap(e=>e.effect.tags)??[]),afterArmor=Math.max(0,p.amount-effectiveArmor);
    amount=Math.floor(afterArmor*(10000-resistanceBps)/10000);
    owner.health=Math.max(0,owner.health-amount);if(owner.health===0){owner.state=owner.side==='ENEMY'?'DEFEATED':'DOWNED';owner.guardReady=false;}
    mitigation={damageType:p.damageType,effectiveArmor,resistanceBps,afterArmor};
@@ -144,9 +151,10 @@ export function pulseRoundEffects(owner:{id:string;side:'PARTY'|'ENEMY';stats:Ch
  }
  return events;
 }
+export function decayBuildups(owner:{id:string;buildups?:Record<string,BuildupState>}){return Object.entries(owner.buildups??{}).map(([family,b])=>{const before=b.value;b.value=Math.max(0,b.value-b.decay);return {ownerId:owner.id,family,before,after:b.value,breaks:b.breaks};});}
 export function tickRoundEffects(owner:{id:string;effects?:ActiveRoundEffect[]}) {
  const events:EffectEvent[]=[];
- for(const e of owner.effects??[]){e.remaining--;events.push(event(e.remaining===0?'EXPIRED':'TICKED',owner.id,e));}
+ for(const e of owner.effects??[]){if(e.effect.clock!=='ROUNDS')continue;e.remaining--;events.push(event(e.remaining===0?'EXPIRED':'TICKED',owner.id,e));}
  if(owner.effects)owner.effects=owner.effects.filter(e=>e.remaining>0);
  return events;
 }

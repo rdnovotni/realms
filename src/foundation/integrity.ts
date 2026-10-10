@@ -1,3 +1,4 @@
+import { sharedTacticalMismatchCount } from '../domains/tactical-shared-audit.js';
 import { tacticalMismatchCount } from '../domains/tactical-audit.js';
 import type pg from 'pg';
 import { characterSnapshotMismatchCount } from '../domains/character-snapshots.js';
@@ -68,9 +69,10 @@ export async function integrityReport(pool:pg.Pool){
     const constraints=(await client.query(`SELECT count(*)::int AS n FROM pg_constraint c JOIN pg_class t ON t.oid=c.conrelid
       JOIN pg_namespace s ON s.oid=t.relnamespace WHERE s.nspname=current_schema() AND c.contype IN('c','f') AND NOT c.convalidated`)).rows[0].n as number;
     const characterSnapshots=await characterSnapshotMismatchCount(client)+(await client.query('SELECT count(*)::int AS n FROM character_snapshot_integrity_issues')).rows[0].n;
-    const tactical=await tacticalMismatchCount(client)+(await client.query('SELECT count(*)::int AS n FROM tactical_integrity_issues')).rows[0].n;
+    const tactical=await sharedTacticalMismatchCount(client)+await tacticalMismatchCount(client)+(await client.query('SELECT count(*)::int AS n FROM tactical_integrity_issues')).rows[0].n;
+    const companions=(await client.query("SELECT count(*)::int AS n FROM owned_companions o JOIN runs r ON r.id=o.run_id JOIN characters c ON c.id=r.character_id JOIN content_versions v ON v.entity_id=o.companion_id AND v.revision=o.companion_revision LEFT JOIN action_receipts a ON a.action_id=o.action_id WHERE o.account_id IS DISTINCT FROM c.account_id OR a.account_id IS DISTINCT FROM o.account_id OR a.action_type IS DISTINCT FROM 'RECRUIT_COMPANION' OR a.result->>'companionId' IS DISTINCT FROM o.companion_id OR v.definition->'mechanics'->'companion' IS DISTINCT FROM '{\"version\":1,\"access\":\"DISCOVERED\"}'::jsonb")).rows[0].n as number;
     await client.query('COMMIT');
-    return {tacticalMismatches:tactical,characterSnapshotMismatches:characterSnapshots,proficiencyRequirementMismatches:prerequisiteEvidence,proficiencyMismatches:proficiencies,attributeMismatches:attributeGrowth,featMismatches:feats,subclassMismatches:subclasses,buildMismatches:builds,xpMismatches:xp,loadoutMismatches:loadouts,itemBindingHistoryMismatches:bindingHistory,equipmentMismatches:equipment,itemLockMismatches:locks,craftMismatches:Number(crafts),combatMismatches:combat,completionMismatches:completions,rewardMismatches:rewards,encounterMismatches:encounters,walletBalanceMismatches:balances,itemQuantityMismatches:itemQuantities,runScopeMismatches:lifetimes,malformedJobLeases:leases,itemBindingMismatches:bindings,outboxJobCollisions:collisions,unvalidatedConstraints:constraints};
+    return {companionMismatches:companions,tacticalMismatches:tactical,characterSnapshotMismatches:characterSnapshots,proficiencyRequirementMismatches:prerequisiteEvidence,proficiencyMismatches:proficiencies,attributeMismatches:attributeGrowth,featMismatches:feats,subclassMismatches:subclasses,buildMismatches:builds,xpMismatches:xp,loadoutMismatches:loadouts,itemBindingHistoryMismatches:bindingHistory,equipmentMismatches:equipment,itemLockMismatches:locks,craftMismatches:Number(crafts),combatMismatches:combat,completionMismatches:completions,rewardMismatches:rewards,encounterMismatches:encounters,walletBalanceMismatches:balances,itemQuantityMismatches:itemQuantities,runScopeMismatches:lifetimes,malformedJobLeases:leases,itemBindingMismatches:bindings,outboxJobCollisions:collisions,unvalidatedConstraints:constraints};
   }catch(error){await client.query('ROLLBACK');throw error;}
   finally{client.release();}
 }

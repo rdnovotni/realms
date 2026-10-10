@@ -1,3 +1,7 @@
+import { loadTechniqueProfile,techniqueAvailable,techniqueTargets } from './tactical-techniques.js';
+import { loadCarryEffects,settleCarryEffects } from './tactical-persistence.js';
+import { settleFailureCosts,failureCostsView } from './tactical-failure.js';
+import { companionPool,requireCompanion,settleCompanions } from './tactical-companions.js';
 import { loadHealingAbilities } from './tactical-healing-abilities.js';
 import { loadAttackAbilities } from './tactical-abilities.js';
 import { loadStatusProfile } from './tactical-status.js';
@@ -17,60 +21,72 @@ import { tacticalDistance,type TacticalState,type TacticalUnit } from './tactica
 
 export type TacticalPlayerCommand=TacticalCommand|{actorId:'hero';kind:'CONTINUE'};
 
-async function authored(c:ActionContext,id:string) {
+export async function authored(c:ActionContext,id:string) {
  const row=(await c.client.query(`SELECT v.definition->'mechanics'->'tacticalCombat' AS spec FROM release_entries e JOIN content_versions v ON v.entity_id=e.entity_id AND v.revision=e.revision WHERE e.release_id=$1 AND e.entity_id=$2`,[c.run.content_release_id,id])).rows[0];
  validateTacticalSpec(row?.spec);return row!.spec as TacticalSpec;
 }
-async function spawned(c:ActionContext,spec:TacticalSpec) {
+export async function spawned(c:ActionContext,spec:TacticalSpec,companionPins?:Record<string,string|null>) {
  const units:TacticalUnit[]=[];
  for(const u of [...spec.allies.map(u=>({...u,side:'PARTY' as const})),...spec.enemies.map(u=>({...u,side:'ENEMY' as const}))]){
   const row=(await c.client.query(`SELECT e.revision,v.definition->'mechanics'->'tacticalUnit' AS spec FROM release_entries e JOIN content_versions v ON v.entity_id=e.entity_id AND v.revision=e.revision WHERE e.release_id=$1 AND e.entity_id=$2`,[c.run.content_release_id,u.definitionId])).rows[0];
   validateTacticalTemplate(row?.spec);const t=row!.spec as TacticalTemplate;
-  units.push({id:u.id,side:u.side,zone:u.zone,stats:t.stats,health:t.stats.maxHealth,strikes:0,state:'ACTIVE',canHeal:t.canHeal,canGuard:t.canGuard,...(spec.rules.roundEffects?{onHitEffects:await loadEffectGrants(c.client,c.run.content_release_id,[{entityId:u.definitionId,revision:row!.revision as number,nativeLevel:0}])}:{}),...((spec.rules.roundEffects?.version??0)>=2?{onHealEffects:await loadEffectGrants(c.client,c.run.content_release_id,[{entityId:u.definitionId,revision:row!.revision as number,nativeLevel:0}],'HEAL')}:{}),...(spec.rules.roundEffects?.version===3?{cleansingAbilities:await loadCleanseAbilities(c.client,[{entityId:u.definitionId,revision:row!.revision as number,nativeLevel:0}])}:{}),...(spec.rules.healingAbilities?{healingAbilities:await loadHealingAbilities(c.client,[{entityId:u.definitionId,revision:row!.revision as number,nativeLevel:0}])}:{}),...(spec.rules.abilities?{attackAbilities:await loadAttackAbilities(c.client,spec.rules.typedDamage!,[{entityId:u.definitionId,revision:row!.revision as number,nativeLevel:0}])}:{}),...(spec.rules.statusDefense?{statusProfile:await loadStatusProfile(c.client,spec.rules.statusDefense,[{entityId:u.definitionId,revision:row!.revision as number,nativeLevel:0}])}:{}),...(spec.rules.typedDamage?{damageProfile:deriveDamageProfile(spec.rules.typedDamage,t.damageTraits?[{traits:t.damageTraits,nativeLevel:0}]:[])}:{})});
+  const owned=u.side==='PARTY'&&(u as {owned?:boolean}).owned;if(owned)await requireCompanion(c.client,c.accountId,u.definitionId);const pool=owned?await companionPool(c.client,c.run.id,u.definitionId,companionPins?.[u.id]):null;if(pool?.effects?.length&&spec.rules.roundEffects?.version!==4)throw new DomainError(409,'TACTICAL_PERSISTENT_EFFECTS_DISABLED');
+  units.push({id:u.id,side:u.side,zone:u.zone,stats:t.stats,health:Math.min(pool?.health??t.stats.maxHealth,t.stats.maxHealth),...(owned?{mana:Math.min(pool?.mana??t.stats.maxMana,t.stats.maxMana),companionRecoveryId:pool?.id??null,...(spec.rules.roundEffects?.version===4?{carryEffects:pool?.effects??[]}:{})}:{}),strikes:0,state:'ACTIVE',canHeal:t.canHeal,canGuard:t.canGuard,...(spec.rules.techniques?{checkAttributes:t.checkAttributes,checkSkills:t.checkSkills??{},techniques:await loadTechniqueProfile(c.client,c.run.content_release_id!,[{entityId:u.definitionId,revision:row!.revision as number,nativeLevel:0}])}:{}),...(spec.rules.roundEffects?{onHitEffects:await loadEffectGrants(c.client,c.run.content_release_id,[{entityId:u.definitionId,revision:row!.revision as number,nativeLevel:0}])}:{}),...((spec.rules.roundEffects?.version??0)>=2?{onHealEffects:await loadEffectGrants(c.client,c.run.content_release_id,[{entityId:u.definitionId,revision:row!.revision as number,nativeLevel:0}],'HEAL')}:{}),...((spec.rules.roundEffects?.version??0)>=3?{cleansingAbilities:await loadCleanseAbilities(c.client,[{entityId:u.definitionId,revision:row!.revision as number,nativeLevel:0}])}:{}),...(spec.rules.healingAbilities?{healingAbilities:await loadHealingAbilities(c.client,[{entityId:u.definitionId,revision:row!.revision as number,nativeLevel:0}])}:{}),...(spec.rules.abilities?{attackAbilities:await loadAttackAbilities(c.client,spec.rules.typedDamage!,[{entityId:u.definitionId,revision:row!.revision as number,nativeLevel:0}])}:{}),...(spec.rules.statusDefense?{statusProfile:await loadStatusProfile(c.client,spec.rules.statusDefense,[{entityId:u.definitionId,revision:row!.revision as number,nativeLevel:0}])}:{}),...(spec.rules.typedDamage?{damageProfile:deriveDamageProfile(spec.rules.typedDamage,t.damageTraits?[{traits:t.damageTraits,nativeLevel:0}]:[])}:{})});
  }
  return units;
 }
 export function tacticalPublic(state:TacticalState,encounterRevision:number,spec:TacticalSpec) {
  return {encounterRevision,tacticalRevision:state.revision,round:state.round,currentActor:state.outcome===null?state.order[state.cursor]!:null,order:state.order,outcome:state.outcome,
-  units:state.units.map(u=>({id:u.id,side:u.side,zone:u.zone,health:u.health,maxHealth:u.stats.maxHealth,mana:u.mana??0,maxMana:u.stats.maxMana,state:u.state,strikes:u.strikes,guardReady:u.guardReady??false,...(spec.rules.roundEffects?{effects:(u.effects??[]).map(e=>({effectId:e.effectId,family:e.effect.family,polarity:e.effect.polarity,tags:e.effect.tags,clock:e.effect.clock,tick:e.effect.tick,stacking:e.effect.stacking,remaining:e.remaining,modifiers:e.effect.modifiers,sourceUnitId:e.sourceUnitId,...(e.effect.version===3?{removal:e.effect.removal}:{}),...(e.effect.periodic?{periodic:e.effect.periodic}:{})}))}:{})})),budgets:state.budgets,
+  units:state.units.map(u=>({id:u.id,side:u.side,zone:u.zone,health:u.health,maxHealth:u.stats.maxHealth,mana:u.mana??0,maxMana:u.stats.maxMana,state:u.state,strikes:u.strikes,guardReady:u.guardReady??false,...(spec.rules.roundEffects?.version===4?{buildups:u.buildups??{}}:{}),...(spec.rules.techniques?{stabilized:u.stabilized??false,concentration:u.concentration??null,resources:u.techniqueResources??{},cooldowns:u.techniqueCooldowns??{}}:{}),...(spec.rules.roundEffects?{effects:(u.effects??[]).map(e=>({effectId:e.effectId,family:e.effect.family,polarity:e.effect.polarity,tags:e.effect.tags,clock:e.effect.clock,tick:e.effect.tick,stacking:e.effect.stacking,remaining:e.remaining,modifiers:e.effect.modifiers,sourceUnitId:e.sourceUnitId,...(e.effect.version===4?{control:e.effect.control}:{}),...(e.effect.version>=3?{removal:e.effect.removal}:{}),...(e.effect.periodic?{periodic:e.effect.periodic}:{})}))}:{})})),budgets:state.budgets,
   actionRules:{attackRange:spec.rules.attackRange,healRange:spec.rules.healRange,healAmount:spec.rules.healAmount,healManaCost:spec.rules.healManaCost!,guardArmorBonus:spec.rules.guardArmorBonus!},
-  partyCapabilities:state.units.filter(u=>u.side==='PARTY').map(u=>({id:u.id,heal:u.canHeal??false,guard:u.canGuard??false,...(spec.rules.roundEffects?{onHitEffects:(u.onHitEffects??[]).map(g=>({effectId:g.effectId,family:g.effect.family,rounds:g.effect.rounds,clock:g.effect.clock,tick:g.effect.tick,stacking:g.effect.stacking,polarity:g.effect.polarity,tags:g.effect.tags,modifiers:g.effect.modifiers,...(g.effect.periodic?{periodic:g.effect.periodic}:{})}))}:{}),...((spec.rules.roundEffects?.version??0)>=2?{onHealEffects:(u.onHealEffects??[]).map(g=>({effectId:g.effectId,family:g.effect.family,rounds:g.effect.rounds,clock:g.effect.clock,tick:g.effect.tick,stacking:g.effect.stacking,polarity:g.effect.polarity,tags:g.effect.tags,modifiers:g.effect.modifiers,...(g.effect.periodic?{periodic:g.effect.periodic}:{})}))}:{}),...(spec.rules.roundEffects?.version===3?{cleansingAbilities:(u.cleansingAbilities??[]).map(a=>({abilityId:a.id,method:a.spec.method,tags:a.spec.tags,strength:a.spec.strength,manaCost:a.spec.manaCost,range:a.spec.range,targetSide:a.spec.targetSide}))}:{}),...(spec.rules.healingAbilities?{healingAbilities:(u.healingAbilities??[]).map(a=>({abilityId:a.id,range:a.spec.range,manaCost:a.spec.manaCost,min:a.spec.min,max:a.spec.max}))}:{}),...(spec.rules.abilities?{attackAbilities:(u.attackAbilities??[]).map(a=>({abilityId:a.id,range:a.spec.range,manaCost:a.spec.manaCost,accuracyModifier:a.spec.accuracyModifier,damage:a.spec.damage}))}:{}),...(spec.rules.statusDefense?{statusImmunities:u.statusProfile!.immuneTags}:{}),...(u.damageProfile?{damageProfile:u.damageProfile}:{})})),
-  battlefield:{zones:spec.rules.zones,edges:spec.rules.edges},failureContract:spec.failure,...(spec.campaignId?{campaignCompleted:state.outcome==='VICTORY'}:{})};
+  partyCapabilities:state.units.filter(u=>u.side==='PARTY').map(u=>({id:u.id,...(spec.rules.partyOwnership?{control:spec.allies.some(a=>a.id===u.id&&a.owned&&!a.manual)?'SERVER':'PLAYER'}:{}),heal:u.canHeal??false,guard:u.canGuard??false,...(spec.rules.techniques?{techniques:(u.techniques?.abilities??[]).map(a=>({abilityId:a.id,action:a.action,targetSide:a.targetSide,range:a.range,area:a.area,manaCost:a.manaCost,resourceCost:a.resourceCost,cooldownRounds:a.cooldownRounds,delivery:a.delivery,concentration:a.concentration??false,bypassStatusImmunity:a.bypassStatusImmunity??false,check:a.check,effect:a.effect}))}:{}),...(spec.rules.roundEffects?{onHitEffects:(u.onHitEffects??[]).map(g=>({effectId:g.effectId,family:g.effect.family,rounds:g.effect.rounds,clock:g.effect.clock,tick:g.effect.tick,stacking:g.effect.stacking,polarity:g.effect.polarity,tags:g.effect.tags,modifiers:g.effect.modifiers,...(g.effect.periodic?{periodic:g.effect.periodic}:{})}))}:{}),...((spec.rules.roundEffects?.version??0)>=2?{onHealEffects:(u.onHealEffects??[]).map(g=>({effectId:g.effectId,family:g.effect.family,rounds:g.effect.rounds,clock:g.effect.clock,tick:g.effect.tick,stacking:g.effect.stacking,polarity:g.effect.polarity,tags:g.effect.tags,modifiers:g.effect.modifiers,...(g.effect.periodic?{periodic:g.effect.periodic}:{})}))}:{}),...((spec.rules.roundEffects?.version??0)>=3?{cleansingAbilities:(u.cleansingAbilities??[]).map(a=>({abilityId:a.id,method:a.spec.method,tags:a.spec.tags,strength:a.spec.strength,manaCost:a.spec.manaCost,range:a.spec.range,targetSide:a.spec.targetSide}))}:{}),...(spec.rules.healingAbilities?{healingAbilities:(u.healingAbilities??[]).map(a=>({abilityId:a.id,range:a.spec.range,manaCost:a.spec.manaCost,min:a.spec.min,max:a.spec.max}))}:{}),...(spec.rules.abilities?{attackAbilities:(u.attackAbilities??[]).map(a=>({abilityId:a.id,range:a.spec.range,manaCost:a.spec.manaCost,accuracyModifier:a.spec.accuracyModifier,damage:a.spec.damage}))}:{}),...(spec.rules.statusDefense?{statusImmunities:u.statusProfile!.immuneTags,...(u.statusProfile!.version===2?{statusDurationReductionBps:u.statusProfile!.durationReductionBps}:{})}:{}),...(u.damageProfile?{damageProfile:u.damageProfile}:{})})),
+  ...(spec.rules.surprise?{surprise:spec.rules.surprise}:{}),battlefield:{zones:spec.rules.zones,edges:spec.rules.edges},failureContract:spec.failure,...(spec.campaignId?{campaignCompleted:state.outcome==='VICTORY'}:{})};
 }
 export function enemyCommand(checkpoint:TacticalCheckpoint):TacticalCommand {
  const s=checkpoint.state,actor=s.units.find(u=>u.id===s.order[s.cursor])!;
- if(actor.side!=='ENEMY'||actor.state!=='ACTIVE')throw new DomainError(409,'NOT_ENEMY_TURN');
- if(checkpoint.rules.roundEffects?.version===3&&s.budgets[actor.id]!.main===1){
+ if((actor.side!=='ENEMY'&&!checkpoint.serverControlledIds?.includes(actor.id))||actor.state!=='ACTIVE')throw new DomainError(409,'NOT_ENEMY_TURN');
+ const controls=new Set((actor.effects??[]).flatMap(e=>e.effect.version===4&&e.effect.control?[e.effect.control]:[]));
+ if(controls.has('STUN')||(controls.has('DAZED')&&(s.budgets[actor.id]!.main===0||s.budgets[actor.id]!.quick===0)))return {actorId:actor.id,kind:'END'};
+ if(checkpoint.rules.techniques)for(const a of actor.techniques?.abilities??[]){
+  if(a.action==='REACTION'||!techniqueAvailable(s,actor,a)||(a.delivery==='MAGICAL'&&controls.has('SILENCE'))||(a.delivery==='MARTIAL'&&controls.has('DISARM')))continue;
+  const candidates=s.units.filter(u=>(a.targetSide==='ALLY'?u.side===actor.side:u.side!==actor.side)&&tacticalDistance(checkpoint.rules,actor.zone,u.zone)<=a.range).sort((a,b)=>a.health-b.health||(a.id<b.id?-1:1));
+  for(const target of candidates){if(a.effect.kind==='HEAL'&&target.health>=target.stats.maxHealth)continue;if(a.effect.kind==='STABILIZE'&&target.stabilized)continue;try{techniqueTargets(checkpoint.rules,s,actor,a,target.id);return {actorId:actor.id,kind:'TECHNIQUE',targetId:target.id,abilityId:a.id};}catch(error){if(!(error instanceof DomainError))throw error;}}
+ }
+ if((checkpoint.rules.roundEffects?.version??0)>=3&&s.budgets[actor.id]!.main===1){
   for(const ability of actor.cleansingAbilities??[])if(ability.spec.targetSide==='ALLY'&&(actor.mana??0)>=ability.spec.manaCost){
    const effect=actor.effects?.find(e=>cleansingEligible(ability,e));if(effect)return {actorId:actor.id,kind:'CLEANSE',targetId:actor.id,abilityId:ability.id,effectId:effect.effectId};
   }
  }
  if(checkpoint.rules.healingAbilities&&s.budgets[actor.id]!.main===1&&actor.health<actor.stats.maxHealth){const ability=actor.healingAbilities?.find(a=>(actor.mana??0)>=a.spec.manaCost);if(ability)return {actorId:actor.id,kind:'USE_HEALING_ABILITY',targetId:actor.id,abilityId:ability.id};}
- const target=s.units.filter(u=>u.side==='PARTY'&&u.state==='ACTIVE').sort((a,b)=>a.health-b.health||(a.id<b.id?-1:1))[0];
+ if(actor.side==='PARTY'&&checkpoint.rules.partyOwnership&&s.budgets[actor.id]!.main===1&&actor.canHeal&&(actor.mana??0)>=(checkpoint.rules.healManaCost??0)){const ally=s.units.filter(u=>u.side===actor.side&&u.state!=='DEFEATED'&&u.health<u.stats.maxHealth&&tacticalDistance(checkpoint.rules,actor.zone,u.zone)<=checkpoint.rules.healRange).sort((a,b)=>a.health-b.health||(a.id<b.id?-1:1))[0];if(ally)return {actorId:actor.id,kind:'HEAL',targetId:ally.id};}
+ const target=s.units.filter(u=>u.side!==actor.side&&u.state==='ACTIVE').sort((a,b)=>a.health-b.health||(a.id<b.id?-1:1))[0];
  if(!target||s.budgets[actor.id]!.main===0)return {actorId:actor.id,kind:'END'};
  const distance=tacticalDistance(checkpoint.rules,actor.zone,target.zone);
- if(checkpoint.rules.abilities){const ability=actor.attackAbilities?.find(a=>distance<=a.spec.range&&(actor.mana??0)>=a.spec.manaCost);if(ability)return {actorId:actor.id,kind:'USE_ABILITY',targetId:target.id,abilityId:ability.id};}
- if(distance<=checkpoint.rules.attackRange)return {actorId:actor.id,kind:'ATTACK',targetId:target.id};
- if(s.budgets[actor.id]!.quick===1){
+ if(checkpoint.rules.abilities&&!controls.has('DISARM')){const ability=actor.attackAbilities?.find(a=>distance<=a.spec.range&&(actor.mana??0)>=a.spec.manaCost);if(ability)return {actorId:actor.id,kind:'USE_ABILITY',targetId:target.id,abilityId:ability.id};}
+ if(distance<=checkpoint.rules.attackRange&&!controls.has('DISARM'))return {actorId:actor.id,kind:'ATTACK',targetId:target.id};
+ if(s.budgets[actor.id]!.quick===1&&!controls.has('ROOT')){
   const candidates=checkpoint.rules.edges.flatMap(([a,b])=>a===actor.zone?[b]:b===actor.zone?[a]:[]).sort();
   const zone=candidates.find(z=>tacticalDistance(checkpoint.rules,z,target.zone)<distance);
   if(zone)return {actorId:actor.id,kind:'MOVE',zone};
  }
  return {actorId:actor.id,kind:'END'};
 }
-async function settle(c:ActionContext,id:string,spec:TacticalSpec,state:TacticalState,encounterRevision:number) {
+export async function settle(c:ActionContext,id:string,spec:TacticalSpec,state:TacticalState,encounterRevision:number) {
  if(state.outcome===null)return encounterRevision;
  const hero=state.units.find(u=>u.id==='hero')!;
- const failure=state.outcome==='DEFEAT'||state.outcome==='FAILED_FORWARD';
+ const failure=state.outcome==='DEFEAT'||state.outcome==='FAILED_FORWARD'||state.outcome==='SURRENDER';
  const health=hero.health>0?hero.health:Math.min(hero.stats.maxHealth,spec.failure.recoveryHealth),mana=hero.mana??0;
  const turnCost=failure?Math.min(c.run.turns,spec.failure.turnCost):0;
- const destination=failure?'HOME':'FIELD';
+ const destination=failure?spec.failure.destination:'FIELD';
  const recovery=async()=>{
+  if(spec.rules.partyOwnership)await settleCompanions(c,id,spec,state,turnCost);
+  const costs=spec.failure.version===2?await settleFailureCosts(c,id,failure):null;
+  if(spec.rules.roundEffects?.version===4)await settleCarryEffects(c,id,spec,state,turnCost);
   await c.client.query('INSERT INTO tactical_recoveries(instance_id,action_id,health,mana,turn_cost,destination) VALUES($1,$2,$3,$4,$5,$6)',[id,c.actionId,health,mana,turnCost,destination]);
   if(failure){await c.client.query('UPDATE runs SET turns=turns-$2 WHERE id=$1',[c.run.id,turnCost]);c.run.turns-=turnCost;
    await c.client.query("INSERT INTO turn_ledger(run_id,request_id,delta,reason) VALUES($1,$2,$3,'TACTICAL_RECOVERY')",[c.run.id,c.requestId,-turnCost]);}
   await c.client.query('UPDATE tactical_run_state SET health=$2,mana=$3,last_instance_id=$4 WHERE run_id=$1',[c.run.id,health,mana,id]);
-  return {destination,health,mana,turnCost};
+  return {destination,health,mana,turnCost,...(costs?{costs}: {})};
  };
  if(state.outcome==='VICTORY')await settleAuthoredVictory(c,id,encounterRevision,async()=>{
   const result=await recovery();
@@ -84,14 +100,14 @@ async function advanceEnemies(c:ActionContext,id:string) {
  // At most one segment of enemy turns, ending when control returns to a party unit.
  for(let n=0;n<64;n++){
   const record=await encounterCheckpoint(c,id),checkpoint=record.checkpoint as unknown as TacticalCheckpoint;
-  if(checkpoint.state.outcome!==null||checkpoint.state.units.find(u=>u.id===checkpoint.state.order[checkpoint.state.cursor])!.side==='PARTY')return record;
+  if(checkpoint.state.outcome!==null||checkpoint.state.units.find(u=>u.id===checkpoint.state.order[checkpoint.state.cursor])!.side==='PARTY'&&!checkpoint.serverControlledIds?.includes(checkpoint.state.order[checkpoint.state.cursor]!))return record;
   await executeTacticalCommand(c,id,record.revision,checkpoint.state.revision,enemyCommand(checkpoint),true);
  }
  throw new DomainError(409,'TACTICAL_AI_LIMIT');
 }
-async function recoveryView(c:ActionContext,id:string) {
+export async function recoveryView(c:ActionContext,id:string) {
  const row=(await c.client.query('SELECT health,mana,turn_cost,destination FROM tactical_recoveries WHERE instance_id=$1',[id])).rows[0];
- return row?{health:row.health as number,mana:row.mana as number,turnCost:row.turn_cost as number,destination:row.destination as string}:null;
+ return row?{health:row.health as number,mana:row.mana as number,turnCost:row.turn_cost as number,destination:row.destination as string,...await failureCostsView(c.client,id)}:null;
 }
 export function startTacticalCombat(pool:pg.Pool,accountId:string,envelope:Envelope,definitionId:string) {
  return executeAction(pool,accountId,envelope,{definitionId},async c=>{
@@ -100,7 +116,7 @@ export function startTacticalCombat(pool:pg.Pool,accountId:string,envelope:Envel
   if(spec.campaignId)await tacticalCampaignPrerequisites(c,definitionId,spec.campaignId);
   const units=await spawned(c,spec);
   const prior=(await c.client.query('SELECT health,mana,last_instance_id FROM tactical_run_state WHERE run_id=$1 FOR UPDATE',[c.run.id])).rows[0];
-  const started=await beginTacticalEncounter(c,definitionId,spec.rules,{id:'hero',zone:spec.playerZone,loadKit:true,...(prior?{health:prior.health as number,mana:prior.mana as number}:{})},units,['hero',...spec.allies.map(u=>u.id)],true);
+  const started=await beginTacticalEncounter(c,definitionId,spec.rules,{id:'hero',zone:spec.playerZone,loadKit:true,...(prior?{health:prior.health as number,mana:prior.mana as number}:{})},units,['hero',...spec.allies.filter(u=>!u.owned||u.manual).map(u=>u.id)],true,spec.allies.filter(u=>u.owned&&!u.manual).map(u=>u.id));
   if(c.run.status==='ACTIVE')await c.client.query("UPDATE runs SET completion_policy='CAMPAIGN' WHERE id=$1",[c.run.id]);
   const record=await encounterCheckpoint(c,started.instanceId);
   await c.client.query('INSERT INTO tactical_encounter_origins(instance_id,run_id,spec,initial_checkpoint,previous_instance_id) VALUES($1,$2,$3,$4,$5)',[started.instanceId,c.run.id,spec,record.checkpoint,prior?.last_instance_id??null]);
@@ -120,7 +136,7 @@ export function takeTacticalAction(pool:pg.Pool,accountId:string,envelope:Envelo
   if(command.kind==='CONTINUE'){
    const record=await encounterCheckpoint(c,id),checkpoint=record.checkpoint as unknown as TacticalCheckpoint;
    if(record.revision!==expectedEncounterRevision||checkpoint.state.revision!==expectedTacticalRevision)throw new DomainError(409,'STALE_TACTICAL_REVISION');
-   if(command.actorId!=='hero'||checkpoint.state.units.find(u=>u.id===checkpoint.state.order[checkpoint.state.cursor])?.side!=='ENEMY')throw new DomainError(409,'NOT_ENEMY_TURN');
+   if(command.actorId!=='hero'||(checkpoint.state.units.find(u=>u.id===checkpoint.state.order[checkpoint.state.cursor])?.side!=='ENEMY'&&!checkpoint.serverControlledIds?.includes(checkpoint.state.order[checkpoint.state.cursor]!)))throw new DomainError(409,'NOT_ENEMY_TURN');
   }else await executeTacticalCommand(c,id,expectedEncounterRevision,expectedTacticalRevision,command);
   const advanced=await advanceEnemies(c,id),state=(advanced.checkpoint as unknown as TacticalCheckpoint).state,spec=origin.spec as TacticalSpec;
   const revision=await settle(c,id,spec,state,advanced.revision);
@@ -130,5 +146,5 @@ export function takeTacticalAction(pool:pg.Pool,accountId:string,envelope:Envelo
 export async function tacticalView(pool:pg.Pool,accountId:string,id:string) {
  const row=(await pool.query(`SELECT e.checkpoint,e.revision,r.revision AS run_revision,o.spec,recovery.health,recovery.mana,recovery.turn_cost,recovery.destination FROM tactical_encounter_origins o JOIN encounter_records e ON e.instance_id=o.instance_id JOIN runs r ON r.id=o.run_id JOIN characters c ON c.id=r.character_id LEFT JOIN tactical_recoveries recovery ON recovery.instance_id=o.instance_id WHERE o.instance_id=$1 AND c.account_id=$2`,[id,accountId])).rows[0];
  if(!row)throw new DomainError(404,'TACTICAL_NOT_FOUND');
- return {instanceId:id,revision:row.run_revision as number,...tacticalPublic((row.checkpoint as TacticalCheckpoint).state,row.revision as number,row.spec as TacticalSpec),recovery:row.health!==null?{health:row.health,mana:row.mana,turnCost:row.turn_cost,destination:row.destination}:null};
+ return {instanceId:id,revision:row.run_revision as number,...tacticalPublic((row.checkpoint as TacticalCheckpoint).state,row.revision as number,row.spec as TacticalSpec),recovery:row.health!==null?{health:row.health,mana:row.mana,turnCost:row.turn_cost,destination:row.destination,...await failureCostsView(pool,id)}:null};
 }
