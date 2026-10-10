@@ -5,11 +5,11 @@ import type { Snapshot } from '../client/types.js';
 import { GameSession } from '../client/session.js';
 import { zoneDistance,failureSummary } from '../client/views.js';
 const json=(value:unknown,status=200)=>new Response(JSON.stringify(value),{status,headers:{'Content-Type':'application/json'}});
-function harness(){
- let revision=0,canWrite=true,post:(path:string,init:RequestInit)=>Promise<Response>=async()=>json({}),readsFail=false;
+function harness(authMode:'development'|'sessions'='development'){
+ let revision=0,canWrite=true,post:(path:string,init:RequestInit)=>Promise<Response>=async(path)=>json(path.endsWith('/login')?{token:'private-token'}:{}),readsFail=false;
  const calls:{path:string;init:RequestInit}[]=[];
  const fetcher:Fetcher=async(path,init={})=>{calls.push({path,init});if(init.method==='POST')return post(path,init);
-  if(path.endsWith('/config'))return json({protocolVersion:1,authMode:'development'});
+  if(path.endsWith('/config'))return json({protocolVersion:1,authMode});
   if(readsFail)return json({error:'TECHNICAL_FAILURE'},503);
   if(path.endsWith('/state'))return json({protocolVersion:1,run:{runId:'run',turns:20,revision,status:'ACTIVE',mode:'STANDARD'},canWrite,activeEncounter:null,latestEncounter:null,adventures:[],inventory:[],hasMoreItems:false,hasMoreAdventures:false});
   if(path.endsWith('/options'))return json({classes:[],rules:[]});
@@ -43,4 +43,8 @@ test('battlefield paths handle cycles and disconnected zones; commitment preview
 
 test('default transport calls native fetch with its required global receiver',async()=>{
  const previous=globalThis.fetch;try{globalThis.fetch=async function(this:typeof globalThis){assert.equal(this,globalThis);return json({connected:true});};assert.deepEqual(await new ApiClient().request('/api/v1/client/config',undefined,false),{connected:true});}finally{globalThis.fetch=previous;}
+});
+
+test('sign out forgets credentials and account data after an expired session or lost revocation response',async()=>{
+ for(const fail of [async()=>json({error:'UNAUTHORIZED'},401),async()=>{throw Error('response lost after revocation');}]){const h=harness('sessions');await connect(h);h.setPost(fail);await h.session.logout();assert.equal(h.session.snapshot,null);assert.equal(h.session.pending,null);assert.equal(h.session.busy,false);assert.match(h.session.notice.text,/Signed out on this device/);h.setReadFailure(true);await h.session.refresh();assert.equal((h.calls.at(-1)!.init.headers as Record<string,string>).Authorization,'Bearer ');assert.equal(h.session.snapshot,null);}
 });

@@ -45,8 +45,10 @@ export class GameSession {
  private handleError(error:unknown){this.notice={text:errorMessage(error),kind:'error'};if(error instanceof ApiError&&error.status===401){this.api.setToken('');this.snapshot=null;this.pending=null;}}
  async logout(){
   if(this.busy||this.pending)return;this.busy=true;this.notify();
+  let confirmed=true;
   try{if(this.config?.authMode==='sessions')await this.api.request('/api/v1/auth/logout',{});}
-  catch(error){this.notice={text:'Sign-out could not be confirmed. Please retry.',kind:'error'};this.busy=false;this.notify();return;}
-  ++this.epoch;this.api.setToken('');this.snapshot=null;this.pending=null;this.busy=false;this.notice={text:'Signed out. Your game is saved; sign in to resume.',kind:'info'};this.notify();
+  catch{confirmed=false;}
+  // Forget local account data even if revocation succeeded but its reply was lost.
+  ++this.epoch;this.api.setToken('');this.snapshot=null;this.pending=null;this.needsRefresh=false;this.busy=false;this.notice={text:confirmed?'Signed out. Your game is saved; sign in to resume.':'Signed out on this device. Server session revocation could not be confirmed.',kind:'info'};this.notify();
  }
 }
