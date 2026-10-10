@@ -42,6 +42,164 @@ function motif(kind: 'key' | 'quill' | 'compass') {
  const shapes={key:'M13 14a6 6 0 1 0-8-8 6 6 0 0 0 8 8Zm-5-6h.01M13 13l14 14m-5-5 4-4m-8 0 4-4',quill:'M5 27 16 16M9 23C5 10 19 3 28 4c0 9-7 23-19 19Zm5-5 8-8M17 13l6 1M13 18l1 6',compass:'M16 3a13 13 0 1 0 0 26 13 13 0 0 0 0-26Zm6 7-4 8-8 4 4-8 8-4ZM16 3v3m0 20v3M3 16h3m20 0h3'};
  path.setAttribute('d',shapes[kind]);svg.append(path);return svg;
 }
+
+/** Public funding commitments; payment and entitlement services are not yet live. */
+function monetizationPage() {
+ const page=el('article','','public-page policy-page monetization-page');
+ const back=link('← Back to the homepage','/');back.className='policy-back';
+ const heading=el('header','','policy-heading'),title=el('h1','Monetization policy');title.tabIndex=-1;
+ heading.append(el('span','How we fund Realms','eyebrow'),title,
+  el('p','Free to play. Supported by players.','policy-lead'));
+ const promise=el('div','','policy-promise');promise.append(motif('compass'),el('p','The bulk of Realms will always be free, as long as we can maintain the game and cover hosting and server costs. You never need to pay to enjoy the full core experience.'));
+ const principles=el('ul','','policy-principles');
+ for(const [name,text] of [['Voluntary support','Contribute if you want to and can.'],['No advertisements','We will keep Realms ad-free.'],['No data selling','We will never sell your personal data.']] as const){
+  const item=el('li');item.append(el('strong',name),el('span',text));principles.append(item);
+ }
+ const contents=el('nav','','policy-contents');contents.setAttribute('aria-label','On this page');contents.append(el('span','On this page'));
+ for(const [name,id] of [['Free game','free-to-play'],['Supporter tokens','supporter-tokens'],['Prices','supporter-prices'],['Fair play','fair-play'],['Payments & refunds','payments-refunds'],['Current status','support-availability']] as const)contents.append(link(name,`#${id}`));
+ page.append(back,heading,promise,principles,contents);
+ const blocks: [string,string,string[]][]=[
+  ['free-to-play','The free game',[
+   'We want to fund Realms through voluntary donations. They help cover servers, hosting, and the work of keeping the game running. If you enjoy playing and choose to contribute, your support helps keep it available for everyone.',
+   'The main campaign, core progression, and most content and systems will stay free. Free players should have a complete game to enjoy. Free play will keep receiving new adventures and interesting systems. No donation or subscription is required.',
+   'We can keep that promise for as long as we can keep the game running. Hosting costs and maintenance are real, so we cannot promise the service will exist forever.'
+  ]],
+  ['supporter-tokens','What supporter tokens are for',[
+   'When donations open, they will buy supporter tokens. You can spend those tokens on unique, optional content that helps fund Realms.',
+   'We are planning rewards such as cosmetics, titles, music, unusual items or companions, and extra quests or small adventure areas. Some may introduce different ways to play. None will be needed to finish the main story, progress through the core game, or enjoy a full free experience.',
+   'We also plan to let players trade tokens and eligible supporter goods for in-game Gold, so donating will not be the only way to access them. Individual items may be scarce, and reissues will be decided case by case.'
+  ]],
+  ['supporter-prices','A simple token price',[
+   'One supporter token costs $10 USD. Each full token can be split into 10 mini supporter tokens, so one mini token represents $1 of support.',
+   'You do not need to donate $10 at once. A $3 donation gives you 3 mini supporter tokens. Smaller contributions count, too.'
+  ]],
+  ['fair-play','Keeping support optional',[
+   'Supporter items can be useful or unusual, but they cannot become required for progression, raids, or serious competition. Comparable power must be available through free play. Competitive formats may disable supporter effects or put everyone on equal terms.',
+   'Basic storage, saved loadouts, and automation will stay free. We will not directly sell Gold or Turns, sell loot boxes or gacha, or let payments boost event scores or leaderboard results.',
+   'Before you spend tokens, the shop will explain each reward and its restrictions. Supporter items remain subject to balance changes, and supporters follow the same player rules as everyone else.'
+  ]],
+  ['payments-refunds','Payments & refunds',[
+   'We expect to use PayPal when donations open, to keep contributing straightforward. We may add other payment options later.',
+   'Refunds will be handled case by case. Reasonable requests are welcome, and we will consider the circumstances of each request. There is no blanket no-refunds policy.',
+   'We will publish the donation and refund-request process before accepting payments.'
+  ]],
+  ['support-availability','Before donations open',[
+   'Realms is still in development. We are not accepting donations or selling tokens yet. The supporter shop, token trading, and recurring support are also not available.',
+   'If we offer recurring support, it will deliver tokens. It will not unlock subscription-only gameplay or be required to play.',
+   'The prices and refund approach above are our policy for launch. The reward catalog and payment process are still being prepared. Any material changes to this policy will be announced and reflected here.'
+  ]]
+ ];
+ for(const [id,name,paragraphs] of blocks){
+  const block=section(id,name,'policy-section');for(const text of paragraphs)block.append(el('p',text));
+  if(id==='supporter-prices'){
+   const examples=el('dl','','policy-token-examples');examples.setAttribute('aria-label','Donation examples');
+   for(const [amount,reward] of [['$1','1 mini supporter token'],['$3','3 mini supporter tokens'],['$10','1 supporter token · splits into 10 minis']] as const){const example=el('div');example.append(el('dt',amount),el('dd',reward));examples.append(example);}
+   block.append(examples);
+  }
+  page.append(block);
+ }
+ return page;
+}
+/** Privacy notice tied to the reviewed development build, with launch gaps disclosed. */
+function privacyPage() {
+ const page=el('article','','public-page policy-page privacy-page');
+ const back=link('← Back to the homepage','/');back.className='policy-back';
+ const heading=el('header','','policy-heading'),title=el('h1','Privacy policy');title.tabIndex=-1;
+ const reviewed=el('p','','policy-reviewed'),date=el('time','October 10, 2026');date.dateTime='2026-10-10';reviewed.append('Last reviewed ',date);
+ heading.append(el('span','Your information in Realms','eyebrow'),title,el('p','What we keep, how we use it, and your choices.','policy-lead'),reviewed);
+ const promise=el('div','','policy-promise');promise.append(motif('quill'),el('p','We will not sell your personal data or fund Realms through advertisements. We use information to run the game, keep accounts secure, and help players.'));
+ const status=el('aside','','privacy-status');status.setAttribute('aria-label','Development status');status.append(el('strong','Development notice'),el('p','This page describes the current build and our plans. Public signup, newsletters, and payments are closed. Realms is intended for ages 16+. Outstanding launch details are listed at the end of this notice.'));
+ const blocks: [string,string,string[]][]=[
+  ['privacy-scope','1. Scope & responsibility',[
+   'This notice covers the Realms website, game client, and game server. The local visual preview serves public pages only: it has no account login or gameplay service and does not save credentials.',
+   'The game administrator enrolls development accounts and is the current contact for those players. We will publish the responsible operator’s formal identity before public registration opens. External sites and services have their own privacy notices.'
+  ]],
+  ['privacy-information','2. Information we keep',[
+   'We keep account-linked information to save your progress and check game actions. Identifiers and gameplay history can be personal information even when they contain no real name.',
+   'The current account system does not ask for an email address, birth date, postal address, or legal name. Avoid putting sensitive personal details in account labels or support messages.'
+  ]],
+  ['privacy-use','3. How we use it',[
+   'Account and session records let us sign you in, check permissions, and end expired or revoked access. Gameplay records save characters, resolve encounters, deliver rewards, and restore progress when you reconnect.',
+   'Action and security history helps prevent duplicate rewards and investigate errors or suspected abuse. Technical request information helps diagnose connection problems and keep the game running.',
+   'The current client has no third-party analytics integration. The planned Cloudflare service may provide traffic and security metrics. We will describe the enabled features before launch and explain any additional analytics before introducing them.'
+  ]],
+  ['privacy-browser','4. Browser storage & connection logs',[
+   'The current client keeps its login token in browser memory, not cookies, local storage, or session storage. It sends the token to the game server when needed. Reloading clears it and requires you to reconnect.',
+   'The current client has no advertising cookies or tracking pixels. The local preview serves artwork, styles, and scripts from the same origin. The public website and downloads are planned for Cloudflare Pages and R2. Cloudflare may set security cookies when its protection features are enabled; we will identify the cookies and their purposes before launch. Your browser may keep ordinary history or downloaded files under its own settings.',
+   'Servers receive connection information, including an IP address. The current server uses connection addresses for login rate limits, storing keyed references in the rate-limit table. Enabled request logs may still contain connection details. Application request logging is disabled in the visual preview. Cloudflare and the dedicated server may keep separate operational logs; their fields and retention will depend on the launch configuration.'
+  ]],
+  ['privacy-sharing','5. Hosting & access',[
+   'Administrators can access records needed to operate the game, investigate problems, and secure accounts. The current public site has no player-profile directory or public gameplay-history feed.',
+   'We will not sell personal data or share it for targeted advertising. We plan to run the game and its primary PostgreSQL database on a dedicated server managed by the Realms operator. The website and downloads will use Cloudflare Pages and R2; game connections will use Cloudflare Tunnel with Caddy. Email services and encrypted offsite backups will also process information needed to operate the service.',
+   'The planned services are listed below. Self-hosting does not mean that all information stays on one machine: providers may process it in other countries. Before launch, we will confirm the server country, provider processing locations, and any required safeguards for international transfers.',
+   'We may disclose relevant information to meet a valid legal requirement or address fraud, abuse, or a serious security threat. Disclosures should be limited to what is needed. We will protect other players’ private information when handling a request.'
+  ]],
+  ['privacy-optional','6. Planned services',[
+   'Newsletters: the current panel collects no email addresses. A future newsletter will be optional, with subscription records and an unsubscribe process explained at signup. The newsletter provider and any open or click tracking will be disclosed before subscriptions open. Playing or donating will not subscribe you.',
+   'Payments: donations are not open. PayPal is the likely provider and will handle payment information under its own notice. Realms will need transaction references, amounts, token grants, and refund or dispute records. We will disclose checkout fields and information returned to us before payments open.',
+   'Community: chat, profiles, and player mail are not available on the current public screen. Before adding them, we will explain player visibility, moderation records, and privacy controls. Others may copy information you choose to publish.',
+   'AI: no external AI service is connected to the current client or game server. Before enabling a feature that sends player information to a provider, we will explain what is sent, the provider’s practices, and your choices.'
+  ]],
+  ['privacy-security','7. Account security',[
+   'The account database stores salted password verifiers, not readable passwords. Session tokens and recovery codes are stored as one-way digests. These protections do not make account records anonymous or guarantee that a service cannot be compromised.',
+   'The server checks permissions, limits repeated login attempts, and keeps security history. Application logs are configured to redact authorization headers and request bodies.',
+   'The deployment plan uses HTTPS and secure WebSockets, private VPN access for remote administration, encrypted offsite database backups, and separate production, staging, and personal workloads. These controls and incident procedures still need to be configured and verified before launch.',
+   'Keep passwords and recovery codes private. Describe problems without sending those secrets. Report suspected account access to the administrator who enrolled you.'
+  ]],
+  ['privacy-retention','8. Retention & deletion',[
+   'The development database retains account, gameplay, and security history. Some records are deliberately preserved to reconcile rewards and investigate past actions. There is no published retention schedule or automated account-deletion process yet.',
+   'Signing out, letting a session expire, or starting a new character run does not erase account history. Clearing a browser token does not remove server records.',
+   'Encrypted offsite PostgreSQL backups are planned for recovery and may contain copies of account, gameplay, and security records. The backup storage provider and region, access controls, encryption key management, and expiry schedule still need to be confirmed.',
+   'Before public launch, we will define retention and deletion or anonymization for account data, logs, support messages, payment records, and backups, including how removals are handled after a restore. Immediate removal from every copy is not available today. Any retention needed for security, disputes, or legal obligations should have a documented reason and limit.'
+  ]],
+  ['privacy-requests','9. Your choices & requests',[
+   'You can browse public pages without an account. Donations and future newsletter subscriptions are optional.',
+   'Depending on applicable law, you may have rights to access or receive a copy of personal information, correct or delete it, restrict or object to uses, withdraw consent, or complain to a privacy authority. This notice does not limit those rights.',
+   'For a development account, contact the administrator who enrolled you and explain what you want to access, correct, or remove. We may need to verify account ownership, without asking for passwords or recovery codes. Automated export and deletion tools are not available.',
+   'Before public registration, we will confirm a working request channel, publish the process, and identify applicable response deadlines. The Contact page is still being prepared.'
+  ]],
+  ['privacy-age','10. Ages 16+ & mature content',[
+   'Realms is intended for players aged 16 and over. Content is unfiltered and may include mature language and references to sex, drugs, violence, and alcohol. The game is not intended for children under 16. Public signup is closed; age verification is not implemented yet.',
+   'Parents or guardians concerned about an under-16 development account should contact its administrator. We will review the account and information involved. Before signup opens, we need procedures to enforce the age rule and handle younger players’ data. Privacy protections may also apply to players aged 16 and 17.'
+  ]],
+  ['privacy-changes','11. Launch details & notice updates',[
+   'Before public registration, we still need to confirm the responsible operator, active privacy inbox, server country, backup provider and region, provider processing locations, cookie and log settings, retention schedule, and request and age-verification procedures.',
+   'We will update this notice when practices change and announce material changes through the game’s announcements. New services will need accurate privacy information before they open. The review date identifies this development notice; it does not certify that launch procedures are complete.'
+  ]]
+ ];
+ const contents=el('nav','','policy-contents privacy-contents');contents.setAttribute('aria-label','On this page');contents.append(el('span','On this page'));
+ for(const [id,name] of blocks)contents.append(link(name,`#${id}`));
+ page.append(back,heading,promise,status,contents);
+ for(const [id,name,paragraphs] of blocks){
+  const block=section(id,name,'policy-section');for(const text of paragraphs)block.append(el('p',text));
+  if(id==='privacy-information'){
+   const categories=el('dl','','privacy-data');
+   for(const [name,detail] of [
+    ['Account records','Account and character IDs, creation dates, login handle, and account access status.'],
+    ['Authentication records','Password verifiers, session and recovery-code digests, permissions, device labels, and activity and lifecycle dates. The browser uses the label “Realms browser”; no device fingerprint is generated.'],
+    ['Saved gameplay','Character choices, progression, inventory, currency, encounters, action results, and game-history records linked to your account.'],
+    ['Security & technical records','Sign-in and account-security events, request identifiers, rate-limit records, and operational logs that may include connection information.'],
+    ['Information you send us','Messages and details you send to the administrator. The public client has no support form or ticket service.']
+   ] as const){const item=el('div');item.append(el('dt',name),el('dd',detail));categories.append(item);}
+   block.append(categories);
+  }
+  if(id==='privacy-sharing'){
+   const providers=el('dl','','privacy-data privacy-providers');
+   for(const [name,detail,url] of [
+    ['Cloudflare · website, downloads & connections','Planned for the public website on Pages, downloads in R2, and game connections through Tunnel. Cloudflare processes visitor IP addresses, request and traffic information, and security signals, and can process request content to deliver and protect these services.','https://www.cloudflare.com/privacypolicy/'],
+    ['Google Workspace · correspondence','Planned for operator mailboxes, including support and privacy correspondence. Messages may include your email address, message contents, attachments, and related mail metadata.','https://workspace.google.com/terms/dpa_terms.html'],
+    ['Resend · account email','Planned for account emails, such as recovery messages. Any newsletter delivery service will be identified at signup. Delivery involves recipient addresses, message contents, and delivery records, such as failures or bounces.','https://resend.com/legal/privacy-policy'],
+    ['Offsite backup storage · recovery','A storage provider will hold encrypted database backups outside the dedicated server. The provider and storage region will be named before backups containing player information are enabled.','']
+   ] as const){const item=el('div'),detailText=el('dd',detail);if(url)detailText.append(' ',link(name.startsWith('Google')?'Google Workspace data terms':name.startsWith('Cloudflare')?'Cloudflare privacy notice':'Resend privacy notice',url));item.append(el('dt',name),detailText);providers.append(item);}
+   block.append(providers);
+  }
+  if(id==='privacy-requests'){const contact=el('aside','','privacy-contact');contact.setAttribute('aria-label','Planned privacy contact');contact.append(el('strong','Planned privacy contact'),el('span','privacy@realms.game','privacy-address'),el('p','Placeholder — this inbox is not confirmed active. Development players should contact their account administrator.'));block.append(contact);}
+  if(id==='privacy-changes'){const top=link('Back to top ↑','#main');top.className='policy-top';block.append(top);}
+  if(id==='privacy-optional'){const provider=el('p','','policy-related');provider.append('For the planned payment provider, see ',link('PayPal’s privacy statement','https://www.paypal.com/us/legalhub/paypal/privacy-full'),'.');block.append(provider);}
+  page.append(block);
+ }
+ return page;
+}
 /** Compact public entry screen. Account secrets are submitted only through GameSession. */
 export function renderLanding(session: GameSession): HTMLElement {
  const main = el('main', '', 'welcome'); main.id = 'main';
@@ -58,6 +216,8 @@ export function renderLanding(session: GameSession): HTMLElement {
  const pageTitle = pages[location.pathname];
  if (pageTitle) {
   document.title = `${pageTitle} · Realms`;
+  if(location.pathname==='/monetization'){main.append(monetizationPage(),footer);return main;}
+  if(location.pathname==='/privacy'){main.append(privacyPage(),footer);return main;}
   const page = el('section','','public-page');
   const title = el('h1', pageTitle); title.tabIndex=-1;
   page.append(el('span','From the Realms','eyebrow'), title, el('p','This page is being prepared. We’ll expand this section in an upcoming pass.'), link('← Back to the homepage','/'));
