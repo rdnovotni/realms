@@ -21,6 +21,16 @@ test('public preview marks account access unavailable and serves only approved s
  const game=Fastify();registerClient(game,{mode:'sessions',throttleKey:'must-never-be-public'});
  try{assert.deepEqual((await game.inject({url:'/api/v1/client/config'})).json(),{protocolVersion:1,authMode:'sessions'});}finally{await game.close();}
 });
+test('public page links support direct loads while unknown routes stay unavailable',async()=>{
+ const app=Fastify();registerClient(app,{mode:'sessions',throttleKey:'private'},{previewOnly:true});
+ try{
+  const home=await app.inject({url:'/'});
+  for(const route of ['/about','/announcements','/changelog','/guide','/newsletter','/privacy','/contact']){
+   const page=await app.inject({url:route});assert.equal(page.statusCode,200,route);assert.equal(page.body,home.body);assert.match(page.headers['content-type']!,/^text\/html/);assert.equal(page.headers['content-security-policy'],home.headers['content-security-policy']);
+  }
+  assert.equal((await app.inject({url:'/not-a-page'})).statusCode,404);
+ }finally{await app.close();}
+});
 function harness(authMode:'development'|'sessions'='development'){
  let revision=0,canWrite=true,post:(path:string,init:RequestInit)=>Promise<Response>=async(path)=>json(path.endsWith('/login')?{token:'private-token'}:{}),readsFail=false;
  const calls:{path:string;init:RequestInit}[]=[];

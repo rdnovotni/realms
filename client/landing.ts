@@ -2,16 +2,10 @@ import type { GameSession } from './session.js';
 
 type AccessTab = 'login' | 'signup' | 'recovery';
 let activeTab: AccessTab = 'login';
-type Guide = 'character' | 'combat' | 'equipment';
-let activeGuide: Guide = 'character';
-type UpdateFilter = 'All updates' | 'Gameplay' | 'Interface';
-let updateFilter: UpdateFilter = 'All updates';
-const updates = [
- {category:'Interface',title:'A new front door to the Realms',text:'An illustrated welcome, account access, and a field guide to your first journey.',kind:'New'},
- {category:'Gameplay',title:'Your next move matters',text:'Choose targets, spend actions and resources, and resume saved tactical encounters.',kind:'Playable'},
- {category:'Gameplay',title:'Prepare for the road ahead',text:'Equip carried gear, prepare weapon sets, and save your committed loadouts.',kind:'Playable'},
- {category:'Gameplay',title:'Build a character through your choices',text:'Choose starting attributes and a class, then spend earned levels on growth.',kind:'Playable'}
-];
+const pages: Record<string, string> = {
+ '/about': 'About the game', '/announcements': 'Announcements', '/changelog': 'Changelog',
+ '/guide': 'Player guide', '/newsletter': 'Newsletter', '/privacy': 'Privacy policy', '/contact': 'Contact'
+};
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, text = '', className = '') {
  const node = document.createElement(tag); node.textContent = text; node.className = className; return node;
 }
@@ -25,81 +19,47 @@ function section(id: string, title: string, className = '') {
 function field(title: string, name: string, type: string, autocomplete: HTMLInputElement['autocomplete']) {
  const label = el('label', title), input = el('input'); input.name = name; input.type = type; input.required = true; input.autocomplete = autocomplete; input.id = `access-${name}`; label.htmlFor = input.id; label.append(input); return { label, input };
 }
-function icon(kind: 'compass' | 'sword' | 'pack' | 'mail' | 'spark') {
- const svg=document.createElementNS('http://www.w3.org/2000/svg','svg'); svg.setAttribute('viewBox','0 0 24 24'); svg.setAttribute('aria-hidden','true'); svg.setAttribute('class','welcome-icon');
- const path=document.createElementNS('http://www.w3.org/2000/svg','path');
- const paths={compass:'M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm4 6-2 6-6 2 2-6 6-2Z',sword:'m4 20 4-4m-3-3 6 6m-4-6 10-10h4v4L11 17',pack:'M8 7V5a4 4 0 0 1 8 0v2M6 7h12l2 14H4L6 7Zm2 6h8v5H8v-5Z',mail:'M3 5h18v14H3V5Zm0 1 9 7 9-7',spark:'m12 2 3 7 7 3-7 3-3 7-3-7-7-3 7-3 3-7Z'};
- path.setAttribute('d',paths[kind]); svg.append(path); return svg;
-}
 
-function renderFieldGuide() {
- const guide=section('field-guide','The choices that make a life.','field-guide welcome-section');
- guide.prepend(el('span','The field guide','eyebrow'));
- guide.append(el('p','A little preparation. A thoughtful turn. A character that becomes your own.','section-intro'));
- const layout=el('div','','guide-layout'),nav=el('div','','guide-nav'),display=el('div','','guide-display');
- nav.setAttribute('aria-label','Game systems'); display.id='guide-display'; display.setAttribute('role','region'); display.setAttribute('aria-live','polite');
- const choices:[Guide,string,string,'compass'|'sword'|'pack'][]=[['character','Find your calling','Character & progression','compass'],['combat','Make your next move','Tactical encounters','sword'],['equipment','Ready your pack','Equipment & loadouts','pack']];
- const buttons:HTMLButtonElement[]=[];
- const draw=()=>{
-  for(const b of buttons)b.setAttribute('aria-pressed',String(b.dataset.guide===activeGuide));
-  display.replaceChildren();
-  const copy=el('div','','guide-copy'),illustration=el('div','','guide-illustration');
-  illustration.setAttribute('aria-label','Illustrative game-system overview');
-  if(activeGuide==='character'){
-   copy.append(el('span','01 / Character','eyebrow'),el('h3','A calling is only the beginning.'),el('p','Choose your starting class and attributes. The encounters you face earn experience; the levels you gain open the next choice in your build.'),el('p','Your character’s actual options come from the game’s installed content.','help muted'));
-   const seal=el('div','','calling-seal');seal.append(icon('compass'));
-   illustration.append(seal,el('span','Your character','eyebrow'),el('strong','Choose. Adventure. Grow.','illustration-title'));
-   const path=el('ol','','growth-path');for(const text of ['Starting build','Earned experience','Your next level'])path.append(el('li',text));illustration.append(path);
-  }else if(activeGuide==='combat'){
-   copy.append(el('span','02 / Encounters','eyebrow'),el('h3','Take a breath. Then take your turn.'),el('p','Consider your target, your position, and the resources you have left. Choose actions for your character and companions, then let the world answer.'),el('p','A saved encounter resumes from the same turn when you reconnect.','help muted'));
-   illustration.append(el('span','A turn at a glance','eyebrow'),el('strong','Position → Action → Outcome','illustration-title'));
-   const zones=el('div','','guide-zones');for(const [symbol,title] of [['◇','Your party'],['⋄','The battlefield'],['◆','Opponents']]){const zone=el('div');zone.append(el('span',symbol!),el('small',title!));zones.append(zone);}illustration.append(zones,el('p','Pick a target · Manage resources · Choose when to advance','help'));
-  }else{
-   copy.append(el('span','03 / Equipment','eyebrow'),el('h3','A good journey begins with a ready pack.'),el('p','Prepare your worn gear and two weapon sets before the next encounter. Save a committed setup as a loadout, so you can return to it later.'),el('p','Gear requirements and binding consequences are shown before you commit.','help muted'));
-   illustration.append(icon('pack'),el('span','Before you set out','eyebrow'),el('strong','Prepared for what comes next.','illustration-title'));
-   const gear=el('div','','guide-gear');for(const [title,text] of [['Worn gear','Your equipped setup'],['Weapon sets','A / B preparation'],['Loadouts','Saved arrangements']]){const row=el('div');row.append(el('strong',title!),el('small',text!));gear.append(row);}illustration.append(gear);
-  }
-  illustration.append(el('small','Illustrative overview · not a gameplay screenshot','illustration-caption'));display.append(copy,illustration);
- };
- for(const [key,title,subtitle,symbol]of choices){const b=button('',()=>{activeGuide=key;draw();},'guide-choice');b.dataset.guide=key;b.setAttribute('aria-controls',display.id);const text=el('span');text.append(el('strong',title),el('small',subtitle));b.append(icon(symbol),text,el('span','↗','guide-arrow'));buttons.push(b);nav.append(b);}
- draw();layout.append(nav,display);guide.append(layout);return guide;
+function navigation(className: string) {
+ const nav = el('nav', '', className); nav.setAttribute('aria-label', className === 'welcome-nav' ? 'Main navigation' : 'More about Realms');
+ for (const [title, href] of [['Home','/'],['About the game','/about'],['Player guide','/guide'],['Announcements','/announcements'],['Changelog','/changelog']]) {
+  const item = link(title!, href!); if (location.pathname === href) item.setAttribute('aria-current','page'); nav.append(item);
+ }
+ return nav;
 }
-
-function renderDevelopmentNotes(){
- const panel=section('changelog','The development ledger.','ledger');panel.prepend(el('span','Changelog','eyebrow'));
- const filters=el('div','','update-filters'),list=el('ul','','change-list');filters.setAttribute('aria-label','Filter development updates');list.setAttribute('aria-live','polite');
- const buttons:HTMLButtonElement[]=[];
- const draw=()=>{for(const b of buttons)b.setAttribute('aria-pressed',String(b.textContent===updateFilter));list.replaceChildren();for(const update of updates.filter(u=>updateFilter==='All updates'||u.category===updateFilter)){const item=el('li');const meta=el('div','','change-meta');meta.append(el('span',update.kind,'tag'),el('span',update.category,'help muted'));item.append(meta,el('h3',update.title),el('p',update.text,'help muted'));list.append(item);}};
- for(const name of ['All updates','Gameplay','Interface']as const){const b=button(name,()=>{updateFilter=name;draw();});buttons.push(b);filters.append(b);}draw();
- panel.append(filters,list,el('p','A summary of the current development build.','help muted'));return panel;
-}
-
-/** Public welcome screen. Account secrets are submitted only through GameSession. */
+/** Compact public entry screen. Account secrets are submitted only through GameSession. */
 export function renderLanding(session: GameSession): HTMLElement {
  const main = el('main', '', 'welcome'); main.id = 'main';
+ const header = el('header', '', 'welcome-header');
+ const art = el('img'); art.src='/assets/realms-dawn.webp'; art.alt=''; art.width=1280; art.height=853;
+ const brand = link('', '/'); brand.className='welcome-brand';
+ brand.append(el('span', 'REALMS', 'wordmark'), el('span', 'A world worth wandering.', 'tagline'));
+ header.append(art, brand, el('span','Browser RPG · In development','banner-note')); main.append(header, navigation('welcome-nav'));
+ const footer = el('footer', '', 'welcome-footer');
+ const links = el('nav'); links.setAttribute('aria-label','Information');
+ links.append(link('Newsletter','/newsletter'), link('Privacy policy','/privacy'), link('Contact','/contact'));
+ footer.append(el('span','REALMS · A journey in the making.'), links);
+ const pageTitle = pages[location.pathname];
+ if (pageTitle) {
+  document.title = `${pageTitle} · Realms`;
+  const page = el('section','','public-page');
+  const title = el('h1', pageTitle); title.tabIndex=-1;
+  page.append(el('span','From the Realms','eyebrow'), title, el('p','This page is being prepared. We’ll expand this section in an upcoming pass.'), link('← Back to the homepage','/'));
+  main.append(page,footer); return main;
+ }
+ document.title = 'Realms · A world worth wandering';
  const changeTab = (tab: AccessTab) => {
   activeTab = tab; const next = renderLanding(session); main.replaceWith(next);
   next.querySelector<HTMLElement>(`#access-tab-${tab}`)?.focus();
  };
- const header=el('header','','welcome-header'),brand=link('','#main');brand.className='welcome-brand';const brandText=el('span');brandText.append(el('strong','REALMS'),el('small','A world worth wandering'));brand.append(icon('compass'),brandText);
- const nav = el('nav', '', 'welcome-nav'); nav.setAttribute('aria-label', 'Explore Realms');
- nav.append(link('The game', '#about-realms'),link('Field guide','#field-guide'), link('Updates', '#announcements'),link('FAQ','#welcome-faq'));
- const accessLink=link('Enter Realms ↗','#access');accessLink.className='header-access';header.append(brand,nav,accessLink);main.append(header);
-
- const hero = el('div', '', 'welcome-hero');
- const intro = el('section', '', 'welcome-intro'); intro.setAttribute('aria-labelledby', 'welcome-title');
- const title = el('h1', 'Your next life');title.append(el('em','starts here.')); title.id = 'welcome-title'; title.tabIndex = -1;
- const badge=el('span','A browser RPG in development','hero-badge');badge.prepend(icon('spark'));
- intro.append(badge, title,
-  el('p', 'A calling to find. A road to follow. Step into tactical adventures and build a character shaped by the choices you make.', 'welcome-description'));
- const actions = el('div', '', 'welcome-actions');
- actions.append(button('Begin your journey', () => { changeTab('signup'); document.getElementById('access')?.scrollIntoView({ block: 'nearest' }); }, 'primary'), link('Explore the game ↓', '#about-realms'));
- intro.append(actions, el('p', 'Browser-based · Thoughtful turns · A saved journey', 'hero-footnote'));
- const landscape=el('div','','hero-art'),art=el('img');art.src='/assets/realms-dawn.webp';art.alt='';art.width=1280;art.height=853;art.fetchPriority='high';landscape.append(art);hero.append(landscape,el('span','A glimpse of the world · Concept illustration','hero-caption'));
-
- const access = section('access', 'Welcome, traveler.', 'panel welcome-access');access.prepend(el('span','Your story continues','eyebrow'));
+ const intro = el('div','','welcome-intro');
+ const title = el('h1','Your next adventure starts here.'); title.tabIndex=-1;
+ intro.append(title, el('p','Choose a calling. Make your next move. Return to a world that remembers your journey.'));
+ main.append(intro);
+ const layout=el('div','','welcome-grid'), rail=el('div','','welcome-rail');
+ const access = section('access', 'Log in to Realms', 'panel welcome-access');
  const tabs = el('div', '', 'access-tabs'); tabs.setAttribute('role', 'tablist'); tabs.setAttribute('aria-label', 'Account access');
- const choices: [AccessTab, string][] = [['login', 'Log in'], ['signup', 'Get started'], ['recovery', 'Password help']];
+ const choices: [AccessTab, string][] = [['login', 'Log in'], ['signup', 'Sign up'], ['recovery', 'Password help']];
  for (const [key, text] of choices) {
   const tab = button(text, () => changeTab(key)); tab.id = `access-tab-${key}`; tab.setAttribute('role', 'tab');
   tab.setAttribute('aria-selected', String(activeTab === key)); tab.setAttribute('aria-controls', 'access-content'); tab.tabIndex = activeTab === key ? 0 : -1;
@@ -120,7 +80,7 @@ export function renderLanding(session: GameSession): HTMLElement {
   content.append(el('h3', 'Find your way back'), el('p', 'Forgot your password? Automated password reset emails are not available in this build. Contact the administrator who enrolled your account for help.'),
    el('p', 'Never share your password or access key when asking for help.', 'help muted'), button('Back to log in', () => changeTab('login'), 'primary'));
  } else if (session.config) {
-  content.append(el('h3', 'Welcome back'), el('p', 'Pick up where your story left off.', 'muted'));
+
   const form = el('form'); form.setAttribute('aria-label', 'Log in to Realms');
   const fields = session.config.authMode === 'sessions' ? [field('Account name', 'handle', 'text', 'username'), field('Password', 'password', 'password', 'current-password')] : [field('Development access key', 'token', 'password', 'off')];
   for (const item of fields) { item.input.disabled = session.busy; form.append(item.label); }
@@ -137,43 +97,18 @@ export function renderLanding(session: GameSession): HTMLElement {
  } else {
   content.append(el('h3', 'Connecting to Realms'), el('p', 'Account access needs a connection to the game server. You can still explore the updates below.'), button('Try connecting again', () => void session.initialize(), 'primary'));
  }
- access.append(tabs, content,el('p','Your progress is saved by the game server.','access-footnote')); hero.append(intro, access); main.append(hero);
+ access.append(tabs, content); rail.append(access);
 
- const about = section('about-realms', 'Small choices. A life of adventure.', 'welcome-about welcome-section');
- about.prepend(el('span', 'Welcome to the Realms', 'eyebrow'));
- about.append(el('p','Adventure at your own pace. Find a build that feels like you, learn from each encounter, and return to a journey that remembers where you left off.','section-intro'));
- const features = el('div', '', 'welcome-features');
- for (const [number, title, text] of [
-  ['01', 'A character that grows with you', 'Choose your class and starting attributes. Earn experience through encounters and decide how your character grows.'],
-  ['02', 'Every turn is a choice', 'Choose your targets, manage your resources, and work alongside companions in tactical combat.'],
-  ['03', 'A journey worth returning to', 'Prepare your equipment, keep your discoveries, and reconnect to the same saved encounter.']
- ]) { const feature = el('article'); feature.append(el('span', number!, 'feature-number'), el('h3', title!), el('p', text!, 'muted')); features.append(feature); }
- about.append(features); main.append(about,renderFieldGuide());
 
- const updatesArea = el('div', '', 'welcome-updates welcome-section');
- const announcements = section('announcements', 'From the campfire.', 'announcements'); announcements.prepend(el('span', 'News & announcements', 'eyebrow'));
- const announcement = el('article', '', 'announcement');
- const newsArt=el('div','','news-art'),newsImage=el('img');newsImage.src='/assets/realms-dawn.webp';newsImage.alt='';newsImage.loading='lazy';newsImage.width=1280;newsImage.height=853;newsArt.append(newsImage,el('span','Dispatch / 01','news-art-label'));
- announcement.append(newsArt,el('span', 'Development dispatch', 'tag'), el('h3', 'The road is taking shape.'), el('p', 'Characters, tactical encounters, equipment, and saved progress: the foundations of a journey are coming together. Our new front page is another step toward welcoming you into the Realms.'),link('Explore what’s playable ↗','#field-guide'));
- announcements.append(announcement);
- const details = el('details'); details.append(el('summary', 'What can I play today?'), el('p', 'An enrolled account can connect to its saved game. Available adventures depend on the content installed on your server. New characters choose their starting build after login.', 'help')); announcements.append(details);
-
- updatesArea.append(announcements,renderDevelopmentNotes());main.append(updatesArea);
-
- const faq=section('welcome-faq','Before you take the first step.','welcome-faq welcome-section');faq.prepend(el('span','A few things to know','eyebrow'));
- const faqList=el('div','','faq-list');
- for(const[question,answer]of[
-  ['What kind of game is Realms?','Realms is a browser role-playing game built around character choices, tactical encounters, equipment, and persistent progress. The current build is a development foundation, with playable content determined by the server.'],
-  ['How do I create a character?','Log in with an account enrolled by the game administrator. If your starting build has not been chosen yet, the Character screen opens so you can select a class and attributes. Public account registration is not open yet.'],
-  ['Can I stop in the middle of an encounter?','Yes. Encounters and their progress are saved by the server. Log back in to resume the same fight. Actions do not continue while you are disconnected.'],
-  ['Does browsing use my Turns?','Browsing your character, pack, and saved encounter costs no Turns. Adventures disclose their entry and recovery costs before you begin.'],
-  ['How can I follow development?','Read the announcements and development ledger on this page. Newsletter subscriptions will be added once email delivery is ready.']
- ]){const item=el('details');item.append(el('summary',question!),el('p',answer!));faqList.append(item);}faq.append(faqList);main.append(faq);
-
- const newsletter = section('newsletter', 'A letter when the road goes further.', 'welcome-newsletter'); newsletter.prepend(icon('mail'),el('span', 'Letters from the Realms', 'eyebrow'));
- newsletter.append(el('p', 'Game updates, new adventures, development notes, and future playtest announcements.'));
- const newsletterStatus = el('div', '', 'newsletter-status'); newsletterStatus.append(el('span', 'Newsletter signup is coming soon', 'tag'), el('p', 'Email subscriptions are not open yet. Check the announcements here for updates; no email address is collected on this screen.', 'help'));
- newsletterStatus.append(link('Read the latest dispatch ↗','#announcements'));newsletter.append(newsletterStatus); main.append(newsletter);
- const footer=el('footer','','welcome-footer'),footerBrand=el('div');footerBrand.append(el('strong','REALMS'),el('p','A world worth wandering.','help muted'));const footerNav=el('nav');footerNav.setAttribute('aria-label','Footer');footerNav.append(link('The game','#about-realms'),link('Field guide','#field-guide'),link('Changelog','#changelog'),link('Newsletter','#newsletter'));footer.append(footerBrand,footerNav,el('small','In development. One journey at a time.'));main.append(footer);
- return main;
+ const newsletter = section('newsletter','Letters from the Realms','compact-panel newsletter');
+ newsletter.append(el('p','Game news, new adventures, and development updates.'),el('span','Subscriptions coming soon','status-note'),link('Newsletter details →','/newsletter'));rail.append(newsletter);
+ const news = section('announcements','News from the Realms','compact-panel news');
+ news.prepend(el('span','At the campfire','eyebrow'));
+ for (const [label,title,text] of [
+  ['Development','The road is taking shape.','Characters, tactical encounters, equipment, and saved progress form the foundations of your journey.'],
+  ['Account access','Getting your first character','Use an account enrolled by the game administrator. Choose your starting class and attributes after logging in. Public signup is coming later.']
+ ]) { const article=el('article');article.append(el('span',label!,'eyebrow'),el('h3',title!),el('p',text!));news.append(article); }
+ news.append(link('All announcements →','/announcements'));
+ const changes=el('div','','recent-changes');changes.append(el('h3','Recent development'),el('p','Character progression · Tactical combat · Equipment & loadouts'),link('View the changelog →','/changelog'));news.append(changes);
+ layout.append(rail,news);main.append(layout,footer);return main;
 }
