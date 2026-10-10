@@ -1,5 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import Fastify from 'fastify';
+import { registerClient } from '../src/client-assets.js';
 import { ApiClient,ApiError,type Fetcher } from '../client/api.js';
 import type { Snapshot } from '../client/types.js';
 import { GameSession } from '../client/session.js';
@@ -7,6 +9,28 @@ import { zoneDistance,failureSummary } from '../client/views.js';
 import { equipmentProblems,bindingConsequences } from '../client/equipment.js';
 import type { EquipmentPlan,Gear } from '../client/types.js';
 const json=(value:unknown,status=200)=>new Response(JSON.stringify(value),{status,headers:{'Content-Type':'application/json'}});
+test('public preview marks account access unavailable and serves only approved same-origin artwork and styles',async()=>{
+ const app=Fastify();registerClient(app,{mode:'sessions',throttleKey:'must-never-be-public'},{previewOnly:true});
+ try{
+  const config=await app.inject({url:'/api/v1/client/config'});assert.deepEqual(config.json(),{protocolVersion:1,authMode:'sessions',previewOnly:true});assert.ok(!config.body.includes('must-never-be-public'));
+  const art=await app.inject({url:'/assets/realms-tavern.webp'});assert.equal(art.statusCode,200);assert.match(art.headers['content-type']!,/^image\/webp/);assert.equal(art.rawPayload.subarray(0,4).toString(),'RIFF');assert.match(art.headers['content-security-policy']!,/img-src 'self'/);assert.equal(art.headers['cache-control'],'no-store');
+  const css=await app.inject({url:'/assets/welcome.css'});assert.equal(css.statusCode,200);assert.match(css.headers['content-type']!,/^text\/css/);
+  assert.equal((await app.inject({method:'POST',url:'/api/v1/auth/login',payload:{handle:'preview',password:'example'}})).statusCode,404);
+  assert.equal((await app.inject({url:'/assets/README.md'})).statusCode,404);
+ }finally{await app.close();}
+ const game=Fastify();registerClient(game,{mode:'sessions',throttleKey:'must-never-be-public'});
+ try{assert.deepEqual((await game.inject({url:'/api/v1/client/config'})).json(),{protocolVersion:1,authMode:'sessions'});}finally{await game.close();}
+});
+test('public page links support direct loads while unknown routes stay unavailable',async()=>{
+ const app=Fastify();registerClient(app,{mode:'sessions',throttleKey:'private'},{previewOnly:true});
+ try{
+  const home=await app.inject({url:'/'});
+  for(const route of ['/about','/announcements','/changelog','/guide','/community','/newsletter','/privacy','/monetization','/contact']){
+   const page=await app.inject({url:route});assert.equal(page.statusCode,200,route);assert.equal(page.body,home.body);assert.match(page.headers['content-type']!,/^text\/html/);assert.equal(page.headers['content-security-policy'],home.headers['content-security-policy']);
+  }
+  assert.equal((await app.inject({url:'/not-a-page'})).statusCode,404);
+ }finally{await app.close();}
+});
 function harness(authMode:'development'|'sessions'='development'){
  let revision=0,canWrite=true,post:(path:string,init:RequestInit)=>Promise<Response>=async(path)=>json(path.endsWith('/login')?{token:'private-token'}:{}),readsFail=false;
  const calls:{path:string;init:RequestInit}[]=[];

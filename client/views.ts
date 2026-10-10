@@ -1,3 +1,4 @@
+import { renderLanding } from './landing.js';
 import { renderEquipment } from './equipment.js';
 import type { GameSession } from './session.js';
 import type { Command,Snapshot,Failure } from './types.js';
@@ -11,6 +12,7 @@ function heading(text:string){const h=el('h1',text);h.tabIndex=-1;return h;}
 function section(title:string){return add(el('section','','panel'),el('h2',title));}
 function field(text:string,name:string,type='text'){const l=el('label',text),input=el('input');input.name=name;input.type=type;input.required=true;input.autocomplete=name==='token'?'off':type==='password'?'current-password':name==='handle'?'username':'off';l.append(input);return {label:l,input};}
 export function render(root:HTMLElement,session:GameSession,screen:Screen,navigate:(screen:Screen)=>void,onCommand:(command:Command)=>void){
+ root.classList.toggle('public-shell',!session.snapshot);
  const previousFocus=document.activeElement instanceof HTMLElement?document.activeElement.dataset.focus:null;
  if(previousFocus)retainedFocus=previousFocus;
  const fragment=document.createDocumentFragment(),top=el('header','','topbar');add(top,add(el('div','','wordmark'),el('span','REALMS'),el('small','A world worth wandering')));
@@ -19,10 +21,7 @@ export function render(root:HTMLElement,session:GameSession,screen:Screen,naviga
  fragment.append(top);
  const notice=el('div','',`notice ${session.notice.kind}`);notice.setAttribute('role',session.notice.kind==='error'?'alert':'status');add(notice,el('span',session.busy?'Connecting to your saved game…':session.notice.text),session.pending&&!session.busy?button('Retry same action',()=>void session.retry(),session.busy,'small'):null);fragment.append(notice);
  const snapshot=session.snapshot;
- if(!snapshot){const main=el('main','','login-shell');main.id='main';const intro=add(el('div','','intro'),el('span','The road awaits','eyebrow'),heading('Every journey\nbegins with a choice.'),el('p','Step into a world of tactical encounters, curious discoveries, and characters shaped by the choices you make.'),el('p','Your progress lives on the server. Return whenever you are ready; your journey will be waiting.','muted'));const panel=section('Continue your journey');
-  if(session.config){const form=el('form');const inputs=session.config.authMode==='sessions'?[field('Account name','handle'),field('Password','password','password')]:[field('Development access key','token','password')];for(const input of inputs)form.append(input.label);const submit=el('button',session.busy?'Connecting…':'Enter Realms','primary');submit.type='submit';submit.disabled=session.busy;form.append(submit);form.addEventListener('submit',event=>{event.preventDefault();const values=Object.fromEntries(new FormData(form).entries()) as Record<string,string>;for(const input of inputs)if(input.input.type==='password')input.input.value='';void session.connect(values);});add(panel,form,el('p',session.config.authMode==='sessions'?'Use an enrolled account to begin or resume.':'Use the private access key from your local server setup.','help muted'));}
-  else add(panel,el('p','The server is not available yet.'),button('Try connecting again',()=>void session.initialize(),session.busy,'primary'));
-  add(main,intro,panel);fragment.append(main);
+ if(!snapshot){fragment.append(renderLanding(session));
  }else{
   const layout=el('div','','layout'),left=el('aside','','left-column'),character=section('The wayfarer');character.classList.add('character');character.prepend(el('div','✧','portrait'));add(character,el('small',snapshot.progression.build.mode==='CONFIGURED'?snapshot.progression.build.classes?.map(c=>`${snapshot.options.classes.find(option=>option.classId===c.classId)?.name??label(c.classId)} ${c.nativeLevel}`).join(' · ')??'Adventurer':'Choose your calling'),add(el('div','','stats'),stat('Level',String(snapshot.progression.level)),stat('Turns',String(snapshot.game.run.turns)),stat('XP',snapshot.progression.xp)),el('div','','rule'),el('p',snapshot.game.run.status==='AFTERCORE'?'Aftercore · A new chapter':'A life still being written','build-list muted'));left.append(character);
   const help=section('Your next step');add(help,el('p',snapshot.progression.build.mode!=='CONFIGURED'?'Choose a class and starting attributes to shape this life.':snapshot.game.activeEncounter?'Your encounter is saved. Continue from the current turn.':snapshot.progression.readiness?.pendingLevels?'You have earned a level. Choose how your character grows.':'Choose a known adventure. Each entry costs one Turn.','help'),button(snapshot.progression.build.mode!=='CONFIGURED'?'Create your build':'View character',()=>navigate('character'),false,'small'));left.append(help);
@@ -37,7 +36,7 @@ export function render(root:HTMLElement,session:GameSession,screen:Screen,naviga
   if(snapshot.game.activeEncounter)add(journal,add(el('div','','journal-entry'),el('strong','Encounter in progress'),el('p','Reconnect resumes the same fight.')));
   const guide=section('A few things to know');add(guide,el('p','Explore at your own pace. Browsing your character, pack, and saved encounter costs no Turns.','help'),el('p','Choose actions during your turn. The server resolves opponents and automated companions, then returns control to your party.','help'),el('p','Victory rewards and recovery are saved automatically.','help'));add(right,journal,guide);add(layout,left,main,right);fragment.append(layout);
  }
- fragment.append(el('footer','Realms · Client foundation · A living world, one journey at a time.','footer'));root.replaceChildren(fragment);
+ fragment.append(el('footer','Realms · A living world, one journey at a time.','footer'));root.replaceChildren(fragment);
  if(!session.busy&&retainedFocus){const matching=Array.from(root.querySelectorAll<HTMLElement>('[data-focus]')).find(e=>e.dataset.focus===retainedFocus);if(matching&&!(matching instanceof HTMLButtonElement&&matching.disabled))matching.focus();else root.querySelector<HTMLElement>('main h1')?.focus();retainedFocus=null;}
 }
 function stat(name:string,value:string){return add(el('div','','stat'),el('strong',value),el('span',name));}
