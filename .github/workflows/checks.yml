@@ -11,8 +11,8 @@ jobs:
         working-directory: realms
     services:
       postgres:
-        # Docker Official Images mirror avoids Docker Hub's shared runner pull limits.
-        image: public.ecr.aws/docker/library/postgres:18
+        # Match the reviewed deployment version and immutable image identity.
+        image: postgres:18.6-bookworm@sha256:afc7e2d441324c0388fa80c3d24f733b4194a4eb7f47dd8ee2b08eb1a24a647c
         env:
           POSTGRES_USER: realms
           POSTGRES_PASSWORD: ci-only-password
