@@ -8,3 +8,5 @@
 The Ubuntu checkout is `/srv/Realms/source`. Runtime data, credentials and backups stay outside Git. GitHub stores source code; deployed images are separately recorded, immutable application artifacts. Never infer the running version from the GitHub branch alone.
 
 See `infra/docs/development-studio.md` for editing, GitHub synchronization and publishing tested updates. See `realms/README.md` for game architecture.
+
+The [development baseline](infra/docs/development-baseline.md) defines source/runtime/database authority, exact-checkpoint verification and the controlled release rehearsal.

@@ -51,7 +51,7 @@ Open staging, test login and representative game actions, inspect logs and job r
 CLI equivalents:
 
 ```bash
-sudo python3 scripts/releases.py stage --label 'Reviewed game update'
+sudo python3 scripts/releases.py stage --source-commit FULL_REVIEWED_COMMIT_SHA --label 'Reviewed game update'
 # Add --allow-migrations only for intentionally reviewed new migrations.
 sudo python3 scripts/releases.py history
 sudo python3 scripts/releases.py verify-staging --release ACTUAL_RECORDED_RELEASE_ID --confirm-manual-test
@@ -144,3 +144,5 @@ Round verification: 120 tests ran (119 passed, one optional Caddy binary test sk
 ## Canonical Git source integration
 
 Game builds now require a recorded Git source checkpoint. Use Development Studio to save content/source changes and commit the checkpoint before choosing Build for testing. Server Console checks for a clean checkout and supplies its source commit to the existing release pipeline. The build uses a frozen Git snapshot and records source provenance; unsaved or uncommitted edits are excluded. GitHub remains `rdnovotni/realms`, branch `main`, and the canonical checkout remains `/srv/Realms/source`. See [Development Studio](development-studio.md). The protected monitor runtime now also includes the Git snapshot helper dependency; an authenticated Install / update monitoring refresh is required when upgrading an existing monitor bundle.
+
+For exact-checkpoint database verification, the source/runtime inventory and remaining rehearsal acceptance, see [development baseline](development-baseline.md). Promotion now requires the automated verification receipt as well as matching manual approval.

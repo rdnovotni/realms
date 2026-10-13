@@ -21,9 +21,9 @@
     "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.test.json && tsc --noEmit -p client/tsconfig.json",
     "dev:client": "node --env-file=.env --import tsx scripts/client-preview.ts",
     "preview:welcome": "tsc -p client/tsconfig.json && node --import tsx scripts/welcome-preview.ts",
-    "test:workers": "node --import tsx --test test/workers.test.ts",
+    "test:workers": "node --env-file=.env --import tsx --test test/workers.test.ts",
     "smoke": "node scripts/smoke.mjs",
-    "test:runtime": "node --import tsx --test test/backend-runtime.test.ts",
+    "test:runtime": "node --env-file=.env --import tsx --test test/backend-runtime.test.ts",
     "test:scheduler": "node --import tsx --test test/scheduler.test.ts",
     "test:ingress": "node --import tsx --test test/ingress.test.ts",
     "content:check": "node --import tsx scripts/content-check.ts < content/game.json"

@@ -6,6 +6,7 @@ from pathlib import Path
 INFRA=Path(__file__).resolve().parents[1]
 snapshot_spec=importlib.util.spec_from_file_location('release_git_snapshot',INFRA/'scripts/git_snapshot.py');snapshot_module=importlib.util.module_from_spec(snapshot_spec);snapshot_spec.loader.exec_module(snapshot_module);freeze=snapshot_module.freeze
 s=importlib.util.spec_from_file_location('release_backend',INFRA/'scripts/backend.py');b=importlib.util.module_from_spec(s);s.loader.exec_module(b)
+verification_spec=importlib.util.spec_from_file_location('release_verification',INFRA/'scripts/release_verification.py');verification=importlib.util.module_from_spec(verification_spec);verification_spec.loader.exec_module(verification)
 p=b.p;pg=b.pg;STATE=p.STATE_BASE/'releases';SERVICES=('api','worker','scheduler');PROJECTS=('kol-staging','kol-production')
 def now():return datetime.now(timezone.utc).isoformat()
 def save(path,value):
@@ -95,10 +96,16 @@ def stage(label,allow,source_commit=None):
     record.update(freeze(source_commit,snapshot_folder));context=Path(snapshot_folder)
     dockerfile=context/'infra/container/Dockerfile.release'
     if not dockerfile.is_file():raise RuntimeError('Source commit needs the monorepo release Dockerfile')
+    record['verification']=verification.verify_checkpoint(context,source_commit,identifier,p,pg.inspect)
+    save(folder/'release.json',record)
     p.run(p.DOCKER+['build','-f',str(dockerfile),'--build-arg','SOURCE_COMMIT='+source_commit,'-t',tag,str(context)])
   else:
    raise RuntimeError('A recorded source commit is required. Save a checkpoint in Development Studio first.')
-  record['image']=pg.inspect('image',tag)['Id'];record['schema']=image_schema(record['image'])
+  runtime_image=pg.inspect('image',tag)
+  if runtime_image['Config'].get('Labels',{}).get('org.opencontainers.image.revision')!=source_commit:raise RuntimeError('Runtime image source label does not match the verified checkpoint')
+  record['image']=runtime_image['Id'];record['schema']=image_schema(record['image'])
+  record['verification'].update(image=record['image'],schema=record['schema'])
+  verification.require_verification(record)
   save(folder/'release.json',record);deploy_project('kol-staging',record,'staging')
  except BaseException:
   if record['state']=='building':record['state']='build_failed';save(folder/'release.json',record)
@@ -121,6 +128,7 @@ def verify_staging(identifier,confirmed):
 def promotion_record(identifier):
  record=staging_record(identifier);test=record.get('manual_test',{})
  if test.get('image')!=record['image'] or test.get('schema')!=record['schema'] or not test.get('at'):raise RuntimeError('Record a passed manual staging test before promotion')
+ verification.require_verification(record)
  check_schema(schema('kol-production'),record['schema'],record['allow_migrations'])
  return record
 
@@ -161,7 +169,7 @@ def history():
  result=[]
  for path in sorted(STATE.glob('release-*/release.json'),reverse=True)[:40]:
   try:
-   r=json.loads(path.read_text());result.append({k:r.get(k) for k in ('id','label','created','state','image','allow_migrations','manual_test','source_commit','source_repository')})
+   r=json.loads(path.read_text());result.append({k:r.get(k) for k in ('id','label','created','state','image','allow_migrations','manual_test','source_commit','source_repository','verification')})
   except (OSError,ValueError):continue
  return result
 

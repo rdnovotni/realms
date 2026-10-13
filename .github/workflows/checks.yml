@@ -5,7 +5,7 @@ permissions:
 jobs:
   server:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     defaults:
       run:
         working-directory: realms
@@ -39,6 +39,19 @@ jobs:
       - run: npm run content:check
       - run: npm test
       - run: npm run test:integration
-      - run: python3 -m unittest discover -s ../infra/tests -p test_development_studio.py
+      - run: npm run test:workers
+      - run: npm run test:runtime
+      - name: Install infrastructure test dependencies
+        run: sudo apt-get update && sudo apt-get install -y python3-tk restic
+      - name: Infrastructure regression checks
+        run: python3 -m unittest discover -s ../infra/tests
       - run: python3 -m py_compile ../infra/development_client/*.py ../infra/control_panel/*.py ../infra/scripts/*.py
       - run: npm run build
+  release-verification:
+    needs: server
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+      - name: Verify the frozen release checkpoint with disposable PostgreSQL
+        run: python3 infra/scripts/verify-checkpoint.py --source-commit "$GITHUB_SHA"

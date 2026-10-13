@@ -24,7 +24,7 @@ class DevelopmentTests(unittest.TestCase):
  def test_backend_validates_quest_definitions_without_database(self):
   pkg=self.package();pkg['entities'][0]['kind']='QUEST';self.assertIn('No database',m.validate_package(pkg))
  def test_failed_validation_never_overwrites_saved_content(self):
-  with tempfile.TemporaryDirectory() as d:
+  with tempfile.TemporaryDirectory() as d,patch.object(m,'ROOT',Path(d)):
    path=Path(d)/'game.json';path.write_text('retained')
    with patch.object(m,'validate_package',side_effect=ValueError('invalid')):
     with self.assertRaises(ValueError):m.save_package(self.package(),path)
@@ -87,3 +87,21 @@ class DevelopmentTests(unittest.TestCase):
    path=Path(d)/'game.json';m.save_package(self.package(),path)
    self.assertEqual(m.saved_package_digest(self.package()),m.package_digest(path))
    path.write_text('another editor');self.assertNotEqual(m.saved_package_digest(self.package()),m.package_digest(path))
+
+ def test_publication_partial_failure_retains_exact_commit_and_never_rewinds(self):
+  with tempfile.TemporaryDirectory() as d,patch.object(m,'ROOT',Path(d)):
+   preflight=unittest.mock.Mock();push=unittest.mock.Mock();promote=unittest.mock.Mock(side_effect=RuntimeError('deployment failed'))
+   with self.assertRaisesRegex(RuntimeError,'GitHub was updated'):m.publish_tested('release-fixture','a'*40,preflight,push,promote)
+   self.assertEqual([x['state'] for x in m.publication_history()],['github_push_started_live_not_started','github_updated_live_pending','github_updated_live_needs_review'])
+   push.assert_called_once_with('a'*40);promote.assert_called_once_with()
+   self.assertTrue(all(x['source_commit']=='a'*40 for x in m.publication_history()))
+ def test_failed_push_never_attempts_live_deployment(self):
+  with tempfile.TemporaryDirectory() as d,patch.object(m,'ROOT',Path(d)):
+   promote=unittest.mock.Mock()
+   with self.assertRaises(RuntimeError):m.publish_tested('release-fixture','b'*40,lambda:None,unittest.mock.Mock(side_effect=RuntimeError('push failed')),promote)
+   promote.assert_not_called();self.assertEqual(m.publication_history()[-1]['state'],'github_push_needs_review_live_not_started')
+ def test_preflight_failure_has_no_publication_side_effects(self):
+  with tempfile.TemporaryDirectory() as d,patch.object(m,'ROOT',Path(d)):
+   push=unittest.mock.Mock();promote=unittest.mock.Mock()
+   with self.assertRaises(RuntimeError):m.publish_tested('release-fixture','c'*40,unittest.mock.Mock(side_effect=RuntimeError('staging changed')),push,promote)
+   self.assertEqual(m.publication_history(),[]);push.assert_not_called();promote.assert_not_called()

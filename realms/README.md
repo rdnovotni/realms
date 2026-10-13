@@ -4,9 +4,9 @@ Release implementation follows the [eight-pass plan](docs/eight-pass-release-pla
 
 Private development foundation for KoL 2.0: a TypeScript/Fastify server and PostgreSQL persistence on Ubuntu. The shared database and server foundation is implemented and tested. A first playable browser client now connects character setup, saved tactical combat, rewards and recovery. See [game client foundation](docs/game-client.md) for setup and the disposable local playtest. See [database foundation](docs/database-foundation.md) for the schema, invariants, and implementation boundaries.
 
-## This workstation
+## Legacy native development runtime
 
-Node and PostgreSQL are installed locally under `.local/`; database data/logs live in `.state/`. They are excluded from Git. System packages, firewall settings, and router ports are not changed.
+The original native runtime lives at `/srv/Realms/native/realms`; its Node/PostgreSQL tools and private data are separate from `/srv/Realms/source`. The commands below apply to that native checkout. Public production and staging use the managed container workflow described in the [development baseline](../infra/docs/development-baseline.md).
 
 ```bash
 bash scripts/install-local.sh
@@ -16,7 +16,7 @@ bash scripts/server.sh status
 
 The installer targets Ubuntu x86_64 with the PostgreSQL 18 packages available in its configured repositories. It downloads Node 24.21.0 from nodejs.org, checks the published checksum, and extracts authenticated Ubuntu packages without installing them system-wide. Existing required system libraries are still needed. `npm ci` uses the committed lockfile.
 
-Server: **http://127.0.0.1:3000**. Database: **127.0.0.1:55432**. These addresses are accessible only on this workstation. Neither service automatically starts after a reboot yet.
+Server: **http://127.0.0.1:3000**. Database: **127.0.0.1:55432**. These addresses are accessible only on this workstation. The host now supervises both native services at boot; inspect `kol-realms.service` and `kol-postgresql.service` for current state.
 
 ```bash
 bash scripts/server.sh stop
@@ -24,7 +24,7 @@ bash scripts/database.sh stop
 bash scripts/database.sh backup
 ```
 
-Stopping the application leaves PostgreSQL running unless explicitly stopped. Do not remove `.state/`: it contains persistent data. Backups remain on this machine. Verify recovery with `bash scripts/database.sh restore-check .state/backups/NAME.dump`; this restores into a disposable database, checks migrations, constraints and currency conservation, then removes it. An independent backup destination is still needed.
+Stopping the application leaves PostgreSQL running unless explicitly stopped. Do not remove `.state/`: it contains persistent data. The native manual backup command writes locally; the separate encrypted USB workflow covers native, production and staging. Verify recovery with `bash scripts/database.sh restore-check .state/backups/NAME.dump`; this restores into a disposable database, checks migrations, constraints and currency conservation, then removes it. Encrypted USB backups and isolated restore checks are implemented; measured recovery on another machine and other release gates remain open.
 
 ## Checks
 
@@ -79,7 +79,7 @@ The server uses `realms_app`, a restricted database role. Migrations and seeding
 
 Domain services implement sealed content publication, explicit state contracts, integer currency transfers, inventory movement, isolated deterministic RNG, instance snapshots, rollover and a minimal completed-run transition. These are internal server contracts; only the documented routes are exposed. Durable jobs and the transactional outbox are ready for module workers. A PostgreSQL-backed scheduler now supports bounded, durable daily rollover and named SQL job hooks; see [scheduling operations](../infra/docs/scheduling.md). Automatic awards remain unconfigured until gameplay values are finalized. External delivery handlers still require explicit integrations.
 
-Build the first full vertical slice next: typed encounter content, Turn commitment, deterministic resolution, quest/reward/effect integration, victory, and a player-visible Ascension manifest. Add real authentication and administration before access beyond this workstation. The client can use the same protocol from native desktop, browser, or mobile implementations.
+Development proceeds through remaining reusable feature frameworks with small test fixtures before production content authoring. Complete progression/Ascension, quests/world, daily systems and client integration next; session authentication and operator/authoring tools already exist. See the development baseline for verification and remaining access/release gates. The client can use the same protocol from native desktop, browser, or mobile implementations.
 
 The supplied design documents remain outside this repository in the ChatGPT project reference mirror. Systems 23 and 46 govern the shared architecture; each gameplay module will add versioned migrations and validate its own mechanics.
 
