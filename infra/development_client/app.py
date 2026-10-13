@@ -9,7 +9,7 @@ import model
 
 class Studio:
  def __init__(self,root):
-  self.root=root;self.busy=False;self.events=queue.Queue();self.original=None;self.dirty=False;self.package=model.load_package();self.loaded_digest=model.package_digest();self.release_map={};self.links={}
+  self.root=root;self.busy=False;self.events=queue.Queue();self.original=None;self.dirty=False;self.package,self.loaded_digest=model.read_package();self.release_map={};self.links={}
   try:self.links=json.loads((model.ROOT/'.development/release-links.json').read_text())
   except (OSError,ValueError):pass
   root.title('Realms Development Studio');root.geometry('1250x950');root.minsize(1100,820)
@@ -98,7 +98,7 @@ class Studio:
   return {'id':self.fields['id'].get().strip(),'kind':self.fields['kind'].get(),'revision':1,'schemaVersion':1,'definition':definition}
  def save_entity(self):
   updated=model.update_entity(self.package,self.draft(),self.original)
-  def done(_):self.package=updated;self.original=self.fields['id'].get().strip();self.loaded_digest=model.package_digest();self.dirty=False;self.refresh_library();self.content_note.set('Saved locally and validated. Publishing is a separate action. Package: '+updated['version'])
+  def done(_):self.package=updated;self.original=self.fields['id'].get().strip();self.loaded_digest=model.saved_package_digest(updated);self.dirty=False;self.refresh_library();self.content_note.set('Saved locally and validated. Publishing is a separate action. Package: '+updated['version'])
   self.work('Save content',lambda:model.save_package(updated,expected_digest=self.loaded_digest),done)
  def view_package(self):
   window=tk.Toplevel(self.root);window.title('Saved content package');window.geometry('850x650');text=self.text(window);self.set_text(text,json.dumps(self.package,indent=2));text.configure(state='disabled')
@@ -120,7 +120,7 @@ class Studio:
  def download_source(self):
   if self.dirty:raise ValueError('Save or discard the unsaved definition before downloading GitHub changes.')
   def reload(result):
-   self.package=model.load_package();self.loaded_digest=model.package_digest();self.original=None;self.dirty=False;self.refresh_library();self.new_entity();self.show_source(result+'\nThe authoring library has been reloaded from the new master source.')
+   self.package,self.loaded_digest=model.read_package();self.original=None;self.dirty=False;self.refresh_library();self.new_entity();self.show_source(result+'\nThe authoring library has been reloaded from the new master source.')
   self.confirm_work('Download source','Fetch and fast-forward GitHub main? Local edits are refused; no server is deployed.',model.synchronize,reload)
  def source_status(self):
   model.assert_master();status=operations.cache_status();live=next((c for c in status.get('containers',[]) if c.get('project')=='kol-production' and c.get('service')=='api'),{})

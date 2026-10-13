@@ -63,9 +63,12 @@ def push_master(expected):
  git('merge-base','--is-ancestor','origin/main',expected)
  git('push','origin',expected+':refs/heads/main')
  return 'GitHub main updated to the tested source commit. Live deployment is the next phase.'
-def load_package(path=CONTENT):
- if not path.exists():return {'version':'draft-1','engineVersion':'foundation-1','entities':[]}
- return json.loads(path.read_text())
+def read_package(path=CONTENT):
+ try:data=path.read_bytes()
+ except FileNotFoundError:return {'version':'draft-1','engineVersion':'foundation-1','entities':[]},'absent'
+ return json.loads(data),hashlib.sha256(data).hexdigest()
+def load_package(path=CONTENT):return read_package(path)[0]
+def saved_package_digest(package):return hashlib.sha256((json.dumps(package,indent=2)+'\n').encode()).hexdigest()
 def update_entity(package,entity,original=None):
  result=copy.deepcopy(package)
  if not re.fullmatch(r'[a-z][a-z0-9_.-]{2,119}',entity.get('id','')):raise ValueError('Use an ID like item.iron_sword (letters, digits, dots, underscores or hyphens).')

@@ -75,3 +75,15 @@ class DevelopmentTests(unittest.TestCase):
   with tempfile.TemporaryDirectory() as d,patch.object(m,'ROOT',Path(d)),patch.object(m,'validate_package'):
    path=Path(d)/'game.json';path.write_text('{}');old=m.package_digest(path);m.save_package(self.package(),path,expected_digest=old)
    self.assertEqual(json.loads(path.read_text())['entities'][0]['id'],'item.sample')
+
+ def test_loaded_package_digest_belongs_to_the_same_read(self):
+  with tempfile.TemporaryDirectory() as d:
+   path=Path(d)/'game.json';path.write_text(json.dumps(self.package()))
+   package,digest=m.read_package(path);path.write_text('external change')
+   import hashlib
+   self.assertEqual(digest,hashlib.sha256(json.dumps(package).encode()).hexdigest())
+ def test_saved_digest_does_not_adopt_a_later_external_edit(self):
+  with tempfile.TemporaryDirectory() as d,patch.object(m,'ROOT',Path(d)),patch.object(m,'validate_package'):
+   path=Path(d)/'game.json';m.save_package(self.package(),path)
+   self.assertEqual(m.saved_package_digest(self.package()),m.package_digest(path))
+   path.write_text('another editor');self.assertNotEqual(m.saved_package_digest(self.package()),m.package_digest(path))
