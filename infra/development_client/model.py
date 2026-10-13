@@ -1,5 +1,6 @@
 """Content drafts and Git operations against the one canonical source checkout."""
-import copy,hashlib,json,os,re,subprocess,tempfile,uuid
+import copy,hashlib,json,os,re,subprocess,tempfile,uuid,fcntl
+from functools import wraps
 from datetime import datetime,timezone
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[2]
@@ -27,11 +28,21 @@ def assert_master():
  if git('branch','--show-current')!='main':raise RuntimeError('Switch the canonical source to main before using this workflow.')
  for name in git('ls-files').splitlines():
   if not allowed(name):raise RuntimeError('Tracked file outside the approved source layout: '+name)
+def source_lock(fn):
+ @wraps(fn)
+ def locked(*args,**kwargs):
+  folder=ROOT/'.development';folder.mkdir(parents=True,exist_ok=True,mode=0o700)
+  with open(folder/'source-edit.lock','a',opener=lambda p,flags:os.open(p,flags,0o600)) as lock:
+   fcntl.flock(lock,fcntl.LOCK_EX)
+   return fn(*args,**kwargs)
+ return locked
+@source_lock
 def synchronize():
  assert_master()
  if managed_changes():raise RuntimeError('Save a source checkpoint before downloading changes. Local edits will not be overwritten.')
  git('fetch','origin','main');git('merge','--ff-only','origin/main')
  return 'GitHub main synchronized. The live server has not been deployed.'
+@source_lock
 def checkpoint(message):
  assert_master()
  if not message.strip():raise ValueError('Name this source checkpoint.')
@@ -82,8 +93,13 @@ def validate_package(package):
   detail=result.stderr.strip();explanations={'MISSING_CONTENT_DEPENDENCY':'A dependency ID is missing from this package. Add it or correct the dependency list.','CYCLIC_CONTENT_DEPENDENCY':'Definitions depend on each other in a loop. Remove the circular dependency.','INVALID_ITEM_INVENTORY_SPEC':'Equipment needs INSTANCE storage. Materials and consumables need STACK storage.','DUPLICATE_CONTENT_ID':'Two definitions use the same permanent ID. Give the new definition a unique ID.','INVALID_CONTENT_PACKAGE':'Check the name, ID, type, JSON fields and required package properties.'}
   raise ValueError(explanations.get(detail,detail or 'The backend rejected this content package.'))
  return result.stdout.strip()
-def save_package(package,path=CONTENT):
- validate_package(package);path.parent.mkdir(parents=True,exist_ok=True)
+def package_digest(path=CONTENT):
+ return hashlib.sha256(path.read_bytes()).hexdigest() if path.exists() else 'absent'
+@source_lock
+def save_package(package,path=CONTENT,expected_digest=None):
+ validate_package(package)
+ if expected_digest is not None and package_digest(path)!=expected_digest:raise ValueError('Saved content changed outside this window. Reload the current source before editing; your draft was not written over it.')
+ path.parent.mkdir(parents=True,exist_ok=True)
  if path.is_symlink():raise ValueError('Content file must not be a symbolic link.')
  if path.exists():
   history=ROOT/'.development/content-history';history.mkdir(parents=True,exist_ok=True,mode=0o700)

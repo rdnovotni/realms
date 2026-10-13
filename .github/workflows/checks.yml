@@ -39,4 +39,6 @@ jobs:
       - run: npm run content:check
       - run: npm test
       - run: npm run test:integration
+      - run: python3 -m unittest discover -s ../infra/tests -p test_development_studio.py
+      - run: python3 -m py_compile ../infra/development_client/*.py ../infra/control_panel/*.py ../infra/scripts/*.py
       - run: npm run build

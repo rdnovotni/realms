@@ -9,7 +9,7 @@ import model
 
 class Studio:
  def __init__(self,root):
-  self.root=root;self.busy=False;self.events=queue.Queue();self.original=None;self.dirty=False;self.package=model.load_package();self.release_map={};self.links={}
+  self.root=root;self.busy=False;self.events=queue.Queue();self.original=None;self.dirty=False;self.package=model.load_package();self.loaded_digest=model.package_digest();self.release_map={};self.links={}
   try:self.links=json.loads((model.ROOT/'.development/release-links.json').read_text())
   except (OSError,ValueError):pass
   root.title('Realms Development Studio');root.geometry('1250x950');root.minsize(1100,820)
@@ -98,14 +98,14 @@ class Studio:
   return {'id':self.fields['id'].get().strip(),'kind':self.fields['kind'].get(),'revision':1,'schemaVersion':1,'definition':definition}
  def save_entity(self):
   updated=model.update_entity(self.package,self.draft(),self.original)
-  def done(_):self.package=updated;self.original=self.fields['id'].get().strip();self.dirty=False;self.refresh_library();self.content_note.set('Saved locally and validated. Publishing is a separate action. Package: '+updated['version'])
-  self.work('Save content',lambda:model.save_package(updated),done)
+  def done(_):self.package=updated;self.original=self.fields['id'].get().strip();self.loaded_digest=model.package_digest();self.dirty=False;self.refresh_library();self.content_note.set('Saved locally and validated. Publishing is a separate action. Package: '+updated['version'])
+  self.work('Save content',lambda:model.save_package(updated,expected_digest=self.loaded_digest),done)
  def view_package(self):
   window=tk.Toplevel(self.root);window.title('Saved content package');window.geometry('850x650');text=self.text(window);self.set_text(text,json.dumps(self.package,indent=2));text.configure(state='disabled')
  def source_page(self):
   f=self.pages['Source & GitHub'];ttk.Label(f,text='Master source: /srv/Realms/source → github.com/rdnovotni/realms → main',font=('DejaVu Sans',12,'bold')).pack(anchor='w')
   ttk.Label(f,text='Download means fast-forward only. It refuses to overwrite local edits or resolve conflicting histories automatically.',wraplength=950).pack(anchor='w',pady=8)
-  row=self.row(f);self.button(row,'Review source status',lambda:self.work('Read source status',self.source_status,self.show_source)).pack(side='left');self.button(row,'Download GitHub main',lambda:self.confirm_work('Download source','Fetch and fast-forward GitHub main? Local edits are refused; no server is deployed.',model.synchronize,self.show_source)).pack(side='left',padx=8);self.button(row,'GitHub sign-in',self.sign_in).pack(side='left',padx=8);self.button(row,'Open GitHub',lambda:webbrowser.open('https://github.com/rdnovotni/realms')).pack(side='left')
+  row=self.row(f);self.button(row,'Review source status',lambda:self.work('Read source status',self.source_status,self.show_source)).pack(side='left');self.button(row,'Download GitHub main',self.download_source).pack(side='left',padx=8);self.button(row,'GitHub sign-in',self.sign_in).pack(side='left',padx=8);self.button(row,'Open GitHub',lambda:webbrowser.open('https://github.com/rdnovotni/realms')).pack(side='left')
   row=self.row(f);ttk.Label(row,text='Checkpoint name').pack(side='left');self.checkpoint_name=tk.StringVar(value='Reviewed game update');ttk.Entry(row,textvariable=self.checkpoint_name,width=45).pack(side='left',padx=8);self.button(row,'Save source checkpoint',self.checkpoint).pack(side='left')
   self.source_text=self.text(f,13);self.set_text(self.source_text,'Review source status before saving a checkpoint. A checkpoint records all approved source changes, not only the selected definition.')
   ttk.Label(f,text='GitHub publishing uses this computer’s Git credentials. Set up Git SSH or an OS credential helper; or load a narrowly scoped token for this app session. Credentials are never stored in game files.',wraplength=980).pack(anchor='w',pady=8)
@@ -117,6 +117,11 @@ class Studio:
   def save():
    model.AUTH_TOKEN=token.get().strip();token.set('');window.destroy();self.status.set('GitHub session credential loaded. It will be cleared when this app closes.')
   ttk.Button(window,text='Use for this session',command=save).pack(pady=8)
+ def download_source(self):
+  if self.dirty:raise ValueError('Save or discard the unsaved definition before downloading GitHub changes.')
+  def reload(result):
+   self.package=model.load_package();self.loaded_digest=model.package_digest();self.original=None;self.dirty=False;self.refresh_library();self.new_entity();self.show_source(result+'\nThe authoring library has been reloaded from the new master source.')
+  self.confirm_work('Download source','Fetch and fast-forward GitHub main? Local edits are refused; no server is deployed.',model.synchronize,reload)
  def source_status(self):
   model.assert_master();status=operations.cache_status();live=next((c for c in status.get('containers',[]) if c.get('project')=='kol-production' and c.get('service')=='api'),{})
   remote=model.git('rev-parse','origin/main')

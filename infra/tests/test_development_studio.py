@@ -65,3 +65,13 @@ class DevelopmentTests(unittest.TestCase):
    m.record_publication('release-example','a'*40,'github_updated_live_pending')
    self.assertEqual(m.publication_history()[0]['state'],'github_updated_live_pending')
    self.assertEqual((Path(d)/'.development/publications.json').stat().st_mode&0o777,0o600)
+
+ def test_stale_editor_cannot_overwrite_a_newer_source_package(self):
+  with tempfile.TemporaryDirectory() as d,patch.object(m,'ROOT',Path(d)),patch.object(m,'validate_package'):
+   path=Path(d)/'game.json';path.write_text('first');old=m.package_digest(path);path.write_text('new master')
+   with self.assertRaises(ValueError):m.save_package(self.package(),path,expected_digest=old)
+   self.assertEqual(path.read_text(),'new master')
+ def test_atomic_save_accepts_the_matching_source_digest(self):
+  with tempfile.TemporaryDirectory() as d,patch.object(m,'ROOT',Path(d)),patch.object(m,'validate_package'):
+   path=Path(d)/'game.json';path.write_text('{}');old=m.package_digest(path);m.save_package(self.package(),path,expected_digest=old)
+   self.assertEqual(json.loads(path.read_text())['entities'][0]['id'],'item.sample')
