@@ -1,0 +1,12 @@
+[Unit]
+Description=Realms health, backups and alert monitor
+After=docker.service network-online.target
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 -I __SOURCE__/infra/scripts/console-admin.py monitor
+StandardInput=null
+UMask=0077
+Nice=10
+MemoryMax=512M
+CPUQuota=50%
+TimeoutStartSec=180

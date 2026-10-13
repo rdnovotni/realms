@@ -1,0 +1,24 @@
+# Template for a future project, with its OWN image, secrets and private network.
+services:
+  worker:
+    image: ${WORKER_IMAGE:?Set a digest-pinned worker image}
+    command: [node, "${WORKER_ENTRYPOINT:-dist/worker.js}"]
+    user: "${WORKER_UID:-10010}:${WORKER_GID:-10010}"
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    tmpfs: ["/tmp:size=64m,mode=1777"]
+    secrets: [worker_database_url]
+    networks: [private]
+    restart: unless-stopped
+    stop_grace_period: 45s
+    mem_limit: 256m
+    cpus: 0.5
+    pids_limit: 64
+    logging:
+      driver: local
+      options: {max-size: "10m", max-file: "3"}
+networks:
+  private: {internal: true}
+secrets:
+  worker_database_url: {file: ./secrets/worker_database_url}

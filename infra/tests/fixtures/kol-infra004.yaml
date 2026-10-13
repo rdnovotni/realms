@@ -1,0 +1,77 @@
+name: ${COMPOSE_PROJECT_NAME:?Set a unique project name}
+x-app: &app
+  image: ${KOL_IMAGE:?Build a versioned KoL image first}
+  user: "${APP_UID:-10001}:${APP_GID:-10001}"
+  read_only: true
+  cap_drop: [ALL]
+  security_opt: [no-new-privileges:true]
+  tmpfs: [/tmp:size=64m,mode=1777]
+  networks: [private]
+  pids_limit: 128
+  logging:
+    driver: local
+    options: {max-size: "10m", max-file: "3"}
+services:
+  db:
+    image: postgres:18-bookworm
+    environment:
+      POSTGRES_DB: realms_dev
+      POSTGRES_PASSWORD_FILE: /run/secrets/db_password
+      POSTGRES_INITDB_ARGS: --auth-host=scram-sha-256
+    secrets: [db_password]
+    volumes: [database:/var/lib/postgresql]
+    networks: [private]
+    restart: unless-stopped
+    mem_limit: ${DB_MEMORY:-1g}
+    mem_reservation: 256m
+    cpus: 1.0
+    pids_limit: 256
+    shm_size: 128m
+    command: [postgres, -c, shared_buffers=128MB, -c, max_connections=40, -c, work_mem=4MB]
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -h 127.0.0.1 -U postgres -d realms_dev"]
+      interval: 5s
+      timeout: 3s
+      retries: 24
+    logging:
+      driver: local
+      options: {max-size: "10m", max-file: "3"}
+  setup:
+    <<: *app
+    profiles: [setup]
+    command: [node, container/setup.mjs]
+    secrets: [db_password, app_password]
+    mem_limit: 512m
+    cpus: 0.5
+    restart: "no"
+    depends_on:
+      db: {condition: service_healthy}
+  api:
+    <<: *app
+    networks: [private, frontend]
+    secrets: [app_password, throttle_key]
+    ports: ["127.0.0.1:${HTTP_PORT:?Set unique localhost port}:3000"]
+    restart: unless-stopped
+    mem_limit: ${API_MEMORY:-512m}
+    mem_reservation: 128m
+    cpus: 1.0
+    depends_on:
+      db: {condition: service_healthy}
+    healthcheck:
+      test: [CMD, node, container/health.mjs]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 20s
+networks:
+  frontend:
+    driver_opts: {com.docker.network.bridge.host_binding_ipv4: "127.0.0.1"}
+  private:
+    internal: true
+    driver_opts: {com.docker.network.bridge.host_binding_ipv4: "127.0.0.1"}
+volumes:
+  database: {}
+secrets:
+  db_password: {file: ./secrets/db_password}
+  app_password: {file: ./secrets/app_password}
+  throttle_key: {file: ./secrets/throttle_key}

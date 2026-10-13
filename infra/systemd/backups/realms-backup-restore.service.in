@@ -1,0 +1,17 @@
+[Unit]
+Description=Restore-test Realms encrypted USB backups
+Requires=docker.service
+After=docker.service
+RequiresMountsFor=/mnt/Realms-backups
+OnFailure=realms-backup-failure.service
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 /srv/Realms/source/infra/scripts/local-backups.py restore-check
+UMask=0077
+Nice=10
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7
+MemoryMax=2G
+CPUQuota=50%
+TimeoutStartSec=4h
+TimeoutStopSec=2min

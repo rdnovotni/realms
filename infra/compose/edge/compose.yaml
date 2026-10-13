@@ -1,0 +1,48 @@
+name: kol-edge
+x-security: &security
+  network_mode: host
+  user: "10001:10001"
+  read_only: true
+  cap_drop: [ALL]
+  security_opt: [no-new-privileges:true]
+  pids_limit: 64
+  restart: unless-stopped
+  logging:
+    driver: local
+    options: {max-size: "10m", max-file: "3"}
+services:
+  caddy:
+    <<: *security
+    # Official binary carries cap_net_bind_service; keep it in the bounding set.
+    cap_add: [NET_BIND_SERVICE]
+    image: caddy:2.11.7-alpine@sha256:d8542f48d34a9cf4e4c11a478865229840e87e4c96ea3f439101f31a5d35f75f
+    command: [caddy, run, --config, /etc/caddy/Caddyfile, --adapter, caddyfile]
+    volumes: ["./Caddyfile:/etc/caddy/Caddyfile:ro"]
+    tmpfs: ["/data:size=16m,mode=1777", "/config:size=16m,mode=1777", "/tmp:size=16m,mode=1777"]
+    mem_limit: 128m
+    cpus: 0.5
+    healthcheck:
+      test: [CMD-SHELL, "wget -q -O /dev/null --header='Host: '$$PUBLIC_HOST http://127.0.0.1:19080/health/live"]
+      interval: 10s
+      timeout: 3s
+      retries: 6
+    environment: {PUBLIC_HOST: "${PUBLIC_HOST:?Explicit approved hostname required}"}
+  tunnel:
+    <<: *security
+    profiles: [public]
+    image: cloudflare/cloudflared:2026.10.0@sha256:9b49eed8f62806d5d45ddf59ecefb5710429598ea6d3fcccd2af938f621b2b07
+    command: [tunnel, --no-autoupdate, --config, /etc/cloudflared/config.json, run]
+    volumes: ["./tunnel.json:/etc/cloudflared/config.json:ro"]
+    secrets: [tunnel_credentials]
+    mem_limit: 128m
+    cpus: 0.5
+    healthcheck:
+      test: [CMD, cloudflared, tunnel, --metrics, "127.0.0.1:19091", ready]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+    depends_on:
+      caddy: {condition: service_healthy}
+secrets:
+  tunnel_credentials: {file: ./secrets/tunnel.json}

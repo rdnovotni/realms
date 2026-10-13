@@ -1,0 +1,27 @@
+[Unit]
+Description=KoL existing Realms API
+Requires=kol-postgresql.service
+After=kol-postgresql.service
+PartOf=kol-postgresql.service
+RequiresMountsFor="@PROJECT_DIR@"
+StartLimitIntervalSec=300
+StartLimitBurst=5
+
+[Service]
+Type=simple
+User=@RUN_USER@
+WorkingDirectory=@WORKING_DIR@
+Environment="REALMS_PROJECT_DIR=@PROJECT_DIR@"
+ExecStart=/usr/local/lib/kol-infra/run-existing-realms.sh api
+ExecStartPost=/usr/local/lib/kol-infra/run-existing-realms.sh api-ready
+Restart=on-failure
+RestartSec=10
+TimeoutStartSec=180
+TimeoutStopSec=30
+UMask=0077
+NoNewPrivileges=true
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

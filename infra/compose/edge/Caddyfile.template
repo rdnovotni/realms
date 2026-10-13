@@ -1,0 +1,77 @@
+{
+ admin off
+ auto_https off
+ servers {
+  max_header_size 16KB
+  timeouts {
+   read_header 10s
+   read_body 30s
+   idle 30s
+  }
+ }
+}
+# Two loopback-only listeners. Local probes never trust CF-Connecting-IP.
+http://:19080 {
+ bind 127.0.0.1
+ @wrong not host __PUBLIC_HOST__
+ respond @wrong 404
+ request_body {
+  max_size 16KB
+ }
+ @allowed {
+  host __PUBLIC_HOST__
+  path_regexp public __APPROVED_PATHS__
+ }
+ handle @allowed {
+  reverse_proxy 127.0.0.1:13000 {
+   header_up -Forwarded
+   header_up -X-Forwarded-For
+   header_up -X-Forwarded-Host
+   header_up -X-Forwarded-Proto
+   header_up -Cf-Access-Jwt-Assertion
+   header_up -Cf-Connecting-Ip
+   header_up X-Kol-Proxy-Key __INGRESS_KEY__
+   header_up X-Kol-Client-Ip {remote_host}
+   header_up X-Forwarded-Proto https
+   transport http {
+    dial_timeout 3s
+    response_header_timeout 30s
+   }
+  }
+ }
+ handle {
+  respond 404
+ }
+}
+# Only the outbound connector uses this listener; local administrators are trusted.
+http://:19081 {
+ bind 127.0.0.1
+ @wrong not host __PUBLIC_HOST__
+ respond @wrong 404
+ request_body {
+  max_size 16KB
+ }
+ @allowed {
+  host __PUBLIC_HOST__
+  path_regexp public __APPROVED_PATHS__
+ }
+ handle @allowed {
+  reverse_proxy 127.0.0.1:13000 {
+   header_up -Forwarded
+   header_up -X-Forwarded-For
+   header_up -X-Forwarded-Host
+   header_up -X-Forwarded-Proto
+   header_up -Cf-Access-Jwt-Assertion
+   header_up X-Kol-Proxy-Key __INGRESS_KEY__
+   header_up X-Kol-Client-Ip {http.request.header.Cf-Connecting-Ip}
+   header_up X-Forwarded-Proto https
+   transport http {
+    dial_timeout 3s
+    response_header_timeout 30s
+   }
+  }
+ }
+ handle {
+  respond 404
+ }
+}

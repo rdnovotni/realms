@@ -1,0 +1,51 @@
+import type pg from 'pg';
+// Shared grants for native administration and explicitly invoked container setup.
+export async function provisionRole(client: pg.PoolClient, password: string, options: {manageRole?: boolean; databaseName?: string} = {}) {
+  const databaseName=options.databaseName??'realms_dev';
+  if(!/^[a-z][a-z0-9_]{0,62}$/.test(databaseName)) throw new Error('Invalid database name');
+  if(options.manageRole!==false){
+  if(!(await client.query("SELECT 1 FROM pg_roles WHERE rolname='realms_app'")).rows.length) await client.query('CREATE ROLE realms_app LOGIN');
+  const ddl=(await client.query("SELECT format('ALTER ROLE realms_app PASSWORD %L NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS', $1::text)",[password])).rows[0].format;
+  await client.query(ddl);
+  }
+  const databaseGrants=(await client.query("SELECT format('REVOKE ALL ON DATABASE %I FROM PUBLIC; GRANT CONNECT ON DATABASE %I TO realms_app', $1::text, $1::text)",[databaseName])).rows[0].format;
+  await client.query(databaseGrants);
+  await client.query(`REVOKE CREATE ON SCHEMA public FROM PUBLIC; GRANT USAGE ON SCHEMA public TO realms_app;
+    REVOKE ALL ON ALL TABLES IN SCHEMA public FROM realms_app;
+    GRANT SELECT ON ALL TABLES IN SCHEMA public TO realms_app;
+    GRANT USAGE,SELECT ON ALL SEQUENCES IN SCHEMA public TO realms_app;
+    GRANT INSERT,UPDATE ON accounts,characters,runs,state_scopes,run_progression,run_class_levels,resource_pools,run_consumption,
+      inventory_containers,inventory_items,wallets,discoveries,quest_states,effect_instances,instances,instance_participants,
+      guilds,guild_members,world_events,scoped_state,outbox_events,durable_jobs TO realms_app;
+    GRANT INSERT ON action_receipts,turn_ledger,currency_transfers,inventory_movements,inventory_quantity_operations,run_history,audit_events,run_rollovers TO realms_app;
+    REVOKE UPDATE ON accounts FROM realms_app;
+    GRANT UPDATE(security_epoch) ON accounts TO realms_app;
+    GRANT INSERT,UPDATE ON auth_sessions,auth_recovery_codes,auth_throttle TO realms_app;
+    GRANT UPDATE(salt,verifier) ON auth_credentials TO realms_app;
+    GRANT INSERT ON auth_events,encounter_draws,encounter_reward_plans,encounter_reward_claims,encounter_reward_items TO realms_app;
+    GRANT INSERT,UPDATE ON encounter_records,combat_run_state,combat_states TO realms_app;
+    GRANT INSERT,UPDATE ON run_builds TO realms_app;
+    GRANT INSERT ON run_proficiency_choices TO realms_app;
+    GRANT INSERT,UPDATE ON run_skill_ranks TO realms_app;
+    GRANT INSERT ON run_attribute_choices TO realms_app;
+    GRANT INSERT ON run_feat_choices,run_feats TO realms_app;
+    GRANT INSERT,UPDATE ON tactical_run_state TO realms_app;
+    GRANT INSERT ON shared_tactical_members,shared_tactical_origins,shared_tactical_steps,shared_tactical_draws,shared_tactical_claims TO realms_app;
+    GRANT INSERT,UPDATE ON shared_tactical_sessions TO realms_app;
+    GRANT INSERT ON owned_companions,companion_tactical_recoveries,tactical_failure_costs,tactical_equipment_wear,tactical_effect_carryovers,tactical_encounter_origins,tactical_steps,tactical_recoveries TO realms_app;
+    GRANT INSERT ON character_encounter_snapshots TO realms_app;
+    GRANT INSERT ON run_subclass_choices,run_subclasses TO realms_app;
+    GRANT INSERT ON run_build_events TO realms_app;
+    GRANT INSERT ON run_xp_baselines,encounter_xp_plans,run_xp_awards TO realms_app;
+    GRANT INSERT ON equipment_loadout_events TO realms_app;
+    GRANT INSERT,UPDATE ON equipment_loadouts TO realms_app;
+    GRANT INSERT,DELETE ON equipment_loadout_items TO realms_app;
+    GRANT INSERT ON equipment_events,item_binding_events TO realms_app;
+    GRANT INSERT,UPDATE ON run_equipment TO realms_app;
+    GRANT INSERT,DELETE ON equipment_slots TO realms_app;
+    GRANT INSERT ON inventory_lock_events TO realms_app;
+    GRANT INSERT,UPDATE ON inventory_item_locks TO realms_app;
+    GRANT INSERT ON craft_records,craft_inputs TO realms_app;
+    GRANT INSERT ON combat_steps,combat_recoveries,combat_gold_plans,combat_gold_claims,run_completions,tactical_campaign_prerequisites TO realms_app;
+    GRANT DELETE ON effect_instances,auth_throttle TO realms_app;`);
+}

@@ -1,0 +1,6 @@
+[Unit]
+Description=Record Realms backup failure
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 /srv/Realms/source/infra/scripts/local-backups.py record-failure
+UMask=0077

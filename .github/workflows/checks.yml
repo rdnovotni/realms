@@ -6,6 +6,9 @@ jobs:
   server:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: realms
     services:
       postgres:
         # Docker Official Images mirror avoids Docker Hub's shared runner pull limits.
@@ -29,9 +32,11 @@ jobs:
         with:
           node-version: '24.21.0'
           cache: npm
+          cache-dependency-path: realms/package-lock.json
       - run: npm ci
       - run: cp .env.example .env
       - run: npm run typecheck
+      - run: npm run content:check
       - run: npm test
       - run: npm run test:integration
       - run: npm run build

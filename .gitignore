@@ -1,9 +1,21 @@
-node_modules/
-dist/
-.local/
-.state/
-.env
-.env.*
-!.env.example
-coverage/
-*.log
+# Runtime configuration and private deployment state never belong in Git.
+**/secrets/
+**/.env
+**/.env.*
+!**/.env.example
+!**/*.env.example
+**/.state/
+**/.local/
+**/__pycache__/
+**/*.pyc
+**/node_modules/
+**/dist/
+**/*.dump
+
+.development/
+
+# Legacy workstation preview artifacts stay outside the source repository.
+/*.png
+/*.html
+
+.development-original-capture/

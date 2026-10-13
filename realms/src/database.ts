@@ -1,0 +1,57 @@
+import { createHash } from 'node:crypto';
+import { readFile, readdir } from 'node:fs/promises';
+import pg from 'pg';
+
+export const poolFor = (url: string, schema?:string) => {
+  if(schema && !/^[a-z][a-z0-9_]{0,62}$/.test(schema)) throw new Error('Invalid database schema');
+  const pool=new pg.Pool({ connectionString: url, ...(schema?{options:`-c search_path=${schema}`} : {}), max: 5, connectionTimeoutMillis: 3000, statement_timeout: 5000, idle_in_transaction_session_timeout: 10000 });
+  // Idle clients may disconnect during DB restarts. pg removes them; contain the error
+  // so the next request can acquire a new connection rather than crashing the process.
+  pool.on('error',()=>console.error(JSON.stringify({level:'error',event:'database_connection_lost'})));
+  return pool;
+};
+
+export async function assertRuntimeRole(pool:pg.Pool){
+  const role=(await pool.query(`SELECT rolsuper,rolcreatedb,rolcreaterole,rolreplication,rolbypassrls,
+    has_table_privilege(current_user,'schema_migrations','UPDATE') AS migrations,
+    has_table_privilege(current_user,'auth_credentials','INSERT') AS enrollment,
+    has_column_privilege(current_user,'accounts','access_status','UPDATE') AS suspension
+    FROM pg_roles WHERE rolname=current_user`)).rows[0];
+  if(!role || Object.values(role).some(Boolean)) throw new Error('Runtime database role has administration privileges');
+}
+
+export async function assertSchema(pool:pg.Pool){
+  const folder=new URL('../migrations/',import.meta.url),names=(await readdir(folder)).filter(n=>n.endsWith('.sql')).sort();
+  const applied=(await pool.query('SELECT name,checksum FROM schema_migrations ORDER BY name')).rows;
+  if(applied.length!==names.length) throw new Error('Database migration version mismatch');
+  for(let i=0;i<names.length;i++){
+    const name=names[i]!;
+    const hash=createHash('sha256').update(await readFile(new URL(name,folder),'utf8')).digest('hex');
+    if(applied[i].name!==name || applied[i].checksum!==hash) throw new Error('Database migration checksum mismatch');
+  }
+}
+
+export async function migrate(pool: pg.Pool) {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    await client.query('SELECT pg_advisory_xact_lock(73180421)');
+    await client.query('CREATE TABLE IF NOT EXISTS schema_migrations (name text PRIMARY KEY, checksum text NOT NULL, applied_at timestamptz NOT NULL DEFAULT now())');
+    const folder = new URL('../migrations/', import.meta.url);
+    for (const name of (await readdir(folder)).filter(n => n.endsWith('.sql')).sort()) {
+      const sql = await readFile(new URL(name, folder), 'utf8');
+      const checksum = createHash('sha256').update(sql).digest('hex');
+      const applied = await client.query('SELECT checksum FROM schema_migrations WHERE name=$1', [name]);
+      if (applied.rows.length) {
+        if (applied.rows[0].checksum !== checksum) throw new Error(`Applied migration changed: ${name}`);
+        continue;
+      }
+      await client.query(sql);
+      await client.query('INSERT INTO schema_migrations(name, checksum) VALUES($1,$2)', [name, checksum]);
+    }
+    await client.query('COMMIT');
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally { client.release(); }
+}

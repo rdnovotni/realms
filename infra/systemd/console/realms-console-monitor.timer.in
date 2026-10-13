@@ -1,0 +1,9 @@
+[Unit]
+Description=Check Realms server health every minute
+[Timer]
+OnBootSec=45s
+OnUnitInactiveSec=60s
+AccuracySec=5s
+Unit=realms-console-monitor.service
+[Install]
+WantedBy=timers.target

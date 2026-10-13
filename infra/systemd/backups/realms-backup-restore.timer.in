@@ -1,0 +1,9 @@
+[Unit]
+Description=Weekly Realms restore rehearsal
+[Timer]
+OnCalendar=Sun *-*-* 03:30:00
+RandomizedDelaySec=10m
+Persistent=true
+Unit=realms-backup-restore.service
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,33 @@
+name: ${COMPOSE_PROJECT_NAME:?Unique project name required}
+services:
+  web:
+    image: python:3.13-alpine
+    user: "65534:65534"
+    command: [python, -m, http.server, "8080", --directory, /data]
+    ports: ["127.0.0.1:${HTTP_PORT:?Unique localhost port required}:8080"]
+    volumes: [data:/data:ro]
+    read_only: true
+    tmpfs: [/tmp:size=8m]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    networks: [private, frontend]
+    restart: unless-stopped
+    mem_limit: 96m
+    cpus: 0.25
+    pids_limit: 32
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/', timeout=2)"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+    logging:
+      driver: local
+      options: {max-size: "5m", max-file: "2"}
+networks:
+  frontend:
+    driver_opts: {com.docker.network.bridge.host_binding_ipv4: "127.0.0.1"}
+  private:
+    internal: true
+    driver_opts: {com.docker.network.bridge.host_binding_ipv4: "127.0.0.1"}
+volumes:
+  data: {}

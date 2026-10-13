@@ -1,0 +1,9 @@
+[Unit]
+Description=Realms backups four times daily
+[Timer]
+OnCalendar=*-*-* 00,06,12,18:20:00
+RandomizedDelaySec=5m
+Persistent=true
+Unit=realms-backup.service
+[Install]
+WantedBy=timers.target

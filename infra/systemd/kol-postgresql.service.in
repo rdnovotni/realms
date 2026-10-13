@@ -1,0 +1,27 @@
+[Unit]
+Description=KoL existing PostgreSQL cluster
+After=local-fs.target
+RequiresMountsFor="@PROJECT_DIR@"
+StartLimitIntervalSec=300
+StartLimitBurst=5
+
+[Service]
+Type=simple
+User=@RUN_USER@
+WorkingDirectory=@WORKING_DIR@
+Environment="REALMS_PROJECT_DIR=@PROJECT_DIR@"
+ExecStart=/usr/local/lib/kol-infra/run-existing-realms.sh db
+ExecStartPost=/usr/local/lib/kol-infra/run-existing-realms.sh db-ready
+Restart=on-failure
+RestartSec=10
+KillSignal=SIGINT
+KillMode=mixed
+TimeoutStartSec=180
+TimeoutStopSec=120
+UMask=0077
+NoNewPrivileges=true
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
