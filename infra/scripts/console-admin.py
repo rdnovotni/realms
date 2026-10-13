@@ -199,7 +199,7 @@ def monitor():
   print(json.dumps({'issues':len(active),'changes':len(changes),'at':status['captured_at']}),flush=True)
 
 RUNTIME=ROOT/'system-tools/console-runtime'
-RUNTIME_FILES=('console-admin.py','git_snapshot.py','releases.py','backend.py','cache-workers.py','postgresql.py','docker-projects.py')
+RUNTIME_FILES=('console-admin.py','git_snapshot.py','release_verification.py','releases.py','backend.py','cache-workers.py','postgresql.py','docker-projects.py')
 def runtime_copy(source,destination):
  destination.mkdir(mode=0o755)
  scripts=destination/'infra/scripts';scripts.mkdir(parents=True,mode=0o755)

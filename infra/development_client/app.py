@@ -174,14 +174,10 @@ class Studio:
   if model.head()!=sha or model.managed_changes():raise ValueError('Source differs from the tested build. Build and test a new checkpoint.')
   if not messagebox.askyesno('Publish approved update','Push this exact tested source to GitHub main, then deploy the matching build live? Public access briefly pauses. If deployment fails, GitHub may be ahead of live; both results are shown.'):return
   def run():
-   operations.admin_action('publish-preflight',{**payload,'source_commit':sha},self.emit)
-   model.record_publication(record['id'],sha,'github_push_started_live_not_started')
-   self.emit(model.push_master(sha));model.record_publication(record['id'],sha,'github_updated_live_pending');self.emit('GitHub phase completed; starting live deployment.')
-   try:
-    result=operations.admin_action('promote',{**payload,'approved':True},self.emit);model.record_publication(record['id'],sha,'github_and_live_completed');return result
-   except Exception as exc:
-    model.record_publication(record['id'],sha,'github_updated_live_needs_review')
-    raise RuntimeError('GitHub was updated, but live deployment did not finish. Keep the recorded commit and inspect Server Console; do not assume live changed. '+str(exc)) from exc
+   def push(commit):self.emit(model.push_master(commit));self.emit('GitHub phase completed; starting live deployment.')
+   return model.publish_tested(record['id'],sha,
+    lambda:operations.admin_action('publish-preflight',{**payload,'source_commit':sha},self.emit),
+    push,lambda:operations.admin_action('promote',{**payload,'approved':True},self.emit))
   self.work('Publish tested source and game',run,lambda _:self.status.set('GitHub and live deployment completed. Visit the website and test gameplay.'))
  def refresh_releases(self):
   status=operations.cache_status();records=status.get('releases',[]);prior=self.release.get();self.release_map={r['id']+' · '+r.get('label','Update'):r for r in records};self.release_picker['values']=tuple(self.release_map)

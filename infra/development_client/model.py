@@ -116,6 +116,22 @@ def save_package(package,path=CONTENT,expected_digest=None):
   if os.path.exists(temp):os.unlink(temp)
  return 'Content saved and validated. It is not active on a server yet.'
 
+def publish_tested(release,commit,preflight,push,promote):
+ # A failed or interrupted push must remain distinguishable from a completed push.
+ preflight()
+ record_publication(release,commit,'github_push_started_live_not_started')
+ try:push(commit)
+ except Exception:
+  record_publication(release,commit,'github_push_needs_review_live_not_started')
+  raise
+ record_publication(release,commit,'github_updated_live_pending')
+ try:result=promote()
+ except Exception as exc:
+  record_publication(release,commit,'github_updated_live_needs_review')
+  raise RuntimeError('GitHub was updated, but live deployment did not finish. Inspect the recorded image and Server Console before retrying; player data must not be rewound.') from exc
+ record_publication(release,commit,'github_and_live_completed')
+ return result
+
 def publication_history():
  try:return json.loads((ROOT/'.development/publications.json').read_text())
  except (OSError,ValueError):return []

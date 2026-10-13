@@ -28,13 +28,15 @@ bash scripts/database.sh restore-check .state/backups/NAME.dump
 
 ## Launch gates
 
+Current deployment evidence is maintained in the [development baseline](../../infra/docs/development-baseline.md). Older pass descriptions below record historical boundaries; actual public acceptance requires fresh evidence.
+
 | Gate | Current state | Required evidence |
 |---|---|---|
 | Launch feature coverage | Design-to-foundation map exists | Every launch feature mapped to schema, authority, lifetime, transaction and acceptance tests |
 | Integrity and currency batches | Migration 003 and services implemented | Replay, concurrency, rollback, ownership, upgrade, runtime permissions and live audit checks pass |
 | Real accounts and sessions | Enrolled passwords, scoped sessions, offline recovery and throttling | Public onboarding/contact policy, compromised-password filtering, stronger staff authentication and granular staff authority |
 | Production/staging separation | Private runtime excludes administration/test secrets and verifies SQL privileges | Separate deployment settings/data/OS identities/credentials; production excludes dev seeding |
-| Automated independent backups | Manual local dumps | Encryption, independent storage, retention, alerts and recovery objectives |
+| Automated independent backups | Encrypted USB snapshots, automatic timers and isolated restore checks implemented | Encryption, independent storage, retention, alerts and recovery objectives |
 | Point-in-time recovery | Not configured | Base backups and archived transaction logs; verified recovery to the intended transaction |
 | Recovery on another machine | Not exercised | Configuration/role recovery and application/gameplay/history verification |
 | Safe production migrations | Checksummed transactional migrations | Representative-data rehearsal, lock/downtime limits and server-version compatibility |
@@ -43,11 +45,11 @@ bash scripts/database.sh restore-check .state/backups/NAME.dump
 | Inventory/crafting | Custody, quantity ledger, split/merge, trivial recipe batches, durable item locks, equipment snapshots, opt-in account binding and protected saved loadouts | Full profession/station/quality recipes, broader automation protection and capacity rules, derived equipment stats, remaining binding policies, durability, upgrades and commissions |
 | Progression/Ascension | Reconciled XP history, pinned budgets, authored starting presets including Luck, explicit native class allocation, level-five subclass selection, authored feat/attribute milestones, run proficiency ranks, skill-rank feat/equipment gates and lifetime transition | Full class/subclass/feat gameplay, training/practice/check resolution, broader capability prerequisites, derived statistics, respec, special starts, mastery/Legacy, initiation eligibility, rewards and visible transition plan |
 | Quest/world consequences | Identity, lifecycle and scope primitives | Validated graphs, NPC memory, faction/world consequences and campaign records |
-| Dailies/effects | Rollover and worker primitives | Supervised scheduler/workers, banking, production and complete effect clocks |
+| Dailies/effects | Durable supervised scheduler/workers; daily policies remain unconfigured | Supervised scheduler/workers, banking, production and complete effect clocks |
 | Shared launch systems | Guild/event/instance primitives | Permissions, markets, claims and the social/game modules included at launch |
 | Supporter settlement | Currency definition | Verified receipts, idempotent grants, entitlements, reversals and reconciliation if purchases launch |
 | Administration/retention | Audits and permission probes | Compensating repairs, account export/redaction and safe receipt/history/job retention |
-| Availability/monitoring | Manually started local services | Reboot/restart supervision, patching, disk/lock/job/backup alerts and incident runbooks |
+| Availability/monitoring | Supervised native/container services and protected monitoring implemented; alert delivery remains pending | Reboot/restart supervision, patching, disk/lock/job/backup alerts and incident runbooks |
 | Performance/failure drills | Focused invariant tests | Representative data volumes, query plans, connection budgets, crash/restart and restore drills |
 
 ## Execution order

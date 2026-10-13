@@ -43,7 +43,7 @@ class OperationsTests(unittest.TestCase):
      self.assertTrue(all(call.args[0]=='kol-staging' for call in compose.call_args_list))
  def test_promote_passes_only_production_after_staging_smoke(self):
   with tempfile.TemporaryDirectory() as directory:
-   identifier='release-20261011T010000Z-abcdef12';folder=Path(directory)/identifier;folder.mkdir();record={'state':'staging_ready','image':'sealed','schema':[],'allow_migrations':False,'manual_test':{'image':'sealed','schema':[],'at':'2026-10-11T00:00:00+00:00'}};(folder/'release.json').write_text(json.dumps(record))
+   identifier='release-20261011T010000Z-abcdef12';folder=Path(directory)/identifier;folder.mkdir();record={'state':'staging_ready','image':'sealed','schema':[],'allow_migrations':False,'manual_test':{'image':'sealed','schema':[],'at':'2026-10-11T00:00:00+00:00'}};record.update(source_commit='a'*40,verification={'status':'passed','source_commit':'a'*40,'image':'sealed','schema':[],'checks':r.verification.CHECKS.copy()});(folder/'release.json').write_text(json.dumps(record))
    with patch.object(r,'STATE',Path(directory)),patch.object(r,'current_image',return_value='sealed'),patch.object(r,'schema',return_value=[]),patch.object(r.b,'smoke') as smoke,patch.object(r,'deploy_project') as deploy:
     r.promote(identifier,True);smoke.assert_called_once_with('kol-staging');self.assertEqual(deploy.call_args.args,('kol-production',record,'production'))
  def test_promotion_refuses_missing_manual_test_before_backup(self):
