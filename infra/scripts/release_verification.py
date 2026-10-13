@@ -11,10 +11,10 @@ def verify_checkpoint(context,commit,identifier,p,inspect):
  image=inspect('image',tag)
  if image['Config'].get('Labels',{}).get('org.opencontainers.image.revision')!=commit:
   raise RuntimeError('Verification image source label does not match the checkpoint')
- name='realms-verify-'+uuid.uuid4().hex;network=name+'-network';db=name+'-db';test=name+'-tests'
+ name='realms-verify-'+uuid.uuid4().hex;network=name+'-network';db=name+'-db';test=name+'-tests';volume=name+'-data'
  postgres=json.loads((context/'infra/container/images.lock.json').read_text())['postgres']
  if not re.fullmatch(r'postgres:[^@]+@sha256:[0-9a-f]{64}',postgres):raise ValueError('Pinned PostgreSQL image required')
- created_network=False;created_db=False;test_started=False
+ created_network=False;created_volume=False;created_db=False;test_started=False
  with tempfile.TemporaryDirectory(prefix='realms-verification-') as directory:
   password=secrets.token_hex(32)
   db_env=Path(directory)/'database.env';test_env=Path(directory)/'test.env'
@@ -23,10 +23,12 @@ def verify_checkpoint(context,commit,identifier,p,inspect):
    path.touch(mode=0o600);path.write_text(content)
   try:
    p.run(p.DOCKER+['network','create','--internal','--label','realms.release-verification=true',network]);created_network=True
+   created_volume=True
+   p.run(p.DOCKER+['volume','create','--label','realms.release-verification=true',volume])
    # Mark before invocation so interrupted Docker replies still get scoped cleanup.
    created_db=True
    p.run(p.DOCKER+['run','-d','--name',db,'--network',network,'--label','realms.release-verification=true',
-    '--env-file',str(db_env),'--tmpfs','/var/lib/postgresql:rw,size=1g','--memory','768m','--cpus','1',
+    '--env-file',str(db_env),'--mount','type=volume,source='+volume+',target=/var/lib/postgresql','--memory','768m','--cpus','1',
     '--pids-limit','256',postgres],timeout=180)
    for attempt in range(90):
     ready=subprocess.run(p.DOCKER+['exec',db,'pg_isready','-h','127.0.0.1','-U','realms','-d','realms_test'],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,timeout=10)
@@ -38,14 +40,20 @@ def verify_checkpoint(context,commit,identifier,p,inspect):
     '--env-file',str(test_env),'--memory','1g','--cpus','2','--pids-limit','256','--cap-drop','ALL',
     '--security-opt','no-new-privileges:true',image['Id']],timeout=1200)
    return {'status':'passed','source_commit':commit,'verification_image':image['Id'],'checks':CHECKS.copy()}
+  except Exception:
+   try:
+    state=inspect('container',db).get('State',{})
+    print('Disposable verification database:',json.dumps({k:state.get(k) for k in ('Status','ExitCode','OOMKilled')}),flush=True)
+   except Exception:pass
+   raise
   finally:
    failures=[]
-   for kind,resource,created in [('container',test,test_started),('container',db,created_db),('network',network,created_network)]:
+   for kind,resource,created in [('container',test,test_started),('container',db,created_db),('volume',volume,created_volume),('network',network,created_network)]:
     if not created:continue
     # A --rm test container may already be absent. Inspect before removing only our UUID resource.
     exists=subprocess.run(p.DOCKER+[kind,'inspect',resource],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,timeout=15)
     if exists.returncode==0:
-     command=p.DOCKER+(['rm','-f',resource] if kind=='container' else ['network','rm',resource])
+     command=p.DOCKER+(['rm','-f',resource] if kind=='container' else [kind,'rm',resource])
      if subprocess.run(command,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,timeout=30).returncode:failures.append(resource)
    if failures:raise RuntimeError('Verification resource cleanup failed; inspect the release-verification labels locally')
 

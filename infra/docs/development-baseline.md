@@ -38,7 +38,7 @@ The master authored package was empty. Fixtures may exist in separate databases;
 
 GitHub CI runs type checking, unit tests, content validation, all database integrations, worker/runtime integrations, infrastructure regressions and build. A second job exercises the actual release Docker verification path for its exact Git checkpoint. Database tests only accept `realms_test` and use disposable schemas. Optional desktop/Caddy/Compose/restore checks state their skips explicitly; CI success is not a live infrastructure acceptance claim.
 
-The release path freezes a recorded Git commit. Its verification image runs database integration, worker and runtime suites against a uniquely named PostgreSQL container on a new internal network, without published ports, live credentials, host database mounts or live network membership. PostgreSQL uses disposable tmpfs storage. Cleanup targets only the UUID resources created by that verification. The exact commit's typecheck/unit/content/build checks run during its image build.
+The release path freezes a recorded Git commit. Its verification image runs database integration, worker and runtime suites against a uniquely named PostgreSQL container on a new internal network, without published ports, live credentials, host database mounts or live network membership. PostgreSQL uses a dedicated disposable Docker volume so migration-generated WAL does not consume its memory budget. Cleanup targets only the UUID resources created by that verification. The exact commit's typecheck/unit/content/build checks run during its image build.
 
 The same path can be exercised without staging or deployment on a machine with authorized Docker access:
 

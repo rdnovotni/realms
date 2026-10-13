@@ -25,9 +25,9 @@ class VerificationTests(unittest.TestCase):
    with self.assertRaises(subprocess.CalledProcessError):v.verify_checkpoint(ROOT,'a'*40,'release-test',p,lambda *_:image)
   self.assertTrue(any('--internal' in x for x in calls))
   database=next(x for x in calls if 'run' in x and '-d' in x)
-  self.assertNotIn('-p',database);self.assertIn('--tmpfs',database)
+  self.assertNotIn('-p',database);self.assertIn('--mount',database);self.assertTrue(database[database.index('--mount')+1].startswith('type=volume,source=realms-verify-'))
   removed=[x[-1] for x in cleanup if 'rm' in x]
-  self.assertEqual(len(removed),3);self.assertTrue(all(x.startswith('realms-verify-') for x in removed))
+  self.assertEqual(len(removed),4);self.assertTrue(all(x.startswith('realms-verify-') for x in removed))
   self.assertFalse(any('kol-production' in str(x) or 'kol-staging' in str(x) for x in calls+cleanup))
  def test_wrong_source_label_refuses_database_creation(self):
   p=SimpleNamespace(DOCKER=['docker'],run=Mock())
