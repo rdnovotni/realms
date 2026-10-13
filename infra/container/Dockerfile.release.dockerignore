@@ -25,3 +25,9 @@
 **/node_modules/**
 **/secrets/**
 **/.git/**
+
+# Reviewed authored definitions, validation tooling and public test configuration.
+!realms/content/
+!realms/content/**
+!realms/scripts/content-check.ts
+!realms/.env.example
