@@ -95,7 +95,7 @@ test('retreat preserves committed Turn cost and permits a new encounter',async()
     await executeAction(pool,f.account,env(2),{},async c=>({...await beginEncounter(c,'encounter.test',{}),revision:await advanceRevision(c)}));
     assert.equal((await pool.query('SELECT turns FROM runs WHERE id=$1',[f.run])).rows[0].turns,1);
     await assert.rejects(pool.query('UPDATE encounter_records SET outcome=$1 WHERE instance_id=$2',['VICTORY',id]),/terminal/);
-    await assert.rejects(pool.query("UPDATE instances SET lifecycle='ACTIVE',revision=revision+1 WHERE id=$1",[id]),/immutable after resolution/);
+    await assert.rejects(pool.query("UPDATE instances SET lifecycle='ACTIVE',revision=revision+1 WHERE id=$1",[id]),/Terminal instances cannot be reopened/);
     await assert.rejects(pool.query('DELETE FROM encounter_records WHERE instance_id=$1',[id]),/cannot be deleted/);
   }finally{await db.close();}
 });
