@@ -26,7 +26,8 @@
     "test:runtime": "node --env-file=.env --import tsx --test test/backend-runtime.test.ts",
     "test:scheduler": "node --import tsx --test test/scheduler.test.ts",
     "test:ingress": "node --import tsx --test test/ingress.test.ts",
-    "content:check": "node --import tsx scripts/content-check.ts < content/game.json"
+    "content:check": "node --import tsx scripts/content-check.ts < content/game.json",
+    "features:check": "python3 ../infra/scripts/feature_registry.py"
   },
   "dependencies": {
     "@redis/client": "6.3.0",
