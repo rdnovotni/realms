@@ -148,6 +148,45 @@ CREATE FUNCTION inventory_load_at(target uuid,quantity_mark bigint,movement_mark
  JOIN content_versions v ON v.entity_id=i.definition_id AND v.revision=i.definition_revision
 $$;
 
+-- Rebuild the complete capacity vector from immutable build/choice/equipment
+-- history. Receipt revisions order choices across transactions without relying
+-- on transaction-start timestamps or today's projections.
+CREATE FUNCTION inventory_capacity_at(target uuid,pinned_release uuid,build_id uuid,equipment_id uuid,start_action uuid) RETURNS jsonb LANGUAGE sql STABLE AS $$
+ WITH start_receipt AS (SELECT (result->>'revision')::integer revision FROM action_receipts WHERE action_id=start_action),
+ owned AS (
+  SELECT e.entity_id,e.revision,NULL::text item_id,v.definition->'mechanics'->'inventoryCapacity' spec,(chosen->>'nativeLevel')::integer native_level
+  FROM run_build_events build JOIN action_receipts build_receipt ON build_receipt.action_id=build.action_id CROSS JOIN start_receipt
+  CROSS JOIN LATERAL jsonb_array_elements(build.after_state->'classes') chosen
+  JOIN release_entries e ON e.release_id=pinned_release AND e.entity_id=chosen->>'classId'
+  JOIN content_versions v ON v.entity_id=e.entity_id AND v.revision=e.revision
+  WHERE build.id=build_id AND build.run_id=target AND build.release_id=pinned_release AND (build_receipt.result->>'revision')::integer<start_receipt.revision
+  UNION ALL
+  SELECT e.entity_id,e.revision,NULL::text,v.definition->'mechanics'->'inventoryCapacity',0
+  FROM run_feat_choices choice JOIN action_receipts receipt ON receipt.action_id=choice.action_id CROSS JOIN start_receipt
+  JOIN release_entries e ON e.release_id=pinned_release AND e.entity_id=choice.feat_id AND e.revision=choice.feat_revision
+  JOIN content_versions v ON v.entity_id=e.entity_id AND v.revision=e.revision
+  WHERE choice.run_id=target AND (receipt.result->>'revision')::integer<start_receipt.revision
+  UNION ALL
+  SELECT e.entity_id,e.revision,NULL::text,v.definition->'mechanics'->'inventoryCapacity',0
+  FROM run_subclass_choices choice JOIN action_receipts receipt ON receipt.action_id=choice.action_id CROSS JOIN start_receipt
+  JOIN release_entries e ON e.release_id=pinned_release AND e.entity_id=choice.subclass_id AND e.revision=choice.subclass_revision
+  JOIN content_versions v ON v.entity_id=e.entity_id AND v.revision=e.revision
+  WHERE choice.run_id=target AND (receipt.result->>'revision')::integer<start_receipt.revision
+  UNION ALL
+  SELECT DISTINCT e.entity_id,e.revision,item.id::text,v.definition->'mechanics'->'inventoryCapacity',0
+  FROM equipment_events equipment JOIN action_receipts equipment_receipt ON equipment_receipt.action_id=equipment.action_id CROSS JOIN start_receipt
+  CROSS JOIN LATERAL jsonb_array_elements(equipment.after_state->'slots') slot
+  JOIN inventory_items item ON item.id=(slot->>'itemId')::uuid AND item.release_id=pinned_release
+  JOIN release_entries e ON e.release_id=pinned_release AND e.entity_id=item.definition_id AND e.revision=item.definition_revision
+  JOIN content_versions v ON v.entity_id=e.entity_id AND v.revision=e.revision
+  WHERE equipment.id=equipment_id AND equipment.run_id=target AND (equipment_receipt.result->>'revision')::integer<start_receipt.revision AND (slot->>'set'='WORN' OR slot->>'set'=equipment.after_state->>'activeSet')
+ )
+ SELECT coalesce(jsonb_agg(jsonb_strip_nulls(jsonb_build_object('id',entity_id,'revision',revision,'itemId',item_id,
+ 'name',(SELECT definition->>'name' FROM content_versions WHERE content_versions.entity_id=owned.entity_id AND content_versions.revision=owned.revision),
+ 'weight',spec->>'weight','bulk',spec->>'bulk')) ORDER BY entity_id COLLATE "C",item_id),'[]'::jsonb)
+ FROM owned WHERE spec IS NOT NULL AND native_level>=(spec->>'minimumNativeLevel')::integer
+$$;
+
 DO $$
 DECLARE definition text;
 BEGIN
@@ -156,6 +195,7 @@ BEGIN
  EXECUTE 'CREATE OR REPLACE VIEW character_snapshot_integrity_issues AS '||definition||$view$
  UNION
  SELECT snapshot.instance_id FROM character_encounter_snapshots snapshot
+ JOIN encounter_records started ON started.instance_id=snapshot.instance_id
  LEFT JOIN release_entries pin ON pin.release_id=snapshot.release_id AND pin.entity_id=snapshot.inputs->'inventory'->>'rulesId'
  LEFT JOIN content_versions rules ON rules.entity_id=pin.entity_id AND rules.revision=pin.revision
  WHERE snapshot.inputs ? 'inventory' AND (
@@ -164,6 +204,7 @@ BEGIN
   OR snapshot.inputs->'inventory'->'strength' IS DISTINCT FROM snapshot.inputs->'attributes'->'strength'
   OR inventory_load_at(snapshot.run_id,(snapshot.inputs->'inventory'->>'quantityWatermark')::bigint,(snapshot.inputs->'inventory'->>'movementWatermark')::bigint)
     IS DISTINCT FROM jsonb_build_object('weight',snapshot.inputs->'inventory'->>'weight','bulk',snapshot.inputs->'inventory'->>'bulk','unmeasuredItems',snapshot.inputs->'inventory'->'unmeasuredItems')
+  OR snapshot.inputs->'inventory'->'sources' IS DISTINCT FROM inventory_capacity_at(snapshot.run_id,snapshot.release_id,snapshot.build_event_id,snapshot.equipment_event_id,started.start_action_id)
   OR EXISTS(SELECT 1 FROM jsonb_array_elements(snapshot.inputs->'inventory'->'sources') source
    LEFT JOIN release_entries source_pin ON source_pin.release_id=snapshot.release_id AND source_pin.entity_id=source->>'id' AND source_pin.revision=(source->>'revision')::integer
    LEFT JOIN content_versions source_definition ON source_definition.entity_id=source_pin.entity_id AND source_definition.revision=source_pin.revision

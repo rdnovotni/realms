@@ -89,13 +89,14 @@ export function inventoryView(pool:pg.Pool,accountId:string,q:InventoryQuery={})
    SELECT *,count(*) OVER(PARTITION BY "definitionId") AS copies,
    (min("containerId"::text) OVER(PARTITION BY "definitionId")<>max("containerId"::text) OVER(PARTITION BY "definitionId")) AS "multipleLocations",
    (sum(quantity::numeric) OVER(PARTITION BY "definitionId"))::text AS "groupQuantity",
-   (sum("totalWeight"::numeric) OVER(PARTITION BY "definitionId"))::text AS "groupWeight",
-   (sum("totalBulk"::numeric) OVER(PARTITION BY "definitionId"))::text AS "groupBulk",
+   CASE WHEN count("totalWeight") OVER(PARTITION BY "definitionId")=count(*) OVER(PARTITION BY "definitionId") THEN (sum("totalWeight"::numeric) OVER(PARTITION BY "definitionId"))::text END AS "groupWeight",
+   CASE WHEN count("totalBulk") OVER(PARTITION BY "definitionId")=count(*) OVER(PARTITION BY "definitionId") THEN (sum("totalBulk"::numeric) OVER(PARTITION BY "definitionId"))::text END AS "groupBulk",
+   max(created_at) OVER(PARTITION BY "definitionId") AS "groupNewest",
    row_number() OVER(PARTITION BY "definitionId" ORDER BY name COLLATE "C",id) AS representative FROM filtered
   ),selected AS (SELECT * FROM numbered ${q.grouped?'WHERE representative=1':''})`;
-  const sortExpression=q.grouped&&q.sort==='QUANTITY'?'"groupQuantity"::numeric':q.grouped&&q.sort==='WEIGHT'?'"groupWeight"::numeric':q.grouped&&q.sort==='BULK'?'"groupBulk"::numeric':sorts[q.sort??'NAME'];
+  const sortExpression=q.grouped&&q.sort==='NEWEST'?'"groupNewest"':q.grouped&&q.sort==='QUANTITY'?'"groupQuantity"::numeric':q.grouped&&q.sort==='WEIGHT'?'"groupWeight"::numeric':q.grouped&&q.sort==='BULK'?'"groupBulk"::numeric':sorts[q.sort??'NAME'];
   const total=Number((await client.query(cte+' SELECT count(*)::integer AS total FROM selected',parameters)).rows[0].total);
-  const items=(await client.query(cte+` SELECT * FROM selected ORDER BY ${sortExpression} ${q.direction??'ASC'} NULLS LAST,id LIMIT ${inventoryPageSize} OFFSET ${q.offset??0}`,parameters)).rows.map(({representative,created_at,runId,...item})=>({...item,copies:Number(item.copies)}));
+  const items=(await client.query(cte+` SELECT * FROM selected ORDER BY ${sortExpression} ${q.direction??'ASC'} NULLS LAST,id LIMIT ${inventoryPageSize} OFFSET ${q.offset??0}`,parameters)).rows.map(({representative,created_at,groupNewest,runId,...item})=>({...item,copies:Number(item.copies)}));
   const preferences=await inventoryPreferences(client,accountId);
   return {revision:run.revision,runId:run.id,items,total,offset:q.offset??0,pageSize:inventoryPageSize,containers:containers.slice(0,200),hasMoreContainers:containers.length>200,carry:publicCarryLoad(await carryLoad(client,run.id)),preferences:preferences.value};
  });
