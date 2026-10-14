@@ -117,7 +117,7 @@ test('capacity counts an active physical item once and refuses unmeasured opted-
   p.entities.push({...structuredClone(inventoryPackage().entities[0]!),id:'item.old',definition:{name:'Unmeasured old item',dependencies:[],public:{},mechanics:{inventory:{version:1,storageMode:'STACK',category:'MATERIAL'}}}});
   const f=await tacticalFixture(db.pool,p);
   await setEquipment(db.pool,f.account,envelope(f.revision,'SET_EQUIPMENT'),{activeSet:'A',slots:[{set:'A',slot:'MAIN_HAND',itemId:f.gear.sword!},{set:'B',slot:'MAIN_HAND',itemId:f.gear.sword!},{set:'B',slot:'OFF_HAND',itemId:f.gear.shield!}]});
-  let page=await inventoryView(db.pool,f.account);assert.equal(page.carry.weightCapacity,'52');assert.equal(page.carry.sources.length,1);assert.equal(page.carry.sources[0].itemId,f.gear.sword);
+  let page=await inventoryView(db.pool,f.account);assert.equal(page.carry.weightCapacity,'52');assert.equal(page.carry.sources.length,1);assert.equal(page.carry.sources[0]!.itemId,f.gear.sword);
   const container=page.items[0].containerId;
   let old='';await executeAction(db.pool,f.account,envelope(f.revision+1,'INVENTORY_FIXTURE'),{},async c=>{old=(await grantItem(c,'old',{containerId:container,definitionId:'item.old',quantity:'1',sourceCode:'FIXTURE'},'Unmeasured test')).itemId;return {revision:await advanceRevision(c)};});
   page=await inventoryView(db.pool,f.account);assert.equal(page.carry.state,'UNMEASURED');assert.equal(page.carry.unmeasuredItems,1);
