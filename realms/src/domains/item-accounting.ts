@@ -1,3 +1,4 @@
+import { requireFeature } from '../rules/controls.js';
 import { randomUUID } from 'node:crypto';
 import type pg from 'pg';
 import { DomainError } from '../foundation/errors.js';
@@ -56,6 +57,7 @@ export type ItemGrant={containerId:string;definitionId:string;quantity:string;qu
 // Internal reward/crafting API. The calling domain must validate entitlement,
 // ingredients, Turn costs and outcomes before issuing its authoritative plan.
 export async function grantItem(context:ActionContext,key:string,input:ItemGrant,reason:string){
+  await requireFeature(context.client,'rewards.global',context.accountId);
   const grant=structuredClone(input);operation(key,reason);const amount=quantity(grant.quantity);
   if(!/^[a-z][a-z0-9_.-]{2,119}$/.test(grant.definitionId) || grant.sourceCode.trim().length<1 || grant.sourceCode.length>200 ||
     !/^(?:0|[1-9][0-9]{0,7})(?:\.[0-9]{1,4})?$/.test(grant.quality??'1') || Number(grant.quality??'1')<=0 ||

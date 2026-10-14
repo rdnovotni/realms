@@ -1,3 +1,4 @@
+import { requireFeature } from '../rules/controls.js';
 import { randomUUID } from 'node:crypto';
 import type { ActionContext } from '../foundation/action.js';
 import { DomainError } from '../foundation/errors.js';
@@ -27,6 +28,7 @@ export async function postTransfers(context:ActionContext,input:readonly Transfe
     WHERE w.id=ANY($1::uuid[]) ORDER BY w.id FOR UPDATE OF w FOR SHARE OF s`,[ids]);
   if(locked.rows.length!==ids.length || locked.rows.some(w=>w.lifecycle!=='ACTIVE'))throw new DomainError(409,'INVALID_TRANSFER_WALLET');
   const wallets=new Map(locked.rows.map(w=>[w.id,{currency:w.currency_id as string,purpose:w.purpose as string,balance:BigInt(w.balance)}]));
+  if(legs.some(leg=>wallets.get(leg.from)?.purpose==='FAUCET_SINK'))await requireFeature(context.client,'rewards.global',context.accountId);
   // Leg order is semantic: escrow must be funded before its payout legs. Simulate the
   // complete plan first, including int64 bounds, before issuing the first INSERT.
   for(const leg of legs){

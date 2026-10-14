@@ -1,3 +1,4 @@
+import { requireEntityPrerequisite } from '../rules/requirements.js';
 import type pg from 'pg';
 import { executeAction,advanceRevision,type ActionContext,type Envelope } from '../foundation/action.js';
 import { checksum } from '../foundation/json.js';
@@ -29,6 +30,7 @@ export async function applyEquipment(c:ActionContext,input:EquipmentPlan){
  for(const slot of plan.slots){const item=items.find(i=>i.id===slot.itemId);
  if(!item||item.run_id!==c.run.id||item.lifecycle!=='ACTIVE'||item.kind!=='CARRIED')throw new DomainError(403,'EQUIPMENT_NOT_OWNED');
  if(item.quantity!=='1'||item.storage_mode!=='INSTANCE'||item.release_id!==c.run.content_release_id||item.binding==='SYSTEM_UNTRADEABLE')throw new DomainError(409,'EQUIPMENT_INELIGIBLE');
+ await requireEntityPrerequisite(c,item.definition_id);
  const spec=equipmentSpec(item.spec);if(!spec.slots.includes(slot.slot)||!level||level<spec.minimumLevel)throw new DomainError(409,'EQUIPMENT_REQUIREMENT_NOT_MET');
  if(item.proficiency_requirements!==null && !(await c.client.query('SELECT proficiency_requirements_met($1,$2) AS ok',[c.run.id,item.proficiency_requirements])).rows[0].ok)throw new DomainError(409,'EQUIPMENT_PROFICIENCY_NOT_MET');
  const repeats=plan.slots.filter(s=>s.itemId===slot.itemId);if(repeats.length>1&&(repeats.some(s=>s.set==='WORN')||new Set(repeats.map(s=>s.set)).size!==repeats.length||new Set(repeats.map(s=>s.slot)).size!==1))throw new DomainError(409,'EQUIPMENT_DUPLICATE_IDENTITY');

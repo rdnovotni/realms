@@ -1,3 +1,4 @@
+import { validateSharedContent } from '../rules/content.js';
 import type { DisposableCache } from '../cache.js';
 import { validateCompanionContent } from './tactical-companions.js';
 import { validateTechniqueContent } from './tactical-techniques.js';
@@ -48,6 +49,7 @@ const validate = ajv.compile({ type:'object',additionalProperties:false,required
 export function validateContent(input:unknown): asserts input is ContentPackage {
   if (!validate(input)) throw new DomainError(400,'INVALID_CONTENT_PACKAGE');
   const pkg=input as ContentPackage, entities=new Map(pkg.entities.map(e=>[e.id,e]));
+  validateSharedContent(entities);
   validateFeatContent(entities);
   validateEffectFamilies(entities);
   validateProficiencyContent(entities);

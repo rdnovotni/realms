@@ -3,7 +3,7 @@ import type pg from 'pg';
 /** Explicit native-field manifest. Policies document the existing domain handlers;
  * generic scoped fields execute their immutable registered Ascension policy.
  * New tables/columns in the owned-state boundary require a reviewed manifest update. */
-export const lifetimeRoots=["accounts", "characters", "runs", "state_scopes", "state_contracts", "scoped_state", "run_progression", "run_consumption", "inventory_items", "inventory_containers", "wallets", "discoveries", "resource_pools", "effect_instances", "instances", "guilds", "guild_members", "world_events", "worlds"];
+export const lifetimeRoots=["accounts", "characters", "runs", "state_scopes", "state_contracts", "scoped_state", "run_progression", "run_consumption", "inventory_items", "inventory_containers", "wallets", "discoveries", "resource_pools", "effect_instances", "instances", "guilds", "guild_members", "world_events", "worlds", "feature_controls", "feature_control_events", "release_adoptions"];
 export const lifetimeFields=[
   {
     "table": "accounts",
@@ -829,12 +829,77 @@ export const lifetimeFields=[
       "name": "KEEP"
     },
     "reason": "Independent shared world lifetime."
-  }
+  },
+{
+  "table": "shared_rules_state",
+  "scope": "RUN",
+  "fields": {
+    "run_id": "ARCHIVE",
+    "revision": "ARCHIVE",
+    "state": "ARCHIVE"
+  },
+  "reason": "New lives start fresh; archived effects and clocks retain action provenance."
+},
+{
+  "table": "shared_rules_events",
+  "scope": "RUN",
+  "fields": {
+    "action_id": "ARCHIVE",
+    "run_id": "ARCHIVE",
+    "release_id": "ARCHIVE",
+    "entity_id": "ARCHIVE",
+    "entity_revision": "ARCHIVE",
+    "seed": "ARCHIVE",
+    "state_revision": "ARCHIVE",
+    "evidence": "ARCHIVE",
+    "before_state": "ARCHIVE",
+    "after_state": "ARCHIVE"
+  },
+  "reason": "Immutable checks, costs, clock boundaries, effects and rewards retained as history."
+},
+{
+  "table": "feature_controls",
+  "scope": "WORLD",
+  "fields": {
+    "key": "KEEP",
+    "taxonomy": "KEEP",
+    "mode": "KEEP",
+    "cohort_percent": "KEEP",
+    "revision": "KEEP",
+    "reason": "KEEP"
+  },
+  "reason": "Server-owned controls survive lives."
+},
+{
+  "table": "feature_control_events",
+  "scope": "WORLD",
+  "fields": {
+    "id": "KEEP",
+    "key": "KEEP",
+    "operator": "KEEP",
+    "before_state": "KEEP",
+    "after_state": "KEEP",
+    "changed_at": "KEEP"
+  },
+  "reason": "Immutable operator audit history."
+},
+{
+  "table": "release_adoptions",
+  "scope": "WORLD",
+  "fields": {
+    "release_id": "KEEP",
+    "new_runs": "KEEP",
+    "compatibility": "KEEP",
+    "reason": "KEEP",
+    "approved_at": "KEEP"
+  },
+  "reason": "Reviewed new-run adoption; existing snapshots remain pinned."
+}
 ] as const;
 
 export async function assertLifetimeFields(client:Pick<pg.PoolClient,'query'>){
  const rows=(await client.query(`SELECT c.table_name,array_agg(c.column_name::text ORDER BY c.ordinal_position) AS fields FROM information_schema.columns c JOIN information_schema.tables t ON t.table_schema=c.table_schema AND t.table_name=c.table_name AND t.table_type='BASE TABLE' WHERE c.table_schema=current_schema() AND (c.table_name=ANY($1::text[]) OR c.table_name IN(SELECT table_name FROM information_schema.columns WHERE table_schema=current_schema() AND column_name='run_id')) GROUP BY c.table_name ORDER BY c.table_name`,[lifetimeRoots])).rows;
- const expected=lifetimeFields.map(t=>({table_name:t.table,fields:Object.keys(t.fields).sort()}));
+ const expected=lifetimeFields.map(t=>({table_name:t.table,fields:Object.keys(t.fields).sort()})).sort((a,b)=>a.table_name<b.table_name?-1:1);
  const actual=rows.map(r=>({table_name:r.table_name,fields:[...r.fields].sort()}));
  if(JSON.stringify(actual)!==JSON.stringify(expected))throw new Error('Owned-state field coverage changed; review the lifetime manifest');
 }

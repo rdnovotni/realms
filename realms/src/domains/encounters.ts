@@ -1,3 +1,5 @@
+import { requireFeature } from '../rules/controls.js';
+import { requireEntityPrerequisite } from '../rules/requirements.js';
 import { randomBytes,randomUUID } from 'node:crypto';
 import type { ActionContext } from '../foundation/action.js';
 import { requireActive } from '../foundation/action.js';
@@ -33,6 +35,7 @@ export async function beginEncounter(context:ActionContext,definitionId:string,i
     JOIN content_versions v ON v.entity_id=e.entity_id AND v.revision=e.revision
     WHERE e.release_id=$1 AND e.entity_id=$2`,[context.run.content_release_id,definitionId])).rows[0];
   if(!content) throw new DomainError(409,'ENCOUNTER_NOT_IN_RULES_SNAPSHOT');
+  await requireEntityPrerequisite(context,definitionId);await requireFeature(context.client,`content.${definitionId}`,context.accountId);
   validateEncounterSpec(content.spec);
   if((await context.client.query(`SELECT 1 FROM instance_participants p JOIN instances i ON i.id=p.instance_id
     WHERE p.run_id=$1 AND i.lifecycle='ACTIVE' AND i.kind IN('ENCOUNTER','COMBAT')`,[context.run.id])).rows.length) throw new DomainError(409,'ENCOUNTER_ALREADY_OPEN');
@@ -88,6 +91,7 @@ export async function finishEncounter(context:ActionContext,instanceId:string,ex
   if(row.revision!==expectedRevision) throw new DomainError(409,'STALE_ENCOUNTER_REVISION');
   // The callback uses this same client for inventory/currency/quest/defeat writes.
   // A failure rolls back the outcome, draws, rewards, receipt and entire Action.
+  if(outcome==='VICTORY')await requireFeature(context.client,'rewards.global',context.accountId,true);
   const settlement=object(await settle(context));
   await context.client.query(`UPDATE encounter_records SET outcome=$2,settlement=$3,finish_action_id=$4,finished_at=now(),revision=revision+1 WHERE instance_id=$1`,[row.instance_id,outcome,settlement,context.actionId]);
   await context.client.query("UPDATE instances SET lifecycle='RESOLVED',revision=revision+1 WHERE id=$1",[row.instance_id]);

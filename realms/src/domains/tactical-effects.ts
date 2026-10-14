@@ -1,3 +1,4 @@
+import { durationRemaining } from '../rules/clocks.js';
 import { immuneStatus,type StatusProfile,type StatusEvent } from './tactical-status.js';
 import type { RemovalSpec } from './tactical-cleansing.js';
 import { Ajv } from 'ajv';
@@ -156,7 +157,7 @@ export function pulseRoundEffects(owner:{id:string;side:'PARTY'|'ENEMY';stats:Ch
 export function decayBuildups(owner:{id:string;buildups?:Record<string,BuildupState>}){return Object.entries(owner.buildups??{}).map(([family,b])=>{const before=b.value;b.value=Math.max(0,b.value-b.decay);return {ownerId:owner.id,family,before,after:b.value,breaks:b.breaks};});}
 export function tickRoundEffects(owner:{id:string;effects?:ActiveRoundEffect[]}) {
  const events:EffectEvent[]=[];
- for(const e of owner.effects??[]){if(e.effect.clock!=='ROUNDS')continue;e.remaining--;events.push(event(e.remaining===0?'EXPIRED':'TICKED',owner.id,e));}
+ for(const e of owner.effects??[]){if(e.effect.clock!=='ROUNDS')continue;e.remaining=durationRemaining(e.remaining,1);events.push(event(e.remaining===0?'EXPIRED':'TICKED',owner.id,e));}
  if(owner.effects)owner.effects=owner.effects.filter(e=>e.remaining>0);
  return events;
 }

@@ -1,3 +1,4 @@
+import { requireEntityPrerequisite } from '../rules/requirements.js';
 import type pg from 'pg';
 import { executeAction,advanceRevision,type Envelope } from '../foundation/action.js';
 import { DomainError } from '../foundation/errors.js';
@@ -9,6 +10,7 @@ function explicit(envelope:Envelope,type:string,classId:string) {
 function record(pool:pg.Pool,accountId:string,envelope:Envelope,classId:string,presetKey:string|null) {
   return executeAction(pool,accountId,envelope,{classId,presetKey},async c=>{
     if((await c.client.query("SELECT 1 FROM instance_participants p JOIN instances i ON i.id=p.instance_id WHERE p.run_id=$1 AND i.lifecycle='ACTIVE' LIMIT 1",[c.run.id])).rows.length) throw new DomainError(409,'INSTANCE_STILL_ACTIVE');
+    await requireEntityPrerequisite(c,classId);
     // SQL derives the content pins, exact transition, XP snapshot and projections.
     // The client supplies one class choice and (on first setup only) a preset key.
     let row;

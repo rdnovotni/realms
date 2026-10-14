@@ -17,6 +17,8 @@ export async function provisionRole(client: pg.PoolClient, password: string, opt
     GRANT INSERT,UPDATE ON accounts,characters,runs,state_scopes,run_progression,run_class_levels,resource_pools,run_consumption,
       inventory_containers,inventory_items,wallets,discoveries,quest_states,effect_instances,instances,instance_participants,
       guilds,guild_members,world_events,scoped_state,outbox_events,durable_jobs TO realms_app;
+    GRANT INSERT ON shared_rules_events TO realms_app;
+    GRANT INSERT,UPDATE ON shared_rules_state TO realms_app;
     GRANT INSERT ON action_receipts,turn_ledger,currency_transfers,inventory_movements,inventory_quantity_operations,run_history,audit_events,run_rollovers TO realms_app;
     REVOKE UPDATE ON accounts FROM realms_app;
     GRANT UPDATE(security_epoch) ON accounts TO realms_app;

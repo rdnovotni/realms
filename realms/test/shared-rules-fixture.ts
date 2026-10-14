@@ -1,0 +1,12 @@
+import type { SharedCheck } from '../src/rules/checks.js';
+import type { EffectSpec } from '../src/rules/effects.js';
+import type { ContentPackage } from '../src/domains/content.js';
+import type { RuleAction } from '../src/rules/content.js';
+export const check:SharedCheck={version:2,attribute:'attribute.strength',skill:null,difficulty:12,minimumRank:0,attributeBaseline:10,attributeDivisor:2,rankBonuses:[0,2,4,6,8,10],partialMargin:-2,exceptionalMargin:5,criticalFailureMargin:-8,naturalShift:true,possibility:'ROLL',advantage:false,disadvantage:false,mode:'ACTIVE',visibility:'KNOWN'};
+export const effect:EffectSpec={version:1,family:'effect.focus',clock:'ADVENTURE_TURNS',duration:2,stacking:'REFRESH',maximumStacks:3,maximumMagnitude:5,maximumDuration:10,magnitude:1,tags:['effect.beneficial'],modifiers:[{key:'check.general',amount:2}],capabilities:[],removal:{method:'DISPEL',difficulty:1},triggers:[]};
+export const spec=(domain:'COMBAT'|'INTERACTION'):RuleAction=>({version:1,domain,prerequisite:{op:'FACT',key:'level',test:'GTE',value:1},check:{...check,difficulty:1,naturalShift:false},costs:{turns:1,worldTime:5,gold:domain==='COMBAT'?'1':'0',resources:[{key:'resource.energy',amount:1}],rest:'NONE'},rewards:[{kind:'GOLD',id:'GOLD',quantity:2},{kind:'ITEM',id:'item.test',quantity:1},{kind:'KNOWLEDGE',id:'lore.test',quantity:1}],effects:['effect.focus'],retry:'NEVER',retryTime:0,remove:null});
+export function fixturePackage():ContentPackage{return {version:'shared-fixture',engineVersion:'foundation-1',entities:[
+ {id:'item.test',kind:'ITEM',revision:1,schemaVersion:1,definition:{name:'Test item',dependencies:[],public:{},mechanics:{inventory:{version:1,storageMode:'STACK',category:'MATERIAL'}}}},
+ {id:'lore.test',kind:'LORE',revision:1,schemaVersion:1,definition:{name:'Test fact',dependencies:[],public:{}}},
+ {id:'effect.focus',kind:'EFFECT',revision:1,schemaVersion:1,definition:{name:'Test focus',dependencies:[],public:{},mechanics:{sharedEffect:effect as any}}},
+ ...(['COMBAT','INTERACTION'] as const).map(domain=>({id:domain==='COMBAT'?'encounter.test':'activity.test',kind:domain==='COMBAT'?'ENCOUNTER' as const:'ACTIVITY' as const,revision:1,schemaVersion:1,definition:{name:'Test action',dependencies:['item.test','lore.test','effect.focus'],public:{},mechanics:{sharedAction:spec(domain) as any,...(domain==='COMBAT'?{encounter:{version:1,turnCost:1}}:{})}}}))]};}
