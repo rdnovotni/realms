@@ -1,6 +1,8 @@
-# Realms Development Studio
+# Follybound Development Studio
 
-Development Studio is the desktop authoring app. Server Console remains the operations app. Launch **Realms Development Studio** from the Ubuntu application menu, or run `bash /srv/Realms/source/infra/scripts/development-studio.sh` as your desktop user.
+[Operations map](README.md) · [Current source status](../../realms/docs/implementation-status.md) · [Branding compatibility](../../realms/docs/branding-and-pages.md)
+
+Development Studio is the desktop authoring app. Server Console remains the operations app. Launch **Follybound Development Studio** from the Ubuntu application menu, or run `bash /srv/Realms/source/infra/scripts/development-studio.sh` as your desktop user.
 
 ## One master source
 

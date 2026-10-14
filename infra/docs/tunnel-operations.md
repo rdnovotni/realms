@@ -1,5 +1,7 @@
 # INFRA-009 — Caddy and Cloudflare Tunnel
 
+[Operations map](README.md) · [Current source status](../../realms/docs/implementation-status.md) · [Branding compatibility](../../realms/docs/branding-and-pages.md)
+
 Implementation is prepared; public deployment is not activated. Actual domain, locally managed tunnel UUID and credentials must come from the operator. DNS creation and public tunnel startup require separate explicit approval. This ticket does not migrate the native authoritative database or configure gameplay awards.
 
 ## Design and boundaries

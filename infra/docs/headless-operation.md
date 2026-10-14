@@ -1,5 +1,7 @@
 # INFRA-002 — Ubuntu 24/7 operation
 
+[Operations map](README.md) · [Current source status](../../realms/docs/implementation-status.md) · [Branding compatibility](../../realms/docs/branding-and-pages.md)
+
 Status: **host profile applied successfully by the operator; all automated checks passed**. Evidence is the operator-supplied apply and validation transcript (local timestamp 2026-10-10 21:33). A private rollback snapshot was created under the documented root-owned snapshot directory. No reboot, service handoff or graphical target change was performed by the profile. Ubuntu and its desktop remain installed. The operator subsequently completed the game/database system-service handoff: both units passed active/enabled checks and the health endpoint returned ready. Logout/reboot survival and firmware recovery remain pending. No AGENTS.md was found in the workspace search; INFRA-001 contains the broader instruction search record.
 
 ## Baseline observations before application

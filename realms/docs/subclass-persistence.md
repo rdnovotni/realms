@@ -1,5 +1,9 @@
 # Native subclass selection
 
+[Documentation map](README.md) · [Current status](implementation-status.md) · [Migration map](migration-guide.md)
+
+This guide records the owning feature’s implementation checkpoint. Table counts, dated checks and “remaining” notes refer to that checkpoint; newer combat, Ascension and shared-rule work is summarized in the current status.
+
 Migration 016 persists one explicit subclass choice per native class per run, using immutable `run_subclass_choices` records and reconciled `run_subclasses` projections. The two new tables bring the private foundation to 75 tables. The subclass roster and gameplay packages remain deliberately deferred by System 43; this milestone adds their selection framework without inventing production content.
 
 ## Authored contract

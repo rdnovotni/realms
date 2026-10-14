@@ -1,5 +1,7 @@
 # INFRA-004: Docker and multiple projects
 
+[Operations map](README.md) · [Current source status](../../realms/docs/implementation-status.md) · [Branding compatibility](../../realms/docs/branding-and-pages.md)
+
 ## Current evidence and limits
 
 No applicable `AGENTS.md` was found in the repository or its inspected parent directories.
@@ -134,10 +136,10 @@ For per-project rollback, stop that project's containers and restore its previou
 
 ## PostgreSQL follow-up
 
-INFRA-005 extends the KoL template with immutable image references, distinct database names, migration credentials, administrative bootstrap, and database acceptance tooling. Existing legacy deployments should use `scripts/postgresql.py deploy`, which upgrades recognized staged configuration without importing native data, rather than refreshing the new template before its database identity/secret preflight. See [PostgreSQL operations](postgresql-operations.md) for current verified/pending status and authority cutover. The generic `init` now creates the required DB identity and migration secret for new projects.
+INFRA-005 extends the Follybound template with immutable image references, distinct database names, migration credentials, administrative bootstrap, and database acceptance tooling. Existing legacy deployments should use `scripts/postgresql.py deploy`, which upgrades recognized staged configuration without importing native data, rather than refreshing the new template before its database identity/secret preflight. See [PostgreSQL operations](postgresql-operations.md) for current verified/pending status and authority cutover. The generic `init` now creates the required DB identity and migration secret for new projects.
 
 ## Cache and durable worker extension (INFRA-006)
 
-KoL stacks now include independent disposable Valkey instances and PostgreSQL-backed workers in the source templates. Updating a template alone does not deploy them or apply migration 028. Use `sudo python3 scripts/cache-workers.py deploy` from `infra/` for backed-up, ordered migration and acceptance. See [cache and worker operations](cache-worker-operations.md), including failure tests and the separate reboot check.
+Follybound stacks now include independent disposable Valkey instances and PostgreSQL-backed workers in the source templates. Updating a template alone does not deploy them or apply migration 028. Use `sudo python3 scripts/cache-workers.py deploy` from `infra/` for backed-up, ordered migration and acceptance. See [cache and worker operations](cache-worker-operations.md), including failure tests and the separate reboot check.
 
 Backend releases and dependency recovery checks are documented in [backend-deployment.md](backend-deployment.md). Use that staging-first release workflow after INFRA-005/006; it scopes template updates to the two game projects.

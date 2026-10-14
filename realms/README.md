@@ -1,12 +1,14 @@
-# Realms
+# Follybound game source
+
+Start with the [documentation map](docs/README.md), [current status](docs/implementation-status.md), [feature-first roadmap](docs/feature-roadmap.md), [API reference](docs/api-reference.md) and [migration map](docs/migration-guide.md). The guides distinguish source implementation from activation.
 
 Release implementation follows the [eight-pass plan](docs/eight-pass-release-plan.md), starting with combat and character mechanics. Pass 1 is complete; see [saved tactical combat](docs/tactical-engine.md) and [release plan](docs/eight-pass-release-plan.md).
 
-Private development foundation for KoL 2.0: a TypeScript/Fastify server and PostgreSQL persistence on Ubuntu. The shared database and server foundation is implemented and tested. A first playable browser client now connects character setup, saved tactical combat, rewards and recovery. See [game client foundation](docs/game-client.md) for setup and the disposable local playtest. See [database foundation](docs/database-foundation.md) for the schema, invariants, and implementation boundaries.
+Private development foundation for Follybound: a TypeScript/Fastify server and PostgreSQL persistence on Ubuntu. The shared database and server foundation is implemented and tested. A first playable browser client now connects character setup, saved tactical combat, rewards and recovery. See [game client foundation](docs/game-client.md) for setup and the disposable local playtest. See [database foundation](docs/database-foundation.md) for the schema, invariants, and implementation boundaries.
 
 ## Legacy native development runtime
 
-The original native runtime lives at `/srv/Realms/native/realms`; its Node/PostgreSQL tools and private data are separate from `/srv/Realms/source`. The commands below apply to that native checkout. Public production and staging use the managed container workflow described in the [development baseline](../infra/docs/development-baseline.md).
+The original native runtime lives at `/srv/Realms/native/realms`; its Node/PostgreSQL tools and private data are separate from `/srv/Realms/source`. The lifecycle commands below apply to that native checkout; do not invoke them from an isolated source clone expecting a private preview. Public production and staging use the managed container workflow described in the [development baseline](../infra/docs/development-baseline.md).
 
 ```bash
 bash scripts/install-local.sh
@@ -39,12 +41,12 @@ Integration tests only accept the separate `realms_test` database. Each suite cr
 
 The same checks run on GitHub-hosted runners with an isolated PostgreSQL service. The workflow does not deploy to this workstation.
 
-## Prototype API
+## API orientation (selected routes)
 
 - `GET /health/live`: application liveness.
 - `GET /health/ready`: exact migration version and checksum compatibility.
 - `POST /api/v1/combat/start`, `POST /api/v1/combat/actions`, `GET /api/v1/combat/:id`: opted-in authored basic solo combat; clients submit intents, never outcomes or rewards.
-- `POST /api/v1/ascend`: authenticated, eligibility-checked run transition. See [basic combat and campaign completion](docs/basic-combat-loop.md).
+- `GET /api/v1/ascend/preview` and `POST /api/v1/ascend`: authenticated, eligibility-checked keyed preview/confirmation, with optional reviewed next-release adoption. See [Ascension lifetimes](docs/ascension-reset-contracts.md).
 - `GET /api/v1/instances/:id`: authenticated participant view; excludes seeds and internal state.
 - `GET /api/v1/content/:release/:entity`: authenticated, discovery-filtered view within an account’s run snapshots.
 - `GET` and `POST /api/v1/progression/attributes`: effective scores and authored earned point allocations. See [attribute milestones](docs/attribute-milestones.md).
@@ -53,7 +55,7 @@ The same checks run on GitHub-hosted runners with an isolated PostgreSQL service
 - `GET /api/v1/progression/options`: discovered starting classes and authored presets.
 - `POST /api/v1/progression/start` and `/api/v1/progression/level`: explicit starting setup and earned class-level choices. See [class progression](docs/run-class-progression.md).
 - `GET /api/v1/progression`: authenticated current-run XP, committed level and pending level readiness; no reward-write endpoint. See [encounter XP](docs/encounter-xp-persistence.md).
-- `GET /api/v1/state`: current development run; requires `Authorization: Bearer <DEV_API_TOKEN>`.
+- `GET /api/v1/state`: current run; uses configured session or private development authentication. [API reference](docs/api-reference.md) inventories the complete current route surface, including shared rules and tactical/shared combat.
 - `POST /api/v1/actions`: authenticated prototype `SPEND_TURNS` action.
 
 ```json
@@ -81,13 +83,13 @@ Domain services implement sealed content publication, explicit state contracts, 
 
 Development proceeds through remaining reusable feature frameworks with small test fixtures before production content authoring. Complete progression/Ascension, quests/world, daily systems and client integration next; session authentication and operator/authoring tools already exist. See the development baseline for verification and remaining access/release gates. The client can use the same protocol from native desktop, browser, or mobile implementations.
 
-The supplied design documents remain outside this repository in the ChatGPT project reference mirror. Systems 23 and 46 govern the shared architecture; each gameplay module will add versioned migrations and validate its own mechanics.
+Original synced design documents remain read-only in the ChatGPT project reference mirror. The repository also retains a checksummed historical design index and implementation overlay under `design/`. Systems 23 and 46 govern the shared architecture; each gameplay module will add versioned migrations and validate its own mechanics.
 
 Routine trivial processing recipes now have atomic batches, binding preservation and ledger-linked history. See [routine crafting](docs/routine-crafting.md) for the supported policy and remaining crafting release work.
 
 Durable player item locks block consumption, crafting and stack transfers and survive storage/Ascension. See [item protection](docs/item-locks.md) for authority, history and remaining protection rules.
 
-Equipment snapshots now persist worn slots and two prepared weapon sets, protect equipped items and clear safely during Ascension. See [equipment persistence](docs/equipment-persistence.md) for the supported rules and remaining combat integration.
+Equipment snapshots now persist worn slots and two prepared weapon sets, protect equipped items and clear safely during Ascension. See [equipment persistence](docs/equipment-persistence.md), [character mechanics](docs/character-mechanics.md) and [tactical expansion](docs/tactical-first-pass-expansion.md) for persistence and executed combat integration.
 
 Selected gear can now opt into permanent account binding on active equipping, with atomic history and preserved original reward commitments. See [permanent item binding](docs/item-binding.md).
 
@@ -101,7 +103,7 @@ Authored skill-rank gates for feats and equipment: [proficiency prerequisites](d
 
 Infrastructure external-routing preparation: [Caddy and Cloudflare Tunnel](../infra/docs/tunnel-operations.md). Public exposure and DNS activation require explicit operator approval; staging and administration remain local.
 
-Permanent server-folder relocation: [Realms storage layout and migration](../infra/docs/realms-storage-layout.md). The checked migration targets `/srv/Realms` and keeps the native and container databases separate.
+Permanent server-folder relocation: [Follybound storage layout and migration](../infra/docs/realms-storage-layout.md). The checked migration targets `/srv/Realms` and keeps the native and container databases separate.
 
 Domain and hosting setup: [playfollybound.com operator runbook](../infra/docs/playfollybound-hosting.md). Registration/account setup and public activation are separate operator steps.
 

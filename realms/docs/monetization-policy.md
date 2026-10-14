@@ -1,5 +1,7 @@
 # Public monetization policy
 
+[Documentation map](README.md) · [Current status](implementation-status.md) · [Migration map](migration-guide.md)
+
 `/monetization` is an authored policy page in `client/landing.ts`, using the existing public shell and scoped parchment styles. This is a statement of funding and design commitments, not a payment implementation. There is no checkout, donation collector, subscription form, or token grant on this page.
 
 ## Source reconciliation

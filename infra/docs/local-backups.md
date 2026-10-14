@@ -1,5 +1,7 @@
 # Encrypted external-drive backups
 
+[Operations map](README.md) · [Current source status](../../realms/docs/implementation-status.md) · [Branding compatibility](../../realms/docs/branding-and-pages.md)
+
 Status: the operator completed the first encrypted USB snapshot, full repository integrity verification, and isolated restores of the native, production and staging databases, including schema, constraints and game-data invariants. Backup and weekly restore timers are enabled and active, independently verified locally. After the operator reboot, the expected NTFS3 drive mounted through an fstab-generated systemd unit, and both timers remained enabled and active. The operator then completed a fresh encrypted backup, full repository integrity verification and isolated native/production/staging restores after reboot. USB backup and reboot acceptance passed. The operator chose local USB storage to avoid a cloud subscription. No cloud account or upload destination is configured.
 
 ## Storage and confidentiality

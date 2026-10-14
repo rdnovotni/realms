@@ -1,5 +1,7 @@
 # Consolidate the server under /srv/Realms
 
+[Operations map](README.md) · [Current source status](../../realms/docs/implementation-status.md) · [Branding compatibility](../../realms/docs/branding-and-pages.md)
+
 Status: operator-executed migration completed successfully on October 11, 2026. Post-migration checks passed; operator-supplied host-reboot acceptance passed. Interactive administrator authentication is required for privileged validation and recovery. `Realms` is the requested spelling, including the capital R.
 
 ## Proposed permanent layout
@@ -108,7 +110,7 @@ Retry requires a healthy original deployment, a rolled-back journal with no dire
 
 The operator-supplied retry output confirms both cold database copies were verified, the complete migration succeeded, durable database/worker/scheduler receipts and restricted roles were preserved, and unrelated workloads were unchanged. Direct local observation confirms both native systemd services are active with WorkingDirectory `/srv/Realms/native/realms`, the source and project directories exist at their new locations, and the old project path is a compatibility link. Native, production and staging readiness all return HTTP 200 after migration.
 
-Compose warnings about the old `kol-production_database` and `kol-staging_database` volumes are expected: those volumes are intentionally retained for rollback, while the active databases use their new Realms-bound volumes. Do not remove the retained originals based solely on these warnings. Source work should now use `/srv/Realms/source`; operator-supplied host-reboot acceptance has passed for the new layout. No Internet exposure or authority cutover occurred.
+Compose warnings about the old `kol-production_database` and `kol-staging_database` volumes are expected: those volumes are intentionally retained for rollback, while the active databases use their new Follybound-bound volumes. Do not remove the retained originals based solely on these warnings. Source work should now use `/srv/Realms/source`; operator-supplied host-reboot acceptance has passed for the new layout. No Internet exposure or authority cutover occurred.
 
 ## Reboot acceptance and validation-helper correction
 

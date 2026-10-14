@@ -1,4 +1,6 @@
-# Realms front-page artwork
+# Follybound front-page artwork
+
+Follybound was previously presented under the working name Realms. Original generation prompts below retain that historical name; asset filenames remain compatible.
 
 `realms-dawn.webp` is original concept artwork generated with the built-in imagegen tool, then resized to 1280 pixels wide and encoded as WebP at quality 78 without cropping or altering the composition. It is atmosphere for the public welcome screen, not a gameplay screenshot or a promise of specific playable locations. The browser loads it from the same origin through the explicit client-asset allowlist.
 

@@ -1,6 +1,8 @@
 # Publish a game update from testing to live
 
-Open **KoL Server Console → Game updates**. You can also read this guide inside **Help & guide**.
+[Operations map](README.md) · [Current source status](../../realms/docs/implementation-status.md) · [Branding compatibility](../../realms/docs/branding-and-pages.md)
+
+Open **Follybound Server Console → Game updates**. You can also read this guide inside **Help & guide**.
 
 1. Save your game changes under `/srv/Realms/source/realms`. Open Development Studio and save a source checkpoint. The build uses that recorded Git commit; uncommitted edits are excluded.
 2. Open **1 · Build for testing**. Name your update and choose **Build and install on test game**. Leave database updates unchecked unless the new migration files have been reviewed. A backup and automated checks run before the private test game is updated.

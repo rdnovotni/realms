@@ -1,5 +1,9 @@
 # Tactical round conditions
 
+[Documentation map](README.md) · [Current status](implementation-status.md) · [Migration map](migration-guide.md)
+
+This guide records the owning feature’s implementation checkpoint. Table counts, dated checks and “remaining” notes refer to that checkpoint; newer combat, Ascension and shared-rule work is summarized in the current status.
+
 ## Design grounding and scope
 
 The uploaded core design bible and **Design Documents.zip** remain the design authority. System 04 §9 places secondary effects after attack connection; System 24 §5 separates authored Effect definitions from source-bearing runtime instances, §7 normally ticks round effects at the affected creature's turn end, and §8 requires explicit stacking and readable behavior. This batch implements that numeric tactical slice using existing `EFFECT` entities and immutable encounter journals.

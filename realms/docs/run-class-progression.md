@@ -1,5 +1,9 @@
 # Starting builds and native class levels
 
+[Documentation map](README.md) · [Current status](implementation-status.md) · [Migration map](migration-guide.md)
+
+This guide records the owning feature’s implementation checkpoint. Table counts, dated checks and “remaining” notes refer to that checkpoint; newer combat, Ascension and shared-rule work is summarized in the current status.
+
 Migration 015 adds an immutable class-choice journal and a current build projection. Starting setup applies a published seven-attribute preset, including Luck, and one discovered class at native level one. Each subsequent explicit choice allocates one earned character level to a discovered class. Character level equals the sum of native class levels; normal builds allow at most two classes.
 
 The `CLASS_LEVELS_V1` contract supports STANDARD and CASUAL runs. Choices require no active instance, an authenticated write-capable owner, an expected run revision, and a unique request ID. They spend no Turns. Concurrent stale choices fail; retrying the same request returns its original receipt. Receipt, journal, attributes, native levels, run revision, audit and outbox records commit together.
@@ -27,4 +31,4 @@ Pre-existing runs receive frozen LEGACY build snapshots preserving their recorde
 
 SQL derives every event transition and validates receipts, ownership, pinned content, XP eligibility, event chains and projections. `db:audit` reports `buildMismatches`; routine runtime privileges deny journal modification and deletion. Migration 015 adds two tables, bringing the foundation to 73 tables.
 
-Later migrations add [subclass choices](subclass-persistence.md), [feat choices](feat-persistence.md), and [attribute milestones](attribute-milestones.md). The internal class journal retains starting attributes; earned growth is an independently reconciled overlay, and public progression/class-choice responses show effective scores. Full class/subclass/feat execution, derived combat statistics, proficiency, respec, mastery/Legacy rewards, special starts and class initiation gameplay remain release work.
+Later migrations add [subclass choices](subclass-persistence.md), [feat choices](feat-persistence.md), and [attribute milestones](attribute-milestones.md). The internal class journal retains starting attributes; earned growth is an independently reconciled overlay, and public progression/class-choice responses show effective scores. Later [character mechanics](character-mechanics.md) and [tactical combat](tactical-engine.md) execute supported class/subclass/feat effects and derived statistics; [proficiency choices](proficiency-persistence.md) and [shared rules](shared-rules.md) are also implemented. Respec, Mastery/Legacy rewards, special starts and class initiation gameplay remain release work.

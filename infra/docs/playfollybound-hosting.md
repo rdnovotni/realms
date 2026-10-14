@@ -1,5 +1,7 @@
 # Follybound hosting — playfollybound.com
 
+[Operations map](README.md) · [Current source status](../../realms/docs/implementation-status.md) · [Branding compatibility](../../realms/docs/branding-and-pages.md)
+
 Chosen domain: `playfollybound.com`. Registrar: Porkbun. Default public hostname: the apex `playfollybound.com`, with browser assets and HTTP API on the same origin. Public DNS delegation to Cloudflare and HTTPS routing to the game were verified on 2026-10-11. Registrar account renewal/security settings and dashboard policy details remain unverified. The registrar checkout must confirm availability and the final registration/renewal prices. No purchase or public DNS change has been made by this agent.
 
 ## Service arrangement

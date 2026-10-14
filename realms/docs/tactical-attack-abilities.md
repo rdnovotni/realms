@@ -1,5 +1,9 @@
 # Selectable tactical attack abilities
 
+[Documentation map](README.md) · [Current status](implementation-status.md) · [Migration map](migration-guide.md)
+
+This guide records the owning feature’s implementation checkpoint. Table counts, dated checks and “remaining” notes refer to that checkpoint; newer combat, Ascension and shared-rule work is summarized in the current status.
+
 ## Design grounding and scope
 
 The uploaded core design bible and Design Documents.zip remain authoritative. System 04 §5 assigns primary attacks, major spells and strong abilities to Main; §§9–11 resolve attack connection, armor/penetration and typed resistance. System 43 §§31–35 preserves distinct class resource identities, the existing action economy and explicit ability/loadout selection. This batch implements a bounded mana-powered offensive attack contract using those existing rules. It does not impose mana on all martial classes or claim to implement their distinct resource engines.

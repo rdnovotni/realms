@@ -1,5 +1,9 @@
 # Saved tactical combat
 
+[Documentation map](README.md) · [Current status](implementation-status.md) · [Migration map](migration-guide.md)
+
+This guide records the owning feature’s implementation checkpoint. Table counts, dated checks and “remaining” notes refer to that checkpoint; newer combat, Ascension and shared-rule work is summarized in the current status.
+
 TACTICAL_ENCOUNTER_V1 is an opt-in authored party combat loop alongside the frozen BASIC_DUEL_V1 prototype. Existing basic fights, their formulas, campaign proofs and rewards are unchanged. This is tested development functionality; production balancing and the remaining Pass 1 systems are still open.
 
 ## Content and authority

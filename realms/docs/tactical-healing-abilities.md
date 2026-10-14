@@ -1,5 +1,9 @@
 # Selectable tactical healing abilities
 
+[Documentation map](README.md) · [Current status](implementation-status.md) · [Migration map](migration-guide.md)
+
+This guide records the owning feature’s implementation checkpoint. Table counts, dated checks and “remaining” notes refer to that checkpoint; newer combat, Ascension and shared-rule work is summarized in the current status.
+
 ## Design grounding and scope
 
 The uploaded core design bible and Design Documents.zip remain authoritative. System 04 §5 assigns major spells/abilities to Main. System 43 §§31–35 preserves resource identity and explicit ability selection. System 35's spell function taxonomy includes HEALING; System 25 §§6–7 and §18 distinguish Downed revival from stronger resurrection: ordinary positive healing revives Downed characters, while Defeated characters require a separate resurrection contract.

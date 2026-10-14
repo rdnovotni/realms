@@ -1,5 +1,7 @@
 # INFRA-007 — Backend deployment and recovery
 
+[Operations map](README.md) · [Current source status](../../realms/docs/implementation-status.md) · [Branding compatibility](../../realms/docs/branding-and-pages.md)
+
 ## Architecture and boundaries
 
 The game is the existing TypeScript/Node.js Fastify backend in `realms/`, using PostgreSQL transactions, session authentication, server-side action validation and the existing durable job architecture. Its browser client uses HTTP APIs; there is no implemented WebSocket transport to containerize. Future WebSocket support should extend this backend and the ingress configuration when the game actually needs it.

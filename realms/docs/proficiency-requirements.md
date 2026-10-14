@@ -1,8 +1,12 @@
 # Skill-rank prerequisites for feats and equipment
 
+[Documentation map](README.md) · [Current status](implementation-status.md) · [Migration map](migration-guide.md)
+
+This guide records the owning feature’s implementation checkpoint. Table counts, dated checks and “remaining” notes refer to that checkpoint; newer combat, Ascension and shared-rule work is summarized in the current status.
+
 Migration 020 adds server-derived proficiency evidence to immutable feat choices and equipment events. It adds no tables (the foundation remains at 80) and preserves all pre-existing event fields. Historical evidence remains NULL; the migration does not manufacture attestations or add requirements to old content.
 
-Systems 03, 07, 29 and 43 distinguish learned proficiency, legality and capability from raw attributes or universal gear scores. This pass implements authored minimum **skill ranks**. Weapon/armor training tags, spellcasting/class-feature capability expressions and the final gameplay effects remain separate work.
+Systems 03, 07, 29 and 43 distinguish learned proficiency, legality and capability from raw attributes or universal gear scores. This pass implements authored minimum **skill ranks**. Later [shared rules](shared-rules.md) supply supported capability/prerequisite expressions, and [character mechanics](character-mechanics.md) execute supported combat effects. Complete weapon/armor training and owning class-feature workflows remain separate work.
 
 ## Authoring
 
@@ -32,4 +36,4 @@ Auditing verifies exact requirement coverage, skill/run/release agreement, suppo
 
 ## Limits
 
-Minimum skill ranks are one conjunctive prerequisite type. General capability expressions, alternative branches, weapon/armor tags, subclass-feature requirements, starting proficiency packages, training/practice, respec, check outcomes, profession ranks and derived combat statistics remain launch work. Future rank-lowering/respec contracts must explicitly resolve dependent gear and feats; this pass cannot silently revoke ranks or rewrite prior evidence.
+Minimum skill ranks are one conjunctive prerequisite type. Later [shared rules](shared-rules.md) provide supported capability expressions, alternative branches and check primitives; [character snapshots](character-mechanics.md) derive combat statistics. Complete weapon/armor training, subclass-feature qualification, starting proficiency packages, training/practice, respec and profession workflows remain launch work. Future rank-lowering/respec contracts must explicitly resolve dependent gear and feats; this pass cannot silently revoke ranks or rewrite prior evidence.

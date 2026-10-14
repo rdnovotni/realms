@@ -1,5 +1,9 @@
 # First-pass combat expansion
 
+[Documentation map](README.md) · [Current status](implementation-status.md) · [Migration map](migration-guide.md)
+
+This guide records the owning feature’s implementation checkpoint. Table counts, dated checks and “remaining” notes refer to that checkpoint; newer combat, Ascension and shared-rule work is summarized in the current status.
+
 This extends the existing tactical transition, action transaction and immutable replay. Historical BASIC_DUEL_V1, unopted tactical rules and migrations 001–023 remain unchanged. The design basis is Systems 04, 09, 24, 25, 29, 35 and 36 from the supplied design bundle. Values in tests are acceptance fixtures, not release balance.
 
 ## Authored techniques

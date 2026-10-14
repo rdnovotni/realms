@@ -1,5 +1,7 @@
 # Authoritative development and verification baseline
 
+[Operations map](README.md) · [Current source status](../../realms/docs/implementation-status.md) · [Branding compatibility](../../realms/docs/branding-and-pages.md)
+
 `/srv/Realms/source` and GitHub `rdnovotni/realms`, branch `main`, own source. A source commit is not evidence that its code is running. Production and staging run immutable images recorded separately; each database retains its own migration and content versions.
 
 | Surface | Location / identity | Authority |
@@ -87,3 +89,7 @@ If deployment fails after GitHub succeeds, inspect the image and release record 
 ## Completion record
 
 Close P1 only after the expanded checks pass for the published source and the controlled staging/manual approval/production rehearsal has live evidence. Root authentication, staging credentials and manual gameplay observations cannot be inferred from unit tests. Remaining email/exposure/disaster-recovery work belongs to the separate operations gates.
+
+## October 14 source documentation reconciliation
+
+The current product name is Follybound. [Implementation status](../../realms/docs/implementation-status.md) includes migrations 030/031 and shared rule/release controls. [Migration guide](../../realms/docs/migration-guide.md) describes compatibility and verification; this source update does not apply migrations, refresh a protected monitor/launcher, deploy an image or enable a flag. Use recorded release/image/schema evidence for installed state.

@@ -1,5 +1,7 @@
 # INFRA-005: durable PostgreSQL stores
 
+[Operations map](README.md) · [Current source status](../../realms/docs/implementation-status.md) · [Branding compatibility](../../realms/docs/branding-and-pages.md)
+
 ## Deployment scope and authority
 
 The existing backend was inspected before implementation. Its SQL migrations, checksum ledger, transactional migration runner, restricted role grants, runtime role validation, append-only ledgers, wallet transfer guards, request receipts, and account access-status protections are reused. No gameplay tables or rules were invented for this infrastructure ticket. A separate `infra_probe` schema holds only acceptance counters/receipts, not gameplay data.

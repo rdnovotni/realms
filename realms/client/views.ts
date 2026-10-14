@@ -15,7 +15,7 @@ export function render(root:HTMLElement,session:GameSession,screen:Screen,naviga
  root.classList.toggle('public-shell',!session.snapshot);
  const previousFocus=document.activeElement instanceof HTMLElement?document.activeElement.dataset.focus:null;
  if(previousFocus)retainedFocus=previousFocus;
- const fragment=document.createDocumentFragment(),top=el('header','','topbar');add(top,add(el('div','','wordmark'),el('span','REALMS'),el('small','A world worth wandering')));
+ const fragment=document.createDocumentFragment(),top=el('header','','topbar');add(top,add(el('div','','wordmark'),el('span','FOLLYBOUND'),el('small','A world worth wandering')));
  const disabled=session.busy||!!session.pending||session.needsRefresh||!session.snapshot?.game.canWrite;
  if(session.snapshot){const nav=el('nav');nav.setAttribute('aria-label','Game');for(const [key,title] of [['adventure','Adventure'],['character','Character'],['pack','Pack']] as const){const b=button(title,()=>navigate(key));b.setAttribute('aria-current',screen===key?'page':'false');nav.append(b);}add(top,nav,el('span',session.snapshot.game.canWrite?'Connected · Saved on server':'Viewing only','connection'),add(el('div','','tools'),button('Refresh',()=>void session.refresh(),session.busy,'small'),button('Sign out',()=>void session.logout(),session.busy||!!session.pending,'small')));}
  fragment.append(top);
@@ -36,7 +36,7 @@ export function render(root:HTMLElement,session:GameSession,screen:Screen,naviga
   if(snapshot.game.activeEncounter)add(journal,add(el('div','','journal-entry'),el('strong','Encounter in progress'),el('p','Reconnect resumes the same fight.')));
   const guide=section('A few things to know');add(guide,el('p','Explore at your own pace. Browsing your character, pack, and saved encounter costs no Turns.','help'),el('p','Choose actions during your turn. The server resolves opponents and automated companions, then returns control to your party.','help'),el('p','Victory rewards and recovery are saved automatically.','help'));add(right,journal,guide);add(layout,left,main,right);fragment.append(layout);
  }
- fragment.append(el('footer','Realms · A living world, one journey at a time.','footer'));root.replaceChildren(fragment);
+ fragment.append(el('footer','Follybound · A living world, one journey at a time.','footer'));root.replaceChildren(fragment);
  if(!session.busy&&retainedFocus){const matching=Array.from(root.querySelectorAll<HTMLElement>('[data-focus]')).find(e=>e.dataset.focus===retainedFocus);if(matching&&!(matching instanceof HTMLButtonElement&&matching.disabled))matching.focus();else root.querySelector<HTMLElement>('main h1')?.focus();retainedFocus=null;}
 }
 function stat(name:string,value:string){return add(el('div','','stat'),el('strong',value),el('span',name));}

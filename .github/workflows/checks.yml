@@ -39,6 +39,8 @@ jobs:
       - run: npm run content:check
       - name: Design coverage and implementation contracts
         run: npm run features:check
+      - name: Documentation navigation and API coverage
+        run: python3 ../infra/scripts/documentation-check.py
       - run: npm test
       - run: npm run test:integration
       - run: npm run test:workers

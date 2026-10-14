@@ -1,5 +1,7 @@
 # INFRA-002 — Rollback
 
+[Operations map](README.md) · [Current source status](../../realms/docs/implementation-status.md) · [Branding compatibility](../../realms/docs/branding-and-pages.md)
+
 Rollback requires root on the real host. Never delete database state or reinstall Ubuntu to undo this ticket. Record every apply snapshot and perform rollbacks in reverse apply order; the latest snapshot restores the state immediately before that apply. Rollback snapshots contain private previous configuration and must stay outside Git.
 
 ## Host profile

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""KoL Server Console: a local Ubuntu desktop app, not a network admin server."""
+"""Follybound Server Console: a local Ubuntu desktop app, not a network admin server."""
 from __future__ import annotations
 import json
 import os
@@ -34,7 +34,7 @@ def uptime(value):
 class Console:
     def __init__(self,root,demo=False):
         self.root=root; self.demo=demo;self.events=queue.Queue();self.busy=False;self.refreshing=False;self.current=None;self.buttons=[];self.last_checklist=''
-        root.title('KoL Server Console');root.configure(bg=BG);root.geometry('1320x950');root.minsize(1120,820)
+        root.title('Follybound Server Console');root.configure(bg=BG);root.geometry('1320x950');root.minsize(1120,820)
         style=ttk.Style(root);style.theme_use('clam')
         style.configure('.',background=BG,foreground=FG,font=('DejaVu Sans',10))
         style.configure('TNotebook',background=BG,borderwidth=0)
@@ -49,10 +49,10 @@ class Console:
         style.configure('TCombobox',fieldbackground=BG,background=PANEL,foreground=FG,arrowcolor=MUTED)
         style.map('TCombobox',fieldbackground=[('readonly',BG)],foreground=[('readonly',FG)])
         head=tk.Frame(root,bg=BG);head.pack(fill='x',padx=24,pady=(20,16))
-        tk.Label(head,text='KoL',fg=ACCENT,bg=BG,font=('DejaVu Sans',26,'bold')).pack(side='left')
+        tk.Label(head,text='Follybound',fg=ACCENT,bg=BG,font=('DejaVu Sans',26,'bold')).pack(side='left')
         title=tk.Frame(head,bg=BG);title.pack(side='left',padx=16)
         tk.Label(title,text='Server Console',font=('DejaVu Sans',21,'bold'),fg=FG,bg=BG).pack(anchor='w')
-        tk.Label(title,text='Realms • live & test games • website • backups • alerts',fg=MUTED,bg=BG).pack(anchor='w')
+        tk.Label(title,text='Follybound • live & test games • website • backups • alerts',fg=MUTED,bg=BG).pack(anchor='w')
         self.heartbeat=tk.Label(head,text='Connecting…',fg=MUTED,bg=BG);self.heartbeat.pack(side='right')
         shell=tk.Frame(root,bg=BG);shell.pack(fill='both',expand=True,padx=20)
         sidebar=tk.Frame(shell,bg=PANEL,width=180);sidebar.pack(side='left',fill='y',padx=(0,14));sidebar.pack_propagate(False)
@@ -207,7 +207,7 @@ class Console:
         if action in prompts and not messagebox.askokcancel(*prompts[action]):return
         self.perform({'start':'Start services','stop':'Stop services','restart_api':'Restart game','restart_all':'Restart database and game'}[action],lambda runtime:backend.service_action(action))
     def choose_source(self):
-        folder=filedialog.askdirectory(title='Select Realms source folder',initialdir=WORKSPACE)
+        folder=filedialog.askdirectory(title='Select Follybound source folder',initialdir=WORKSPACE)
         if folder:self.source.set(folder)
     def deploy_clicked(self):
         source=self.source.get();migrate=self.migrations.get()

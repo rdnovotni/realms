@@ -1,5 +1,9 @@
 # Tactical cleansing counterplay
 
+[Documentation map](README.md) · [Current status](implementation-status.md) · [Migration map](migration-guide.md)
+
+This guide records the owning feature’s implementation checkpoint. Table counts, dated checks and “remaining” notes refer to that checkpoint; newer combat, Ascension and shared-rule work is summarized in the current status.
+
 ## Design grounding and scope
 
 The uploaded core design bible and **Design Documents.zip** remain authoritative. System 24 §17 distinguishes Cleanse (harmful/bodily effects), Dispel (magical/supernatural effects, including enemy buffs), Cure (disease/poison) and Remove Curse. It permits tag-driven deterministic strength comparisons and limited player-selected removal. §§5–8 preserve authored definitions, source-bearing instances and explicit clocks.

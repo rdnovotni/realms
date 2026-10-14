@@ -1,5 +1,9 @@
 # Tactical campaign completion proofs
 
+[Documentation map](README.md) · [Current status](implementation-status.md) · [Migration map](migration-guide.md)
+
+This guide records the owning feature’s implementation checkpoint. Table counts, dated checks and “remaining” notes refer to that checkpoint; newer combat, Ascension and shared-rule work is summarized in the current status.
+
 An authored tactical finale can now settle victory, enter Aftercore and make the existing voluntary Ascension transition eligible. Earlier tactical victories alone award their normal loot/XP without finishing the campaign. Basic-duel completion keeps its original mechanics and evidence.
 
 ## Design basis

@@ -1,5 +1,7 @@
 # INFRA-006: disposable Valkey and durable workers
 
+[Operations map](README.md) · [Current source status](../../realms/docs/implementation-status.md) · [Branding compatibility](../../realms/docs/branding-and-pages.md)
+
 Production and staging were deployed on 2026-10-11. Local verification passed (119 backend unit tests, 30 PostgreSQL integration tests, 36 infrastructure tests, TypeScript checks and image build). Operator-provided output confirms live initial acceptance passed for production and staging, including process-crash recovery. Host-reboot acceptance remains pending. Existing native game data has not been imported, migrated or cut over by this ticket.
 
 ## Boundaries and resource budgets

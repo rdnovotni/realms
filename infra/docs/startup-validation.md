@@ -1,5 +1,7 @@
 # INFRA-002 — Startup validation checklist
 
+[Operations map](README.md) · [Current source status](../../realms/docs/implementation-status.md) · [Branding compatibility](../../realms/docs/branding-and-pages.md)
+
 This checklist is the acceptance record. Unchecked items are not verified. Capture results privately and share only redacted summaries; exclude credentials, host addresses, usernames, paths and serials.
 
 ## Before applying
@@ -44,4 +46,4 @@ Host profile application and automated validation **passed**, based on the opera
 
 ## Desktop console observations
 
-Subsequent direct host observations showed both KoL services active/enabled and game readiness successful after the reboot. Systemd recorded database/game startup before the current desktop user's manager startup, supporting operation without a graphical login. The new KoL Server Console exposes these states and database/schema checks without requiring terminal output. Logout endurance, firmware recovery, independent backup recovery and extended operation still need their respective checks; the client does not mark them passed automatically.
+Subsequent direct host observations showed both Follybound services active/enabled and game readiness successful after the reboot. Systemd recorded database/game startup before the current desktop user's manager startup, supporting operation without a graphical login. The new Follybound Server Console exposes these states and database/schema checks without requiring terminal output. Logout endurance, firmware recovery, independent backup recovery and extended operation still need their respective checks; the client does not mark them passed automatically.

@@ -1,4 +1,6 @@
-# Feature registry
+# Follybound feature registry
+
+[Documentation map](../docs/README.md) · [Implementation status](../docs/implementation-status.md) · [Feature-first roadmap](../docs/feature-roadmap.md). Original source names below are preserved provenance; Follybound is the current product name.
 
 This is the second P1 deliverable: an implementation overlay over the supplied master design index. It is a framework roadmap and review contract. It does not activate gameplay, migrate player state, publish game content, or declare the design implemented.
 

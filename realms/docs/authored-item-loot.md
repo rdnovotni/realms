@@ -1,5 +1,9 @@
 # Authored ordinary item loot
 
+[Documentation map](README.md) · [Current status](implementation-status.md) · [Migration map](migration-guide.md)
+
+This guide records the owning feature’s implementation checkpoint. Table counts, dated checks and “remaining” notes refer to that checkpoint; newer combat, Ascension and shared-rule work is summarized in the current status.
+
 Migration 007 adds immutable encounter reward plans, claims and links to inventory grant operations. Existing content, instances, draws, items and player state are preserved. There are now 50 tables including migration bookkeeping. This implements ordinary personal item loot; currency rewards, modifier/pity systems, shared loot, extraction budgets, chests, procedural budgets and production balancing remain separate work.
 
 ## Content contract

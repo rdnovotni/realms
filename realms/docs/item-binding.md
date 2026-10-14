@@ -1,5 +1,9 @@
 # Permanent equipment binding
 
+[Documentation map](README.md) · [Current status](implementation-status.md) · [Migration map](migration-guide.md)
+
+This guide records the owning feature’s implementation checkpoint. Table counts, dated checks and “remaining” notes refer to that checkpoint; newer combat, Ascension and shared-rule work is summarized in the current status.
+
 Migration 012 adds an immutable `item_binding_events` ledger. It preserves all existing item rows and the version 1 equipment contract. Version 2 equipment may declare `bindingPolicy: ACCOUNT_ON_ACTIVE_EQUIP`; `PRESERVE` remains available for ordinary gear.
 
 Selected gear becomes account-bound when placed in a worn slot or in the selected weapon set. Merely preparing it in the inactive set does not bind it. Switching the selected set binds newly active qualifying gear. Each physical item records at most one irreversible tradeable-to-account-bound transition. Existing account or run binding is never weakened. Binding remains after unequipping, storage, consumption and Ascension. Item locks remain independent.

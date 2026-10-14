@@ -1,5 +1,7 @@
 # Database release readiness
 
+[Documentation map](README.md) · [Current status](implementation-status.md) · [Migration map](migration-guide.md)
+
 Work is organized into [eight release passes](eight-pass-release-plan.md). Pass 1 implementation now includes the [character mechanics evaluators](character-mechanics.md), [saved tactical loop](tactical-engine.md) and [first-pass expansion](tactical-first-pass-expansion.md), including owned companions and consenting human cooperative fights. Pass 1 is complete: 105 unit tests, 319 integration tests, typecheck and build pass in both GitHub server checks. The later release passes remain open.
 
 Migration 021 adds SQL-verified immutable character stat snapshots to explicitly opted-in encounter starts. Authored attribute scaling, selected passive class/feat/subclass effects and worn/active equipment contributions are captured from the pinned run release. Migration 022 connects authored party actions, public intent/resume routes, guard/healing, retained pools, atomic settlement and independently replayed action history. The versioned extensions add typed/conditional defense, authored support/area abilities and checks, controls and buildup, concentration and reactions. Migrations 024–027 seal persistent conditions, disclosed injury/Gold/wear recovery, recruited NPC retention and shared human combat with personal reward claims. Historical solo/basic formulas remain versioned. Final catalogs, balance and the remaining progression/world/daily/shared-operation gates stay tracked in the eight-pass plan.
@@ -41,18 +43,24 @@ Current deployment evidence is maintained in the [development baseline](../../in
 | Recovery on another machine | Not exercised | Configuration/role recovery and application/gameplay/history verification |
 | Safe production migrations | Checksummed transactional migrations | Representative-data rehearsal, lock/downtime limits and server-version compatibility |
 | Typed content mechanics | Shared envelope, inventory declarations, encounter costs and ordinary item loot | Detailed schemas and semantic validators for every shipped content type |
-| Complete gameplay persistence | Basic solo combat-to-item/Gold-to-campaign-to-Ascension loop; Home recovery and safe intent/resume API | Full tactical/party/defeat mechanics, live content, complete progression/Legacy/setup and replay/crash drills |
-| Inventory/crafting | Custody, quantity ledger, split/merge, trivial recipe batches, durable item locks, equipment snapshots, opt-in account binding and protected saved loadouts | Full profession/station/quality recipes, broader automation protection and capacity rules, derived equipment stats, remaining binding policies, durability, upgrades and commissions |
-| Progression/Ascension | Reconciled XP history, pinned budgets, authored starting presets including Luck, explicit native class allocation, level-five subclass selection, authored feat/attribute milestones, run proficiency ranks, skill-rank feat/equipment gates and lifetime transition | Full class/subclass/feat gameplay, training/practice/check resolution, broader capability prerequisites, derived statistics, respec, special starts, mastery/Legacy, initiation eligibility, rewards and visible transition plan |
+| Complete gameplay persistence | Saved solo/shared tactical play with typed abilities/effects, owned companions, failure recovery and replay; small campaign and keyed Ascension loop | Production content/balance, complete progression/Legacy/setup and operational crash/recovery drills |
+| Inventory/crafting | Custody, quantity ledger, split/merge, trivial recipe batches, durable item locks, equipment snapshots, opt-in account binding and protected saved loadouts | Full profession/station/quality recipes, broader automation protection and capacity rules, remaining binding policies, durability, upgrades and commissions |
+| Progression/Ascension | Reconciled XP/build/milestone histories; executed character effects/derived combat stats; shared supported prerequisites/checks; current preview and lifetime transition | Training/practice workflows, respec, special starts, Mastery/Legacy, remaining initiation/mode/reward contracts and production catalogs |
 | Quest/world consequences | Identity, lifecycle and scope primitives | Validated graphs, NPC memory, faction/world consequences and campaign records |
-| Dailies/effects | Durable supervised scheduler/workers; daily policies remain unconfigured | Supervised scheduler/workers, banking, production and complete effect clocks |
-| Shared launch systems | Guild/event/instance primitives | Permissions, markets, claims and the social/game modules included at launch |
+| Dailies/effects | Durable scheduler/workers and shared typed clock/effect/expiration/cleanse primitives; daily policies remain unconfigured | Banking, Home production, configured daily/rest policies and domain integration with downtime/rollover proof |
+| Shared launch systems | Consenting shared tactical sessions and claims, owned tactical companions, plus Guild/event primitives | Guild permissions, markets, shared event claims and remaining social/game modules selected for launch |
 | Supporter settlement | Currency definition | Verified receipts, idempotent grants, entitlements, reversals and reconciliation if purchases launch |
 | Administration/retention | Audits and permission probes | Compensating repairs, account export/redaction and safe receipt/history/job retention |
 | Availability/monitoring | Supervised native/container services and protected monitoring implemented; alert delivery remains pending | Reboot/restart supervision, patching, disk/lock/job/backup alerts and incident runbooks |
 | Performance/failure drills | Focused invariant tests | Representative data volumes, query plans, connection budgets, crash/restart and restore drills |
 
-## Execution order
+## Shared foundation and current order
+
+The [shared rules](shared-rules.md) and [Ascension contract](ascension-reset-contracts.md) now provide cross-domain checks/prerequisites, clocks/effects, costs/rewards, lifetimes and controls. They do not finish the owning gameplay domains. Follow the [feature-first roadmap](feature-roadmap.md) and preserve explicit launch decisions. Migration 030/031 activation requires separately recorded staging/live evidence.
+
+## Historical implementation checkpoints
+
+The notes below describe each original migration’s scope. Newer character/tactical/shared-rule work supersedes older “remaining” boundaries; consult [current status](implementation-status.md).
 
 The prerequisite pass (migration 020) enforces optional skill-rank gates on feats and all equipment sets, records immutable supporting rank evidence, and validates eventual prerequisite-family reachability. See [proficiency prerequisites](proficiency-requirements.md). Weapon/armor training tags, general capability expressions and rank-lowering respec remain future contracts.
 
@@ -88,4 +96,4 @@ The account/session pass (migration 005) adds credential storage, scope-checked 
 
 The inventory accounting pass (migration 004) adds immutable quantity operations, exact-snapshot typed grants, atomic consumption and conserving stack transfers. Opening balances preserve existing items; consumed identities retain history. Audit and restore checks now reconcile each item's quantity. See [inventory accounting](inventory-accounting.md) for evidence and the item rules still required at launch.
 
-Deploy the integrity pass, then separate production runtime administration and implement real authentication. Establish independent automatic backups and recovery targets before inviting testers whose progress must be preserved. Build one complete encounter-to-reward-to-victory-to-Ascension loop, then add the remaining launch modules. Performance and disaster-recovery evidence are required before declaring the database release-ready.
+The early foundation sequence began with integrity, separated runtime administration and real authentication; these foundations now exist in source. Establish independent automatic backups and recovery targets before inviting testers whose progress must be preserved. The small encounter-to-reward-to-victory-to-Ascension fixture loop is now implemented; complete the remaining launch modules and production content before release. Performance and disaster-recovery evidence are required before declaring the database release-ready.
