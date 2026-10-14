@@ -90,6 +90,24 @@ def validate(source, registry, root=ROOT):
         require(decision['status'] in {'resolved-contract', 'open-gate'}, 'Unknown decision status')
         require(decision['topic'] and decision['resolution'] and decision['blocks'], 'Incomplete decision')
         require(set(decision['source_systems']) <= set(docs), 'Decision has unknown design owner')
+    corrections = unique(source['supersessions'], 'topic', 'canon correction')
+    bindings = {}
+    for binding in registry['supersession_bindings']:
+        topic = binding['topic']
+        require(topic in corrections, 'Binding needs a recorded correction')
+        owners = {owner.strip().zfill(2) for owner in corrections[topic]['owner'].split('/')}
+        replacement = binding['replacement_entry']
+        require(replacement in entries, 'Unknown canonical replacement entry')
+        canonical = entries[replacement]
+        require(canonical['system_label'] in owners and canonical['status_class'] == 'APPROVED'
+                and canonical['entry_group'] in {'FEATURE / RULE', 'SCHEMA / DATA'}, 'Canonical replacement must be an approved rule of the correction owner')
+        require(binding['reason'] and binding['affected_entries'], 'Binding needs rationale and affected source IDs')
+        for affected in binding['affected_entries']:
+            require(affected in entries and affected != replacement, 'Unknown/self-replacing supersession entry')
+            require(entries[affected]['entry_group'] in {'FEATURE / RULE', 'SCHEMA / DATA'}, 'Supersession must affect a rule/schema entry')
+            require(affected not in bindings, 'Source rule has duplicate/conflicting correction bindings')
+            bindings[affected] = (topic, replacement)
+    require(all(replacement not in bindings for _, replacement in bindings.values()), 'Canonical replacement cannot itself be superseded; bind directly to the current approved rule')
     systems = unique(registry['systems'], 'id', 'system contract')
     require(set(systems) == {'SYS-' + label for label in docs}, 'System contract coverage incomplete')
     require(set(registry['state_profiles']) == SCOPES, 'Reset profiles must cover seven scopes')
@@ -102,6 +120,7 @@ def validate(source, registry, root=ROOT):
         require(contract['authoring']['schemas_and_studio_controls'] and contract['authoring']['publication'], f'{identifier}: authoring contract missing')
         require(contract['acceptance_profile'] in registry['acceptance_profiles'], 'Unknown acceptance profile')
         require(contract['implementation_status'] in STATUSES, 'Unknown implementation status')
+        require((contract['implementation_status'] == 'historical') == (contract['design_system'] == 'Core'), 'Historical system status is reserved for Core')
         require(set(contract['decisions']) <= set(decisions), 'Unknown decision dependency')
         require(contract['state'] and len({s['scope'] for s in contract['state']}) == len(contract['state']), 'Missing/duplicate state scopes')
         for state in contract['state']:
@@ -134,6 +153,8 @@ def validate(source, registry, root=ROOT):
         require(cap['implementation_status'] in STATUSES, f'{identifier}: invalid status')
         if section['system_label'] == 'Core':
             require(cap['implementation_status'] == 'historical', 'Core must be historical; map active requirements to owning system instead')
+        else:
+            require(cap['implementation_status'] != 'historical', 'Historical capability status is reserved for Core')
         require(set(cap['rule_assertions']) <= set(cap['source_entries']), 'Assertion references another section')
         for entry_id, disposition in cap['rule_assertions'].items():
             require(disposition['disposition'] in {'active', 'superseded', 'reference', 'deferred'}, 'Unknown rule disposition')
@@ -144,7 +165,8 @@ def validate(source, registry, root=ROOT):
                     evidence_path(root, assertion['test'])
                     require(assertion.get('name'), 'Missing executable assertion name')
             if disposition['disposition'] == 'superseded':
-                require(disposition.get('correction') in {s['topic'] for s in source['supersessions']}, 'Superseded rule needs a recorded correction')
+                require(disposition.get('correction') in corrections, 'Superseded rule needs a recorded correction')
+                require(entry_id in bindings and bindings[entry_id][0] == disposition['correction'], 'Superseded rule needs an explicit affected-entry binding to its canonical replacement')
         for evidence in cap['evidence']:
             evidence_path(root, evidence['path'])
             require(evidence.get('finding'), 'Capability evidence needs a finding')

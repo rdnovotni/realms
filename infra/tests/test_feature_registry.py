@@ -134,6 +134,41 @@ class FeatureRegistryTests(unittest.TestCase):
         cap['verification']['result'] = 'failed'
         self.invalid('passing result')
 
+    def test_active_system_and_section_cannot_hide_as_historical(self):
+        self.overlay['capabilities'][37]['implementation_status'] = 'historical'
+        self.invalid('Historical capability status is reserved for Core')
+        self.overlay = copy.deepcopy(self.baseline)
+        self.overlay['systems'][1]['implementation_status'] = 'historical'
+        self.invalid('Historical system status is reserved for Core')
+
+    def test_unrelated_known_correction_cannot_exempt_an_active_rule(self):
+        cap = self.overlay['capabilities'][37]
+        entry = cap['source_entries'][0]
+        cap['rule_assertions'][entry] = {'disposition': 'superseded', 'reason': 'Incorrect global topic reuse', 'correction': 'Culture selection'}
+        self.invalid('explicit affected-entry binding')
+
+    def test_supersession_binding_requires_approved_owner_replacement_and_unique_ids(self):
+        cap = next(c for c in self.overlay['capabilities'] if c['system'] == 'SYS-37')
+        entries = [e for e in self.source['entries'] if e['system_label'] == '37' and e['status_class'] == 'APPROVED' and e['entry_group'] == 'FEATURE / RULE']
+        old, replacement = entries[0]['stable_id'], entries[1]['stable_id']
+        binding = {'topic': 'Culture selection', 'affected_entries': [old], 'replacement_entry': replacement, 'reason': 'Validator fixture only; semantic association still requires human review.'}
+        self.overlay['supersession_bindings'] = [binding]
+        cap = next(c for c in self.overlay['capabilities'] if old in c['source_entries'])
+        cap['rule_assertions'][old] = {'disposition': 'superseded', 'reason': 'Explicit validator fixture binding', 'correction': 'Culture selection'}
+        registry.validate(self.source, self.overlay, ROOT)
+        binding['replacement_entry'] = self.overlay['capabilities'][37]['source_entries'][0]
+        self.invalid('correction owner')
+        binding['replacement_entry'] = replacement
+        binding['affected_entries'].append(old)
+        self.invalid('duplicate/conflicting correction bindings')
+
+    def test_supersession_cycles_cannot_exempt_both_rules(self):
+        entries = [e['stable_id'] for e in self.source['entries'] if e['system_label'] == '37' and e['status_class'] == 'APPROVED' and e['entry_group'] == 'FEATURE / RULE']
+        self.overlay['supersession_bindings'] = [
+            {'topic': 'Culture selection', 'affected_entries': [entries[0]], 'replacement_entry': entries[1], 'reason': 'Fixture'},
+            {'topic': 'Culture selection', 'affected_entries': [entries[1]], 'replacement_entry': entries[0], 'reason': 'Fixture'}]
+        self.invalid('cannot itself be superseded')
+
     def test_roadmap_covers_all_systems_and_has_no_cycles(self):
         self.overlay['work_packages'][0]['after'] = ['WP-08']
         self.invalid('dependency cycle')

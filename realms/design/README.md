@@ -37,7 +37,7 @@ System baseline status is `partial` when a specifically inspected subset of code
 
 Before implementing a section, review the exact source statements and corrections, declare concrete field-specific state ownership/reset rules, Action permissions, typed schemas/editor controls and the client workflow. Use inherited system defaults only where they genuinely apply. Document exceptions and non-applicable fields in the section's `contract_review`; migrate/version state contracts explicitly rather than silently changing their lifetime.
 
-For every applicable `FEATURE / RULE` and `SCHEMA / DATA` row, record a `rule_assertions` entry. An active row needs a rationale and named executable tests; a superseded row needs a recorded correction topic and rationale. Examples, outlines and metadata remain reference material. Deferred rules remain open work and cannot count toward an implemented section. The validator deliberately refuses to dismiss a rule/schema row as mere reference material.
+For every applicable `FEATURE / RULE` and `SCHEMA / DATA` row, record a `rule_assertions` entry. An active row needs a rationale and named executable tests; a superseded row needs a recorded correction topic, rationale and an explicit `supersession_bindings` association to its affected stable ID and canonical replacement. Historical status is reserved for Core; active-system rules cannot be hidden by relabeling a section. Examples, outlines and metadata remain reference material. Deferred rules remain open work and cannot count toward an implemented section. The validator deliberately refuses to dismiss a rule/schema row as mere reference material.
 
 Example shape for a section overlay (replace the illustrative values with actual source IDs, existing tests and concrete field declarations):
 
@@ -66,6 +66,19 @@ Example shape for a section overlay (replace the illustrative values with actual
 ```
 
 `implemented` requires every applicable rule/schema assertion or explicit supersession, implementation evidence and section-specific contract review. `integrated` additionally requires concrete client, Studio and cross-system integration evidence. `verified` additionally records an immutable source commit, command, passing result and repository-contained proof artifact. Commit the evidence first, execute acceptance at that frozen checkpoint, then record its commit in a later metadata commit. A whole-system status cannot outrun its least complete section. Verification is a recorded engineering assertion, not a substitute for reviewing the proof artifact.
+
+The initial `supersession_bindings` list is empty: known correction topics are reference canon, not blanket exemptions. To apply one, add an explicitly reviewed mapping:
+
+```json
+{
+  "topic": "Culture selection",
+  "affected_entries": ["FEAT-actual-older-rule-id"],
+  "replacement_entry": "FEAT-actual-approved-system-37-rule-id",
+  "reason": "Explain exactly why this approved replacement corrects each older statement."
+}
+```
+
+The replacement must be an approved rule/schema entry owned by the correction's recorded system. Every affected source ID must be real, unique and different from its replacement. Bind directly to the current approved replacement; it cannot itself be superseded, preventing circular exemptions. The disposition's correction topic must match this explicit binding. Cross-system older wording is allowed only through this reviewed association; source membership alone never exempts a rule from tests.
 
 Use the shared `framework-done` acceptance profile **and** the system-specific scenarios **and** individual source-rule assertions. Inspect permission failures, concurrent/repeated actions, restart/reconnect, rollover/Ascension, secret filtering and invalid content. A single happy-path fixture or existing SQL table is insufficient.
 

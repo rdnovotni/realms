@@ -43151,5 +43151,6 @@
       ],
       "deliverable": "Client and typed Studio work are part of every package, not postponed here. Final pass covers automation/parser/accessibility, simulations/property tests, secrets/performance, release flags and staging/rollback/restore rehearsal; only then expand ordinary content."
     }
-  ]
+  ],
+  "supersession_bindings": []
 }
