@@ -36,3 +36,32 @@ CREATE FUNCTION archive_terminal_instance_fields() RETURNS trigger LANGUAGE plpg
 END $$;
 CREATE TRIGGER sync_instance_field_scope AFTER INSERT OR UPDATE OF lifecycle ON instances
  FOR EACH ROW EXECUTE FUNCTION archive_terminal_instance_fields();
+
+-- A terminal owner cannot reopen while its field scope remains irreversible history.
+CREATE FUNCTION guard_instance_terminal_lifetime() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN
+ IF OLD.lifecycle<>'ACTIVE' AND NEW.lifecycle='ACTIVE' THEN RAISE EXCEPTION 'Terminal instances cannot be reopened'; END IF;
+ RETURN NEW;
+END $$;
+CREATE TRIGGER instance_terminal_lifetime BEFORE UPDATE OF lifecycle ON instances
+ FOR EACH ROW EXECUTE FUNCTION guard_instance_terminal_lifetime();
+DO $$ BEGIN
+ IF EXISTS(SELECT 1 FROM instances i JOIN state_scopes s ON s.instance_id=i.id WHERE i.lifecycle='ACTIVE' AND s.lifecycle<>'ACTIVE')
+ THEN RAISE EXCEPTION 'Active instance has an archived scope; repair owner lifetimes before migration'; END IF;
+END $$;
+CREATE FUNCTION check_instance_scope_lifetime() RETURNS trigger LANGUAGE plpgsql AS $$
+DECLARE target uuid; owner_lifecycle text; scope_lifecycle text;
+BEGIN
+ IF TG_TABLE_NAME='instances' THEN target:=NEW.id;
+ ELSIF TG_OP='DELETE' THEN target:=OLD.instance_id;
+ ELSE target:=NEW.instance_id; END IF;
+ IF target IS NULL THEN RETURN NULL; END IF;
+ SELECT i.lifecycle,s.lifecycle INTO owner_lifecycle,scope_lifecycle FROM instances i LEFT JOIN state_scopes s ON s.instance_id=i.id WHERE i.id=target;
+ IF NOT FOUND THEN RETURN NULL; END IF;
+ IF scope_lifecycle IS DISTINCT FROM (CASE WHEN owner_lifecycle='ACTIVE' THEN 'ACTIVE' ELSE 'ARCHIVED' END)
+ THEN RAISE EXCEPTION 'Instance and scope lifetimes must agree'; END IF;
+ RETURN NULL;
+END $$;
+CREATE CONSTRAINT TRIGGER instance_scope_consistency AFTER INSERT OR UPDATE ON instances
+ DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION check_instance_scope_lifetime();
+CREATE CONSTRAINT TRIGGER scope_instance_consistency AFTER INSERT OR UPDATE OR DELETE ON state_scopes
+ DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION check_instance_scope_lifetime();

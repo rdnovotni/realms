@@ -135,3 +135,18 @@ test('invalid historical carry values roll back the entire transition and custod
   assert.equal((await db.pool.query('SELECT count(*)::int AS n FROM action_receipts WHERE request_id=$1',[request.requestId])).rows[0].n,0);
  }finally{await db.close();}
 });
+
+test('all generic terminal instance kinds reject reopening and independent scope archival cannot strand an active owner',async()=>{
+ const db=await testDatabase();try{
+  const f=await actor(db.pool);
+  for(const terminal of ['RESOLVED','EXPIRED','MIGRATED']){
+   const id=randomUUID();await db.pool.query("INSERT INTO instances(id,kind,content_release_id,seed) SELECT $1,'HOME',content_release_id,$3 FROM runs WHERE id=$2",[id,f.run,randomBytes(32)]);
+   await assert.rejects(db.pool.query("UPDATE state_scopes SET lifecycle='ARCHIVED' WHERE instance_id=$1",[id]),/lifetimes must agree/);
+   assert.equal((await db.pool.query('SELECT lifecycle FROM state_scopes WHERE instance_id=$1',[id])).rows[0].lifecycle,'ACTIVE');
+   await db.pool.query('UPDATE instances SET lifecycle=$1 WHERE id=$2',[terminal,id]);
+   assert.equal((await db.pool.query('SELECT lifecycle FROM state_scopes WHERE instance_id=$1',[id])).rows[0].lifecycle,'ARCHIVED');
+   await assert.rejects(db.pool.query("UPDATE instances SET lifecycle='ACTIVE' WHERE id=$1",[id]),/cannot be reopened/);
+   assert.equal((await db.pool.query('SELECT lifecycle FROM instances WHERE id=$1',[id])).rows[0].lifecycle,terminal);
+  }
+ }finally{await db.close();}
+});
