@@ -207,3 +207,9 @@ button:disabled{opacity:.7}
 .inventory-drop-zone{flex:1;min-width:110px;padding:11px 12px;border:1px dashed #9ba58a;border-radius:4px;background:#e9ecdf;text-align:center}
 .inventory-drop-zone strong,.inventory-drop-zone small{display:block}.inventory-drop-zone strong{font-size:.78rem}.inventory-drop-zone small{font-size:.65rem;color:#68725f;margin-top:4px}
 .inventory-drop-zone.drag-over{background:#d4e3c7;border:2px solid #65835a}
+
+.inventory-item-meta{display:flex;flex-direction:column;gap:3px;align-items:center;font-size:.67rem;line-height:1.35;color:#68735f;max-width:100%;overflow-wrap:anywhere}
+.inventory-item-meta .inventory-requirement-unmet{color:#8a512b;font-weight:600}
+.inventory-tile{min-height:174px}.inventory-tile .inventory-item-name{font-weight:600}
+.inventory-details{scroll-margin-top:20px}
+@media(max-width:650px){.inventory-tile{min-height:158px}.inventory-item-meta{font-size:.65rem}}

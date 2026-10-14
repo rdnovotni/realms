@@ -36,6 +36,17 @@ export function prepareInventoryEquipment(plan:EquipmentPlan,item:InventoryItem,
  if(slot==='OFF_HAND'){const main=slots.find(s=>s.set===set&&s.slot==='MAIN_HAND');if(main&&gear.find(g=>g.id===main.itemId)?.hands===2)slots=slots.filter(s=>s!==main);}
  return {activeSet:plan.activeSet,slots:[...slots,{set,slot,itemId:item.id}]};
 }
+// Separate display fields keep later player preferences local to presentation.
+function tileDetails(item:InventoryItem,grouped:boolean){
+ const fields:[string,string][]=[];
+ if(item.equipment&&!grouped)fields.push(['level',`Req. level ${item.equipment.minimumLevel}`]);
+ fields.push(['category',label(item.category)]);
+ return fields;
+}
+function focusItemDetails(){
+ const detail=document.getElementById('inventory-details');detail?.querySelector<HTMLElement>('h3')?.focus({preventScroll:true});
+ if(matchMedia('(max-width:650px)').matches)detail?.scrollIntoView({block:'start'});
+}
 let searchTimer:ReturnType<typeof setTimeout>|undefined;
 let mergeSource:InventoryItem|null=null,mergeRevision=-1,lastRun:string|null=null;
 function confirm(panel:HTMLElement,text:string,accept:()=>void){panel.querySelector('.inventory-confirmation')?.remove();const box=node('div','','inventory-confirmation');box.setAttribute('role','group');box.setAttribute('aria-label','Confirm inventory change');box.append(node('p',text),button('Cancel',()=>box.remove()),button('Confirm change',accept));panel.append(box);box.querySelector('button')?.focus();}
@@ -75,12 +86,15 @@ export function renderInventory(main:HTMLElement,snapshot:Snapshot,session:GameS
  panel.append(destinations);
  const bench=node('div','','inventory-workbench'),grid=node('div','','inventory-grid');grid.setAttribute('role','list');grid.setAttribute('aria-label','Inventory items');bench.append(grid);
  for(const item of page.items){const grouped=!!query.grouped&&item.copies>1,quantity=grouped?item.groupQuantity:item.quantity;
+  const metadata=tileDetails(item,grouped),summary=metadata.map(([,text])=>text).join(' · ');
   const cell=node('div','','inventory-cell');cell.setAttribute('role','listitem');const tile=button('',()=>{
    if(mergeSource&&mergeSource.id!==item.id){const source=mergeSource;session.selectInventory(item);const detail=document.getElementById('inventory-details');if(detail)confirm(detail,`Merge ${inventoryNumber(source.quantity)} ${source.name} into this stack? Individual source history is retained.`,()=>{mergeSource=null;void session.action('/api/v1/inventory/merge','MERGE_STACKS',{sourceId:source.id,targetId:item.id});});}
-   else session.selectInventory(item);
-  },false,`inventory-tile rarity-${item.rarity.toLowerCase().replace(/[^a-z0-9_-]/g,'')}`);tile.dataset.focus='Inventory item '+item.id;tile.setAttribute('aria-pressed',String(session.selectedInventoryItem?.id===item.id));tile.setAttribute('aria-controls','inventory-details');tile.setAttribute('aria-label',`${item.name}, ${inventoryNumber(quantity)}${grouped?`, ${item.copies} copies`:''}${item.protected?', protected':''}${!item.accessible?', restricted storage':''}`);tile.title=[item.name,item.description,grouped?`${item.copies} separate copies`:label(item.binding)].filter(Boolean).join('\n');
+   else {session.selectInventory(item);focusItemDetails();}
+  },false,`inventory-tile rarity-${item.rarity.toLowerCase().replace(/[^a-z0-9_-]/g,'')}`);tile.dataset.focus='Inventory item '+item.id;tile.setAttribute('aria-pressed',String(session.selectedInventoryItem?.id===item.id));tile.setAttribute('aria-controls','inventory-details');tile.setAttribute('aria-label',`${item.name}, ${inventoryNumber(quantity)}, ${summary}${grouped?`, ${item.copies} copies`:''}${item.protected?', protected':''}${!item.accessible?', restricted storage':''}`);tile.title=[item.name,summary,item.description,grouped?`${item.copies} separate copies`:label(item.binding)].filter(Boolean).join('\n');
   if(query.container==='ALL')tile.append(node('small',grouped&&item.multipleLocations?'Multiple locations':label(item.kind),'inventory-location'));
-  tile.append(icon(item.category),node('span',inventoryNumber(quantity),'inventory-quantity'),node('span',item.name,'inventory-item-name'));if(grouped)tile.append(node('small',`${item.copies} copies`));if(item.protected)tile.append(node('span',item.equipped?'Equipped':item.locked?'Locked':'Loadout','inventory-protection'));if(!item.accessible)tile.append(node('span','Restricted','inventory-protection'));
+  tile.append(icon(item.category),node('span',inventoryNumber(quantity),'inventory-quantity'),node('span',item.name,'inventory-item-name'));
+  const basics=node('span','','inventory-item-meta');for(const [key,text]of metadata){const field=node('span',text);field.dataset.itemDetail=key;if(key==='level'&&item.equipment!.minimumLevel>snapshot.progression.level)field.classList.add('inventory-requirement-unmet');basics.append(field);}tile.append(basics);
+  if(grouped)tile.append(node('small',`${item.copies} copies`));if(item.protected)tile.append(node('span',item.equipped?'Equipped':item.locked?'Locked':'Loadout','inventory-protection'));if(!item.accessible)tile.append(node('span','Restricted','inventory-protection'));
   tile.draggable=!blocked&&item.accessible&&!item.equipped&&!grouped&&item.binding!=='SYSTEM_UNTRADEABLE';tile.addEventListener('dragstart',e=>{e.dataTransfer?.setData('text/plain',item.id);if(e.dataTransfer)e.dataTransfer.effectAllowed='move';});
   cell.append(tile);grid.append(cell);
  }
@@ -89,7 +103,7 @@ export function renderInventory(main:HTMLElement,snapshot:Snapshot,session:GameS
  const selected=session.selectedInventoryItem;
  if(!selected)detail.append(node('h3','Select an item'),node('p','Inspect its details, protect it, manage stacks, or move it into storage.','muted'));
  else {
-  const grouped=!!query.grouped&&selected.copies>1;detail.append(node('h3',selected.name),node('p',selected.description||'No further description is known.','muted'));
+  const grouped=!!query.grouped&&selected.copies>1;const itemHeading=node('h3',selected.name);itemHeading.tabIndex=-1;detail.append(itemHeading,node('p',selected.description||'No further description is known.','muted'));
   const list=node('dl');for(const [name,value]of [['Location',grouped&&selected.multipleLocations?'Multiple locations':label(selected.kind)],['Category',label(selected.category)],['Rarity',label(selected.rarity)],['Quantity',inventoryNumber(grouped?selected.groupQuantity:selected.quantity)],['Binding',label(selected.binding)],['Quality',selected.numericQuality??selected.qualityLabel],['Unit weight',inventoryNumber(selected.unitWeight)],['Unit bulk',inventoryNumber(selected.unitBulk)],['Condition',selected.condition===null?'Not applicable':`${selected.condition} / ${selected.maximumCondition}`],['Protection',[selected.locked?'Manual lock':'',selected.equipped?'Equipped':'',...selected.loadouts.map(l=>'Loadout: '+l)].filter(Boolean).join(' · ')||'None']] as [string,string][])list.append(node('dt',name),node('dd',value));detail.append(list);
   if(grouped)detail.append(node('p','Grouped copies may have different quality, binding, durability or history. Expand them before changing an individual item.','help'),button('View each matching copy',()=>{session.selectInventory(null);browse({definitionId:selected.definitionId,grouped:false});}));
   else {
@@ -125,7 +139,7 @@ export function renderInventory(main:HTMLElement,snapshot:Snapshot,session:GameS
     const pages=node('div','','inventory-actions');pages.append(button('Earlier history',()=>void session.loadInventoryHistory(selected.id,history.offset+history.pageSize),session.inventoryHistoryBusy||history.offset+history.events.length>=history.total),button('Newer history',()=>void session.loadInventoryHistory(selected.id,Math.max(0,history.offset-history.pageSize)),session.inventoryHistoryBusy||history.offset===0));detail.append(pages);
    }
   }
-  detail.append(button('Close item details',()=>session.selectInventory(null)));
+  detail.append(button('Close item details',()=>{session.selectInventory(null);Array.from(document.querySelectorAll<HTMLElement>('[data-focus]')).find(n=>n.dataset.focus==='Inventory item '+selected.id)?.focus();}));
  }
  const paging=node('nav','','inventory-pagination');paging.setAttribute('aria-label','Inventory pages');const first=page.total? page.offset+1:0,last=Math.min(page.total,page.offset+page.items.length);paging.append(button('← Previous',()=>browse({offset:Math.max(0,page.offset-page.pageSize)}),session.inventoryBusy||page.offset===0),node('span',`${first}–${last} of ${page.total}${query.grouped?' item groups':' items'}`),button('Next →',()=>browse({offset:page.offset+page.pageSize}),session.inventoryBusy||page.offset+page.items.length>=page.total));panel.append(paging);
  const settings=node('details','','inventory-settings');settings.append(node('summary','Loot storage preferences'));
