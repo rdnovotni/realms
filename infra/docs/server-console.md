@@ -1,5 +1,7 @@
 # KoL Server Console
 
+[Operations map](README.md) · [Current source status](../../realms/docs/implementation-status.md) · [Branding compatibility](../../realms/docs/branding-and-pages.md)
+
 The desktop app now includes container projects, gated releases, encrypted USB backups, website routing checks, job reports, searchable logs and alerts. See [operations-console.md](operations-console.md) for current controls and installation. The original native-only tools documented below remain under **Native tools**; they do not deploy the public container production game.
 
 A native Ubuntu desktop client for the existing KoL PostgreSQL and game system services. It uses the installed Python/Tk desktop library. It does not run an administration web server or require the laptop.
@@ -21,7 +23,7 @@ To reinstall the launcher after moving the workspace, run `python3 scripts/insta
 | Page | Tools |
 | --- | --- |
 | Overview | Automatic refresh every five seconds; API and PostgreSQL states, boot enablement, process memory, restart counts, game readiness, read-only database/schema checks, RAM/swap/storage/CPU load, start/stop/restart, open game |
-| Deploy & backups | Choose Realms source folder, deploy checked code, optional explicitly selected migrations, code rollback, create database dump, create a fresh dump and test its restore |
+| Deploy & backups | Choose Follybound source folder, deploy checked code, optional explicitly selected migrations, code rollback, create database dump, create a fresh dump and test its restore |
 | Service logs | Read recent API/database journal entries; restart both services with confirmation |
 | Diagnostics | Current boot/service timestamps, PostgreSQL version/start time, capacity, reboot-required marker, infrastructure checklist, status-report export, open backup folder |
 
@@ -42,7 +44,7 @@ Deployment is operator-triggered and briefly interrupts the game at handoff. It 
 5. Stop only the API. If selected, apply forward migrations; then provision restricted-role permissions. Database initialization and seeding are never invoked.
 6. Save previous code, install the built artifact set, preserve `.env`, `.state`, runtime binaries and database files, then start the API and require readiness.
 
-The current console only deploys the Realms project to the already-installed KoL services. It does not create arbitrary project services, upgrade Ubuntu packages, modify firewall/networking, or implement Git pulling/publishing. It runs typecheck/unit/build checks; production integration tests are not run against live data.
+This original console checkpoint only deployed the Follybound project to the already-installed KoL services. It does not create arbitrary project services, upgrade Ubuntu packages, modify firewall/networking, or implement Git pulling/publishing. Current source checkpoint/GitHub work is supplied separately by [Development Studio](development-studio.md); immutable staging/promotion and protected monitoring are documented in [operations console](operations-console.md). It runs typecheck/unit/build checks; production integration tests are not run against live data.
 
 Retained previous code and the database backup remain on the same disk. Monitor free capacity; no automatic deletion of backups/releases is performed. The guard requires at least 1 GiB free before a deployment starts, but this is not a guarantee that an arbitrarily large project fits. Dependency downloads/builds can fail cleanly for capacity or network reasons before handoff.
 

@@ -1,5 +1,9 @@
 # Routine processing foundation
 
+[Documentation map](README.md) · [Current status](implementation-status.md) · [Migration map](migration-guide.md)
+
+This guide records the owning feature’s implementation checkpoint. Table counts, dated checks and “remaining” notes refer to that checkpoint; newer combat, Ascension and shared-rule work is summarized in the current status.
+
 Migration 009 adds two append-only tables, `craft_records` and `craft_inputs`; the database now has 59 tables including migration bookkeeping. Migrations 001–008 are unchanged. Existing player state is not rewritten.
 
 This pass implements only explicitly authored `TRIVIAL_PROCESSING_V1` recipes. System 8 permits zero-Turn trivial processing and batching; meaningful crafts, professions, tools/stations, material variants, experimentation, quality formulas, mastery and commissions remain separate release work. Declaring meaningful crafting as trivial would bypass its progression rules and must be rejected during content review. These APIs do not manufacture arbitrary items or implement timers.

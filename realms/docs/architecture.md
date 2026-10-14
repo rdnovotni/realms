@@ -1,21 +1,31 @@
-# Server architecture
+# Follybound server architecture
 
-Private-development foundation, October 7, 2026.
+Reconciled October 14, 2026 through migration 031. [Documentation map](README.md) · [Implementation status](implementation-status.md) · [API](api-reference.md)
 
-The server is an authoritative modular monolith: strict TypeScript, Fastify, explicit SQL, and PostgreSQL. SQL remains visible where ownership, lock ordering, transactions, and constraints matter. No ORM or additional service is required for the initial implementation.
+## Authority and transactions
 
-`foundation/action.ts` serializes each account's mutations, checks a stable request envelope and expected revision, and commits state, immutable receipt, audit and outbox together. Retries return the recorded result. Database work may retry deadlocks or serialization conflicts up to three attempts; external side effects must use the outbox.
+The game is an authoritative modular monolith: strict TypeScript, Fastify, explicit SQL and PostgreSQL. SQL remains visible where ownership, ordered locking, transaction evidence and constraints matter. Valkey cache/outbox delivery, workers and scheduler are optional configured infrastructure; they do not replace PostgreSQL authority.
 
-Domain modules own content, scoped state, economy, inventory, instances, lifecycle and jobs. Shared persistence does not imply shared permission: future Guild, trade, combat and admin modules must check their own authority and eligibility before calling these internal services. Clients never connect to the database or write arbitrary state keys.
+`src/foundation/action.ts` serializes account mutations, validates a stable request envelope and expected revision, rechecks authentication/write authority, and commits state, immutable receipt, audit and outbox together. A matching committed retry returns its recorded result before new-entry gates. Database work can retry bounded deadlock/serialization conflicts; external delivery uses durable outbox/worker receipts rather than a side effect inside the transaction.
 
-Queries use projections tailored to the account's knowledge. Content views require both discovery and a run containing the requested release. Instance views require participation. Seeds, mechanics and hidden definitions do not enter those response objects.
+Domain services own content, scoped state, economy, inventory, progression, encounters, lifecycle and jobs. Shared persistence never supplies a domain’s missing permission. Clients submit legal intents and never connect to PostgreSQL, choose outcome rolls, write state keys or grant rewards. The [API reference](api-reference.md) lists actual routes.
 
-Content identities remain stable and cannot be recycled. Definitions and release entries are immutable; publication validates dependencies and seals the exact manifest. Runs and instances pin their rules. Content updates affect new snapshots, never silently rewrite existing ones.
+## Shared rules and retained history
 
-Seven explicit state scopes distinguish account, character, run, instance, Guild, event and world. Each has a real foreign key. Versioned state contracts declare the owning module, scope, schema, default and reset policy. Larger relational domain models should use dedicated tables rather than an untyped flag store.
+`src/rules/` provides typed prerequisite facts/expressions, capability/modifier derivation, bounded checks, clocks/effect lifecycle, retry policies, resource costs and reward settlement. Combat and interaction adapters use the same services; routine recipes, class/equipment and encounter gates integrate supported expressions. These primitives do not complete the future quest/dialogue/travel engines. Top-level ABILITY shared prerequisites are rejected until enforced by selection/use adapters.
 
-Migrations are append-only and checksummed. Readiness verifies exact compatibility. The development server has a restricted SQL role; administration is separate. Local credentials and persistent data are ignored by Git, and both services bind to loopback.
+Historical D20_CHECK_V1, BASIC_DUEL_V1 and tactical formulas and reward journals retain their semantics. Saved solo/shared tactical combat uses pinned encounter-start evidence and deterministic action journals with independent replay. General shared effects and existing tactical effects have explicit integration boundaries; there is no silent conversion of old effect histories. See [shared rules](shared-rules.md) and [combat expansion](tactical-first-pass-expansion.md).
 
-The protocol is independent of the client presentation technology. Native OS clients, browser clients and later mobile clients can all use the same authenticated queries and Actions. No renderer, AI provider, payment provider or public deployment is chosen by this foundation.
+## Knowledge, content and lifetime
 
-See [database foundation](database-foundation.md) for contracts, coverage and operations. The next vertical slice is a real seeded encounter with committed Turn cost and outcome, a quest reward, and campaign completion through a visible Ascension transition.
+Queries project only owned and discovered information. Content reads require discovery and an account run containing the requested release. Instance reads require participation. Seeds, raw internal state, hidden source definitions and unrevealed checks stay server-side. Bounded lists disclose overflow rather than leaking hidden counts.
+
+Content identities cannot be recycled. Versions and sealed manifests are immutable; runs and instances pin their release and rules. Reviewed new-run adoption is separate from publication. RETAIN_IDENTICAL permits retained-custody adoption only with every old entry at its identical revision; broader breaking/hotfix/multi-engine changes require another contract. Feature controls are audited, administration-only and read coherently by Actions. `shared.rules` starts disabled; global/action/content/reward disable and drain policies preserve committed history.
+
+Seven typed scopes distinguish account, character, run, instance, guild, event and world. Each has a real owner foreign key; generic state contracts declare module, schema, default and lifetime. Substantial domains use dedicated relational models. Migration 030 executes generic KEEP/CARRY/RESET/ARCHIVE rules and freezes terminal scopes. The small campaign proves victory → Aftercore → current keyed Ascension preview → explicit transition → fresh build and receipt replay. Mastery, Legacy and later domain lifetimes remain separate.
+
+## Database and deployment
+
+Migrations are append-only and checksummed; readiness verifies exact compatibility. The HTTP process receives allowlisted private runtime settings and a restricted SQL role. Administration/test credentials do not enter its environment. Test suites accept only the separate disposable `realms_test` database. Private data, secrets and backups stay outside Git.
+
+The canonical source is `/srv/Realms/source` and GitHub `rdnovotni/realms`; deployed immutable images and stores have separately recorded versions. Source changes cannot establish live readiness or apply a migration. Native, staging and live stores are distinct. Follow the [operations map](../../infra/docs/README.md), [migration guide](migration-guide.md) and [release checklist](release-readiness.md) for reviewed rollout/recovery. The client is a same-origin browser implementation; other renderers can use the same protocol, but are not implemented clients merely because the protocol permits them.

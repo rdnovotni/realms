@@ -1,5 +1,9 @@
 # Accounts and sessions
 
+[Documentation map](README.md) · [Current status](implementation-status.md) · [Migration map](migration-guide.md)
+
+This guide records the owning feature’s implementation checkpoint. Table counts, dated checks and “remaining” notes refer to that checkpoint; newer combat, Ascension and shared-rule work is summarized in the current status.
+
 Migration 005 implements password credentials, scoped device sessions, offline recovery, throttling and immutable security events. Existing accounts and game data are preserved; passwords are not automatically enrolled and public registration is not enabled.
 
 ## Authority and storage

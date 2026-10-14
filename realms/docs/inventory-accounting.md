@@ -1,5 +1,9 @@
 # Inventory accounting
 
+[Documentation map](README.md) · [Current status](implementation-status.md) · [Migration map](migration-guide.md)
+
+This guide records the owning feature’s implementation checkpoint. Table counts, dated checks and “remaining” notes refer to that checkpoint; newer combat, Ascension and shared-rule work is summarized in the current status.
+
 This implements the shared quantity and provenance boundaries for Systems 02, 07, 08 and 28. It does not define recipe balance, loot eligibility or equipment power.
 
 ## Content contract

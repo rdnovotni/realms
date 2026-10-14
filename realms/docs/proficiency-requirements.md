@@ -1,5 +1,9 @@
 # Skill-rank prerequisites for feats and equipment
 
+[Documentation map](README.md) · [Current status](implementation-status.md) · [Migration map](migration-guide.md)
+
+This guide records the owning feature’s implementation checkpoint. Table counts, dated checks and “remaining” notes refer to that checkpoint; newer combat, Ascension and shared-rule work is summarized in the current status.
+
 Migration 020 adds server-derived proficiency evidence to immutable feat choices and equipment events. It adds no tables (the foundation remains at 80) and preserves all pre-existing event fields. Historical evidence remains NULL; the migration does not manufacture attestations or add requirements to old content.
 
 Systems 03, 07, 29 and 43 distinguish learned proficiency, legality and capability from raw attributes or universal gear scores. This pass implements authored minimum **skill ranks**. Weapon/armor training tags, spellcasting/class-feature capability expressions and the final gameplay effects remain separate work.

@@ -8,7 +8,7 @@
 .welcome-header{border-bottom:3px solid #a3804b}
 .welcome-header:after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,#221b17ed,#2b2116a6 36%,#21171018 72%),linear-gradient(0deg,#251c174a,transparent 45%);z-index:-1}
 .welcome-brand{display:flex;flex-direction:column;text-decoration:none;color:#fcf3dc!important}
-.welcome-brand .wordmark{font:3.3rem Georgia,serif;letter-spacing:.18em;line-height:1.1}
+.welcome-brand .wordmark{font:clamp(1.65rem,4vw,3rem) Georgia,serif;letter-spacing:.09em;line-height:1.1}
 .brand-kicker{font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;color:#e6c38e;margin-bottom:7px}
 .tagline{font:italic .94rem Georgia,serif;color:#eddbb8;margin-top:6px}
 .banner-note{position:absolute;right:14px;bottom:10px;color:#fff4d9;font-size:.62rem;background:#241c18c9;padding:4px 7px;border:1px solid #dcc18b38;border-radius:2px}
@@ -109,7 +109,7 @@
 .policy-page #support-availability{background:#e5e7d64d;border:1px solid #bbaa8570;border-left:3px solid #587054;border-radius:2px;padding:20px;margin-top:24px}
 .policy-page #support-availability p:last-child{margin-bottom:0}
 @media(max-width:650px){.policy-heading h1{font-size:1.8rem}.policy-principles{grid-template-columns:1fr}.policy-principles li{padding:13px 16px}.policy-principles li+li{border-left:0;border-top:1px solid #bbaa8570}.policy-promise{gap:12px}.policy-promise .manuscript-icon{width:24px;height:24px}.policy-contents{gap:5px 16px}.policy-contents>span{flex-basis:100%}.policy-contents a{padding:10px 0}.policy-section h2{font-size:1.3rem}.policy-page #support-availability{padding:17px}}
-@media(max-width:650px){.welcome{margin:12px;border-radius:3px}.welcome-header{height:156px;padding:20px}.welcome-header>img{object-position:62% 63%}.welcome-header:after{background:linear-gradient(90deg,#221b17ed,#2b2116a6 55%,#21171055)}.brand-kicker{font-size:.49rem;letter-spacing:.14em}.welcome-brand .wordmark{font-size:2.7rem}.welcome-intro{padding:18px 16px}.welcome-intro h1{font-size:1.4rem}.welcome-grid{grid-template-columns:1fr;padding:0 14px 18px;gap:16px}.welcome-access,.compact-panel{padding:16px}.welcome-footer{margin:0 14px;flex-direction:column;align-items:center;gap:8px}.welcome-footer nav{justify-content:center;gap:5px 14px}.public-page{padding:30px 20px}.banner-note{font-size:.55rem}}
+@media(max-width:650px){.welcome{margin:12px;border-radius:3px}.welcome-header{height:156px;padding:20px}.welcome-header>img{object-position:62% 63%}.welcome-header:after{background:linear-gradient(90deg,#221b17ed,#2b2116a6 55%,#21171055)}.brand-kicker{font-size:.49rem;letter-spacing:.14em}.welcome-brand .wordmark{font-size:clamp(1.5rem,6.8vw,2.5rem)}.welcome-intro{padding:18px 16px}.welcome-intro h1{font-size:1.4rem}.welcome-grid{grid-template-columns:1fr;padding:0 14px 18px;gap:16px}.welcome-access,.compact-panel{padding:16px}.welcome-footer{margin:0 14px;flex-direction:column;align-items:center;gap:8px}.welcome-footer nav{justify-content:center;gap:5px 14px}.public-page{padding:30px 20px}.banner-note{font-size:.55rem}}
 
 @media(min-width:651px) and (max-width:850px){.welcome-footer{flex-direction:column;gap:8px}.welcome-footer nav{justify-content:center}}
 @media(prefers-contrast:more){.welcome p,.welcome .eyebrow,.preview-note,.status-note{color:#454936}.welcome-access,.compact-panel{border-color:#756344}.announcement-links a,.welcome-footer a{color:#254a35}}
@@ -125,7 +125,7 @@
 .welcome-access:after,.newsletter:after{content:'';position:absolute;right:8px;bottom:8px;width:9px;height:9px;border-right:1px solid #ab946155;border-bottom:1px solid #ab946155;pointer-events:none}
 .welcome button:disabled{opacity:.65}
 @media(max-width:650px){.access-content input{font-size:1rem;min-height:44px}.access-tabs button,.welcome .primary{min-height:42px}.password-toggle,.access-content .link{min-height:32px}.welcome-footer nav{gap:0 16px}.welcome-footer a{padding:9px 0}.welcome-footer{padding-bottom:12px}.welcome-intro p{font-size:.82rem}}
-@media(max-width:360px){.welcome{margin:8px}.welcome-brand .wordmark{font-size:2.4rem;letter-spacing:.14em}.brand-kicker{letter-spacing:.08em}.welcome-header{padding:18px}.welcome-grid{padding-inline:12px}.welcome-access,.compact-panel{padding:14px}.news>h2{font-size:1.35rem}.welcome-footer nav{gap:0 12px}}
+@media(max-width:360px){.welcome{margin:8px}.welcome-brand .wordmark{font-size:1.5rem;letter-spacing:.07em}.brand-kicker{letter-spacing:.08em}.welcome-header{padding:18px}.welcome-grid{padding-inline:12px}.welcome-access,.compact-panel{padding:14px}.news>h2{font-size:1.35rem}.welcome-footer nav{gap:0 12px}}
 @media(prefers-reduced-motion:reduce){.welcome a,.welcome button{transition:none}}
 
 /* Detailed privacy notice uses the shared policy reading layout. */
@@ -150,3 +150,9 @@
 .policy-page .privacy-contact p{font-size:.8rem;line-height:1.7;margin:8px 0 0}
 .policy-top{display:inline-block;padding:10px 0;font-size:.8rem}
 @media(max-width:650px){.privacy-contents{grid-template-columns:1fr;gap:0}.privacy-status{padding:15px}.privacy-data>div{padding:14px}.privacy-data dd{font-size:.88rem}}
+
+/* Public information pages share the welcome shell and remain readable on small screens. */
+.public-page section{margin:28px 0;max-width:70ch}
+.public-page h2{font-size:1.35rem;margin-bottom:12px}
+.public-page p{max-width:70ch;line-height:1.7}
+.information-links{display:flex;flex-wrap:wrap;gap:10px 20px;margin:32px 0;font-size:.85rem}

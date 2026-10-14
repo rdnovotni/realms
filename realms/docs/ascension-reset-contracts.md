@@ -1,5 +1,7 @@
 # Field lifetimes and the small Ascension loop
 
+[Documentation map](README.md) · [Current status](implementation-status.md) · [Migration map](migration-guide.md)
+
 This pass makes the current reset boundary explicit and executable. It uses the existing two-encounter fixture campaign, not a production campaign catalog. The server proves victory, grants persistent campaign knowledge, enters Aftercore, provides a retained/lost preview, confirms the transition once, and starts a fresh build using the same sealed rules release. The next life cannot borrow old campaign victories.
 
 ## Field contracts

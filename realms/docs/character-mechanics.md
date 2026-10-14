@@ -1,5 +1,9 @@
 # Character mechanics evaluation contracts
 
+[Documentation map](README.md) · [Current status](implementation-status.md) · [Migration map](migration-guide.md)
+
+This guide records the owning feature’s implementation checkpoint. Table counts, dated checks and “remaining” notes refer to that checkpoint; newer combat, Ascension and shared-rule work is summarized in the current status.
+
 Release pass 1 introduces versioned numerical evaluators and immutable character snapshots validated at content publication and encounter start. Migration 021 adds one snapshot table with indexed references to pinned content, build, attribute and equipment evidence. Historical encounters receive no fabricated snapshots. BASIC_DUEL_V1 retains its behavior. Migration 022 now connects these snapshots to the [saved tactical loop](tactical-engine.md); broader Pass 1 mechanics remain open.
 
 ## Passive contributions

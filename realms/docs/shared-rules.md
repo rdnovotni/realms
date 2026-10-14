@@ -1,5 +1,7 @@
 # Shared rules, clocks and prerequisite services
 
+[Documentation map](README.md) · [Current status](implementation-status.md) · [Migration map](migration-guide.md)
+
 The reusable services live in `src/rules/`. New authored actions use immutable `mechanics.sharedAction` version 1 and check version 2. Existing D20_CHECK_V1, basic/tactical combat versions and their historical journals keep their exact math. The existing combat import now delegates its unchanged v1 check implementation to `rules/legacy-checks.ts`; its round countdown delegates to the common clock primitive. Native class choice, equipment, recipe and encounter boundaries also enforce the same structured prerequisite service.
 
 The concrete integration proof is `shared-rules-integration.test.ts`: a noncombat ACTIVITY pays resource/Turn/world-time costs, receives a sourced item/Gold/knowledge reward and applies Focus. An ENCOUNTER then uses the same prerequisite/check/effect/cost/reward services and receives Focus's check modifier. Both use the existing Action transaction, receipt, inventory and conserved transfer infrastructure. Parallel identical requests settle once; failed costs roll back the encounter, clocks and rewards together. These are small engineering fixtures, not a campaign/content catalog. The opted-in combat adapter is an atomic check encounter, not a replacement for the tactical UI or old tactical engine.

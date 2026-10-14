@@ -24,7 +24,7 @@ def managed_changes():
  names=git('diff','--name-only','HEAD').splitlines()+git('ls-files','--others','--exclude-standard').splitlines()
  return sorted({name for name in names if allowed(name)})
 def assert_master():
- if git('remote','get-url','origin') not in (REPOSITORY,'git@github.com:rdnovotni/realms.git'):raise RuntimeError('The source must use the verified Realms GitHub repository.')
+ if git('remote','get-url','origin') not in (REPOSITORY,'git@github.com:rdnovotni/realms.git'):raise RuntimeError('The source must use the verified Follybound GitHub repository.')
  if git('branch','--show-current')!='main':raise RuntimeError('Switch the canonical source to main before using this workflow.')
  for name in git('ls-files').splitlines():
   if not allowed(name):raise RuntimeError('Tracked file outside the approved source layout: '+name)

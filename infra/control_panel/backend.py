@@ -55,7 +55,7 @@ def runtime_path(info=None) -> Path:
     value = row.get('WorkingDirectory','')
     path = Path(value)
     if not value or not path.is_absolute() or not path.is_dir():
-        raise OperationError('Runtime folder unavailable. The KoL system services must be installed first.')
+        raise OperationError('Runtime folder unavailable. The Follybound system services must be installed first.')
     return path
 
 def runtime_env(runtime):

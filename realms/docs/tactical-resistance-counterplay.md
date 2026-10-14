@@ -1,5 +1,9 @@
 # Tactical resistance reduction and immunity bypass
 
+[Documentation map](README.md) · [Current status](implementation-status.md) · [Migration map](migration-guide.md)
+
+This guide records the owning feature’s implementation checkpoint. Table counts, dated checks and “remaining” notes refer to that checkpoint; newer combat, Ascension and shared-rule work is summarized in the current status.
+
 Typed attack abilities can now opt into explicit per-attack resistance counterplay. The design basis is uploaded System 24 §15: specialist abilities may bypass specific immunities, and resistance reduction may create bounded vulnerability. Core §12 and System 04 §10–11 retain armor before typed resistance. Exact formulas and fixture values are implementation policy, not final launch tuning.
 
 An encounter must declare `tacticalCombat.rules.abilities: {"version": 2}`. Its `typedDamage` contract can remain version 1 or use version 2 damage families. Version-one abilities remain legal and retain their existing formulas. A version-two ability requires both new fields:

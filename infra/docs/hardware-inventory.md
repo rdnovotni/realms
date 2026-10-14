@@ -1,5 +1,7 @@
 # INFRA-001 — Hardware and configuration inventory
 
+[Operations map](README.md) · [Current source status](../../realms/docs/implementation-status.md) · [Branding compatibility](../../realms/docs/branding-and-pages.md)
+
 Audit date: 2026-10-10 (America/Chicago). Execution: read-only. Ubuntu remains installed; no package, service, SSH, network, firewall, disk-layout or power configuration was changed. Only ticket artifacts and private audit captures were written.
 
 ## Evidence and limitations
@@ -63,7 +65,7 @@ UFW/nftables packages being installed does **not** establish firewall activation
 
 ## Existing projects and operational state
 
-The accessible workspace contains `realms/`, a private TypeScript/Fastify/PostgreSQL KoL 2.0 project, client assets, migrations, tests and preview artifacts. Another application directory exists under `/opt`; its private name and purpose are not recorded here. `/srv` appeared empty. The audit is not a complete inventory of other users' homes, VMs, containers or remote mounts.
+The accessible workspace contains `realms/`, a private TypeScript/Fastify/PostgreSQL Follybound project, client assets, migrations, tests and preview artifacts. Another application directory exists under `/opt`; its private name and purpose are not recorded here. `/srv` appeared empty. The audit is not a complete inventory of other users' homes, VMs, containers or remote mounts.
 
 Repository evidence from `realms/README.md`, `package.json`, `scripts/server.sh` and `scripts/database.sh`:
 

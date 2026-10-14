@@ -1,6 +1,10 @@
 # Database foundation
 
-This document records the foundation and historical implementation boundaries. Consult the [current development baseline](../../infra/docs/development-baseline.md), [tactical expansion](tactical-first-pass-expansion.md), and [release checklist](release-readiness.md) before treating a historical “next work” entry as current status. v1
+[Documentation map](README.md) · [Current status](implementation-status.md) · [Migration map](migration-guide.md)
+
+This guide records the owning feature’s implementation checkpoint. Table counts, dated checks and “remaining” notes refer to that checkpoint; newer combat, Ascension and shared-rule work is summarized in the current status.
+
+This document records the foundation and historical implementation boundaries. Consult the [current development baseline](../../infra/docs/development-baseline.md), [tactical expansion](tactical-first-pass-expansion.md), and [release checklist](release-readiness.md) before treating a historical “next work” entry as current status.
 
 Status: implemented shared infrastructure, not a completed catalog of all game mechanics. Reference decisions come from Core and Systems 01–46, especially Authority (23), Canon and ownership (46), Turns (01), Items (07), Ascension (10), and Economy (11). Synced design sources remain read-only outside the repository.
 
@@ -127,7 +131,7 @@ bash scripts/database.sh restore-check .state/backups/NAME.dump
 
 The restore command creates a uniquely named disposable database, restores with error checking, verifies migration checksums, validated constraints and currency conservation, then removes only that database. It never replaces development data. Back up before any schema upgrade. To recover development data, stop the server, restore into a new database, verify it, then deliberately change the configured connection; destructive in-place restores are not automated.
 
-Local backups are not protection against workstation loss. Independent backup storage, automatic retention, reboot startup, real account authentication, operational dashboards and public deployment remain separate operational work. Rootless PostgreSQL packages do not receive automatic OS package upgrades.
+At this early checkpoint those operations were separate work. Later [session authentication](account-sessions.md), [encrypted USB backups](../../infra/docs/local-backups.md) and [operator tools](../../infra/docs/operations-console.md) implement portions. Independent-machine recovery, PITR and public release gates remain open; fresh deployment evidence is separate. Rootless PostgreSQL packages do not receive automatic OS package upgrades.
 
 Run proficiency allocations, rank reconciliation and Ascension reset: [proficiency persistence](proficiency-persistence.md).
 
@@ -136,3 +140,5 @@ Authored rank requirements and immutable supporting evidence: [proficiency prere
 Migration 023 adds append-only tactical campaign prerequisite evidence and extends existing completion records with an engine discriminator. It preserves all original basic proof fields and adds no historical tactical claims. The total is now 86 tables including migration bookkeeping. See [tactical campaign proofs](tactical-campaign-proofs.md) for final-victory settlement, SQL validation and remaining campaign work.
 
 Migration 030 adds separate Ascension policies to generic state contracts and terminal-instance scope freezing; see [field lifetimes](ascension-reset-contracts.md). The HTTP Ascension workflow now requires a current retained/lost preview and explicit confirmation.
+
+Migrations 024–029 add pinned tactical check/failure/companion/shared evidence, worker receipts and scheduling. Migration 031 adds shared-rule state/events, feature-control history and reviewed release-adoption policies. See the [complete migration map](migration-guide.md) and [shared rules](shared-rules.md); source availability does not prove these migrations are live.

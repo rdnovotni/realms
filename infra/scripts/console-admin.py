@@ -191,7 +191,7 @@ def monitor():
   if changes:notification={'id':uuid.uuid4().hex,'summary':'; '.join(x['kind']+': '+x['issue']['message'] for x in changes)[:1000]}
   pending=old.get('email_pending',[])+changes
   if pending and read_json(STATE/'email.json').get('enabled'):
-   try:send_email('Realms server status changed','\n'.join(x['at']+' '+x['kind']+': '+x['issue']['message'] for x in pending));pending=[]
+   try:send_email('Follybound server status changed','\n'.join(x['at']+' '+x['kind']+': '+x['issue']['message'] for x in pending));pending=[]
    except RuntimeError:pass
   write_json(STATE/'alert-state.json',{'active':active,'history':history,'notification':notification,'email_pending':pending[-200:]})
   status.update(alert_history=history,notification=notification,acknowledged=read_json(STATE/'ack.json').get('at'));status['email']['last_delivery']=read_json(STATE/'email-status.json')
@@ -365,7 +365,7 @@ def execute(action,data,project,service):
   cfg=data.get('email',{});existing=read_json(STATE/'email.json')
   if not cfg.get('password'):cfg['password']=existing.get('password','')
   write_json(STATE/'email.json',validate_email(cfg));print('Email settings saved privately. Send a test email before relying on alerts.')
- elif action=='email-test':send_email('Realms server alert test','Your Realms console can deliver server alerts. This is an operator-requested test.',True);print('Test email sent.')
+ elif action=='email-test':send_email('Follybound server alert test','Your Follybound console can deliver server alerts. This is an operator-requested test.',True);print('Test email sent.')
  elif action in ('monitoring-private','monitoring-rollback'):monitoring_binding(action=='monitoring-rollback')
  elif action=='alert-acknowledge':write_json(STATE/'ack.json',{'at':stamp()});print('Acknowledged; unresolved issues remain visible.')
 if __name__=='__main__':

@@ -1,5 +1,9 @@
 # Durable item locks
 
+[Documentation map](README.md) · [Current status](implementation-status.md) · [Migration map](migration-guide.md)
+
+This guide records the owning feature’s implementation checkpoint. Table counts, dated checks and “remaining” notes refer to that checkpoint; newer combat, Ascension and shared-rule work is summarized in the current status.
+
 Migration 010 adds `inventory_lock_events` and `inventory_item_locks`, bringing the database to 61 tables including migration bookkeeping. Migrations 001–009 are unchanged. Existing item provenance, quantities, custody and metadata are preserved; absent lock state means unlocked, rather than inventing a prior player decision.
 
 System 7 calls for explicit item protection. This pass implements the hard Locked flag for live personal inventory identities. It blocks ordinary manual or automated consumption, routine crafting inputs, splitting a protected stack and merging either a protected source or target. Storage moves and Ascension preserve the item identity and its lock. Players must explicitly unlock before these quantity changes; there is no bypass parameter on destructive operations.

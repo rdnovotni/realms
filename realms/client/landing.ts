@@ -6,6 +6,58 @@ const pages: Record<string, string> = {
  '/about': 'About the game', '/announcements': 'Announcements', '/changelog': 'Changelog',
  '/guide': 'Player guide', '/community': 'Community', '/newsletter': 'Newsletter', '/privacy': 'Privacy policy', '/monetization': 'Monetization policy', '/contact': 'Contact'
 };
+
+type PublicSection = { heading: string; paragraphs: string[] };
+// Public copy describes available development features; it never opens signup or payments.
+const publicSections: Record<string, PublicSection[]> = {
+ '/about': [
+  {heading: 'A world worth wandering', paragraphs: ['Follybound is a fantasy role-playing game in development, built around character choices, tactical encounters, and journeys that can begin again through Ascension.', 'We are completing the game’s reusable systems before writing a full world of adventures. A few small encounters and test characters help us prove that choices, rewards, and saved progress work together. Tavern artwork is concept atmosphere, not a gameplay screenshot.']},
+  {heading: 'What you can try', paragraphs: ['Enrolled development players can create a starting build, prepare equipment, play saved tactical encounters, earn authored rewards, and make available progression choices. A small test campaign reaches Aftercore, where an explicit Ascension preview explains the transition into a new life.', 'This is a private development build. Public signup, a production campaign, markets, guilds, and supporter purchases are still ahead of us.']},
+  {heading: 'Who the game is for', paragraphs: ['Follybound is intended for ages 16 and over. Content may include mature language and references to sex, drugs, violence, and alcohol. Public signup is closed and age verification is not implemented.']}
+ ],
+ '/announcements': [
+  {heading: 'The name is Follybound', paragraphs: ['Follybound is the game’s name. Older development notes may refer to Realms or KoL 2.0; those were working names.']},
+  {heading: 'Features before a full campaign', paragraphs: ['Our next work focuses on complete progression, world and quest systems, items and crafting, daily systems, and the shared features selected for launch. We will use small test adventures while these systems take shape.', 'Shared rules now support combat and noncombat test actions. This foundation has been tested in the repository; availability in a running game depends on a reviewed update and its feature settings.']},
+  {heading: 'Development access', paragraphs: ['Accounts are enrolled by the game administrator. Public registration, newsletter subscriptions, donations, and supporter tokens are not open.']}
+ ],
+ '/changelog': [
+  {heading: 'Documentation and identity', paragraphs: ['The welcome screen, information pages, and operator tools now use Follybound. The documentation map separates implemented systems, test fixtures, planned work, and deployment verification.']},
+  {heading: 'Shared rules foundation', paragraphs: ['Combat and noncombat test actions reuse prerequisites, checks, effects, costs, and rewards. Authored clocks and retry policies keep their boundaries explicit. Feature controls and content-release policies support reviewed adoption. This service is disabled by default.']},
+  {heading: 'Ascension and saved combat', paragraphs: ['The small test campaign proves victory, Aftercore, a current Ascension preview, and a fresh starting build. Tactical encounters save their actions and rewards, support reconnecting, and preserve replay evidence.', 'These entries describe repository development milestones. They are not a record of updates deployed to the public game.']}
+ ],
+ '/guide': [
+  {heading: 'Getting access', paragraphs: ['Use the account enrolled by your game administrator. Public signup is not available. The visual preview shows public pages only and cannot log you in. Never share a password or development access key.']},
+  {heading: 'Starting a journey', paragraphs: ['After logging in, choose an available starting class and attribute preset. Character information appears on the left, adventures and combat in the center, and the journal on the right. Available choices depend on your run’s content and discoveries.']},
+  {heading: 'Preparing and playing', paragraphs: ['Prepare your equipment before entering an encounter. Review its disclosed commitment and recovery costs. During tactical combat, choose legal movement and abilities using the available action and resource budgets.', 'Progress is saved by the server. If a connection drops after you submit a choice, reconnect or use the offered retry. That retry checks the same submitted choice so its costs and rewards are not applied twice. Refresh when the client asks for current state.']},
+  {heading: 'Growth and another life', paragraphs: ['Authored victories can award experience and items. Earned levels and milestone choices are separate: select the available class, subclass, feat, attribute, or proficiency choices when offered.', 'Completing the small test campaign enters Aftercore. Request an Ascension preview and read what is preserved, reset, or archived before confirming. The new life begins with a fresh build; later Mastery and Legacy systems are still planned.']},
+  {heading: 'Getting help', paragraphs: ['For lost access or a test problem, contact the administrator who enrolled your account. Include the screen, the steps you took, and any error message, while leaving out passwords, tokens, and recovery codes.']}
+ ],
+ '/community': [
+  {heading: 'Building a place to gather', paragraphs: ['Public forums, chat, and community invitations have not been launched. We will publish verified links here when they are ready.', 'Consenting players can participate in the implemented shared tactical test encounters when the administrator provides access. This does not yet provide guilds, a marketplace, raids, or a complete social system.']},
+  {heading: 'During development', paragraphs: ['Send test feedback through your enrolling administrator. Describe what happened and what you expected. Community moderation and reporting procedures must be ready before public community features open.']}
+ ],
+ '/newsletter': [
+  {heading: 'Letters from Follybound', paragraphs: ['We plan to share game news and development updates by newsletter. Subscriptions are not open and this page does not collect email addresses.', 'For now, read Announcements and the Changelog. Before subscriptions open, we will publish how enrollment, delivery, unsubscribe, and email privacy work.']}
+ ],
+ '/contact': [
+  {heading: 'Development players', paragraphs: ['Contact the administrator who enrolled your account for account access, recovery, test feedback, or privacy questions. Automated password-reset email is not available in this build.', 'Never send a password, access token, or recovery code in a support message. For a gameplay problem, include the steps, screen, and error message instead.']},
+  {heading: 'Public contact', paragraphs: ['A monitored public contact address has not been published. We will publish verified support and privacy contact details before public registration opens. Newsletter subscriptions and payments remain closed.']}
+ ]
+};
+function informationPage(path: string, titleText: string): HTMLElement {
+ const page=el('section','','public-page');
+ const title=el('h1',titleText);title.tabIndex=-1;
+ page.append(el('span','From Follybound','eyebrow'),title,el('p','In development · Current test features and future plans are distinguished below.','availability'));
+ for(const [index,copy] of (publicSections[path]??[]).entries()) {
+  const block=section(`information-${index}`,copy.heading);
+  for(const text of copy.paragraphs)block.append(el('p',text));
+  page.append(block);
+ }
+ const navigation=el('nav','','information-links');navigation.setAttribute('aria-label','Explore Follybound');
+ for(const [href,label] of Object.entries(pages))if(href!==path)navigation.append(link(label,href));
+ page.append(navigation,link('← Back to the homepage','/'));return page;
+}
+
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, text = '', className = '') {
  const node = document.createElement(tag); node.textContent = text; node.className = className; return node;
 }
@@ -48,11 +100,11 @@ function monetizationPage() {
  const page=el('article','','public-page policy-page monetization-page');
  const back=link('← Back to the homepage','/');back.className='policy-back';
  const heading=el('header','','policy-heading'),title=el('h1','Monetization policy');title.tabIndex=-1;
- heading.append(el('span','How we fund Realms','eyebrow'),title,
+ heading.append(el('span','How we fund Follybound','eyebrow'),title,
   el('p','Free to play. Supported by players.','policy-lead'));
- const promise=el('div','','policy-promise');promise.append(motif('compass'),el('p','The bulk of Realms will always be free, as long as we can maintain the game and cover hosting and server costs. You never need to pay to enjoy the full core experience.'));
+ const promise=el('div','','policy-promise');promise.append(motif('compass'),el('p','The bulk of Follybound will always be free, as long as we can maintain the game and cover hosting and server costs. You never need to pay to enjoy the full core experience.'));
  const principles=el('ul','','policy-principles');
- for(const [name,text] of [['Voluntary support','Contribute if you want to and can.'],['No advertisements','We will keep Realms ad-free.'],['No data selling','We will never sell your personal data.']] as const){
+ for(const [name,text] of [['Voluntary support','Contribute if you want to and can.'],['No advertisements','We will keep Follybound ad-free.'],['No data selling','We will never sell your personal data.']] as const){
   const item=el('li');item.append(el('strong',name),el('span',text));principles.append(item);
  }
  const contents=el('nav','','policy-contents');contents.setAttribute('aria-label','On this page');contents.append(el('span','On this page'));
@@ -60,12 +112,12 @@ function monetizationPage() {
  page.append(back,heading,promise,principles,contents);
  const blocks: [string,string,string[]][]=[
   ['free-to-play','The free game',[
-   'We want to fund Realms through voluntary donations. They help cover servers, hosting, and the work of keeping the game running. If you enjoy playing and choose to contribute, your support helps keep it available for everyone.',
+   'We want to fund Follybound through voluntary donations. They help cover servers, hosting, and the work of keeping the game running. If you enjoy playing and choose to contribute, your support helps keep it available for everyone.',
    'The main campaign, core progression, and most content and systems will stay free. Free players should have a complete game to enjoy. Free play will keep receiving new adventures and interesting systems. No donation or subscription is required.',
    'We can keep that promise for as long as we can keep the game running. Hosting costs and maintenance are real, so we cannot promise the service will exist forever.'
   ]],
   ['supporter-tokens','What supporter tokens are for',[
-   'When donations open, they will buy supporter tokens. You can spend those tokens on unique, optional content that helps fund Realms.',
+   'When donations open, they will buy supporter tokens. You can spend those tokens on unique, optional content that helps fund Follybound.',
    'We are planning rewards such as cosmetics, titles, music, unusual items or companions, and extra quests or small adventure areas. Some may introduce different ways to play. None will be needed to finish the main story, progress through the core game, or enjoy a full free experience.',
    'We also plan to let players trade tokens and eligible supporter goods for in-game Gold, so donating will not be the only way to access them. Individual items may be scarce, and reissues will be decided case by case.'
   ]],
@@ -84,7 +136,7 @@ function monetizationPage() {
    'We will publish the donation and refund-request process before accepting payments.'
   ]],
   ['support-availability','Before donations open',[
-   'Realms is still in development. We are not accepting donations or selling tokens yet. The supporter shop, token trading, and recurring support are also not available.',
+   'Follybound is still in development. We are not accepting donations or selling tokens yet. The supporter shop, token trading, and recurring support are also not available.',
    'If we offer recurring support, it will deliver tokens. It will not unlock subscription-only gameplay or be required to play.',
    'The prices and refund approach above are our policy for launch. The reward catalog and payment process are still being prepared. Any material changes to this policy will be announced and reflected here.'
   ]]
@@ -106,12 +158,12 @@ function privacyPage() {
  const back=link('← Back to the homepage','/');back.className='policy-back';
  const heading=el('header','','policy-heading'),title=el('h1','Privacy policy');title.tabIndex=-1;
  const reviewed=el('p','','policy-reviewed'),date=el('time','October 10, 2026');date.dateTime='2026-10-10';reviewed.append('Last reviewed ',date);
- heading.append(el('span','Your information in Realms','eyebrow'),title,el('p','What we keep, how we use it, and your choices.','policy-lead'),reviewed);
- const promise=el('div','','policy-promise');promise.append(motif('quill'),el('p','We will not sell your personal data or fund Realms through advertisements. We use information to run the game, keep accounts secure, and help players.'));
- const status=el('aside','','privacy-status');status.setAttribute('aria-label','Development status');status.append(el('strong','Development notice'),el('p','This page describes the current build and our plans. Public signup, newsletters, and payments are closed. Realms is intended for ages 16+. Outstanding launch details are listed at the end of this notice.'));
+ heading.append(el('span','Your information in Follybound','eyebrow'),title,el('p','What we keep, how we use it, and your choices.','policy-lead'),reviewed);
+ const promise=el('div','','policy-promise');promise.append(motif('quill'),el('p','We will not sell your personal data or fund Follybound through advertisements. We use information to run the game, keep accounts secure, and help players.'));
+ const status=el('aside','','privacy-status');status.setAttribute('aria-label','Development status');status.append(el('strong','Development notice'),el('p','This page describes the current build and our plans. Public signup, newsletters, and payments are closed. Follybound is intended for ages 16+. Outstanding launch details are listed at the end of this notice.'));
  const blocks: [string,string,string[]][]=[
   ['privacy-scope','1. Scope & responsibility',[
-   'This notice covers the Realms website, game client, and game server. The local visual preview serves public pages only: it has no account login or gameplay service and does not save credentials.',
+   'This notice covers the Follybound website, game client, and game server. The local visual preview serves public pages only: it has no account login or gameplay service and does not save credentials.',
    'The game administrator enrolls development accounts and is the current contact for those players. We will publish the responsible operator’s formal identity before public registration opens. External sites and services have their own privacy notices.'
   ]],
   ['privacy-information','2. Information we keep',[
@@ -130,13 +182,13 @@ function privacyPage() {
   ]],
   ['privacy-sharing','5. Hosting & access',[
    'Administrators can access records needed to operate the game, investigate problems, and secure accounts. The current public site has no player-profile directory or public gameplay-history feed.',
-   'We will not sell personal data or share it for targeted advertising. We plan to run the game and its primary PostgreSQL database on a dedicated server managed by the Realms operator. The website and downloads will use Cloudflare Pages and R2; game connections will use Cloudflare Tunnel with Caddy. Email services and encrypted offsite backups will also process information needed to operate the service.',
+   'We will not sell personal data or share it for targeted advertising. We plan to run the game and its primary PostgreSQL database on a dedicated server managed by the Follybound operator. The website and downloads will use Cloudflare Pages and R2; game connections will use Cloudflare Tunnel with Caddy. Email services and encrypted offsite backups will also process information needed to operate the service.',
    'The planned services are listed below. Self-hosting does not mean that all information stays on one machine: providers may process it in other countries. Before launch, we will confirm the server country, provider processing locations, and any required safeguards for international transfers.',
    'We may disclose relevant information to meet a valid legal requirement or address fraud, abuse, or a serious security threat. Disclosures should be limited to what is needed. We will protect other players’ private information when handling a request.'
   ]],
   ['privacy-optional','6. Planned services',[
    'Newsletters: the current panel collects no email addresses. A future newsletter will be optional, with subscription records and an unsubscribe process explained at signup. The newsletter provider and any open or click tracking will be disclosed before subscriptions open. Playing or donating will not subscribe you.',
-   'Payments: donations are not open. PayPal is the likely provider and will handle payment information under its own notice. Realms will need transaction references, amounts, token grants, and refund or dispute records. We will disclose checkout fields and information returned to us before payments open.',
+   'Payments: donations are not open. PayPal is the likely provider and will handle payment information under its own notice. Follybound will need transaction references, amounts, token grants, and refund or dispute records. We will disclose checkout fields and information returned to us before payments open.',
    'Community: chat, profiles, and player mail are not available on the current public screen. Before adding them, we will explain player visibility, moderation records, and privacy controls. Others may copy information you choose to publish.',
    'AI: no external AI service is connected to the current client or game server. Before enabling a feature that sends player information to a provider, we will explain what is sent, the provider’s practices, and your choices.'
   ]],
@@ -156,10 +208,10 @@ function privacyPage() {
    'You can browse public pages without an account. Donations and future newsletter subscriptions are optional.',
    'Depending on applicable law, you may have rights to access or receive a copy of personal information, correct or delete it, restrict or object to uses, withdraw consent, or complain to a privacy authority. This notice does not limit those rights.',
    'For a development account, contact the administrator who enrolled you and explain what you want to access, correct, or remove. We may need to verify account ownership, without asking for passwords or recovery codes. Automated export and deletion tools are not available.',
-   'Before public registration, we will confirm a working request channel, publish the process, and identify applicable response deadlines. The Contact page is still being prepared.'
+   'Before public registration, we will confirm a working request channel, publish the process, and identify applicable response deadlines. The Contact page explains the current administrator route. A public request channel has not been published.'
   ]],
   ['privacy-age','10. Ages 16+ & mature content',[
-   'Realms is intended for players aged 16 and over. Content is unfiltered and may include mature language and references to sex, drugs, violence, and alcohol. The game is not intended for children under 16. Public signup is closed; age verification is not implemented yet.',
+   'Follybound is intended for players aged 16 and over. Content is unfiltered and may include mature language and references to sex, drugs, violence, and alcohol. The game is not intended for children under 16. Public signup is closed; age verification is not implemented yet.',
    'Parents or guardians concerned about an under-16 development account should contact its administrator. We will review the account and information involved. Before signup opens, we need procedures to enforce the age rule and handle younger players’ data. Privacy protections may also apply to players aged 16 and 17.'
   ]],
   ['privacy-changes','11. Launch details & notice updates',[
@@ -176,7 +228,7 @@ function privacyPage() {
    const categories=el('dl','','privacy-data');
    for(const [name,detail] of [
     ['Account records','Account and character IDs, creation dates, login handle, and account access status.'],
-    ['Authentication records','Password verifiers, session and recovery-code digests, permissions, device labels, and activity and lifecycle dates. The browser uses the label “Realms browser”; no device fingerprint is generated.'],
+    ['Authentication records','Password verifiers, session and recovery-code digests, permissions, device labels, and activity and lifecycle dates. The browser uses the label “Follybound browser”; no device fingerprint is generated.'],
     ['Saved gameplay','Character choices, progression, inventory, currency, encounters, action results, and game-history records linked to your account.'],
     ['Security & technical records','Sign-in and account-security events, request identifiers, rate-limit records, and operational logs that may include connection information.'],
     ['Information you send us','Messages and details you send to the administrator. The public client has no support form or ticket service.']
@@ -193,7 +245,7 @@ function privacyPage() {
    ] as const){const item=el('div'),detailText=el('dd',detail);if(url)detailText.append(' ',link(name.startsWith('Google')?'Google Workspace data terms':name.startsWith('Cloudflare')?'Cloudflare privacy notice':'Resend privacy notice',url));item.append(el('dt',name),detailText);providers.append(item);}
    block.append(providers);
   }
-  if(id==='privacy-requests'){const contact=el('aside','','privacy-contact');contact.setAttribute('aria-label','Planned privacy contact');contact.append(el('strong','Planned privacy contact'),el('span','privacy@realms.game','privacy-address'),el('p','Placeholder — this inbox is not confirmed active. Development players should contact their account administrator.'));block.append(contact);}
+  if(id==='privacy-requests'){const contact=el('aside','','privacy-contact');contact.setAttribute('aria-label','Planned privacy contact');contact.append(el('strong','Planned privacy contact'),el('span','Public contact not yet published','privacy-address'),el('p','Development players should contact the administrator who enrolled their account. A monitored public privacy contact must be published before registration opens.'));block.append(contact);}
   if(id==='privacy-changes'){const top=link('Back to top ↑','#main');top.className='policy-top';block.append(top);}
   if(id==='privacy-optional'){const provider=el('p','','policy-related');provider.append('For the planned payment provider, see ',link('PayPal’s privacy statement','https://www.paypal.com/us/legalhub/paypal/privacy-full'),'.');block.append(provider);}
   page.append(block);
@@ -206,24 +258,21 @@ export function renderLanding(session: GameSession): HTMLElement {
  const header = el('header', '', 'welcome-header');
  const art = el('img'); art.src='/assets/realms-tavern.webp'; art.alt=''; art.width=1600; art.height=533; art.fetchPriority='high';
  const brand = link('', '/'); brand.className='welcome-brand';
- brand.append(el('span','Adventure awaits at your table','brand-kicker'),el('span', 'REALMS', 'wordmark'), el('span', 'A world worth wandering.', 'tagline'));
+ brand.append(el('span','Adventure awaits at your table','brand-kicker'),el('span', 'FOLLYBOUND', 'wordmark'), el('span', 'A world worth wandering.', 'tagline'));
  header.append(art, brand, el('span','In development · Tavern concept art','banner-note')); main.append(header);
  const footer = el('footer', '', 'welcome-footer');
  const links = el('nav'); links.setAttribute('aria-label','Information');
- links.append(link('About','/about'),link('Community','/community'),link('Newsletter','/newsletter'),link('Privacy policy','/privacy'),link('Monetization policy','/monetization'),link('Contact','/contact'));
+ links.append(link('About','/about'),link('Player guide','/guide'),link('Community','/community'),link('Newsletter','/newsletter'),link('Privacy policy','/privacy'),link('Monetization policy','/monetization'),link('Contact','/contact'));
  for(const item of links.querySelectorAll('a'))if(item.getAttribute('href')===location.pathname)item.setAttribute('aria-current','page');
- const signature=el('span','REALMS · A journey in the making.','footer-signature');signature.prepend(motif('compass'));footer.append(signature,links);
+ const signature=el('span','FOLLYBOUND · A journey in the making.','footer-signature');signature.prepend(motif('compass'));footer.append(signature,links);
  const pageTitle = pages[location.pathname];
  if (pageTitle) {
-  document.title = `${pageTitle} · Realms`;
+  document.title = `${pageTitle} · Follybound`;
   if(location.pathname==='/monetization'){main.append(monetizationPage(),footer);return main;}
   if(location.pathname==='/privacy'){main.append(privacyPage(),footer);return main;}
-  const page = el('section','','public-page');
-  const title = el('h1', pageTitle); title.tabIndex=-1;
-  page.append(el('span','From the Realms','eyebrow'), title, el('p','This page is being prepared. We’ll expand this section in an upcoming pass.'), link('← Back to the homepage','/'));
-  main.append(page,footer); return main;
+  main.append(informationPage(location.pathname,pageTitle),footer); return main;
  }
- document.title = 'Realms · A world worth wandering';
+ document.title = 'Follybound · A world worth wandering';
  const changeTab = (tab: AccessTab) => {
   activeTab = tab; const next = renderLanding(session); main.replaceWith(next);
   next.querySelector<HTMLElement>(tab === 'recovery' ? '#recovery-title' : `#access-tab-${tab}`)?.focus();
@@ -234,7 +283,7 @@ export function renderLanding(session: GameSession): HTMLElement {
  intro.append(ornament, title, el('p','Choose a calling. Make your next move. Return to a world that remembers your journey.'));
  main.append(intro);
  const layout=el('div','','welcome-grid'), rail=el('div','','welcome-rail');
- const access = section('access', activeTab === 'recovery' ? 'Account recovery' : activeTab === 'signup' ? 'Join the adventure' : 'Log in to Realms', 'panel welcome-access');
+ const access = section('access', activeTab === 'recovery' ? 'Account recovery' : activeTab === 'signup' ? 'Join the adventure' : 'Log in to Follybound', 'panel welcome-access');
  access.querySelector('h2')!.prepend(motif('key'));
  const tabs = el('div', '', 'access-tabs'); tabs.setAttribute('role', 'tablist'); tabs.setAttribute('aria-label', 'Account access');
  const choices: [AccessTab, string][] = [['login', 'Log in'], ['signup', 'Sign up']];
@@ -260,11 +309,11 @@ export function renderLanding(session: GameSession): HTMLElement {
    el('p', 'Never share your password or access key when asking for help.', 'help muted'), button('Back to log in', () => changeTab('login'), 'primary'));
  } else if (session.config) {
 
-  const form = el('form'); form.setAttribute('aria-label', 'Log in to Realms');
+  const form = el('form'); form.setAttribute('aria-label', 'Log in to Follybound');
   const fields = session.config.authMode === 'sessions' ? [field('Account name', 'handle', 'text', 'username'), field('Password', 'password', 'password', 'current-password')] : [field('Development access key', 'token', 'password', 'off')];
   for (const item of fields) { item.input.disabled = session.busy; form.append(item.label); }
   const secret=fields.find(f=>f.input.type==='password');if(secret){const secretLabel=session.config.authMode==='sessions'?'password':'access key';const toggle=button(`Show ${secretLabel}`,()=>{const visible=secret.input.type==='password';secret.input.type=visible?'text':'password';toggle.textContent=`${visible?'Hide':'Show'} ${secretLabel}`;toggle.setAttribute('aria-pressed',String(visible));},'password-toggle');toggle.setAttribute('aria-controls',secret.input.id);toggle.setAttribute('aria-pressed','false');toggle.disabled=session.busy;form.append(toggle);}
-  const submit = el('button', session.busy ? 'Connecting…' : 'Enter Realms →', 'primary'); submit.type = 'submit'; submit.disabled = session.busy||!!session.config.previewOnly;
+  const submit = el('button', session.busy ? 'Connecting…' : 'Enter Follybound →', 'primary'); submit.type = 'submit'; submit.disabled = session.busy||!!session.config.previewOnly;
   form.append(submit); form.addEventListener('submit', event => {
    event.preventDefault(); if(session.config?.previewOnly)return; const credentials = Object.fromEntries(new FormData(form).entries()) as Record<string, string>;
    for (const item of fields) if (item.input.name === 'password'||item.input.name==='token') item.input.value = '';
@@ -274,12 +323,12 @@ export function renderLanding(session: GameSession): HTMLElement {
   if (session.config.authMode === 'sessions') content.append(button('Forgot your password?', () => changeTab('recovery'), 'link'));
   else content.append(el('p', 'Use the private key from your local server setup. Public account access will arrive in a future update.', 'help muted'));
  } else {
-  content.append(el('h3', 'Connecting to Realms'), el('p', 'Account access needs a connection to the game server. You can still explore the updates below.'), button('Try connecting again', () => void session.initialize(), 'primary'));
+  content.append(el('h3', 'Connecting to Follybound'), el('p', 'Account access needs a connection to the game server. You can still explore the updates below.'), button('Try connecting again', () => void session.initialize(), 'primary'));
  }
  if(activeTab !== 'recovery')access.append(tabs); access.append(content); rail.append(access);
 
 
- const newsletter = section('newsletter','Letters from the Realms','compact-panel newsletter');
+ const newsletter = section('newsletter','Letters from Follybound','compact-panel newsletter');
  newsletter.querySelector('h2')!.prepend(motif('quill'));
  newsletter.append(el('p','Game news, new adventures, and development updates.'),el('span','Subscriptions coming soon','status-note'),link('Newsletter details →','/newsletter'));rail.append(newsletter);
  const updates=el('div','','welcome-updates');

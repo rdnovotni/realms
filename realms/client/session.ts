@@ -16,7 +16,7 @@ export class GameSession {
  async initialize(){try{this.config=await this.api.request<Config>('/api/v1/client/config',undefined,false);}catch(error){this.notice={text:errorMessage(error),kind:'error'};}this.notify();}
  async connect(credentials:{handle?:string;password?:string;token?:string}){
   if(this.busy)return;this.busy=true;const epoch=++this.epoch;this.notify();
-  try{let token=credentials.token;if(this.config?.authMode==='sessions'){const result=await this.api.request<{token:string}>('/api/v1/auth/login',{handle:credentials.handle,password:credentials.password,deviceLabel:'Realms browser'},false);token=result.token;}
+  try{let token=credentials.token;if(this.config?.authMode==='sessions'){const result=await this.api.request<{token:string}>('/api/v1/auth/login',{handle:credentials.handle,password:credentials.password,deviceLabel:'Follybound browser'},false);token=result.token;}
    if(epoch!==this.epoch)return;if(!token)throw new ApiError(401,'UNAUTHORIZED');this.api.setToken(token);await this.load(epoch);this.notice={text:'Connected. Your progress is saved by the server.',kind:'success'};
   }catch(error){if(epoch===this.epoch){this.api.setToken('');this.snapshot=null;this.notice={text:errorMessage(error),kind:'error'};}}
   finally{if(epoch===this.epoch){this.busy=false;this.notify();}}

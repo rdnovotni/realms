@@ -1,5 +1,9 @@
 # Ordinary solo encounter persistence
 
+[Documentation map](README.md) · [Current status](implementation-status.md) · [Migration map](migration-guide.md)
+
+This guide records the owning feature’s implementation checkpoint. Table counts, dated checks and “remaining” notes refer to that checkpoint; newer combat, Ascension and shared-rule work is summarized in the current status.
+
 Migration 006 adds `encounter_records` and append-only `encounter_draws`. Existing instances, player state and content are preserved; existing generic instances are not converted or given invented costs/outcomes.
 
 These are internal transaction primitives, not a playable combat engine or public endpoint. An owning handler runs inside `executeAction`, authorizes the encounter/choice, and advances the run revision once. Never accept checkpoint, outcome, reward plan, seed, random stream/key or settlement callback from a client. Each handler must derive these from validated choices and the pinned rules.

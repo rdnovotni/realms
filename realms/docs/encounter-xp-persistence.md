@@ -1,5 +1,9 @@
 # Encounter XP persistence
 
+[Documentation map](README.md) · [Current status](implementation-status.md) · [Migration map](migration-guide.md)
+
+This guide records the owning feature’s implementation checkpoint. Table counts, dated checks and “remaining” notes refer to that checkpoint; newer combat, Ascension and shared-rule work is summarized in the current status.
+
 Migration 014 adds `run_xp_baselines`, `encounter_xp_plans` and `run_xp_awards`. It preserves all existing XP as an immutable `MIGRATION_014` opening balance; it does not invent past awards. Newly inserted progression starts at zero with a `NEW_RUN` baseline. Existing migrations remain frozen.
 
 ## Authored opt-in contract

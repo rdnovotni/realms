@@ -89,7 +89,7 @@ class Operations:
   payload=data or {}
   self.c.perform(label or words.ACTIONS.get(action,action.replace('-',' ').title()),lambda runtime:admin_action(action,payload,self.c.emit),lock_native=False)
  def build_overview(self):
-  f=self.section('Overview','Realms operations','Live game, private test game, website and backups. Status updates automatically.')
+  f=self.section('Overview','Follybound operations','Live game, private test game, website and backups. Status updates automatically.')
   self.summary=self.label(f,'Reading the latest server information…',font=('DejaVu Sans',14,'bold'));self.summary.pack(anchor='w',pady=8)
   self.chart=tk.Canvas(f,height=100,bg='#101722',highlightthickness=0);self.chart.pack(fill='x',pady=8);self.chart.bind('<Configure>',lambda event:self.draw_chart())
   self.overview=self.c.text_box(f,8)
@@ -380,7 +380,7 @@ class Operations:
   email=status.get('email',{});self.email_status.configure(text='Email: '+('enabled' if email.get('enabled') else 'not enabled')+' · last delivery: '+str(email.get('last_delivery',{}).get('state','not tested')))
   note=status.get('notification',{})
   if self.last_notification is not None and note.get('id') and note['id']!=self.last_notification:
-   try:subprocess.Popen(['notify-send','--app-name=KoL Server Console','Realms server status changed',backend.redact(note.get('summary','Check the console'))],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+   try:subprocess.Popen(['notify-send','--app-name=Follybound Server Console','Follybound server status changed',backend.redact(note.get('summary','Check the console'))],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
    except OSError:pass # Missing desktop notification support must not stop status refresh.
   self.last_notification=note.get('id','')
   self.c.root.after(5000,self.refresh)

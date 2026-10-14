@@ -1,7 +1,7 @@
-# AGENTS.md — KoL 2.0 Self-Hosted Infrastructure
+# AGENTS.md — Follybound Self-Hosted Infrastructure
 
 ## Project
-KoL 2.0 is an always-online, server-authoritative fantasy RPG with persistent accounts, characters, inventory, Guilds, trade, a player economy, daily rollover, and multiplayer functionality.
+Follybound is a server-authoritative fantasy RPG in development. Persistent accounts, characters, inventory and tactical play are implemented foundations; complete Guilds, trade, the player economy, daily gameplay and other shared systems remain tracked feature work. See `realms/docs/implementation-status.md` for verified scope.
 
 ## Host Environment
 - Existing Ubuntu installation, potentially Ubuntu Desktop

@@ -1,5 +1,9 @@
 # Tactical periodic effects
 
+[Documentation map](README.md) · [Current status](implementation-status.md) · [Migration map](migration-guide.md)
+
+This guide records the owning feature’s implementation checkpoint. Table counts, dated checks and “remaining” notes refer to that checkpoint; newer combat, Ascension and shared-rule work is summarized in the current status.
+
 ## Design grounding and scope
 
 The uploaded design materials remain authoritative. System 24 in **Design Documents.zip**, §11, places damage-over-time at the affected creature's turn end, healing-over-time at turn start, preserves the source, and snapshots application strength by default. §§5–8 specify authored definitions, source-bearing instances, explicit clocks and stacking. System 04 §§9–11 and §21 define attack/mitigation and Downed/Defeated behavior. This batch implements those periodic hooks inside the existing saved tactical loop.

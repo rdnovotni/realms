@@ -1,5 +1,9 @@
 # Equipment persistence
 
+[Documentation map](README.md) · [Current status](implementation-status.md) · [Migration map](migration-guide.md)
+
+This guide records the owning feature’s implementation checkpoint. Table counts, dated checks and “remaining” notes refer to that checkpoint; newer combat, Ascension and shared-rule work is summarized in the current status.
+
 Migration 011 stores an immutable equipment event stream and derives the current setup into `run_equipment` and `equipment_slots`. Existing characters begin with empty equipment and prepared set A; existing inventory is unchanged.
 
 `SET_EQUIPMENT` replaces the complete setup, including the selected A/B set, through the ordinary revision-checked Action transaction. The authenticated equipment endpoint accepts item identities and positions only. Gear definitions opt into a strict equipment schema with allowed slots, hand count, minimum level and the version 1 `PRESERVE` binding policy. Version 2 additionally supports [permanent account binding on active equipping](item-binding.md). The worn slots are head, neck, shoulders, chest, hands, waist, legs, feet, two rings, trinket and tool. Each prepared weapon set has main-hand and off-hand positions.
@@ -10,7 +14,7 @@ Equipped identities cannot move between containers or change quantity until uneq
 
 Repeated requests replay their committed receipt. An unchanged setup creates no new equipment event or run revision. Event chains, projections, ownership, custody, requirements and Ascension linkage participate in the read-only integrity audit and deferred database checks. Direct projection edits and rewritten event history are rejected.
 
-This is the persistence and legality foundation. It does not yet implement class proficiency, derived combat statistics, encumbrance, durability, upgrades, additional binding policies or Quick Action weapon swapping. The basic duel prototype continues to use its authored combat profile. These rules must be implemented before equipment can be advertised as affecting the final combat engine.
+This checkpoint introduced persistence and legality. Later [qualification gates](proficiency-requirements.md), [character snapshots](character-mechanics.md) and [tactical expansion](tactical-first-pass-expansion.md) execute supported equipment effects, derived statistics, conditional defenses and weapon-set combat actions. The basic duel prototype retains its authored profile. Full encumbrance, durability/repair lifecycle, upgrades and remaining binding policies still need owning contracts.
 
 ## Verification
 
@@ -20,4 +24,4 @@ The private development upgrade was rehearsed with preservation hashes for every
 
 Migration 013 adds [named saved equipment loadouts and item protection](saved-loadouts.md), using the same equipment legality service.
 
-Migration 020 adds optional [skill-rank prerequisites and immutable qualification evidence](proficiency-requirements.md), enforced for worn gear, both prepared sets and saved-loadout application. Class/weapon/armor capability tags remain future work.
+Migration 020 adds optional [skill-rank prerequisites and immutable qualification evidence](proficiency-requirements.md), enforced for worn gear, both prepared sets and saved-loadout application. [Shared rules](shared-rules.md) now add structured equipment prerequisites and supported server-derived capabilities; a complete authored weapon/armor training and respec workflow remains future work.

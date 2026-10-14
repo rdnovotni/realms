@@ -1,5 +1,9 @@
 # Starting builds and native class levels
 
+[Documentation map](README.md) · [Current status](implementation-status.md) · [Migration map](migration-guide.md)
+
+This guide records the owning feature’s implementation checkpoint. Table counts, dated checks and “remaining” notes refer to that checkpoint; newer combat, Ascension and shared-rule work is summarized in the current status.
+
 Migration 015 adds an immutable class-choice journal and a current build projection. Starting setup applies a published seven-attribute preset, including Luck, and one discovered class at native level one. Each subsequent explicit choice allocates one earned character level to a discovered class. Character level equals the sum of native class levels; normal builds allow at most two classes.
 
 The `CLASS_LEVELS_V1` contract supports STANDARD and CASUAL runs. Choices require no active instance, an authenticated write-capable owner, an expected run revision, and a unique request ID. They spend no Turns. Concurrent stale choices fail; retrying the same request returns its original receipt. Receipt, journal, attributes, native levels, run revision, audit and outbox records commit together.

@@ -1,4 +1,6 @@
-# Realms desktop operations
+# Follybound desktop operations
+
+[Operations map](README.md) · [Current source status](../../realms/docs/implementation-status.md) · [Branding compatibility](../../realms/docs/branding-and-pages.md)
 
 The expanded **KoL Server Console** is a native Ubuntu desktop app. It administers the existing container projects, Caddy and dashboard-managed Cloudflare connector while retaining the older native service controls under **Original local tools**. It opens no administration HTTP listener and stores no administrator password. Closing it leaves the game running.
 
@@ -103,7 +105,7 @@ The monitoring timer was observed executing again without an interactive console
 
 The console adds a **History** page with persistent operation results and incident openings/recoveries, private history export, a recent CPU/memory chart and a readiness checklist that distinguishes verified checks from pending operator work. Resource history is bounded; CPU usage uses actual kernel counter differences, handles reboot/counter resets and excludes double-counted guest time. Unknown first samples are not shown as zero. Console actions that can modify services or data now take a separate cross-window action lock before writing shared operation state.
 
-**Backups → Refresh restore points** lists the encrypted repository's Realms snapshots by time and short ID. Select a point, then **Test recovery safely**. The full ID must belong to the expected repository/host/tag; arbitrary or unknown identifiers are refused. Tests still restore into isolated temporary databases, never over live data. The default remains Latest. Snapshot metadata is cached only after an authenticated refresh.
+**Backups → Refresh restore points** lists the encrypted repository's Follybound snapshots by time and short ID. Select a point, then **Test recovery safely**. The full ID must belong to the expected repository/host/tag; arbitrary or unknown identifiers are refused. Tests still restore into isolated temporary databases, never over live data. The default remains Latest. Snapshot metadata is cached only after an authenticated refresh.
 
 **Game updates → Review what will change** is read-only and shows pending migrations, consent status and expected rollback compatibility. After testing staging, choose **Save test approval** to confirm login/game-action testing. Smoke checks and exact image/schema identity are validated and recorded. Production promotion now requires that matching record; it cannot rely on an unrecorded confirmation or an older staging build. Invalid promotion requests are rejected before starting a new USB backup, and the gate is rechecked under the infrastructure lock immediately before deployment. Existing staging-ready records need a new manual test receipt before promotion.
 

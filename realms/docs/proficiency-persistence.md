@@ -1,5 +1,9 @@
 # Run skill proficiency persistence
 
+[Documentation map](README.md) · [Current status](implementation-status.md) · [Migration map](migration-guide.md)
+
+This guide records the owning feature’s implementation checkpoint. Table counts, dated checks and “remaining” notes refer to that checkpoint; newer combat, Ascension and shared-rule work is summarized in the current status.
+
 Migration 019 introduces typed `SKILL` content, immutable `run_proficiency_choices` and reconciled `run_skill_ranks`, bringing the foundation to 80 tables. No historical ranks, production skill catalog, numerical check bonuses or default advancement schedule are invented.
 
 ## Contract

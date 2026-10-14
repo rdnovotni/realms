@@ -1,5 +1,9 @@
 # Authored feat milestones and choices
 
+[Documentation map](README.md) · [Current status](implementation-status.md) · [Migration map](migration-guide.md)
+
+This guide records the owning feature’s implementation checkpoint. Table counts, dated checks and “remaining” notes refer to that checkpoint; newer combat, Ascension and shared-rule work is summarized in the current status.
+
 Migration 017 adds `run_feat_choices` and `run_feats`, bringing the private foundation to 77 tables. It persists legal choices and their eligibility evidence; production feats and their gameplay effects remain authored work. It makes no automatic grants to existing runs.
 
 ## Content contracts

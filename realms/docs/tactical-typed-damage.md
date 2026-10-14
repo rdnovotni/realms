@@ -1,5 +1,9 @@
 # Authored tactical damage traits
 
+[Documentation map](README.md) · [Current status](implementation-status.md) · [Migration map](migration-guide.md)
+
+This guide records the owning feature’s implementation checkpoint. Table counts, dated checks and “remaining” notes refer to that checkpoint; newer combat, Ascension and shared-rule work is summarized in the current status.
+
 The next Pass 1 batch connects the existing damage evaluator to pinned tactical content. An encounter explicitly opts in to typed attacks, armor penetration and damage resistance. Existing untyped tactical origins and steps keep exactly the same state/evidence shape and zero penetration/resistance; BASIC_DUEL_V1 is unchanged. Migrations 001–022 remain frozen. Existing immutable JSON origins/steps and character source revision pins retain all required evidence, so this batch needs no schema migration.
 
 ## Design basis and scope

@@ -1,5 +1,9 @@
 # Tactical damage-family resistance
 
+[Documentation map](README.md) · [Current status](implementation-status.md) · [Migration map](migration-guide.md)
+
+This guide records the owning feature’s implementation checkpoint. Table counts, dated checks and “remaining” notes refer to that checkpoint; newer combat, Ascension and shared-rule work is summarized in the current status.
+
 An encounter may now opt into typed-damage version 2, granting one resistance to several concrete damage types. This closes the damage-family inheritance gap inside release Pass 1. It uses existing immutable content revisions, character snapshots, tactical origins and steps; migrations 001–023 and runtime permissions are unchanged.
 
 The uploaded core bible §12 and System 04 §11 group Slashing/Piercing/Bludgeoning as Physical and Fire/Cold/Lightning/Acid/Poison as Elemental. System 24 §15 keeps damage resistance separate from status resistance. These are the design basis for families, not a mandate for a fixed catalog. Family membership and additive stacking are explicit implementation policies; the design materials defer final numbers. Values in tests are execution examples, not launch balance.

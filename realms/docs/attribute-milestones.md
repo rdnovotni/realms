@@ -1,5 +1,9 @@
 # Earned attribute milestones
 
+[Documentation map](README.md) · [Current status](implementation-status.md) · [Migration map](migration-guide.md)
+
+This guide records the owning feature’s implementation checkpoint. Table counts, dated checks and “remaining” notes refer to that checkpoint; newer combat, Ascension and shared-rule work is summarized in the current status.
+
 Migration 018 adds immutable `run_attribute_choices`, bringing the private foundation to 78 tables. Configured normal builds can allocate authored point budgets at committed character levels. This growth is separate from feat choices and from the starting preset; the migration invents no historical allocations or production balance constants.
 
 ## Authored rules
@@ -27,4 +31,4 @@ Clients choose point distribution, never raw resulting scores or caps. Only conf
 
 Run locking handles competing requests; receipts make retries replayable. Allocation, scores, revision, receipt, audit and outbox commit or roll back together. Existing projections and class histories survive upgrade unchanged. Ascension retains old history and resets the new run to unconfigured starting values, including unknown Luck, until its fresh preset is chosen.
 
-This pass does not implement respec, challenge-path growth rules, species/quest bonuses, Mastery or derived combat statistics. Those need independent authored contracts and histories; they cannot write around this journal.
+This allocation checkpoint does not implement respec, challenge-path growth rules, species/quest bonuses or Mastery. Derived combat statistics are implemented by the later [character snapshot](character-mechanics.md) and tactical work. Those need independent authored contracts and histories; they cannot write around this journal.

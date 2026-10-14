@@ -12,9 +12,9 @@ class Studio:
   self.root=root;self.busy=False;self.events=queue.Queue();self.original=None;self.dirty=False;self.package,self.loaded_digest=model.read_package();self.release_map={};self.links={}
   try:self.links=json.loads((model.ROOT/'.development/release-links.json').read_text())
   except (OSError,ValueError):pass
-  root.title('Realms Development Studio');root.geometry('1250x950');root.minsize(1100,820)
+  root.title('Follybound Development Studio');root.geometry('1250x950');root.minsize(1100,820)
   style=ttk.Style(root);style.theme_use('clam');style.configure('.',font=('DejaVu Sans',10));style.configure('TButton',padding=(10,7))
-  ttk.Label(root,text='Realms Development Studio',font=('DejaVu Sans',22,'bold')).pack(anchor='w',padx=20,pady=(16,3))
+  ttk.Label(root,text='Follybound Development Studio',font=('DejaVu Sans',22,'bold')).pack(anchor='w',padx=20,pady=(16,3))
   ttk.Label(root,text='One master source • author definitions • test a recorded build • publish with GitHub').pack(anchor='w',padx=20,pady=(0,12))
   self.tabs=ttk.Notebook(root);self.tabs.pack(fill='both',expand=True,padx=16)
   self.pages={}

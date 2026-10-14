@@ -1,5 +1,7 @@
 # INFRA-008 — Durable rollover and scheduled jobs
 
+[Operations map](README.md) · [Current source status](../../realms/docs/implementation-status.md) · [Branding compatibility](../../realms/docs/branding-and-pages.md)
+
 ## Policy status
 
 The operator requested that automatic awards remain **unconfigured until gameplay values are finalized**. Deployment creates no schedule in the actual game schema, seeds no production Turn grant/cap, and changes no native game data. A healthy scheduler with zero configured schedules is expected. Development seed values and acceptance-fixture rewards are not launch balance decisions.

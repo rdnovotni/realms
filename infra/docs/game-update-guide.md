@@ -1,5 +1,7 @@
 # Publish a game update from testing to live
 
+[Operations map](README.md) · [Current source status](../../realms/docs/implementation-status.md) · [Branding compatibility](../../realms/docs/branding-and-pages.md)
+
 Open **KoL Server Console → Game updates**. You can also read this guide inside **Help & guide**.
 
 1. Save your game changes under `/srv/Realms/source/realms`. Open Development Studio and save a source checkpoint. The build uses that recorded Git commit; uncommitted edits are excluded.

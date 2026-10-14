@@ -1,5 +1,7 @@
 # INFRA-002 — Startup validation checklist
 
+[Operations map](README.md) · [Current source status](../../realms/docs/implementation-status.md) · [Branding compatibility](../../realms/docs/branding-and-pages.md)
+
 This checklist is the acceptance record. Unchecked items are not verified. Capture results privately and share only redacted summaries; exclude credentials, host addresses, usernames, paths and serials.
 
 ## Before applying

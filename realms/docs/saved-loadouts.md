@@ -1,5 +1,9 @@
 # Saved equipment loadouts and item protection
 
+[Documentation map](README.md) · [Current status](implementation-status.md) · [Migration map](migration-guide.md)
+
+This guide records the owning feature’s implementation checkpoint. Table counts, dated checks and “remaining” notes refer to that checkpoint; newer combat, Ascension and shared-rule work is summarized in the current status.
+
 Migration 013 adds an immutable loadout event stream, character-owned current templates and protected item references. Existing game rows are unchanged. Each character can currently keep 32 active templates, identified by a stable key and a player-visible name.
 
 `SAVE_LOADOUT` captures the current validated equipment snapshot, including both prepared weapon sets and the selected set. It does not accept arbitrary item plans or hidden equipment fields from a client. Saving enables item protection. Shared weapon identities are recorded once for protection, even when both prepared sets reference them. Replacing a template protects its new items and releases its old references; other templates and manual item locks remain independent.

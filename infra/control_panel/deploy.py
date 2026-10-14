@@ -1,4 +1,4 @@
-"""Build a selected Realms source snapshot and deploy it with data preserved."""
+"""Build a selected Follybound source snapshot and deploy it with data preserved."""
 from __future__ import annotations
 from contextlib import contextmanager
 import fcntl
@@ -26,7 +26,7 @@ def operation_lock(runtime):
 
 def copy_source(source, stage):
     package=json.loads((source/'package.json').read_text())
-    if package.get('name')!='realms-server': raise backend.OperationError('Select a Realms project folder containing package.json.')
+    if package.get('name')!='realms-server': raise backend.OperationError('Select a Follybound project folder containing package.json.')
     def ignore(directory,names):
         return [n for n in names if n in IGNORED or n.startswith('.env')]
     for name in SOURCE:

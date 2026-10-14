@@ -1,5 +1,9 @@
 # Tactical status immunity
 
+[Documentation map](README.md) · [Current status](implementation-status.md) · [Migration map](migration-guide.md)
+
+This guide records the owning feature’s implementation checkpoint. Table counts, dated checks and “remaining” notes refer to that checkpoint; newer combat, Ascension and shared-rule work is summarized in the current status.
+
 ## Design grounding and scope
 
 The uploaded core design bible and Design Documents.zip remain authoritative. System 24 §§15–16 separate damage resistance from status resistance, primarily type status defenses by family/tag, require deliberate fiction-driven immunities, and let each effect choose its application method. System 04 §11 likewise separates fundamental damage types from status tags. This batch implements only explicit tag immunity for encounter-local effects applied by existing valid hit/heal triggers. It does not create universal boss immunity, partial resistance or an extra save on every attack.

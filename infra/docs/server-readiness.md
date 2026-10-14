@@ -1,6 +1,8 @@
 # INFRA-001 — Server readiness and next ticket
 
-As of 2026-10-10 (America/Chicago), the machine has enough visible CPU, RAM and disk capacity for a modest initial KoL 2.0 deployment alongside small projects. It is **not yet verified as a secure, unattended 24/7 server**. No host configuration was changed by this ticket. Ubuntu remains installed.
+[Operations map](README.md) · [Current source status](../../realms/docs/implementation-status.md) · [Branding compatibility](../../realms/docs/branding-and-pages.md)
+
+As of 2026-10-10 (America/Chicago), the machine has enough visible CPU, RAM and disk capacity for a modest initial Follybound deployment alongside small projects. It is **not yet verified as a secure, unattended 24/7 server**. No host configuration was changed by this ticket. Ubuntu remains installed.
 
 ## Readiness assessment
 

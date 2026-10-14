@@ -1,5 +1,9 @@
 # Basic solo combat and campaign completion
 
+[Documentation map](README.md) · [Current status](implementation-status.md) · [Migration map](migration-guide.md)
+
+This guide records the owning feature’s implementation checkpoint. Table counts, dated checks and “remaining” notes refer to that checkpoint; newer combat, Ascension and shared-rule work is summarized in the current status.
+
 Migration 008 adds seven tables for run combat state, encounters/steps, Home recovery, committed Gold/claims and campaign completion evidence. The total including migration bookkeeping is 57 tables. Existing runs receive `completion_policy: LEGACY`; their existing fields, items, wallets and historical encounters are preserved. Migrations 001–007 remain unchanged.
 
 This is an explicitly opted-in BASIC_DUEL_V1 ruleset for testing the complete authoritative persistence loop. It is not the final System 4 tactical engine. It uses authored profiles and a single opponent, ATTACK/GUARD/RETREAT intents, player-first exchanges, rational hit chances, uniform damage ranges, flat armor, resistance basis points and bounded rounds. Main/Quick/Reaction economies, initiative, positioning, party/downed rescue, crits, statuses, derived character/build/equipment stats and final combat tuning remain required for the launch engine. Test numbers are fixtures, not production balance.
