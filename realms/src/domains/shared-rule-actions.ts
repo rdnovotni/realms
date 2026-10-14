@@ -25,7 +25,7 @@ async function loadDefinitions(c:ActionContext){
 async function resolveDomain(c:ActionContext,entityId:string,domain:RuleAction['domain'],authorizationSource='MANUAL_UI'){
  await requireFeature(c.client,'shared.rules',c.accountId,false,true);
  await requireFeature(c.client,`content.${entityId}`,c.accountId);
- const row=(await c.client.query(`SELECT e.revision,v.definition->'mechanics'->'sharedAction' AS spec FROM release_entries e JOIN content_versions v ON v.entity_id=e.entity_id AND v.revision=e.revision JOIN discoveries d ON d.entity_id=e.entity_id AND d.account_id=$3 WHERE e.release_id=$1 AND e.entity_id=$2`,[c.run.content_release_id,entityId,c.accountId])).rows[0];
+ const row=(await c.client.query(`SELECT e.revision,v.definition->'mechanics'->'sharedAction' AS spec,v.definition->'mechanics'->'prerequisite' AS prerequisite FROM release_entries e JOIN content_versions v ON v.entity_id=e.entity_id AND v.revision=e.revision JOIN discoveries d ON d.entity_id=e.entity_id AND d.account_id=$3 WHERE e.release_id=$1 AND e.entity_id=$2`,[c.run.content_release_id,entityId,c.accountId])).rows[0];
  if(!row?.spec)throw new DomainError(404,'RULE_ACTION_NOT_KNOWN');validateRuleAction(row.spec);const spec=row.spec as RuleAction;
  if(authorizationSource==='AUTOMATION'&&spec.check.visibility==='HIDDEN')throw new DomainError(403,'UNKNOWN_CHECK_REQUIRES_EXPLICIT_ACTION');
  if(spec.domain!==domain)throw new DomainError(400,'RULE_DOMAIN_MISMATCH');

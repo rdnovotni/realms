@@ -18,7 +18,7 @@ export function validateSharedContent(entities:Map<string,ContentEntity>){
  validateEffectGraph(definitions);
  for(const e of entities.values()){
   const m=e.definition.mechanics,p=m?.prerequisite;
-  if(p!==undefined){if(!['CLASS','ITEM','RECIPE','NPC','ROUTE','QUEST','ACTIVITY','ENCOUNTER','ABILITY'].includes(e.kind))throw new DomainError(400,'INVALID_PREREQUISITE_KIND');validatePrerequisite(p);}
+  if(p!==undefined){if(!['CLASS','ITEM','RECIPE','NPC','ROUTE','QUEST','ACTIVITY','ENCOUNTER'].includes(e.kind))throw new DomainError(400,'INVALID_PREREQUISITE_KIND');validatePrerequisite(p);}
   const action=m?.sharedAction;if(action!==undefined){validateRuleAction(action);const a=action as unknown as RuleAction;
    if(a.domain==='COMBAT'?(e.kind!=='ENCOUNTER'||m?.tacticalCombat!==undefined||m?.combat!==undefined||a.costs.turns!==1||a.costs.rest!=='NONE'):!['ACTIVITY','NPC','ROUTE','QUEST','RECIPE'].includes(e.kind))throw new DomainError(400,'INVALID_RULE_DOMAIN');
    for(const id of [...a.effects,...a.rewards.filter(r=>r.kind!=='GOLD').map(r=>r.id),...(a.check.skill?[a.check.skill.slice(6)]:[])])if(!entities.has(id)||!e.definition.dependencies.includes(id))throw new DomainError(400,'INVALID_RULE_REFERENCE');
