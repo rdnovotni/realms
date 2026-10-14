@@ -1,3 +1,4 @@
+import { rememberCampaign } from './ascension-contract.js';
 import { Ajv } from 'ajv';
 import type { ContentEntity } from './content.js';
 import type { ActionContext } from '../foundation/action.js';
@@ -52,4 +53,5 @@ export async function completeTacticalCampaign(c:ActionContext,instanceId:string
  await c.client.query(`INSERT INTO run_completions(run_id,release_id,campaign_id,definition_revision,final_instance_id,action_id,ruleset) VALUES($1,$2,$3,$4,$5,$6,'TACTICAL_CAMPAIGN_V1')`,[c.run.id,c.run.content_release_id,campaignId,campaign.revision,instanceId,c.actionId]);
  for(const win of wins)await c.client.query('INSERT INTO tactical_campaign_prerequisites(run_id,definition_id,instance_id,finish_action_id) VALUES($1,$2,$3,$4)',[c.run.id,win.definition_id,win.instance_id,win.finish_action_id]);
  await c.client.query("UPDATE runs SET status='AFTERCORE',completed_at=now() WHERE id=$1",[c.run.id]);
+ await rememberCampaign(c,campaignId);
 }

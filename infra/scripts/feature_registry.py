@@ -234,6 +234,7 @@ def report(source, registry):
     lines = ['# Feature framework work plan', '',
         'Generated from `feature-registry.json` and the fingerprinted `source-catalog.json.gz`. Update the overlay, then run `python3 infra/scripts/feature_registry.py --write-report` from the repository root.', '',
         f'{len(source["documents"])} documents, {len(source["sections"])} section checklists, {len(source["entries"]):,} source entries including {counts["FEATURE / RULE"]:,} rules. Coverage is a mapping count, **not a feature completion percentage**.', '',
+        'Current section assessments: ' + ', '.join(f'{status}: {count}' for status, count in sorted(Counter(c['implementation_status'] for c in registry['capabilities']).items())) + '.', '',
         registry['policy']['content_strategy'], '',
         'The system contract supplies owner, prerequisites, field scopes/reset rules, Action/permission families, authoring/editor work, client workflow and acceptance scenarios to every section. Individual section implementation is initially **unassessed**. Baseline subset evidence is listed separately; no whole system is verified. Field-level exceptions and per-rule executable assertions are required before implementation status can be promoted.', '',
         '## Next work packages', '']

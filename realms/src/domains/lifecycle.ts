@@ -1,3 +1,5 @@
+import { transitionRunFields,stateRegistryLock } from './state.js';
+import { transitionPreview,ascensionContract } from './ascension-contract.js';
 import { clearEquipmentForAscension } from './equipment.js';
 import { randomUUID } from 'node:crypto';
 import type pg from 'pg';
@@ -53,12 +55,26 @@ export async function applyRolloverEpoch(client:pg.PoolClient,accountId:string,e
  await refreshEpoch(client,accountId,run,epoch);return {applied:1,deferred:false};
 }
 // Eligibility/boss completion is owned by gameplay modules. This transition only accepts a completed run.
-export function ascend(pool:pg.Pool,accountId:string,envelope:Envelope){
+export function ascend(pool:pg.Pool,accountId:string,envelope:Envelope,previewToken?:string){
+  return transition(pool,accountId,envelope,previewToken,false);
+}
+export function confirmAscension(pool:pg.Pool,accountId:string,envelope:Envelope,previewToken?:string){
+  return transition(pool,accountId,envelope,previewToken,true);
+}
+function transition(pool:pg.Pool,accountId:string,envelope:Envelope,previewToken:string|undefined,requirePreview:boolean){
+  if(envelope.actionType!=='ASCEND')throw new DomainError(400,'INVALID_ASCENSION_ACTION');
   const nextId=randomUUID();
-  return executeAction(pool,accountId,envelope,{},async context=>{
+  return executeAction(pool,accountId,envelope,previewToken===undefined?{}:{previewToken},async context=>{
+    // Existing receipts replay before applying new confirmation requirements.
+    if(requirePreview&&previewToken===undefined)throw new DomainError(400,'ASCENSION_PREVIEW_REQUIRED');
+    if(!['MANUAL_UI','API'].includes(envelope.authorizationSource??'MANUAL_UI'))throw new DomainError(403,'EXPLICIT_ASCENSION_REQUIRED');
     if(context.run.status!=='AFTERCORE') throw new DomainError(409,'ASCENSION_NOT_READY');
     if((await context.client.query(`SELECT 1 FROM instances i JOIN instance_participants p ON p.instance_id=i.id WHERE p.run_id=$1 AND i.lifecycle='ACTIVE' LIMIT 1`,[context.run.id])).rows.length) throw new DomainError(409,'INSTANCE_STILL_ACTIVE');
     if(!context.run.content_release_id) throw new DomainError(409,'CONTENT_RELEASE_REQUIRED');
+    // Scope locking also serializes generic field writes with archival/copy.
+    await context.client.query('SELECT id FROM state_scopes WHERE run_id=$1 FOR UPDATE',[context.run.id]);
+    const preview=await transitionPreview(context.client,accountId,context.run);
+    if(previewToken!==undefined&&previewToken!==preview.previewToken)throw new DomainError(409,'ASCENSION_PREVIEW_CHANGED');
     await clearEquipmentForAscension(context);
     // Ordinary possessions retain custody in account storage. Run-bound and system quest items
     // remain in the archived run for provenance; they cannot be accessed by the new run.
@@ -86,10 +102,11 @@ export function ascend(pool:pg.Pool,accountId:string,envelope:Envelope){
     await context.client.query(`INSERT INTO runs(id,character_id,turns,mode,content_release_id,rules_version,rules_manifest,completion_policy)
       SELECT $1,character_id,turns,mode,content_release_id,rules_version,rules_manifest,completion_policy FROM runs WHERE id=$2`,[nextId,context.run.id]);
     await context.client.query('INSERT INTO run_progression(run_id) VALUES($1)',[nextId]);
+    const initializedFields=await transitionRunFields(context.client,context.run.id,nextId);
     await context.client.query(`INSERT INTO run_consumption(run_id,fullness,drunkenness,tolerance)
       SELECT $1,fullness,drunkenness,tolerance FROM run_consumption WHERE run_id=$2`,[nextId,context.run.id]);
     await context.client.query(`INSERT INTO inventory_containers(scope_id,kind) SELECT id,'CARRIED' FROM state_scopes WHERE run_id=$1`,[nextId]);
-    await context.client.query('INSERT INTO run_history(run_id,character_id,next_run_id,action_id,summary) VALUES($1,$2,$3,$4,$5)',[context.run.id,context.run.character_id,nextId,context.actionId,{turns:context.run.turns,rulesVersion:context.run.rules_version,storedItems:possessions.rows.length,storedGold:currentGold?.balance??'0'}]);
+    await context.client.query('INSERT INTO run_history(run_id,character_id,next_run_id,action_id,summary) VALUES($1,$2,$3,$4,$5)',[context.run.id,context.run.character_id,nextId,context.actionId,{contractVersion:ascensionContract.version,initializedFields,turns:context.run.turns,rulesVersion:context.run.rules_version,storedItems:possessions.rows.length,storedGold:currentGold?.balance??'0'}]);
     return {runId:nextId,previousRunId:context.run.id,turns:context.run.turns,revision:0};
-  });
+  },stateRegistryLock);
 }

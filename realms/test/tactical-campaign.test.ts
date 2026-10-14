@@ -12,26 +12,7 @@ import { migrate } from '../src/database.js';
 import type { TacticalSpec } from '../src/domains/tactical-content.js';
 import type pg from 'pg';
 const json=(x:unknown)=>x as any;
-function campaignPackage(required=true){
- const p=tacticalPackage();p.version='tactical-campaign-fixture';
- const first=p.entities.find(e=>e.id==='encounter.tactical')!;
- (first.definition.mechanics!.tacticalCombat as unknown as TacticalSpec).allies=[];
- (p.entities.find(e=>e.id==='monster.tactical')!.definition.mechanics!.tacticalUnit as any).stats.maxHealth=6;
- const final=structuredClone(first);final.id='encounter.finale';final.definition.name='Finale';
- (final.definition.mechanics!.tacticalCombat as unknown as TacticalSpec).campaignId='campaign.tactical';final.definition.dependencies.push('campaign.tactical');
- p.entities.push(final,{id:'campaign.tactical',kind:'TUNING',revision:1,schemaVersion:1,definition:{name:'Campaign',dependencies:required?['encounter.tactical']:[],public:{},mechanics:{tacticalCampaign:{version:1,ruleset:'TACTICAL_CAMPAIGN_V1',finalEncounterId:'encounter.finale',requiresEncounterIds:required?['encounter.tactical']:[]}}}});
- return p;
-}
-async function fixture(pool:pg.Pool,p=campaignPackage()){
- const f=await tacticalFixture(pool,p);
- await pool.query("INSERT INTO discoveries(account_id,entity_id,knowledge_level) VALUES($1,'encounter.finale','DISCOVERED')",[f.account]);return f;
-}
-async function win(pool:pg.Pool,account:string,revision:number,definitionId='encounter.tactical'){
- const started=json(await startTacticalCombat(pool,account,envelope(revision,'START_TACTICAL'),definitionId));
- const request=envelope(started.revision),intent={actorId:'hero',kind:'ATTACK' as const,targetId:'enemy'};
- const result=json(await takeTacticalAction(pool,account,request,started.instanceId,started.encounterRevision,started.tacticalRevision,intent));assert.equal(result.outcome,'VICTORY');
- return {started,request,intent,result};
-}
+import { campaignPackage,fixture,win } from './ascension-fixture.js';
 test('authored tactical campaign requires prior victories, settles exact evidence once, and voluntarily ascends',async()=>{
  const db=await testDatabase();try{
   const f=await fixture(db.pool);
@@ -162,6 +143,7 @@ test('restricted runtime completes a tactical campaign while completion/evidence
   await db.pool.query(`GRANT USAGE ON SCHEMA ${db.schema} TO ${role}; GRANT SELECT ON ALL TABLES IN SCHEMA ${db.schema} TO ${role};
    GRANT UPDATE(security_epoch) ON accounts TO ${role}; GRANT UPDATE ON runs,run_builds,run_progression,instances,state_scopes,inventory_containers,encounter_records,tactical_run_state,inventory_items TO ${role};
    GRANT INSERT ON instances,instance_participants,state_scopes,encounter_records,encounter_draws,character_encounter_snapshots,encounter_reward_plans,encounter_reward_claims,encounter_reward_items,encounter_xp_plans,run_xp_awards,tactical_run_state,tactical_encounter_origins,tactical_steps,tactical_recoveries,action_receipts,turn_ledger,audit_events,outbox_events,inventory_items,inventory_quantity_operations,run_completions,tactical_campaign_prerequisites TO ${role};
+   GRANT INSERT,UPDATE ON discoveries TO ${role};
    GRANT USAGE,SELECT ON ALL SEQUENCES IN SCHEMA ${db.schema} TO ${role}`);
   const client=await db.pool.connect();try{
    await client.query(`SET ROLE ${role}`);

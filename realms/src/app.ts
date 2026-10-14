@@ -1,3 +1,4 @@
+import { ascensionPreview } from './domains/ascension-contract.js';
 import {ingressPeer,RequestBudget} from './ingress.js';
 import type { DisposableCache } from './cache.js';
 import { gameView } from './domains/game-view.js';
@@ -27,7 +28,7 @@ import { startBuild,levelUp,buildOptions } from './domains/builds.js';
 import { progressionView } from './domains/progression.js';
 import { setEquipment,equipmentView,type EquipmentPlan } from './domains/equipment.js';
 import { equipmentSlots } from './domains/equipment-content.js';
-import { ascend } from './domains/lifecycle.js';
+import { confirmAscension } from './domains/lifecycle.js';
 import type { Envelope } from './foundation/action.js';
 import { contentView } from './domains/content.js';
 import type { Authentication } from './config.js';
@@ -138,7 +139,8 @@ export function buildApp(pool: pg.Pool, auth:Authentication, logger = false, cac
     protectedApp.get<{Params:{id:string}}>('/api/v1/inventory/:id/protection',{schema:{params:{type:'object',additionalProperties:false,required:['id'],properties:{id:{type:'string',format:'uuid'}}}}},async request=>itemProtectionView(pool,actor(request),request.params.id));
     protectedApp.get('/api/v1/equipment',async request=>equipmentView(pool,actor(request)));
     protectedApp.post<{Body:Envelope & EquipmentPlan}>('/api/v1/equipment',{schema:{body:{type:'object',additionalProperties:false,required:['requestId','actionType','expectedRevision','activeSet','slots'],properties:{...envelopeProperties,actionType:{type:'string',const:'SET_EQUIPMENT'},activeSet:{type:'string',enum:['A','B']},slots:{type:'array',maxItems:16,items:{type:'object',additionalProperties:false,required:['set','slot','itemId'],properties:{set:{type:'string',enum:['WORN','A','B']},slot:{type:'string',enum:equipmentSlots},itemId:{type:'string',format:'uuid'}}}}}}}},async request=>setEquipment(pool,actor(request),{...request.body,...(request.principal?{principal:request.principal}:{})},{activeSet:request.body.activeSet,slots:request.body.slots}));
-    protectedApp.post<{Body:Envelope}>('/api/v1/ascend',{schema:{body:{type:'object',additionalProperties:false,required:['requestId','actionType','expectedRevision'],properties:{...envelopeProperties,actionType:{type:'string',const:'ASCEND'}}}}},async request=>ascend(pool,actor(request),{...request.body,...(request.principal?{principal:request.principal}:{})}));
+    protectedApp.get('/api/v1/ascend/preview',async request=>ascensionPreview(pool,actor(request)));
+    protectedApp.post<{Body:Envelope & {previewToken?:string}}>('/api/v1/ascend',{schema:{body:{type:'object',additionalProperties:false,required:['requestId','actionType','expectedRevision'],properties:{...envelopeProperties,actionType:{type:'string',const:'ASCEND'},previewToken:{type:'string',pattern:'^[0-9a-f]{64}$'}}}}},async request=>confirmAscension(pool,actor(request),{...request.body,...(request.principal?{principal:request.principal}:{})},request.body.previewToken));
     protectedApp.get<{Params:{id:string}}>('/api/v1/instances/:id', {schema:{params:{type:'object',required:['id'],properties:{id:{type:'string',format:'uuid'}}}}}, async request=>getInstanceView(pool,actor(request),request.params.id));
     protectedApp.get<{Params:{release:string;entity:string}}>('/api/v1/content/:release/:entity',{schema:{params:{type:'object',required:['release','entity'],properties:{release:{type:'string',format:'uuid'},entity:{type:'string',pattern:'^[a-z][a-z0-9_.-]{2,119}$'}}}}},async request=>contentView(pool,actor(request),request.params.release,request.params.entity,cache));
     protectedApp.get('/api/v1/state', async (request, reply) => {

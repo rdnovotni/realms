@@ -40,7 +40,22 @@ export function render(root:HTMLElement,session:GameSession,screen:Screen,naviga
  if(!session.busy&&retainedFocus){const matching=Array.from(root.querySelectorAll<HTMLElement>('[data-focus]')).find(e=>e.dataset.focus===retainedFocus);if(matching&&!(matching instanceof HTMLButtonElement&&matching.disabled))matching.focus();else root.querySelector<HTMLElement>('main h1')?.focus();retainedFocus=null;}
 }
 function stat(name:string,value:string){return add(el('div','','stat'),el('strong',value),el('span',name));}
+
+function renderAscension(main:HTMLElement,session:GameSession,disabled:boolean){
+ const panel=section('Between lives');add(panel,el('p','This campaign is complete. Continue in Aftercore, or review a fresh start.'));
+ const preview=session.ascension;
+ if(!preview)add(panel,button('Review Ascension',()=>void session.previewAscension(),disabled,'primary'));
+ else {
+  for(const [key,title] of [['preserve','What you keep'],['reset','What starts fresh'],['archive','What becomes history']] as const){const list=el('ul');for(const rule of preview.contract[key])list.append(el('li',rule));add(panel,el('h3',title),list);}
+  const d=preview.retained;
+  add(panel,el('p',`Retained: ${d.turns} Turns; fullness ${d.consumption.fullness}, drunkenness ${d.consumption.drunkenness}, tolerance ${d.consumption.tolerance}. ${d.storedItems} item stacks or pieces move to storage; ${d.archivedItems} stay with your old life. ${d.gold} Gold goes to account wealth. ${d.knowledge} discoveries remain.`),el('p',`Your next life uses ${label(preview.next.mode)} mode, starts at level ${preview.next.startingLevel}, and needs a fresh class/build choice.`));
+  if(!preview.ready)panel.append(el('p','Finish every active instance before Ascending.'));
+  add(panel,button('Begin next life',()=>{if(confirm('Begin your next life? Your current build, XP and run progress become history. The retained state shown here carries forward.'))void session.confirmAscension();},disabled||!preview.ready,'primary danger'));
+ }
+ main.append(panel);
+}
 function renderAdventure(main:HTMLElement,s:Snapshot,session:GameSession,disabled:boolean,navigate:(s:Screen)=>void){
+ if(s.game.run.status==='AFTERCORE')renderAscension(main,session,disabled);
  add(main,add(el('section','','panel hero'),el('span','Your journey','eyebrow'),heading('Follow the road.'),el('p','A familiar path can still hold an unfamiliar story. Choose where your next Turn takes you.')));
  add(main,add(el('div','','section-header'),el('h2','Known adventures'),el('small',`${s.game.adventures.length} discovered`)));
  if(s.game.activeEncounter){main.append(add(el('section','','panel'),el('h3','Your adventure is already underway'),el('p',s.game.activeEncounter.kind==='TACTICAL'?'Return to your saved encounter before beginning another.':'This saved encounter uses controls that are not available in this client yet.'),s.game.activeEncounter.kind==='TACTICAL'?button('Resume encounter',()=>navigate('combat'),false,'primary'):null));return;}

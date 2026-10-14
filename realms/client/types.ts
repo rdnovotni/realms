@@ -14,3 +14,5 @@ export type EquipmentAssignment={set:'WORN'|'A'|'B';slot:string;itemId:string};
 export type EquipmentPlan={activeSet:'A'|'B';slots:EquipmentAssignment[]};
 export type Gear={id:string;name:string;binding:string;slots:string[];hands:number;minimumLevel:number;bindingPolicy:string;eligible:boolean;proficiencyMet:boolean;manualLocked:boolean;protectedLoadouts:string[];condition:number|null;maximumCondition:number|null};
 export type Loadout={key:string;name:string;plan:EquipmentPlan;protectItems:boolean};
+
+export type AscensionPreview={runId:string;revision:number;ready:boolean;activeInstances:number;previewToken:string;contract:{version:number;preserve:string[];reset:string[];archive:string[];blockers:string[]};retained:{turns:number;consumption:{fullness:number;drunkenness:number;tolerance:number};knowledge:number;storedItems:number;archivedItems:number;gold:string;carriedFields:number};next:{mode:string;startingLevel:number;startingXP:string;build:string}};

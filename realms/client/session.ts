@@ -1,7 +1,8 @@
 import { ApiClient,ApiError,errorMessage } from './api.js';
-import type { Config,GameView,Progression,BuildOptions,Tactical,Snapshot,Notice } from './types.js';
+import type { Config,GameView,Progression,BuildOptions,Tactical,Snapshot,Notice,AscensionPreview } from './types.js';
 export class GameSession {
  snapshot:Snapshot|null=null;
+ ascension:AscensionPreview|null=null;
  busy=false;
  needsRefresh=false;
  pending:{path:string;body:Record<string,unknown>}|null=null;
@@ -21,6 +22,7 @@ export class GameSession {
   finally{if(epoch===this.epoch){this.busy=false;this.notify();}}
  }
  private async load(epoch:number){
+  this.ascension=null;
   const game=await this.api.request<GameView>('/api/v1/client/state');if(game.protocolVersion!==1)throw new ApiError(503,'UNSUPPORTED_CLIENT');
   const [progression,options]=await Promise.all([this.api.request<Progression>('/api/v1/progression'),this.api.request<BuildOptions>('/api/v1/progression/options')]);
   const id=game.activeEncounter?.kind==='TACTICAL'?game.activeEncounter.id:!game.activeEncounter?game.latestEncounter?.id:null;
@@ -34,6 +36,19 @@ export class GameSession {
  async action(path:string,actionType:string,parameters:Record<string,unknown>){
   if(this.busy||this.pending||this.needsRefresh||!this.snapshot?.game.canWrite)return;
   this.pending={path,body:{...structuredClone(parameters),requestId:this.uuid(),actionType,expectedRevision:this.snapshot.game.run.revision}};await this.submit();
+ }
+ async previewAscension(){
+  if(this.busy||this.pending||this.needsRefresh||!this.snapshot?.game.canWrite)return;
+  this.busy=true;const epoch=this.epoch;this.notify();
+  try{const preview=await this.api.request<AscensionPreview>('/api/v1/ascend/preview');
+   if(epoch!==this.epoch)return;
+   if(preview.runId!==this.snapshot?.game.run.runId||preview.revision!==this.snapshot.game.run.revision)throw new ApiError(409,'STALE_REVISION');
+   this.ascension=preview;this.notice={text:'Review what is retained and reset before choosing a new life.',kind:'info'};
+  }catch(error){this.ascension=null;this.handleError(error);}finally{if(epoch===this.epoch){this.busy=false;this.notify();}}
+ }
+ async confirmAscension(){
+  const preview=this.ascension;if(!preview?.ready||preview.runId!==this.snapshot?.game.run.runId||preview.revision!==this.snapshot.game.run.revision)return;
+  await this.action('/api/v1/ascend','ASCEND',{previewToken:preview.previewToken});
  }
  async retry(){if(!this.busy&&this.pending)await this.submit();}
  private async submit(){
@@ -49,6 +64,6 @@ export class GameSession {
   try{if(this.config?.authMode==='sessions')await this.api.request('/api/v1/auth/logout',{});}
   catch{confirmed=false;}
   // Forget local account data even if revocation succeeded but its reply was lost.
-  ++this.epoch;this.api.setToken('');this.snapshot=null;this.pending=null;this.needsRefresh=false;this.busy=false;this.notice={text:confirmed?'Signed out. Your game is saved; sign in to resume.':'Signed out on this device. Server session revocation could not be confirmed.',kind:'info'};this.notify();
+  ++this.epoch;this.api.setToken('');this.snapshot=null;this.ascension=null;this.pending=null;this.needsRefresh=false;this.busy=false;this.notice={text:confirmed?'Signed out. Your game is saved; sign in to resume.':'Signed out on this device. Server session revocation could not be confirmed.',kind:'info'};this.notify();
  }
 }
