@@ -4,7 +4,7 @@
   "assessment_commit": "48aafb80e507f527fadba0f1d443545be6b35de7",
   "policy": {
     "content_strategy": "Finish reusable feature frameworks with minimal test fixtures before substantial authored content. Keep canonical launch tiers and post-launch/deployment gates visible; do not treat examples as locked catalogs.",
-    "canon": "Explicit approved correction > owning Systems 01–46 > index > historical Core > prototype constants/examples. Apply the recorded supersessions before translating a source statement to an assertion.",
+    "canon": "Explicit approved correction > owning Systems 01\u201346 > index > historical Core > prototype constants/examples. Apply the recorded supersessions before translating a source statement to an assertion.",
     "status_definition": {
       "unassessed": "Requirement implementation has not been individually mapped/tested. Inheritance gives a planning contract, not proof of behavior.",
       "planned": "Reviewed contract; no complete implementation claimed.",
@@ -10490,7 +10490,7 @@
     {
       "id": "CAP-12-dungeons",
       "system": "SYS-12",
-      "title": "15. Guild Dungeons — Expanded KoL Clan-Dungeon DNA",
+      "title": "15. Guild Dungeons \u2014 Expanded KoL Clan-Dungeon DNA",
       "source_section": "SEC-00D9E7921662",
       "source_entries": [
         "FEAT-DB12369D38F167",
@@ -10933,7 +10933,7 @@
     {
       "id": "CAP-13-levels",
       "system": "SYS-13",
-      "title": "5. Levels 25–100+ & Veteran Milestones",
+      "title": "5. Levels 25\u2013100+ & Veteran Milestones",
       "source_section": "SEC-B214F9145EFC",
       "source_entries": [
         "FEAT-1D8218EE12BF19",
@@ -13901,7 +13901,7 @@
     {
       "id": "CAP-18-classification",
       "system": "SYS-18",
-      "title": "4. KoL Conversion Audit — Keep / Expand / Redesign / Axe / Add",
+      "title": "4. KoL Conversion Audit \u2014 Keep / Expand / Redesign / Axe / Add",
       "source_section": "SEC-A88A5A1804E5",
       "source_entries": [
         "FEAT-E2CE645B0CA9B1",
@@ -14675,7 +14675,7 @@
     {
       "id": "CAP-19-classification",
       "system": "SYS-19",
-      "title": "4. KoL Conversion Audit — Keep / Expand / Redesign / Replace / Axe / Add",
+      "title": "4. KoL Conversion Audit \u2014 Keep / Expand / Redesign / Replace / Axe / Add",
       "source_section": "SEC-5710C2E0F8B6",
       "source_entries": [
         "FEAT-0A2BEFA6D9BB77",
@@ -15017,7 +15017,7 @@
     {
       "id": "CAP-19-appearance",
       "system": "SYS-19",
-      "title": "21. Décor Appearance Library, Physical Ownership & Trade",
+      "title": "21. D\u00e9cor Appearance Library, Physical Ownership & Trade",
       "source_section": "SEC-9331D1AA2FA7",
       "source_entries": [
         "FEAT-80B1B384627A62",
@@ -15847,7 +15847,7 @@
     {
       "id": "CAP-20-constellations",
       "system": "SYS-20",
-      "title": "22. Constellations — Run Identity",
+      "title": "22. Constellations \u2014 Run Identity",
       "source_section": "SEC-9656A80676F1",
       "source_entries": [
         "FEAT-2CB83CF8BEC245",
@@ -15958,7 +15958,7 @@
     {
       "id": "CAP-20-luck",
       "system": "SYS-20",
-      "title": "27. Luck — Attribute Architecture",
+      "title": "27. Luck \u2014 Attribute Architecture",
       "source_section": "SEC-C33047777EB3",
       "source_entries": [
         "FEAT-43F186ED0F390E",
@@ -16060,7 +16060,7 @@
     {
       "id": "CAP-20-tavern",
       "system": "SYS-20",
-      "title": "32. Dungeon Master’s Tavern & Higher-Order Reality",
+      "title": "32. Dungeon Master\u2019s Tavern & Higher-Order Reality",
       "source_section": "SEC-B71F8976FEF9",
       "source_entries": [
         "FEAT-BBF7F8366A8EE2",
@@ -17681,7 +17681,7 @@
     {
       "id": "CAP-22-trials",
       "system": "SYS-22",
-      "title": "24. Trials — KoL-Style Weird Competition",
+      "title": "24. Trials \u2014 KoL-Style Weird Competition",
       "source_section": "SEC-2A024C4D9FB5",
       "source_entries": [
         "FEAT-FCD9D903C7AAA5",
@@ -18290,7 +18290,7 @@
     {
       "id": "CAP-23-classification",
       "system": "SYS-23",
-      "title": "4. KoL Conversion Audit — Keep / Expand / Redesign / Replace / Axe / Add",
+      "title": "4. KoL Conversion Audit \u2014 Keep / Expand / Redesign / Replace / Axe / Add",
       "source_section": "SEC-AE01F5AAC073",
       "source_entries": [
         "FEAT-BC3207C427B080",
@@ -18310,7 +18310,7 @@
     {
       "id": "CAP-23-shape",
       "system": "SYS-23",
-      "title": "5. Architectural Shape — Modular Monolith First",
+      "title": "5. Architectural Shape \u2014 Modular Monolith First",
       "source_section": "SEC-68D2EE6FD689",
       "source_entries": [
         "FEAT-2BD2CB1C614A62",
@@ -18570,11 +18570,30 @@
         "FEAT-F2DA73D6457136",
         "FEAT-795D5F417080A4"
       ],
-      "implementation_status": "unassessed",
+      "implementation_status": "partial",
       "contract": "inherit-system",
-      "evidence": [],
+      "evidence": [
+        {
+          "path": "realms/src/domains/shared-rule-actions.ts",
+          "finding": "Two opted-in domains use shared prerequisite/check/effect/cost/reward services under authoritative Action receipts; historical engines remain pinned."
+        },
+        {
+          "path": "realms/test/shared-rules-integration.test.ts",
+          "finding": "Cross-domain fixture, conserved rewards, retries/rollback, preview, release adoption and restricted controls have executable regressions."
+        },
+        {
+          "path": "realms/docs/shared-rules.md",
+          "finding": "Defines versioned services, clock providers, source/eligibility boundaries and remaining owning-domain/Studio work."
+        }
+      ],
       "rule_assertions": {},
-      "verification": null
+      "verification": null,
+      "contract_review": {
+        "state": "Run-owned immutable rule event/state projection; clock facts from canonical ledgers; new-run history archives. Operator controls and adoption survive lives.",
+        "actions": "Server derives facts/rolls and repeats gates; no client effects/rewards. Matching receipts precede flags; shared rules default disabled.",
+        "authoring": "Bounded versioned AST/check/effect/cost/reward contracts validated with references, clocks, stacking and trigger graph limits. No catalog content authored.",
+        "client": "Authenticated discovery-safe query/mutation adapters and explainability. Existing tactical UI is preserved; complete owning-domain/Studio editors remain open."
+      }
     },
     {
       "id": "CAP-23-definitions",
@@ -18609,11 +18628,30 @@
         "FEAT-6EC92B7FABCA23",
         "FEAT-AB28EC9557FDBE"
       ],
-      "implementation_status": "unassessed",
+      "implementation_status": "partial",
       "contract": "inherit-system",
-      "evidence": [],
+      "evidence": [
+        {
+          "path": "realms/src/domains/shared-rule-actions.ts",
+          "finding": "Two opted-in domains use shared prerequisite/check/effect/cost/reward services under authoritative Action receipts; historical engines remain pinned."
+        },
+        {
+          "path": "realms/test/shared-rules-integration.test.ts",
+          "finding": "Cross-domain fixture, conserved rewards, retries/rollback, preview, release adoption and restricted controls have executable regressions."
+        },
+        {
+          "path": "realms/docs/shared-rules.md",
+          "finding": "Defines versioned services, clock providers, source/eligibility boundaries and remaining owning-domain/Studio work."
+        }
+      ],
       "rule_assertions": {},
-      "verification": null
+      "verification": null,
+      "contract_review": {
+        "state": "Run-owned immutable rule event/state projection; clock facts from canonical ledgers; new-run history archives. Operator controls and adoption survive lives.",
+        "actions": "Server derives facts/rolls and repeats gates; no client effects/rewards. Matching receipts precede flags; shared rules default disabled.",
+        "authoring": "Bounded versioned AST/check/effect/cost/reward contracts validated with references, clocks, stacking and trigger graph limits. No catalog content authored.",
+        "client": "Authenticated discovery-safe query/mutation adapters and explainability. Existing tactical UI is preserved; complete owning-domain/Studio editors remain open."
+      }
     },
     {
       "id": "CAP-23-paths",
@@ -18794,11 +18832,30 @@
         "FEAT-2DF8EE1CFCDD1B",
         "FEAT-4FE0A43CA4AD39"
       ],
-      "implementation_status": "unassessed",
+      "implementation_status": "partial",
       "contract": "inherit-system",
-      "evidence": [],
+      "evidence": [
+        {
+          "path": "realms/src/domains/shared-rule-actions.ts",
+          "finding": "Two opted-in domains use shared prerequisite/check/effect/cost/reward services under authoritative Action receipts; historical engines remain pinned."
+        },
+        {
+          "path": "realms/test/shared-rules-integration.test.ts",
+          "finding": "Cross-domain fixture, conserved rewards, retries/rollback, preview, release adoption and restricted controls have executable regressions."
+        },
+        {
+          "path": "realms/docs/shared-rules.md",
+          "finding": "Defines versioned services, clock providers, source/eligibility boundaries and remaining owning-domain/Studio work."
+        }
+      ],
       "rule_assertions": {},
-      "verification": null
+      "verification": null,
+      "contract_review": {
+        "state": "Run-owned immutable rule event/state projection; clock facts from canonical ledgers; new-run history archives. Operator controls and adoption survive lives.",
+        "actions": "Server derives facts/rolls and repeats gates; no client effects/rewards. Matching receipts precede flags; shared rules default disabled.",
+        "authoring": "Bounded versioned AST/check/effect/cost/reward contracts validated with references, clocks, stacking and trigger graph limits. No catalog content authored.",
+        "client": "Authenticated discovery-safe query/mutation adapters and explainability. Existing tactical UI is preserved; complete owning-domain/Studio editors remain open."
+      }
     },
     {
       "id": "CAP-23-admin",
@@ -19198,7 +19255,7 @@
     {
       "id": "CAP-23-interfaces",
       "system": "SYS-23",
-      "title": "49. Interfaces With Systems 01–22",
+      "title": "49. Interfaces With Systems 01\u201322",
       "source_section": "SEC-B2A206772101",
       "source_entries": [
         "FEAT-0759E72C39B031",
@@ -19416,11 +19473,30 @@
         "FEAT-CE759B1B8232FA",
         "FEAT-B4892DF76A5D97"
       ],
-      "implementation_status": "unassessed",
+      "implementation_status": "partial",
       "contract": "inherit-system",
-      "evidence": [],
+      "evidence": [
+        {
+          "path": "realms/src/domains/shared-rule-actions.ts",
+          "finding": "Two opted-in domains use shared prerequisite/check/effect/cost/reward services under authoritative Action receipts; historical engines remain pinned."
+        },
+        {
+          "path": "realms/test/shared-rules-integration.test.ts",
+          "finding": "Cross-domain fixture, conserved rewards, retries/rollback, preview, release adoption and restricted controls have executable regressions."
+        },
+        {
+          "path": "realms/docs/shared-rules.md",
+          "finding": "Defines versioned services, clock providers, source/eligibility boundaries and remaining owning-domain/Studio work."
+        }
+      ],
       "rule_assertions": {},
-      "verification": null
+      "verification": null,
+      "contract_review": {
+        "state": "Run-owned immutable rule event/state projection; clock facts from canonical ledgers; new-run history archives. Operator controls and adoption survive lives.",
+        "actions": "Server derives facts/rolls and repeats gates; no client effects/rewards. Matching receipts precede flags; shared rules default disabled.",
+        "authoring": "Bounded versioned AST/check/effect/cost/reward contracts validated with references, clocks, stacking and trigger graph limits. No catalog content authored.",
+        "client": "Authenticated discovery-safe query/mutation adapters and explainability. Existing tactical UI is preserved; complete owning-domain/Studio editors remain open."
+      }
     },
     {
       "id": "CAP-24-stacking",
@@ -19432,11 +19508,30 @@
         "FEAT-44587114517E2A",
         "FEAT-FE69E888E51507"
       ],
-      "implementation_status": "unassessed",
+      "implementation_status": "partial",
       "contract": "inherit-system",
-      "evidence": [],
+      "evidence": [
+        {
+          "path": "realms/src/domains/shared-rule-actions.ts",
+          "finding": "Two opted-in domains use shared prerequisite/check/effect/cost/reward services under authoritative Action receipts; historical engines remain pinned."
+        },
+        {
+          "path": "realms/test/shared-rules-integration.test.ts",
+          "finding": "Cross-domain fixture, conserved rewards, retries/rollback, preview, release adoption and restricted controls have executable regressions."
+        },
+        {
+          "path": "realms/docs/shared-rules.md",
+          "finding": "Defines versioned services, clock providers, source/eligibility boundaries and remaining owning-domain/Studio work."
+        }
+      ],
       "rule_assertions": {},
-      "verification": null
+      "verification": null,
+      "contract_review": {
+        "state": "Run-owned immutable rule event/state projection; clock facts from canonical ledgers; new-run history archives. Operator controls and adoption survive lives.",
+        "actions": "Server derives facts/rolls and repeats gates; no client effects/rewards. Matching receipts precede flags; shared rules default disabled.",
+        "authoring": "Bounded versioned AST/check/effect/cost/reward contracts validated with references, clocks, stacking and trigger graph limits. No catalog content authored.",
+        "client": "Authenticated discovery-safe query/mutation adapters and explainability. Existing tactical UI is preserved; complete owning-domain/Studio editors remain open."
+      }
     },
     {
       "id": "CAP-24-buffs",
@@ -23508,11 +23603,30 @@
         "FEAT-5754BADCD92476",
         "FEAT-D45EFD64D12DA6"
       ],
-      "implementation_status": "unassessed",
+      "implementation_status": "partial",
       "contract": "inherit-system",
-      "evidence": [],
+      "evidence": [
+        {
+          "path": "realms/src/domains/shared-rule-actions.ts",
+          "finding": "Two opted-in domains use shared prerequisite/check/effect/cost/reward services under authoritative Action receipts; historical engines remain pinned."
+        },
+        {
+          "path": "realms/test/shared-rules-integration.test.ts",
+          "finding": "Cross-domain fixture, conserved rewards, retries/rollback, preview, release adoption and restricted controls have executable regressions."
+        },
+        {
+          "path": "realms/docs/shared-rules.md",
+          "finding": "Defines versioned services, clock providers, source/eligibility boundaries and remaining owning-domain/Studio work."
+        }
+      ],
       "rule_assertions": {},
-      "verification": null
+      "verification": null,
+      "contract_review": {
+        "state": "Run-owned immutable rule event/state projection; clock facts from canonical ledgers; new-run history archives. Operator controls and adoption survive lives.",
+        "actions": "Server derives facts/rolls and repeats gates; no client effects/rewards. Matching receipts precede flags; shared rules default disabled.",
+        "authoring": "Bounded versioned AST/check/effect/cost/reward contracts validated with references, clocks, stacking and trigger graph limits. No catalog content authored.",
+        "client": "Authenticated discovery-safe query/mutation adapters and explainability. Existing tactical UI is preserved; complete owning-domain/Studio editors remain open."
+      }
     },
     {
       "id": "CAP-29-attributes",
@@ -23588,11 +23702,30 @@
       "source_entries": [
         "FEAT-B3B28A057BF9C3"
       ],
-      "implementation_status": "unassessed",
+      "implementation_status": "partial",
       "contract": "inherit-system",
-      "evidence": [],
+      "evidence": [
+        {
+          "path": "realms/src/domains/shared-rule-actions.ts",
+          "finding": "Two opted-in domains use shared prerequisite/check/effect/cost/reward services under authoritative Action receipts; historical engines remain pinned."
+        },
+        {
+          "path": "realms/test/shared-rules-integration.test.ts",
+          "finding": "Cross-domain fixture, conserved rewards, retries/rollback, preview, release adoption and restricted controls have executable regressions."
+        },
+        {
+          "path": "realms/docs/shared-rules.md",
+          "finding": "Defines versioned services, clock providers, source/eligibility boundaries and remaining owning-domain/Studio work."
+        }
+      ],
       "rule_assertions": {},
-      "verification": null
+      "verification": null,
+      "contract_review": {
+        "state": "Run-owned immutable rule event/state projection; clock facts from canonical ledgers; new-run history archives. Operator controls and adoption survive lives.",
+        "actions": "Server derives facts/rolls and repeats gates; no client effects/rewards. Matching receipts precede flags; shared rules default disabled.",
+        "authoring": "Bounded versioned AST/check/effect/cost/reward contracts validated with references, clocks, stacking and trigger graph limits. No catalog content authored.",
+        "client": "Authenticated discovery-safe query/mutation adapters and explainability. Existing tactical UI is preserved; complete owning-domain/Studio editors remain open."
+      }
     },
     {
       "id": "CAP-29-degrees",
@@ -23607,11 +23740,30 @@
         "FEAT-6256B3A5784CEC",
         "FEAT-103552C152A152"
       ],
-      "implementation_status": "unassessed",
+      "implementation_status": "partial",
       "contract": "inherit-system",
-      "evidence": [],
+      "evidence": [
+        {
+          "path": "realms/src/domains/shared-rule-actions.ts",
+          "finding": "Two opted-in domains use shared prerequisite/check/effect/cost/reward services under authoritative Action receipts; historical engines remain pinned."
+        },
+        {
+          "path": "realms/test/shared-rules-integration.test.ts",
+          "finding": "Cross-domain fixture, conserved rewards, retries/rollback, preview, release adoption and restricted controls have executable regressions."
+        },
+        {
+          "path": "realms/docs/shared-rules.md",
+          "finding": "Defines versioned services, clock providers, source/eligibility boundaries and remaining owning-domain/Studio work."
+        }
+      ],
       "rule_assertions": {},
-      "verification": null
+      "verification": null,
+      "contract_review": {
+        "state": "Run-owned immutable rule event/state projection; clock facts from canonical ledgers; new-run history archives. Operator controls and adoption survive lives.",
+        "actions": "Server derives facts/rolls and repeats gates; no client effects/rewards. Matching receipts precede flags; shared rules default disabled.",
+        "authoring": "Bounded versioned AST/check/effect/cost/reward contracts validated with references, clocks, stacking and trigger graph limits. No catalog content authored.",
+        "client": "Authenticated discovery-safe query/mutation adapters and explainability. Existing tactical UI is preserved; complete owning-domain/Studio editors remain open."
+      }
     },
     {
       "id": "CAP-29-nat20",
@@ -23691,11 +23843,30 @@
       "source_entries": [
         "FEAT-A629C9691D9AC7"
       ],
-      "implementation_status": "unassessed",
+      "implementation_status": "partial",
       "contract": "inherit-system",
-      "evidence": [],
+      "evidence": [
+        {
+          "path": "realms/src/domains/shared-rule-actions.ts",
+          "finding": "Two opted-in domains use shared prerequisite/check/effect/cost/reward services under authoritative Action receipts; historical engines remain pinned."
+        },
+        {
+          "path": "realms/test/shared-rules-integration.test.ts",
+          "finding": "Cross-domain fixture, conserved rewards, retries/rollback, preview, release adoption and restricted controls have executable regressions."
+        },
+        {
+          "path": "realms/docs/shared-rules.md",
+          "finding": "Defines versioned services, clock providers, source/eligibility boundaries and remaining owning-domain/Studio work."
+        }
+      ],
       "rule_assertions": {},
-      "verification": null
+      "verification": null,
+      "contract_review": {
+        "state": "Run-owned immutable rule event/state projection; clock facts from canonical ledgers; new-run history archives. Operator controls and adoption survive lives.",
+        "actions": "Server derives facts/rolls and repeats gates; no client effects/rewards. Matching receipts precede flags; shared rules default disabled.",
+        "authoring": "Bounded versioned AST/check/effect/cost/reward contracts validated with references, clocks, stacking and trigger graph limits. No catalog content authored.",
+        "client": "Authenticated discovery-safe query/mutation adapters and explainability. Existing tactical UI is preserved; complete owning-domain/Studio editors remain open."
+      }
     },
     {
       "id": "CAP-29-party",
@@ -23737,11 +23908,30 @@
         "FEAT-DE47ADF336F17B",
         "FEAT-79ACC87FF708D3"
       ],
-      "implementation_status": "unassessed",
+      "implementation_status": "partial",
       "contract": "inherit-system",
-      "evidence": [],
+      "evidence": [
+        {
+          "path": "realms/src/domains/shared-rule-actions.ts",
+          "finding": "Two opted-in domains use shared prerequisite/check/effect/cost/reward services under authoritative Action receipts; historical engines remain pinned."
+        },
+        {
+          "path": "realms/test/shared-rules-integration.test.ts",
+          "finding": "Cross-domain fixture, conserved rewards, retries/rollback, preview, release adoption and restricted controls have executable regressions."
+        },
+        {
+          "path": "realms/docs/shared-rules.md",
+          "finding": "Defines versioned services, clock providers, source/eligibility boundaries and remaining owning-domain/Studio work."
+        }
+      ],
       "rule_assertions": {},
-      "verification": null
+      "verification": null,
+      "contract_review": {
+        "state": "Run-owned immutable rule event/state projection; clock facts from canonical ledgers; new-run history archives. Operator controls and adoption survive lives.",
+        "actions": "Server derives facts/rolls and repeats gates; no client effects/rewards. Matching receipts precede flags; shared rules default disabled.",
+        "authoring": "Bounded versioned AST/check/effect/cost/reward contracts validated with references, clocks, stacking and trigger graph limits. No catalog content authored.",
+        "client": "Authenticated discovery-safe query/mutation adapters and explainability. Existing tactical UI is preserved; complete owning-domain/Studio editors remain open."
+      }
     },
     {
       "id": "CAP-29-passive",
@@ -23752,11 +23942,30 @@
         "FEAT-76F3806A909519",
         "FEAT-1D970288D405E1"
       ],
-      "implementation_status": "unassessed",
+      "implementation_status": "partial",
       "contract": "inherit-system",
-      "evidence": [],
+      "evidence": [
+        {
+          "path": "realms/src/domains/shared-rule-actions.ts",
+          "finding": "Two opted-in domains use shared prerequisite/check/effect/cost/reward services under authoritative Action receipts; historical engines remain pinned."
+        },
+        {
+          "path": "realms/test/shared-rules-integration.test.ts",
+          "finding": "Cross-domain fixture, conserved rewards, retries/rollback, preview, release adoption and restricted controls have executable regressions."
+        },
+        {
+          "path": "realms/docs/shared-rules.md",
+          "finding": "Defines versioned services, clock providers, source/eligibility boundaries and remaining owning-domain/Studio work."
+        }
+      ],
       "rule_assertions": {},
-      "verification": null
+      "verification": null,
+      "contract_review": {
+        "state": "Run-owned immutable rule event/state projection; clock facts from canonical ledgers; new-run history archives. Operator controls and adoption survive lives.",
+        "actions": "Server derives facts/rolls and repeats gates; no client effects/rewards. Matching receipts precede flags; shared rules default disabled.",
+        "authoring": "Bounded versioned AST/check/effect/cost/reward contracts validated with references, clocks, stacking and trigger graph limits. No catalog content authored.",
+        "client": "Authenticated discovery-safe query/mutation adapters and explainability. Existing tactical UI is preserved; complete owning-domain/Studio editors remain open."
+      }
     },
     {
       "id": "CAP-29-active_search",
@@ -23937,11 +24146,30 @@
       "source_entries": [
         "FEAT-DA23E930E5C462"
       ],
-      "implementation_status": "unassessed",
+      "implementation_status": "partial",
       "contract": "inherit-system",
-      "evidence": [],
+      "evidence": [
+        {
+          "path": "realms/src/domains/shared-rule-actions.ts",
+          "finding": "Two opted-in domains use shared prerequisite/check/effect/cost/reward services under authoritative Action receipts; historical engines remain pinned."
+        },
+        {
+          "path": "realms/test/shared-rules-integration.test.ts",
+          "finding": "Cross-domain fixture, conserved rewards, retries/rollback, preview, release adoption and restricted controls have executable regressions."
+        },
+        {
+          "path": "realms/docs/shared-rules.md",
+          "finding": "Defines versioned services, clock providers, source/eligibility boundaries and remaining owning-domain/Studio work."
+        }
+      ],
       "rule_assertions": {},
-      "verification": null
+      "verification": null,
+      "contract_review": {
+        "state": "Run-owned immutable rule event/state projection; clock facts from canonical ledgers; new-run history archives. Operator controls and adoption survive lives.",
+        "actions": "Server derives facts/rolls and repeats gates; no client effects/rewards. Matching receipts precede flags; shared rules default disabled.",
+        "authoring": "Bounded versioned AST/check/effect/cost/reward contracts validated with references, clocks, stacking and trigger graph limits. No catalog content authored.",
+        "client": "Authenticated discovery-safe query/mutation adapters and explainability. Existing tactical UI is preserved; complete owning-domain/Studio editors remain open."
+      }
     },
     {
       "id": "CAP-29-authority",
@@ -23983,11 +24211,30 @@
       "source_entries": [
         "FEAT-0F1AADBE07FEE5"
       ],
-      "implementation_status": "unassessed",
+      "implementation_status": "partial",
       "contract": "inherit-system",
-      "evidence": [],
+      "evidence": [
+        {
+          "path": "realms/src/domains/shared-rule-actions.ts",
+          "finding": "Two opted-in domains use shared prerequisite/check/effect/cost/reward services under authoritative Action receipts; historical engines remain pinned."
+        },
+        {
+          "path": "realms/test/shared-rules-integration.test.ts",
+          "finding": "Cross-domain fixture, conserved rewards, retries/rollback, preview, release adoption and restricted controls have executable regressions."
+        },
+        {
+          "path": "realms/docs/shared-rules.md",
+          "finding": "Defines versioned services, clock providers, source/eligibility boundaries and remaining owning-domain/Studio work."
+        }
+      ],
       "rule_assertions": {},
-      "verification": null
+      "verification": null,
+      "contract_review": {
+        "state": "Run-owned immutable rule event/state projection; clock facts from canonical ledgers; new-run history archives. Operator controls and adoption survive lives.",
+        "actions": "Server derives facts/rolls and repeats gates; no client effects/rewards. Matching receipts precede flags; shared rules default disabled.",
+        "authoring": "Bounded versioned AST/check/effect/cost/reward contracts validated with references, clocks, stacking and trigger graph limits. No catalog content authored.",
+        "client": "Authenticated discovery-safe query/mutation adapters and explainability. Existing tactical UI is preserved; complete owning-domain/Studio editors remain open."
+      }
     },
     {
       "id": "CAP-29-retrydata",
@@ -26091,7 +26338,7 @@
     {
       "id": "CAP-32-filler",
       "system": "SYS-32",
-      "title": "10. Thematic Filler Rooms — Explicitly Desired",
+      "title": "10. Thematic Filler Rooms \u2014 Explicitly Desired",
       "source_section": "SEC-68B51C729A60",
       "source_entries": [
         "FEAT-D9E3AF83AD3B6D",
@@ -26427,7 +26674,7 @@
     {
       "id": "CAP-32-endless",
       "system": "SYS-32",
-      "title": "30. Endless Expedition — Extract or Descend",
+      "title": "30. Endless Expedition \u2014 Extract or Descend",
       "source_section": "SEC-CFD2AB5F22DD",
       "source_entries": [
         "FEAT-2D2B7758EC822A",
@@ -26978,7 +27225,7 @@
     {
       "id": "CAP-32-deferred",
       "system": "SYS-32",
-      "title": "61. Tunable Details — Not New Design Questions",
+      "title": "61. Tunable Details \u2014 Not New Design Questions",
       "source_section": "SEC-6233567625BD",
       "source_entries": [
         "FEAT-987AC593A8580F",
@@ -27809,7 +28056,7 @@
     {
       "id": "CAP-33-tuning",
       "system": "SYS-33",
-      "title": "46. Tunables & Playtest Questions — Not New Approvals",
+      "title": "46. Tunables & Playtest Questions \u2014 Not New Approvals",
       "source_section": "SEC-F906194CEAA1",
       "source_entries": [
         "FEAT-0260F99604A175",
@@ -28799,7 +29046,7 @@
     {
       "id": "CAP-34-tuning",
       "system": "SYS-34",
-      "title": "54. Tuning Parameters — Not New Approval Questions",
+      "title": "54. Tuning Parameters \u2014 Not New Approval Questions",
       "source_section": "SEC-BA5ED51DCBAC",
       "source_entries": [
         "FEAT-D2C96CB406A9F0",
@@ -29677,7 +29924,7 @@
     {
       "id": "CAP-35-spell_schema",
       "system": "SYS-35",
-      "title": "51. Spell Definition Schema — Authoritative Example",
+      "title": "51. Spell Definition Schema \u2014 Authoritative Example",
       "source_section": "SEC-69B72686D691",
       "source_entries": [
         "FEAT-32FB4C0D57994B",
@@ -30002,7 +30249,7 @@
     {
       "id": "CAP-36-locked",
       "system": "SYS-36",
-      "title": "2. Locked Decisions — 16/16 Approved",
+      "title": "2. Locked Decisions \u2014 16/16 Approved",
       "source_section": "SEC-C19CF1D94152",
       "source_entries": [
         "FEAT-C559AA4F0F6ADA",
@@ -30163,7 +30410,7 @@
     {
       "id": "CAP-36-library",
       "system": "SYS-36",
-      "title": "9. Technique Library — Search, Filter, Sort & Compare",
+      "title": "9. Technique Library \u2014 Search, Filter, Sort & Compare",
       "source_section": "SEC-B18ED88C352C",
       "source_entries": [
         "FEAT-EC4FBE7FD8A041",
@@ -30416,7 +30663,7 @@
     {
       "id": "CAP-36-stances",
       "system": "SYS-36",
-      "title": "23. Combat Stances — One Primary Channel",
+      "title": "23. Combat Stances \u2014 One Primary Channel",
       "source_section": "SEC-99ED41531645",
       "source_entries": [
         "FEAT-6BC75701909BBE",
@@ -30431,7 +30678,7 @@
     {
       "id": "CAP-36-openings",
       "system": "SYS-36",
-      "title": "24. Openings — Tactical State, Not Combo Points",
+      "title": "24. Openings \u2014 Tactical State, Not Combo Points",
       "source_section": "SEC-52A0C2873951",
       "source_entries": [
         "FEAT-C44D3A1A27137D",
@@ -30784,7 +31031,7 @@
     {
       "id": "CAP-36-hybrid",
       "system": "SYS-36",
-      "title": "46. Spell–Martial Hybrids & Validated Synergies",
+      "title": "46. Spell\u2013Martial Hybrids & Validated Synergies",
       "source_section": "SEC-776281D821F4",
       "source_entries": [
         "FEAT-EB12BF7869ED17",
@@ -31273,7 +31520,7 @@
     {
       "id": "CAP-37-locked",
       "system": "SYS-37",
-      "title": "2. Locked Decisions — All 15 Resolved",
+      "title": "2. Locked Decisions \u2014 All 15 Resolved",
       "source_section": "SEC-E7CA71A8099D",
       "source_entries": [
         "FEAT-525792498FECCB",
@@ -31467,7 +31714,7 @@
     {
       "id": "CAP-37-species-class",
       "system": "SYS-37",
-      "title": "11. Species–Class Compatibility",
+      "title": "11. Species\u2013Class Compatibility",
       "source_section": "SEC-86C6F5FF8470",
       "source_entries": [
         "FEAT-5E5CD27E02E602",
@@ -31513,7 +31760,7 @@
     {
       "id": "CAP-37-mixed",
       "system": "SYS-37",
-      "title": "14. Mixed Heritage — Supported, Not Stacked",
+      "title": "14. Mixed Heritage \u2014 Supported, Not Stacked",
       "source_section": "SEC-03C2FBD6AE1C",
       "source_entries": [
         "FEAT-A03A7830EDAFE1",
@@ -31629,7 +31876,7 @@
     {
       "id": "CAP-37-origin",
       "system": "SYS-37",
-      "title": "21. Optional Origins — Flavor, Not Backgrounds",
+      "title": "21. Optional Origins \u2014 Flavor, Not Backgrounds",
       "source_section": "SEC-5719B96FD1A6",
       "source_entries": [
         "FEAT-21A4EFCA6B3FEA",
@@ -32043,7 +32290,7 @@
     {
       "id": "CAP-37-catalog-schema",
       "system": "SYS-37",
-      "title": "48. Data Contract — Species Catalog Record",
+      "title": "48. Data Contract \u2014 Species Catalog Record",
       "source_section": "SEC-F719D278117A",
       "source_entries": [
         "FEAT-D8686ACC52BEE4"
@@ -32057,7 +32304,7 @@
     {
       "id": "CAP-37-identity-schema",
       "system": "SYS-37",
-      "title": "49. Data Contract — Account, Run and Appearance",
+      "title": "49. Data Contract \u2014 Account, Run and Appearance",
       "source_section": "SEC-A0D2C1143558",
       "source_entries": [
         "FEAT-94CA5EA0EE5DD8"
@@ -32071,7 +32318,7 @@
     {
       "id": "CAP-37-heritage-schema",
       "system": "SYS-37",
-      "title": "50. Data Contract — Mixed-Heritage Eligibility",
+      "title": "50. Data Contract \u2014 Mixed-Heritage Eligibility",
       "source_section": "SEC-E2C4FAD0E162",
       "source_entries": [
         "FEAT-ED8CF853650D03"
@@ -32085,7 +32332,7 @@
     {
       "id": "CAP-37-trait-schema",
       "system": "SYS-37",
-      "title": "51. Data Contract — Species Interaction Trait",
+      "title": "51. Data Contract \u2014 Species Interaction Trait",
       "source_section": "SEC-9C225121B9BE",
       "source_entries": [
         "FEAT-02D6237461C67D"
@@ -32099,7 +32346,7 @@
     {
       "id": "CAP-37-reaction-schema",
       "system": "SYS-37",
-      "title": "52. Data Contract — Authored Reaction Hook",
+      "title": "52. Data Contract \u2014 Authored Reaction Hook",
       "source_section": "SEC-51196099E1FC",
       "source_entries": [
         "FEAT-8AE68C54ECE725"
@@ -32132,7 +32379,7 @@
     {
       "id": "CAP-37-creation-flow",
       "system": "SYS-37",
-      "title": "54. Flow — Character Creation and First Run",
+      "title": "54. Flow \u2014 Character Creation and First Run",
       "source_section": "SEC-67923633083C",
       "source_entries": [
         "FEAT-FB45549A84FF08",
@@ -32151,7 +32398,7 @@
     {
       "id": "CAP-37-ascension-flow",
       "system": "SYS-37",
-      "title": "55. Flow — Ascension and Repeat Setup",
+      "title": "55. Flow \u2014 Ascension and Repeat Setup",
       "source_section": "SEC-E8A53F98B8FD",
       "source_entries": [
         "FEAT-8088AA51BD3437",
@@ -32166,7 +32413,7 @@
     {
       "id": "CAP-37-example-goblin",
       "system": "SYS-37",
-      "title": "56. Worked Example — Goblin Paladin at a Restricted Shrine",
+      "title": "56. Worked Example \u2014 Goblin Paladin at a Restricted Shrine",
       "source_section": "SEC-8D40B838CEA0",
       "source_entries": [
         "FEAT-EF8BF6DF423D85",
@@ -32181,7 +32428,7 @@
     {
       "id": "CAP-37-example-heritage",
       "system": "SYS-37",
-      "title": "57. Worked Example — Mixed Lineage Without Power Stacking",
+      "title": "57. Worked Example \u2014 Mixed Lineage Without Power Stacking",
       "source_section": "SEC-6A091050C600",
       "source_entries": [
         "FEAT-45D13A78DFE446",
@@ -32196,7 +32443,7 @@
     {
       "id": "CAP-37-example-construct",
       "system": "SYS-37",
-      "title": "58. Worked Example — Unlockable Construct Life",
+      "title": "58. Worked Example \u2014 Unlockable Construct Life",
       "source_section": "SEC-C3A4B1352AC6",
       "source_entries": [
         "FEAT-F3DB790A4AD030",
@@ -32211,7 +32458,7 @@
     {
       "id": "CAP-37-example-alias",
       "system": "SYS-37",
-      "title": "59. Worked Example — Reincarnation, Alias and Witness",
+      "title": "59. Worked Example \u2014 Reincarnation, Alias and Witness",
       "source_section": "SEC-7FFFB5619B91",
       "source_entries": [
         "FEAT-96A99AF458DEF3",
@@ -32428,7 +32675,7 @@
     {
       "id": "CAP-38-locks",
       "system": "SYS-38",
-      "title": "2. Decision Ledger — Simplified Scope",
+      "title": "2. Decision Ledger \u2014 Simplified Scope",
       "source_section": "SEC-ADBFA249310C",
       "source_entries": [
         "FEAT-423142BAA06486",
@@ -32526,7 +32773,7 @@
     {
       "id": "CAP-38-scope",
       "system": "SYS-38",
-      "title": "6. Three Intensity Levels — Not Three Separate Modes",
+      "title": "6. Three Intensity Levels \u2014 Not Three Separate Modes",
       "source_section": "SEC-0163086C099E",
       "source_entries": [
         "FEAT-809DF8B03D5116",
@@ -32732,7 +32979,7 @@
     {
       "id": "CAP-38-timing",
       "system": "SYS-38",
-      "title": "18. Time-Sensitive Evidence — Selective and Legible",
+      "title": "18. Time-Sensitive Evidence \u2014 Selective and Legible",
       "source_section": "SEC-9376307D5403",
       "source_entries": [
         "FEAT-315868CABFC031",
@@ -32902,7 +33149,7 @@
     {
       "id": "CAP-38-no-multiplayer",
       "system": "SYS-38",
-      "title": "28. Explicit Exclusion — Investigation-Specific Multiplayer",
+      "title": "28. Explicit Exclusion \u2014 Investigation-Specific Multiplayer",
       "source_section": "SEC-3BA228D298C7",
       "source_entries": [
         "FEAT-47F3840FE720DF",
@@ -32917,7 +33164,7 @@
     {
       "id": "CAP-38-schema-clue",
       "system": "SYS-38",
-      "title": "29. Schema — Lightweight Clue / Information Record",
+      "title": "29. Schema \u2014 Lightweight Clue / Information Record",
       "source_section": "SEC-9C5B3E0508CA",
       "source_entries": [
         "FEAT-959CA9CBA15747"
@@ -32931,7 +33178,7 @@
     {
       "id": "CAP-38-schema-claim",
       "system": "SYS-38",
-      "title": "30. Schema — Testimony or Rumor",
+      "title": "30. Schema \u2014 Testimony or Rumor",
       "source_section": "SEC-0A326A18CFB6",
       "source_entries": [
         "FEAT-E4A51954577947"
@@ -32945,7 +33192,7 @@
     {
       "id": "CAP-38-schema-quest",
       "system": "SYS-38",
-      "title": "31. Schema — Mystery Quest Extension",
+      "title": "31. Schema \u2014 Mystery Quest Extension",
       "source_section": "SEC-9479ED8EBFBD",
       "source_entries": [
         "FEAT-BF6D9CBFA3AC39"
@@ -32959,7 +33206,7 @@
     {
       "id": "CAP-38-schema-action",
       "system": "SYS-38",
-      "title": "32. Schema — Consequential Evidence Confrontation",
+      "title": "32. Schema \u2014 Consequential Evidence Confrontation",
       "source_section": "SEC-05CB21A5EEBD",
       "source_entries": [
         "FEAT-0C17997A98B289"
@@ -32973,7 +33220,7 @@
     {
       "id": "CAP-38-schema-generator",
       "system": "SYS-38",
-      "title": "33. Schema — Optional Small Procedural Mystery",
+      "title": "33. Schema \u2014 Optional Small Procedural Mystery",
       "source_section": "SEC-C74474055EF2",
       "source_entries": [
         "FEAT-CC40C8C494DB8B"
@@ -33007,7 +33254,7 @@
     {
       "id": "CAP-38-example-manor",
       "system": "SYS-38",
-      "title": "35. Worked Example — The Vanishing Town Ledger",
+      "title": "35. Worked Example \u2014 The Vanishing Town Ledger",
       "source_section": "SEC-F744390ECFBE",
       "source_entries": [
         "FEAT-EC642ECF1D9DBC",
@@ -33022,7 +33269,7 @@
     {
       "id": "CAP-38-example-wrong",
       "system": "SYS-38",
-      "title": "36. Worked Example — An Innocent Cook",
+      "title": "36. Worked Example \u2014 An Innocent Cook",
       "source_section": "SEC-F23973B7B1CD",
       "source_entries": [
         "FEAT-76016C37667588",
@@ -33037,7 +33284,7 @@
     {
       "id": "CAP-38-example-ecology",
       "system": "SYS-38",
-      "title": "37. Worked Example — The Forest That Hates Bells",
+      "title": "37. Worked Example \u2014 The Forest That Hates Bells",
       "source_section": "SEC-8A718D0C288E",
       "source_entries": [
         "FEAT-83F2686D2B0101",
@@ -33052,7 +33299,7 @@
     {
       "id": "CAP-38-example-absurd",
       "system": "SYS-38",
-      "title": "38. Worked Example — The Duke’s Missing Shadow",
+      "title": "38. Worked Example \u2014 The Duke\u2019s Missing Shadow",
       "source_section": "SEC-BA5FDED00BE3",
       "source_entries": [
         "FEAT-62F313F810C4A3",
@@ -33067,7 +33314,7 @@
     {
       "id": "CAP-38-example-proc",
       "system": "SYS-38",
-      "title": "39. Worked Example — Tiny Procedural Shipment Case",
+      "title": "39. Worked Example \u2014 Tiny Procedural Shipment Case",
       "source_section": "SEC-CE760AA94AC7",
       "source_entries": [
         "FEAT-73A356544790D8",
@@ -33291,7 +33538,7 @@
     {
       "id": "CAP-39-decisions",
       "system": "SYS-39",
-      "title": "2. Decision Ledger — All 15 Resolved",
+      "title": "2. Decision Ledger \u2014 All 15 Resolved",
       "source_section": "SEC-3E779602F9A8",
       "source_entries": [
         "FEAT-3F3519A9174E63",
@@ -33448,7 +33695,7 @@
     {
       "id": "CAP-39-dm-tavern",
       "system": "SYS-39",
-      "title": "9. Dungeon Master’s Tavern Is Not an Ordinary Pub",
+      "title": "9. Dungeon Master\u2019s Tavern Is Not an Ordinary Pub",
       "source_section": "SEC-02AFD25554FB",
       "source_entries": [
         "FEAT-60E18C951B41B6"
@@ -33541,7 +33788,7 @@
     {
       "id": "CAP-39-stakes-principle",
       "system": "SYS-39",
-      "title": "15. Binding Wagering Philosophy — Freedom with Enforced Integrity",
+      "title": "15. Binding Wagering Philosophy \u2014 Freedom with Enforced Integrity",
       "source_section": "SEC-F86142307DB3",
       "source_entries": [
         "FEAT-45D2997CD8DBC8",
@@ -33557,7 +33804,7 @@
     {
       "id": "CAP-39-consistency",
       "system": "SYS-39",
-      "title": "16. Conflict Resolution — System 22 and System 39",
+      "title": "16. Conflict Resolution \u2014 System 22 and System 39",
       "source_section": "SEC-0ECE24C1DA00",
       "source_entries": [
         "FEAT-1BB9CE670199EE",
@@ -33572,7 +33819,7 @@
     {
       "id": "CAP-39-tutorial",
       "system": "SYS-39",
-      "title": "17. First-Gamble Interactive Tutorial — Mandatory Once",
+      "title": "17. First-Gamble Interactive Tutorial \u2014 Mandatory Once",
       "source_section": "SEC-02F464121072",
       "source_entries": [
         "FEAT-C64A2D814C27B5",
@@ -33593,7 +33840,7 @@
     {
       "id": "CAP-39-example-tutorial",
       "system": "SYS-39",
-      "title": "18. Tutorial Microcopy — Illustrative In-Game Voice",
+      "title": "18. Tutorial Microcopy \u2014 Illustrative In-Game Voice",
       "source_section": "SEC-9AB570A25679",
       "source_entries": [
         "FEAT-34C60CEC51CBFE",
@@ -33763,7 +34010,7 @@
     {
       "id": "CAP-39-fishing-loop",
       "system": "SYS-39",
-      "title": "28. Fishing — Two Equal-Legitimacy Play Modes",
+      "title": "28. Fishing \u2014 Two Equal-Legitimacy Play Modes",
       "source_section": "SEC-5219281C64A4",
       "source_entries": [
         "FEAT-68F94D6E9B4273",
@@ -33838,7 +34085,7 @@
     {
       "id": "CAP-39-card-integration",
       "system": "SYS-39",
-      "title": "33. Collectible Card Game — Dedicated Future System",
+      "title": "33. Collectible Card Game \u2014 Dedicated Future System",
       "source_section": "SEC-006E84B19877",
       "source_entries": [
         "FEAT-A5C212740E39E8",
@@ -33853,7 +34100,7 @@
     {
       "id": "CAP-39-festival-goals",
       "system": "SYS-39",
-      "title": "34. Festivals — Multi-Activity Seasonal Worlds",
+      "title": "34. Festivals \u2014 Multi-Activity Seasonal Worlds",
       "source_section": "SEC-F275D939657E",
       "source_entries": [
         "FEAT-8058D66238BBD3",
@@ -33999,7 +34246,7 @@
     {
       "id": "CAP-39-schema-activity",
       "system": "SYS-39",
-      "title": "43. Technical Schema — Activity Definition",
+      "title": "43. Technical Schema \u2014 Activity Definition",
       "source_section": "SEC-26B919CCF553",
       "source_entries": [
         "FEAT-C4A3274E9205D4"
@@ -34013,7 +34260,7 @@
     {
       "id": "CAP-39-schema-wager",
       "system": "SYS-39",
-      "title": "44. Technical Schema — Wager Escrow and Audit",
+      "title": "44. Technical Schema \u2014 Wager Escrow and Audit",
       "source_section": "SEC-A0B8F6AF3762",
       "source_entries": [
         "FEAT-92DCA1D80B2E07"
@@ -34027,7 +34274,7 @@
     {
       "id": "CAP-39-schema-result",
       "system": "SYS-39",
-      "title": "45. Technical Schema — Activity Result and Award",
+      "title": "45. Technical Schema \u2014 Activity Result and Award",
       "source_section": "SEC-481FBBD6F506",
       "source_entries": [
         "FEAT-4C2A9BE3B1F811"
@@ -34041,7 +34288,7 @@
     {
       "id": "CAP-39-schema-festival",
       "system": "SYS-39",
-      "title": "46. Technical Schema — Unique Festival Rule Module",
+      "title": "46. Technical Schema \u2014 Unique Festival Rule Module",
       "source_section": "SEC-90368FF63ABC",
       "source_entries": [
         "FEAT-E433C8485F9C07"
@@ -34077,7 +34324,7 @@
     {
       "id": "CAP-39-multiplayer-flow",
       "system": "SYS-39",
-      "title": "48. PVP Wager Flow Example — An Honest High-Stakes Match",
+      "title": "48. PVP Wager Flow Example \u2014 An Honest High-Stakes Match",
       "source_section": "SEC-807682C34495",
       "source_entries": [
         "FEAT-3674D28C435D83",
@@ -34092,7 +34339,7 @@
     {
       "id": "CAP-39-example-fish",
       "system": "SYS-39",
-      "title": "49. Worked Example — The Fish That Insults You",
+      "title": "49. Worked Example \u2014 The Fish That Insults You",
       "source_section": "SEC-58AE1AE8B814",
       "source_entries": [
         "FEAT-DD441CD21D5332",
@@ -34107,7 +34354,7 @@
     {
       "id": "CAP-39-example-bard",
       "system": "SYS-39",
-      "title": "50. Worked Example — The Very Wrong Love Ballad",
+      "title": "50. Worked Example \u2014 The Very Wrong Love Ballad",
       "source_section": "SEC-2C350A48815A",
       "source_entries": [
         "FEAT-7131B62182FD7D",
@@ -34122,7 +34369,7 @@
     {
       "id": "CAP-39-example-festival",
       "system": "SYS-39",
-      "title": "51. Worked Example — Festival of Borrowed Faces",
+      "title": "51. Worked Example \u2014 Festival of Borrowed Faces",
       "source_section": "SEC-ABCBBC58B603",
       "source_entries": [
         "FEAT-1A5424F180235C",
@@ -34137,7 +34384,7 @@
     {
       "id": "CAP-39-example-guild",
       "system": "SYS-39",
-      "title": "52. Worked Example — Guild’s Goblin Bowl",
+      "title": "52. Worked Example \u2014 Guild\u2019s Goblin Bowl",
       "source_section": "SEC-664FFECC463D",
       "source_entries": [
         "FEAT-CA39888CFC1925",
@@ -34359,7 +34606,7 @@
     {
       "id": "CAP-40-decisions",
       "system": "SYS-40",
-      "title": "2. Decision Ledger — All 15 Approved",
+      "title": "2. Decision Ledger \u2014 All 15 Approved",
       "source_section": "SEC-B552ACECA680",
       "source_entries": [
         "FEAT-BC9BEF55B5FAF8",
@@ -34481,7 +34728,7 @@
     {
       "id": "CAP-40-match-identity",
       "system": "SYS-40",
-      "title": "7. The Actual Game — Auto-Battle First, Hybrid Second",
+      "title": "7. The Actual Game \u2014 Auto-Battle First, Hybrid Second",
       "source_section": "SEC-A4DCA7D57FA2",
       "source_entries": [
         "FEAT-847D98DD94FEA6",
@@ -34496,7 +34743,7 @@
     {
       "id": "CAP-40-slots",
       "system": "SYS-40",
-      "title": "8. Battlefield — 8 to 10 Deployed Units",
+      "title": "8. Battlefield \u2014 8 to 10 Deployed Units",
       "source_section": "SEC-E778DA6ABFF1",
       "source_entries": [
         "FEAT-C30004C8D17206",
@@ -34871,7 +35118,7 @@
     {
       "id": "CAP-40-acquisition",
       "system": "SYS-40",
-      "title": "31. Card Acquisition — Many Sources, No Single Dominant Farm",
+      "title": "31. Card Acquisition \u2014 Many Sources, No Single Dominant Farm",
       "source_section": "SEC-7521BB8B6397",
       "source_entries": [
         "FEAT-DB80FCE64BA683",
@@ -34940,7 +35187,7 @@
     {
       "id": "CAP-40-duplicates",
       "system": "SYS-40",
-      "title": "35. Duplicates — Retain, Trade or Redeem (A + B)",
+      "title": "35. Duplicates \u2014 Retain, Trade or Redeem (A + B)",
       "source_section": "SEC-F8A71DD9B4DC",
       "source_entries": [
         "FEAT-002904BE0B57F7",
@@ -34970,7 +35217,7 @@
     {
       "id": "CAP-40-competition-fairness",
       "system": "SYS-40",
-      "title": "37. No Pay-to-Win — Two Competitive Access Models",
+      "title": "37. No Pay-to-Win \u2014 Two Competitive Access Models",
       "source_section": "SEC-9AB50CDEA7D1",
       "source_entries": [
         "FEAT-6A268E8B401245",
@@ -35127,7 +35374,7 @@
     {
       "id": "CAP-40-wagers",
       "system": "SYS-40",
-      "title": "47. Gold Wagers — System 39 Contract",
+      "title": "47. Gold Wagers \u2014 System 39 Contract",
       "source_section": "SEC-048266FB02BD",
       "source_entries": [
         "FEAT-F987AADDCC4955",
@@ -35142,7 +35389,7 @@
     {
       "id": "CAP-40-card-stakes",
       "system": "SYS-40",
-      "title": "48. Card-for-Card Stakes — Explicitly Approved Extension",
+      "title": "48. Card-for-Card Stakes \u2014 Explicitly Approved Extension",
       "source_section": "SEC-C0C06512B17A",
       "source_entries": [
         "FEAT-501D53B8DFF568",
@@ -35297,7 +35544,7 @@
     {
       "id": "CAP-40-schema-card",
       "system": "SYS-40",
-      "title": "58. Technical Schema — Card Definition and Printing",
+      "title": "58. Technical Schema \u2014 Card Definition and Printing",
       "source_section": "SEC-FEB2832BAA00",
       "source_entries": [
         "FEAT-499BE902B76485",
@@ -35312,7 +35559,7 @@
     {
       "id": "CAP-40-schema-formation",
       "system": "SYS-40",
-      "title": "59. Technical Schema — Saved Nine-Unit Formation",
+      "title": "59. Technical Schema \u2014 Saved Nine-Unit Formation",
       "source_section": "SEC-A03BFF2C908B",
       "source_entries": [
         "FEAT-FD01687AFB5162",
@@ -35327,7 +35574,7 @@
     {
       "id": "CAP-40-schema-format",
       "system": "SYS-40",
-      "title": "60. Technical Schema — Format Contract",
+      "title": "60. Technical Schema \u2014 Format Contract",
       "source_section": "SEC-0901143C1B7A",
       "source_entries": [
         "FEAT-9511FA1B522A54"
@@ -35341,7 +35588,7 @@
     {
       "id": "CAP-40-schema-match",
       "system": "SYS-40",
-      "title": "61. Technical Schema — Server Match Snapshot",
+      "title": "61. Technical Schema \u2014 Server Match Snapshot",
       "source_section": "SEC-1902FD1A2471",
       "source_entries": [
         "FEAT-398967A157C0F6"
@@ -35355,7 +35602,7 @@
     {
       "id": "CAP-40-schema-card-escrow",
       "system": "SYS-40",
-      "title": "62. Technical Schema — Card-for-Card Stake Escrow",
+      "title": "62. Technical Schema \u2014 Card-for-Card Stake Escrow",
       "source_section": "SEC-9E10B2064723",
       "source_entries": [
         "FEAT-5F199F90C9636F"
@@ -35385,7 +35632,7 @@
     {
       "id": "CAP-40-example-wolves",
       "system": "SYS-40",
-      "title": "64. Worked Example — The Wolf Pack That Wasn’t",
+      "title": "64. Worked Example \u2014 The Wolf Pack That Wasn\u2019t",
       "source_section": "SEC-CF82767CDAFD",
       "source_entries": [
         "FEAT-8140B72938F8D8",
@@ -35400,7 +35647,7 @@
     {
       "id": "CAP-40-example-bizarre",
       "system": "SYS-40",
-      "title": "65. Worked Example — The Undead Turnip Invitational",
+      "title": "65. Worked Example \u2014 The Undead Turnip Invitational",
       "source_section": "SEC-3DC4D2050242",
       "source_entries": [
         "FEAT-1328CB81BB25CE",
@@ -35415,7 +35662,7 @@
     {
       "id": "CAP-40-example-tournament",
       "system": "SYS-40",
-      "title": "66. Worked Example — A Nine-Unit Guild Cup",
+      "title": "66. Worked Example \u2014 A Nine-Unit Guild Cup",
       "source_section": "SEC-775BEDA16D2E",
       "source_entries": [
         "FEAT-C2DD686B7FD6C4",
@@ -35430,7 +35677,7 @@
     {
       "id": "CAP-40-example-ranked",
       "system": "SYS-40",
-      "title": "67. Worked Example — No Card-Shop Advantage in Ranked",
+      "title": "67. Worked Example \u2014 No Card-Shop Advantage in Ranked",
       "source_section": "SEC-F8146A83CC5C",
       "source_entries": [
         "FEAT-AB2F62F46BFDC1",
@@ -35638,7 +35885,7 @@
     {
       "id": "CAP-41-decisions",
       "system": "SYS-41",
-      "title": "2. Decision Ledger — 15/15 Approved",
+      "title": "2. Decision Ledger \u2014 15/15 Approved",
       "source_section": "SEC-9FCCC9146FAC",
       "source_entries": [
         "FEAT-6230ABB9BAC099",
@@ -36429,7 +36676,7 @@
     {
       "id": "CAP-41-pipeline-tame",
       "system": "SYS-41",
-      "title": "48. Server Pipeline — Attempt to Befriend or Tame",
+      "title": "48. Server Pipeline \u2014 Attempt to Befriend or Tame",
       "source_section": "SEC-F05432BF30F8",
       "source_entries": [
         "FEAT-8317FD177EBB3C",
@@ -36450,7 +36697,7 @@
     {
       "id": "CAP-41-pipeline-learn",
       "system": "SYS-41",
-      "title": "49. Server Pipeline — Observe and Learn a Familiar Move",
+      "title": "49. Server Pipeline \u2014 Observe and Learn a Familiar Move",
       "source_section": "SEC-D181E48C9582",
       "source_entries": [
         "FEAT-208F6C6AD22355",
@@ -36471,7 +36718,7 @@
     {
       "id": "CAP-41-schema-species",
       "system": "SYS-41",
-      "title": "50. Data Schema — Species and Variant Eligibility",
+      "title": "50. Data Schema \u2014 Species and Variant Eligibility",
       "source_section": "SEC-BEEAFA575E45",
       "source_entries": [
         "FEAT-C752C1D75067C0"
@@ -36485,7 +36732,7 @@
     {
       "id": "CAP-41-schema-contract",
       "system": "SYS-41",
-      "title": "51. Data Schema — Taming / Capture Contract",
+      "title": "51. Data Schema \u2014 Taming / Capture Contract",
       "source_section": "SEC-C3D1F0F907F2",
       "source_entries": [
         "FEAT-2EBCEE2DA4685A"
@@ -36499,7 +36746,7 @@
     {
       "id": "CAP-41-schema-familiar",
       "system": "SYS-41",
-      "title": "52. Data Schema — Familiar Definition and Role",
+      "title": "52. Data Schema \u2014 Familiar Definition and Role",
       "source_section": "SEC-71803E8C74D2",
       "source_entries": [
         "FEAT-D1861C98D95B11"
@@ -36513,7 +36760,7 @@
     {
       "id": "CAP-41-schema-training",
       "system": "SYS-41",
-      "title": "53. Data Schema — Observed Technique and Training Milestone",
+      "title": "53. Data Schema \u2014 Observed Technique and Training Milestone",
       "source_section": "SEC-BC0E33591EC0",
       "source_entries": [
         "FEAT-186F46EF96893A"
@@ -36527,7 +36774,7 @@
     {
       "id": "CAP-41-schema-instance",
       "system": "SYS-41",
-      "title": "54. Data Schema — Encounter Instance and Attempt State",
+      "title": "54. Data Schema \u2014 Encounter Instance and Attempt State",
       "source_section": "SEC-83A610385247",
       "source_entries": [
         "FEAT-3469B669EFEB77"
@@ -36541,7 +36788,7 @@
     {
       "id": "CAP-41-schema-account",
       "system": "SYS-41",
-      "title": "55. Data Schema — Account Familiar and Run Snapshot",
+      "title": "55. Data Schema \u2014 Account Familiar and Run Snapshot",
       "source_section": "SEC-ACB396302F56",
       "source_entries": [
         "FEAT-93FC431D573471"
@@ -36555,7 +36802,7 @@
     {
       "id": "CAP-41-schema-capture",
       "system": "SYS-41",
-      "title": "56. Data Schema — Quest Capture Outcome",
+      "title": "56. Data Schema \u2014 Quest Capture Outcome",
       "source_section": "SEC-BED992C58151",
       "source_entries": [
         "FEAT-9872538DEB4F16"
@@ -36569,7 +36816,7 @@
     {
       "id": "CAP-41-examples-wolf",
       "system": "SYS-41",
-      "title": "57. Worked Example — The Wolf That Teaches",
+      "title": "57. Worked Example \u2014 The Wolf That Teaches",
       "source_section": "SEC-79D1BA6826D8",
       "source_entries": [
         "FEAT-0D5D49A849E729",
@@ -36584,7 +36831,7 @@
     {
       "id": "CAP-41-examples-fox",
       "system": "SYS-41",
-      "title": "58. Worked Example — Moon-Touched Fox and Rare Variant",
+      "title": "58. Worked Example \u2014 Moon-Touched Fox and Rare Variant",
       "source_section": "SEC-16FAED0B33EF",
       "source_entries": [
         "FEAT-D15942F0A93602",
@@ -36599,7 +36846,7 @@
     {
       "id": "CAP-41-examples-boar",
       "system": "SYS-41",
-      "title": "59. Worked Example — Capture Without Ownership",
+      "title": "59. Worked Example \u2014 Capture Without Ownership",
       "source_section": "SEC-345532D00B2E",
       "source_entries": [
         "FEAT-CB6EEEECC1C566",
@@ -36614,7 +36861,7 @@
     {
       "id": "CAP-41-examples-dragon",
       "system": "SYS-41",
-      "title": "60. Worked Example — An Intelligent Dragon Chooses",
+      "title": "60. Worked Example \u2014 An Intelligent Dragon Chooses",
       "source_section": "SEC-9CF10FE7B390",
       "source_entries": [
         "FEAT-073F5F8EC2853A",
@@ -36629,7 +36876,7 @@
     {
       "id": "CAP-41-examples-goose",
       "system": "SYS-41",
-      "title": "61. Worked Example — The Goose of Unreasonable Confidence",
+      "title": "61. Worked Example \u2014 The Goose of Unreasonable Confidence",
       "source_section": "SEC-02D5A8AE9E2C",
       "source_entries": [
         "FEAT-1B6E936A544236",
@@ -36644,7 +36891,7 @@
     {
       "id": "CAP-41-examples-festival",
       "system": "SYS-41",
-      "title": "62. Worked Example — The Familiar Agility Faire",
+      "title": "62. Worked Example \u2014 The Familiar Agility Faire",
       "source_section": "SEC-DCE1BD5A9B5D",
       "source_entries": [
         "FEAT-489CA48483A411",
@@ -37424,7 +37671,7 @@
     {
       "id": "CAP-42-guild-hybrid",
       "system": "SYS-42",
-      "title": "31. Guild Raid Model — Hybrid Shared State",
+      "title": "31. Guild Raid Model \u2014 Hybrid Shared State",
       "source_section": "SEC-3610DD500124",
       "source_entries": [
         "FEAT-A44FF3CB2B9A15",
@@ -37895,7 +38142,7 @@
     {
       "id": "CAP-42-examples",
       "system": "SYS-42",
-      "title": "57. Worked Example — The Ashen Crown Dragon",
+      "title": "57. Worked Example \u2014 The Ashen Crown Dragon",
       "source_section": "SEC-03127B437DB1",
       "source_entries": [
         "FEAT-17E93499D7B80D",
@@ -37915,7 +38162,7 @@
     {
       "id": "CAP-42-raid-example",
       "system": "SYS-42",
-      "title": "58. Worked Example — Guild Raid: The Iron Basilica",
+      "title": "58. Worked Example \u2014 Guild Raid: The Iron Basilica",
       "source_section": "SEC-BDB5FFBD4E86",
       "source_entries": [
         "FEAT-87731AF2DF7659",
@@ -37935,7 +38182,7 @@
     {
       "id": "CAP-42-world-example",
       "system": "SYS-42",
-      "title": "59. Worked Example — World Boss: The Drowned Colossus",
+      "title": "59. Worked Example \u2014 World Boss: The Drowned Colossus",
       "source_section": "SEC-7C23E65C54B6",
       "source_entries": [
         "FEAT-2177476B9F2492",
@@ -38287,7 +38534,7 @@
     {
       "id": "CAP-43-subclass-deferred",
       "system": "SYS-43",
-      "title": "12. Subclass Catalog — Deliberately Deferred",
+      "title": "12. Subclass Catalog \u2014 Deliberately Deferred",
       "source_section": "SEC-4A15AFE0BE63",
       "source_entries": [
         "FEAT-633F7D4B87A2A9",
@@ -40228,7 +40475,7 @@
     {
       "id": "CAP-44-example-local",
       "system": "SYS-44",
-      "title": "59. Worked Example — Local Problem Becoming Campaign-Relevant",
+      "title": "59. Worked Example \u2014 Local Problem Becoming Campaign-Relevant",
       "source_section": "SEC-6682D34245D4",
       "source_entries": [
         "FEAT-CB8C1E7037BBFA",
@@ -40248,7 +40495,7 @@
     {
       "id": "CAP-44-example-adventurers",
       "system": "SYS-44",
-      "title": "60. Worked Example — Adventurers in Society",
+      "title": "60. Worked Example \u2014 Adventurers in Society",
       "source_section": "SEC-FBFFB068735D",
       "source_entries": [
         "FEAT-9961CE9CD14346",
@@ -40263,7 +40510,7 @@
     {
       "id": "CAP-44-example-ascension",
       "system": "SYS-44",
-      "title": "61. Worked Example — Ascension Echo",
+      "title": "61. Worked Example \u2014 Ascension Echo",
       "source_section": "SEC-2FC90F19314E",
       "source_entries": [
         "FEAT-A9E9BEF01F8C69"
@@ -40779,11 +41026,30 @@
         "FEAT-4ADD3AA93E78BE",
         "FEAT-168CC57C4250C3"
       ],
-      "implementation_status": "unassessed",
+      "implementation_status": "partial",
       "contract": "inherit-system",
-      "evidence": [],
+      "evidence": [
+        {
+          "path": "realms/src/domains/shared-rule-actions.ts",
+          "finding": "Two opted-in domains use shared prerequisite/check/effect/cost/reward services under authoritative Action receipts; historical engines remain pinned."
+        },
+        {
+          "path": "realms/test/shared-rules-integration.test.ts",
+          "finding": "Cross-domain fixture, conserved rewards, retries/rollback, preview, release adoption and restricted controls have executable regressions."
+        },
+        {
+          "path": "realms/docs/shared-rules.md",
+          "finding": "Defines versioned services, clock providers, source/eligibility boundaries and remaining owning-domain/Studio work."
+        }
+      ],
       "rule_assertions": {},
-      "verification": null
+      "verification": null,
+      "contract_review": {
+        "state": "Run-owned immutable rule event/state projection; clock facts from canonical ledgers; new-run history archives. Operator controls and adoption survive lives.",
+        "actions": "Server derives facts/rolls and repeats gates; no client effects/rewards. Matching receipts precede flags; shared rules default disabled.",
+        "authoring": "Bounded versioned AST/check/effect/cost/reward contracts validated with references, clocks, stacking and trigger graph limits. No catalog content authored.",
+        "client": "Authenticated discovery-safe query/mutation adapters and explainability. Existing tactical UI is preserved; complete owning-domain/Studio editors remain open."
+      }
     },
     {
       "id": "CAP-45-stacking-rules",
@@ -40828,11 +41094,30 @@
         "FEAT-64A0C80639543E",
         "FEAT-D7855E3C4F95F6"
       ],
-      "implementation_status": "unassessed",
+      "implementation_status": "partial",
       "contract": "inherit-system",
-      "evidence": [],
+      "evidence": [
+        {
+          "path": "realms/src/domains/shared-rule-actions.ts",
+          "finding": "Two opted-in domains use shared prerequisite/check/effect/cost/reward services under authoritative Action receipts; historical engines remain pinned."
+        },
+        {
+          "path": "realms/test/shared-rules-integration.test.ts",
+          "finding": "Cross-domain fixture, conserved rewards, retries/rollback, preview, release adoption and restricted controls have executable regressions."
+        },
+        {
+          "path": "realms/docs/shared-rules.md",
+          "finding": "Defines versioned services, clock providers, source/eligibility boundaries and remaining owning-domain/Studio work."
+        }
+      ],
       "rule_assertions": {},
-      "verification": null
+      "verification": null,
+      "contract_review": {
+        "state": "Run-owned immutable rule event/state projection; clock facts from canonical ledgers; new-run history archives. Operator controls and adoption survive lives.",
+        "actions": "Server derives facts/rolls and repeats gates; no client effects/rewards. Matching receipts precede flags; shared rules default disabled.",
+        "authoring": "Bounded versioned AST/check/effect/cost/reward contracts validated with references, clocks, stacking and trigger graph limits. No catalog content authored.",
+        "client": "Authenticated discovery-safe query/mutation adapters and explainability. Existing tactical UI is preserved; complete owning-domain/Studio editors remain open."
+      }
     },
     {
       "id": "CAP-45-consumable-value",
@@ -41883,7 +42168,7 @@
     {
       "id": "CAP-46-s15-design-admin-client-product-vision",
       "system": "SYS-46",
-      "title": "15. Design/Admin Client — Product Vision",
+      "title": "15. Design/Admin Client \u2014 Product Vision",
       "source_section": "SEC-ACD7347C4553",
       "source_entries": [
         "FEAT-97919E8CEA08C8",
@@ -41899,7 +42184,7 @@
     {
       "id": "CAP-46-s16-design-admin-client-core-editors",
       "system": "SYS-46",
-      "title": "16. Design/Admin Client — Core Editors",
+      "title": "16. Design/Admin Client \u2014 Core Editors",
       "source_section": "SEC-A69101F627D6",
       "source_entries": [
         "FEAT-7F01E0C4F40064",
@@ -41924,7 +42209,7 @@
     {
       "id": "CAP-46-s17-design-admin-client-test-simulation-workspace",
       "system": "SYS-46",
-      "title": "17. Design/Admin Client — Test & Simulation Workspace",
+      "title": "17. Design/Admin Client \u2014 Test & Simulation Workspace",
       "source_section": "SEC-A8F9906C26A0",
       "source_entries": [
         "FEAT-35BBC92858814C",
@@ -41947,7 +42232,7 @@
     {
       "id": "CAP-46-s18-design-admin-client-safety-permissions",
       "system": "SYS-46",
-      "title": "18. Design/Admin Client — Safety & Permissions",
+      "title": "18. Design/Admin Client \u2014 Safety & Permissions",
       "source_section": "SEC-884AD37B6D5A",
       "source_entries": [
         "FEAT-2C0454F70A4367",
@@ -42105,11 +42390,30 @@
         "FEAT-F783CBB0677BEF",
         "FEAT-36EA1E93D745F2"
       ],
-      "implementation_status": "unassessed",
+      "implementation_status": "partial",
       "contract": "inherit-system",
-      "evidence": [],
+      "evidence": [
+        {
+          "path": "realms/src/domains/shared-rule-actions.ts",
+          "finding": "Two opted-in domains use shared prerequisite/check/effect/cost/reward services under authoritative Action receipts; historical engines remain pinned."
+        },
+        {
+          "path": "realms/test/shared-rules-integration.test.ts",
+          "finding": "Cross-domain fixture, conserved rewards, retries/rollback, preview, release adoption and restricted controls have executable regressions."
+        },
+        {
+          "path": "realms/docs/shared-rules.md",
+          "finding": "Defines versioned services, clock providers, source/eligibility boundaries and remaining owning-domain/Studio work."
+        }
+      ],
       "rule_assertions": {},
-      "verification": null
+      "verification": null,
+      "contract_review": {
+        "state": "Run-owned immutable rule event/state projection; clock facts from canonical ledgers; new-run history archives. Operator controls and adoption survive lives.",
+        "actions": "Server derives facts/rolls and repeats gates; no client effects/rewards. Matching receipts precede flags; shared rules default disabled.",
+        "authoring": "Bounded versioned AST/check/effect/cost/reward contracts validated with references, clocks, stacking and trigger graph limits. No catalog content authored.",
+        "client": "Authenticated discovery-safe query/mutation adapters and explainability. Existing tactical UI is preserved; complete owning-domain/Studio editors remain open."
+      }
     },
     {
       "id": "CAP-46-s27-versioning-change-review",
@@ -42198,7 +42502,7 @@
     {
       "id": "CAP-46-s32-phase-0-foundations",
       "system": "SYS-46",
-      "title": "32. Phase 0 — Foundations",
+      "title": "32. Phase 0 \u2014 Foundations",
       "source_section": "SEC-80FE725188F9",
       "source_entries": [
         "FEAT-B0B08146ACA731",
@@ -42215,7 +42519,7 @@
     {
       "id": "CAP-46-s33-phase-1-playable-loop",
       "system": "SYS-46",
-      "title": "33. Phase 1 — Playable Loop",
+      "title": "33. Phase 1 \u2014 Playable Loop",
       "source_section": "SEC-F3F2B8BCF21C",
       "source_entries": [
         "FEAT-AA85B6E9524FC1",
@@ -42232,7 +42536,7 @@
     {
       "id": "CAP-46-s34-phase-2-core-rpg",
       "system": "SYS-46",
-      "title": "34. Phase 2 — Core RPG",
+      "title": "34. Phase 2 \u2014 Core RPG",
       "source_section": "SEC-8EDE1CD8DEC4",
       "source_entries": [
         "FEAT-0A6E248DB630DF",
@@ -42251,7 +42555,7 @@
     {
       "id": "CAP-46-s35-phase-3-long-term-game",
       "system": "SYS-46",
-      "title": "35. Phase 3 — Long-Term Game",
+      "title": "35. Phase 3 \u2014 Long-Term Game",
       "source_section": "SEC-0630BFC5962C",
       "source_entries": [
         "FEAT-9242DBC564DD5C",
@@ -42269,7 +42573,7 @@
     {
       "id": "CAP-46-s36-phase-4-social-live-world",
       "system": "SYS-46",
-      "title": "36. Phase 4 — Social & Live World",
+      "title": "36. Phase 4 \u2014 Social & Live World",
       "source_section": "SEC-20EC5F234195",
       "source_entries": [
         "FEAT-4DF6F15493597E",
@@ -42289,7 +42593,7 @@
     {
       "id": "CAP-46-s37-phase-5-launch-hardening",
       "system": "SYS-46",
-      "title": "37. Phase 5 — Launch Hardening",
+      "title": "37. Phase 5 \u2014 Launch Hardening",
       "source_section": "SEC-52AAF5F00C7C",
       "source_entries": [
         "FEAT-69BDC834567FC8",
@@ -42310,7 +42614,7 @@
     {
       "id": "CAP-46-s38-phase-6-ongoing-development",
       "system": "SYS-46",
-      "title": "38. Phase 6 — Ongoing Development",
+      "title": "38. Phase 6 \u2014 Ongoing Development",
       "source_section": "SEC-10826B37B1D6",
       "source_entries": [
         "FEAT-8C2F9576D252C4",
@@ -42391,7 +42695,7 @@
     {
       "id": "CAP-46-s42-content-production-roles-functional-not-staffing-assumptions",
       "system": "SYS-46",
-      "title": "42. Content Production Roles — Functional, Not Staffing Assumptions",
+      "title": "42. Content Production Roles \u2014 Functional, Not Staffing Assumptions",
       "source_section": "SEC-AAB974A80E7C",
       "source_entries": [
         "FEAT-891FA54655D8AE",
@@ -42411,7 +42715,7 @@
     {
       "id": "CAP-46-s43-definition-of-done-framework",
       "system": "SYS-46",
-      "title": "43. Definition of Done — Framework",
+      "title": "43. Definition of Done \u2014 Framework",
       "source_section": "SEC-BC823D987842",
       "source_entries": [
         "FEAT-C06B464A55869A",
@@ -42433,7 +42737,7 @@
     {
       "id": "CAP-46-s44-definition-of-done-content",
       "system": "SYS-46",
-      "title": "44. Definition of Done — Content",
+      "title": "44. Definition of Done \u2014 Content",
       "source_section": "SEC-C9073FBB868B",
       "source_entries": [
         "FEAT-42D048DD91A488",
@@ -42455,7 +42759,7 @@
     {
       "id": "CAP-46-s45-definition-of-done-live-feature",
       "system": "SYS-46",
-      "title": "45. Definition of Done — Live Feature",
+      "title": "45. Definition of Done \u2014 Live Feature",
       "source_section": "SEC-44E5570EE5A3",
       "source_entries": [
         "FEAT-E442903B5B5BD4",
@@ -42475,7 +42779,7 @@
     {
       "id": "CAP-46-s46-risk-register-highest-architectural-risks",
       "system": "SYS-46",
-      "title": "46. Risk Register — Highest Architectural Risks",
+      "title": "46. Risk Register \u2014 Highest Architectural Risks",
       "source_section": "SEC-35295A986BFA",
       "source_entries": [
         "FEAT-D3EFC12321D216",
@@ -42545,11 +42849,30 @@
         "FEAT-2B3C40F5B4EC40",
         "FEAT-77A52C9CFE4661"
       ],
-      "implementation_status": "unassessed",
+      "implementation_status": "partial",
       "contract": "inherit-system",
-      "evidence": [],
+      "evidence": [
+        {
+          "path": "realms/src/domains/shared-rule-actions.ts",
+          "finding": "Two opted-in domains use shared prerequisite/check/effect/cost/reward services under authoritative Action receipts; historical engines remain pinned."
+        },
+        {
+          "path": "realms/test/shared-rules-integration.test.ts",
+          "finding": "Cross-domain fixture, conserved rewards, retries/rollback, preview, release adoption and restricted controls have executable regressions."
+        },
+        {
+          "path": "realms/docs/shared-rules.md",
+          "finding": "Defines versioned services, clock providers, source/eligibility boundaries and remaining owning-domain/Studio work."
+        }
+      ],
       "rule_assertions": {},
-      "verification": null
+      "verification": null,
+      "contract_review": {
+        "state": "Run-owned immutable rule event/state projection; clock facts from canonical ledgers; new-run history archives. Operator controls and adoption survive lives.",
+        "actions": "Server derives facts/rolls and repeats gates; no client effects/rewards. Matching receipts precede flags; shared rules default disabled.",
+        "authoring": "Bounded versioned AST/check/effect/cost/reward contracts validated with references, clocks, stacking and trigger graph limits. No catalog content authored.",
+        "client": "Authenticated discovery-safe query/mutation adapters and explainability. Existing tactical UI is preserved; complete owning-domain/Studio editors remain open."
+      }
     },
     {
       "id": "CAP-46-s50-admin-audit-log-requirements",
@@ -42834,7 +43157,7 @@
     {
       "id": "CAP-46-s65-player-data-scopes-canonical-integration",
       "system": "SYS-46",
-      "title": "65. Player Data Scopes — Canonical Integration",
+      "title": "65. Player Data Scopes \u2014 Canonical Integration",
       "source_section": "SEC-3110284B2A78",
       "source_entries": [
         "FEAT-F953EA33D8BFE9",
@@ -42970,7 +43293,7 @@
     {
       "id": "CAP-46-s72-what-design-complete-means",
       "system": "SYS-46",
-      "title": "72. What “Design Complete” Means",
+      "title": "72. What \u201cDesign Complete\u201d Means",
       "source_section": "SEC-66D5F755D274",
       "source_entries": [
         "FEAT-14A44330A9608B",
@@ -43076,7 +43399,7 @@
         "SYS-10"
       ],
       "after": [],
-      "deliverable": "Declare concrete field-level persistence/reset contracts and retained-state policy; tiny campaign completion → Aftercore → preview/Tavern → next-life setup → Ascend → replay, with one persistent knowledge/Mastery reward and no daily reset exploit."
+      "deliverable": "Declare concrete field-level persistence/reset contracts and retained-state policy; tiny campaign completion \u2192 Aftercore \u2192 preview/Tavern \u2192 next-life setup \u2192 Ascend \u2192 replay, with one persistent knowledge/Mastery reward and no daily reset exploit."
     },
     {
       "id": "WP-02",

@@ -1,3 +1,4 @@
+import { requireEntityPrerequisite } from '../rules/requirements.js';
 import type pg from 'pg';
 import { executeAction,advanceRevision,type Envelope,type ActionContext } from '../foundation/action.js';
 import { DomainError } from '../foundation/errors.js';
@@ -15,6 +16,7 @@ async function knownRecipe(client:pg.PoolClient|pg.Pool,accountId:string,runId:s
 }
 async function plan(context:ActionContext,recipeId:string,batches:number,itemIds:string[]){
   const recipe=await knownRecipe(context.client,context.accountId,context.run.id,recipeId);
+  await requireEntityPrerequisite(context,recipeId);
   if(batches>recipe.spec.maxBatch || itemIds.length!==recipe.spec.inputs.length)throw new DomainError(400,'INVALID_CRAFT_BATCH');
   // All source stacks are locked together in UUID order; no automatic selection or substitutions.
   const items=(await context.client.query(`SELECT i.*,s.run_id,s.lifecycle,c.kind FROM inventory_items i

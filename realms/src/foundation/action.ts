@@ -1,3 +1,4 @@
+import { actionControls } from '../rules/controls.js';
 import { createHash, randomUUID } from 'node:crypto';
 import type pg from 'pg';
 import { checksum, type Json } from './json.js';
@@ -36,6 +37,7 @@ export async function executeAction(pool: pg.Pool, accountId: string, envelope: 
     const run = state.rows[0];
     if (!run) throw new DomainError(409, 'NO_RUN');
     if (run.revision !== envelope.expectedRevision) throw new DomainError(409, 'STALE_REVISION');
+    await actionControls(client,accountId,envelope.actionType);
     const context = { client, accountId, actionId, requestId: envelope.requestId, run };
     const result = { ...(await handler(context)), actionId, requestId: envelope.requestId, rulesVersion: run.rules_version };
     await client.query(`INSERT INTO action_receipts(account_id,request_id,payload_hash,result,action_id,action_type,rules_version,authorization_source,envelope_version)
