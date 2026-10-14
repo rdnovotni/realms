@@ -106,3 +106,7 @@ Permanent server-folder relocation: [Realms storage layout and migration](../inf
 Domain and hosting setup: [playfollybound.com operator runbook](../infra/docs/playfollybound-hosting.md). Registration/account setup and public activation are separate operator steps.
 
 Encrypted external-drive backups: [setup, restore tests and recovery](../infra/docs/local-backups.md). Automatic jobs are enabled only after initial USB backup and isolated restoration succeed.
+
+## Feature frameworks before content
+
+The [feature registry](design/README.md) maps the Core Bible and Systems 01–46 to scoped implementation contracts and a dependency-ordered [work plan](design/WORK_PLAN.md). Run `npm run features:check` before advancing a feature status. Source approval, implementation evidence, automated verification and live activation are separate. Ordinary content remains limited to test fixtures until its framework and workflow pass their acceptance gates.
