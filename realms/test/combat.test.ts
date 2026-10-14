@@ -144,7 +144,7 @@ test('combat HTTP accepts intents only, resumes safely and derives account ident
   assert.equal((await app.inject({method:'GET',url:`/api/v1/combat/${id}`})).statusCode,401);
   const view=await app.inject({method:'GET',url:`/api/v1/combat/${id}`,headers});assert.equal(view.statusCode,200);assert.equal(view.json().seed,undefined);assert.equal(view.json().rewards,undefined);
   const action=await app.inject({method:'POST',url:'/api/v1/combat/actions',headers,payload:{...env(1),instanceId:id,expectedRound:0,intent:'ATTACK'}});assert.equal(action.statusCode,200);assert.equal(action.json().outcome,'VICTORY');
-  assert.equal((await app.inject({method:'POST',url:'/api/v1/ascend',headers,payload:env(2,'ASCEND')})).statusCode,409);
+  assert.equal((await app.inject({method:'POST',url:'/api/v1/ascend',headers,payload:{...env(2,'ASCEND'),previewToken:(await app.inject({url:'/api/v1/ascend/preview',headers})).json().previewToken}})).statusCode,409);
   await app.close();
  }finally{await db.close();}
 });
@@ -167,6 +167,7 @@ test('restricted runtime completes combat, currency, campaign and Ascension whil
   await pool.query(`GRANT USAGE ON SCHEMA ${db.schema} TO ${role};GRANT SELECT ON ALL TABLES IN SCHEMA ${db.schema} TO ${role};
     GRANT UPDATE(security_epoch) ON accounts TO ${role};
     GRANT INSERT,UPDATE ON runs,state_scopes,run_progression,run_consumption,inventory_containers,inventory_items,wallets,instances,instance_participants,encounter_records,combat_run_state,combat_states TO ${role};
+    GRANT INSERT,UPDATE ON discoveries,scoped_state TO ${role};
     GRANT INSERT ON run_builds,run_xp_baselines,encounter_xp_plans,run_xp_awards TO ${role};
     GRANT INSERT ON action_receipts,turn_ledger,currency_transfers,inventory_movements,inventory_quantity_operations,run_history,audit_events,outbox_events,encounter_draws,encounter_reward_plans,encounter_reward_claims,encounter_reward_items,combat_steps,combat_recoveries,combat_gold_plans,combat_gold_claims,run_completions TO ${role};
     GRANT USAGE,SELECT ON ALL SEQUENCES IN SCHEMA ${db.schema} TO ${role}`);
@@ -191,7 +192,7 @@ test('read-only device sessions cannot start combat, submit actions or ascend',a
   const app=buildApp(pool,{mode:'sessions',throttleKey:'combat-session-throttle-key-long-enough'}),headers={authorization:`Bearer ${token}`};
   assert.equal((await app.inject({method:'POST',url:'/api/v1/combat/start',headers,payload:{...env(0,'START_COMBAT'),definitionId:'encounter.first'}})).statusCode,403);
   assert.equal((await app.inject({method:'POST',url:'/api/v1/combat/actions',headers,payload:{...env(),instanceId:randomUUID(),expectedRound:0,intent:'ATTACK'}})).statusCode,403);
-  assert.equal((await app.inject({method:'POST',url:'/api/v1/ascend',headers,payload:env(0,'ASCEND')})).statusCode,403);
+  assert.equal((await app.inject({method:'POST',url:'/api/v1/ascend',headers,payload:{...env(0,'ASCEND'),previewToken:(await app.inject({url:'/api/v1/ascend/preview',headers})).json().previewToken}})).statusCode,403);
   assert.equal((await pool.query('SELECT count(*)::int AS n FROM combat_states')).rows[0].n,0);await app.close();
  }finally{await db.close();}
 });

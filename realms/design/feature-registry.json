@@ -9565,11 +9565,30 @@
       "source_entries": [
         "FEAT-84BB60E546A643"
       ],
-      "implementation_status": "unassessed",
+      "implementation_status": "partial",
       "contract": "inherit-system",
-      "evidence": [],
+      "evidence": [
+        {
+          "path": "realms/src/domains/lifetime-fields.ts",
+          "finding": "Names and checks 433 native columns across 56 currently owned-state tables; indirect ownership roots remain explicit."
+        },
+        {
+          "path": "realms/src/domains/state.ts",
+          "finding": "Versioned Ascension KEEP/CARRY/RESET/ARCHIVE policies, mandatory daily carry and transactional next-run initialization."
+        },
+        {
+          "path": "realms/test/ascension-contract.test.ts",
+          "finding": "Fixture campaign completion, current confirmation preview, retained knowledge, seven scope lifetimes, reset/carry/archive, migration preservation and replay. Full Mastery/Legacy/Tavern/mode setup remain open."
+        }
+      ],
       "rule_assertions": {},
-      "verification": null
+      "verification": null,
+      "contract_review": {
+        "state": "Remaining Turns and consumption carry; native run/build choices reset; generic RUN fields follow explicit policies; terminal INSTANCE fields freeze; independent scopes retain. Native manifest enumerates actual current columns.",
+        "actions": "GET ascension preview is authenticated; POST ASCEND requires current keyed token and expected revision; manual UI or explicit API only; all active instances block. Same-request receipt replays before preview validation.",
+        "authoring": "Engineering registers immutable JSON-schema/default/scope/reset/Ascension contracts with versioned keys. No production content definitions added. Broader typed Studio workflow remains open.",
+        "client": "Aftercore retained/reset/history preview and explicit confirmation; redirects to fresh build; uncertain transition retries original request and token."
+      }
     },
     {
       "id": "CAP-10-persistent",
@@ -18369,11 +18388,30 @@
         "FEAT-3E5088E5A09E9B",
         "FEAT-B1A6E5E0F35603"
       ],
-      "implementation_status": "unassessed",
+      "implementation_status": "partial",
       "contract": "inherit-system",
-      "evidence": [],
+      "evidence": [
+        {
+          "path": "realms/src/domains/lifetime-fields.ts",
+          "finding": "Names and checks 433 native columns across 56 currently owned-state tables; indirect ownership roots remain explicit."
+        },
+        {
+          "path": "realms/src/domains/state.ts",
+          "finding": "Versioned Ascension KEEP/CARRY/RESET/ARCHIVE policies, mandatory daily carry and transactional next-run initialization."
+        },
+        {
+          "path": "realms/test/ascension-contract.test.ts",
+          "finding": "Fixture campaign completion, current confirmation preview, retained knowledge, seven scope lifetimes, reset/carry/archive, migration preservation and replay. Full Mastery/Legacy/Tavern/mode setup remain open."
+        }
+      ],
       "rule_assertions": {},
-      "verification": null
+      "verification": null,
+      "contract_review": {
+        "state": "Remaining Turns and consumption carry; native run/build choices reset; generic RUN fields follow explicit policies; terminal INSTANCE fields freeze; independent scopes retain. Native manifest enumerates actual current columns.",
+        "actions": "GET ascension preview is authenticated; POST ASCEND requires current keyed token and expected revision; manual UI or explicit API only; all active instances block. Same-request receipt replays before preview validation.",
+        "authoring": "Engineering registers immutable JSON-schema/default/scope/reset/Ascension contracts with versioned keys. No production content definitions added. Broader typed Studio workflow remains open.",
+        "client": "Aftercore retained/reset/history preview and explicit confirmation; redirects to fresh build; uncertain transition retries original request and token."
+      }
     },
     {
       "id": "CAP-23-runmodel",
@@ -18383,11 +18421,30 @@
       "source_entries": [
         "FEAT-3CA6441286AC0E"
       ],
-      "implementation_status": "unassessed",
+      "implementation_status": "partial",
       "contract": "inherit-system",
-      "evidence": [],
+      "evidence": [
+        {
+          "path": "realms/src/domains/lifetime-fields.ts",
+          "finding": "Names and checks 433 native columns across 56 currently owned-state tables; indirect ownership roots remain explicit."
+        },
+        {
+          "path": "realms/src/domains/state.ts",
+          "finding": "Versioned Ascension KEEP/CARRY/RESET/ARCHIVE policies, mandatory daily carry and transactional next-run initialization."
+        },
+        {
+          "path": "realms/test/ascension-contract.test.ts",
+          "finding": "Fixture campaign completion, current confirmation preview, retained knowledge, seven scope lifetimes, reset/carry/archive, migration preservation and replay. Full Mastery/Legacy/Tavern/mode setup remain open."
+        }
+      ],
       "rule_assertions": {},
-      "verification": null
+      "verification": null,
+      "contract_review": {
+        "state": "Remaining Turns and consumption carry; native run/build choices reset; generic RUN fields follow explicit policies; terminal INSTANCE fields freeze; independent scopes retain. Native manifest enumerates actual current columns.",
+        "actions": "GET ascension preview is authenticated; POST ASCEND requires current keyed token and expected revision; manual UI or explicit API only; all active instances block. Same-request receipt replays before preview validation.",
+        "authoring": "Engineering registers immutable JSON-schema/default/scope/reset/Ascension contracts with versioned keys. No production content definitions added. Broader typed Studio workflow remains open.",
+        "client": "Aftercore retained/reset/history preview and explicit confirmation; redirects to fresh build; uncertain transition retries original request and token."
+      }
     },
     {
       "id": "CAP-23-queryaction",

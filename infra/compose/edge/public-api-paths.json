@@ -1,6 +1,7 @@
 [
   "/api/v1/actions",
   "/api/v1/ascend",
+  "/api/v1/ascend/preview",
   "/api/v1/auth/login",
   "/api/v1/auth/logout",
   "/api/v1/auth/logout-all",

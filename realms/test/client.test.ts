@@ -32,18 +32,19 @@ test('public page links support direct loads while unknown routes stay unavailab
  }finally{await app.close();}
 });
 function harness(authMode:'development'|'sessions'='development'){
- let revision=0,canWrite=true,post:(path:string,init:RequestInit)=>Promise<Response>=async(path)=>json(path.endsWith('/login')?{token:'private-token'}:{}),readsFail=false;
+ let revision=0,canWrite=true,runId='run',status='ACTIVE',post:(path:string,init:RequestInit)=>Promise<Response>=async(path)=>json(path.endsWith('/login')?{token:'private-token'}:{}),readsFail=false;
  const calls:{path:string;init:RequestInit}[]=[];
  const fetcher:Fetcher=async(path,init={})=>{calls.push({path,init});if(init.method==='POST')return post(path,init);
   if(path.endsWith('/config'))return json({protocolVersion:1,authMode});
   if(readsFail)return json({error:'TECHNICAL_FAILURE'},503);
-  if(path.endsWith('/state'))return json({protocolVersion:1,run:{runId:'run',turns:20,revision,status:'ACTIVE',mode:'STANDARD'},canWrite,activeEncounter:null,latestEncounter:null,adventures:[],inventory:[],hasMoreItems:false,hasMoreAdventures:false});
+  if(path.endsWith('/state'))return json({protocolVersion:1,run:{runId,turns:20,revision,status,mode:'STANDARD'},canWrite,activeEncounter:null,latestEncounter:null,adventures:[],inventory:[],hasMoreItems:false,hasMoreAdventures:false});
+  if(path==='/api/v1/ascend/preview')return json({runId,revision,ready:status==='AFTERCORE',activeInstances:0,previewToken:'a'.repeat(64),contract:{version:1,preserve:[],reset:[],archive:[],blockers:[]},retained:{turns:20,consumption:{fullness:6,drunkenness:4,tolerance:2},knowledge:1,storedItems:1,archivedItems:0,gold:'0',carriedFields:1},next:{mode:'STANDARD',startingLevel:1,startingXP:'0',build:'UNCONFIGURED'}});
   if(path.endsWith('/options'))return json({classes:[],rules:[]});
   if(path==='/api/v1/progression')return json({revision,level:1,xp:'0',build:{mode:'CONFIGURED'},readiness:null});
   throw Error(`Unexpected request ${path}`);
  };
  const session=new GameSession(new ApiClient(fetcher),()=> '11111111-1111-4111-8111-111111111111');
- return {session,calls,setRevision:(n:number)=>{revision=n;},setWrite:(value:boolean)=>{canWrite=value;},setPost:(fn:typeof post)=>{post=fn;},setReadFailure:(value:boolean)=>{readsFail=value;}};
+ return {session,calls,setStatus:(s:string)=>{status=s;},setRun:(r:string)=>{runId=r;},setRevision:(n:number)=>{revision=n;},setWrite:(value:boolean)=>{canWrite=value;},setPost:(fn:typeof post)=>{post=fn;},setReadFailure:(value:boolean)=>{readsFail=value;}};
 }
 async function connect(h:ReturnType<typeof harness>){await h.session.initialize();await h.session.connect({token:'private-token'});assert.ok(h.session.snapshot);}
 test('transport confines credentials to same-origin headers and normalizes malformed and unreachable responses',async()=>{
@@ -84,4 +85,18 @@ test('preparation accepts shared weapon identities across sets and catches confl
 });
 test('binding preview distinguishes inactive prepared gear from active or already bound gear',()=>{
  const plan:EquipmentPlan={activeSet:'A',slots:[{set:'B',slot:'MAIN_HAND',itemId:'sword'}]};assert.deepEqual(bindingConsequences(plan,equipmentGear),[]);assert.deepEqual(bindingConsequences({...plan,activeSet:'B'},equipmentGear),['Sword']);assert.deepEqual(bindingConsequences({...plan,activeSet:'B'},equipmentGear.map(g=>({...g,binding:'ACCOUNT_BOUND'}))),[]);
+});
+
+test('Ascension requires a current explicit preview and retries the same token after a lost transition response',async()=>{
+ const h=harness();h.setStatus('AFTERCORE');await connect(h);
+ await h.session.confirmAscension();assert.equal(h.calls.filter(c=>c.init.method==='POST').length,0);
+ await h.session.previewAscension();assert.equal(h.session.ascension?.retained.consumption.fullness,6);
+ let count=0;h.setPost(async()=>{count++;h.setRun('next-run');h.setStatus('ACTIVE');h.setRevision(0);if(count===1)throw Error('Transition response lost');return json({replayed:true});});
+ await h.session.confirmAscension();assert.ok(h.session.pending);await h.session.refresh();assert.equal(h.session.ascension,null);await h.session.retry();
+ assert.equal(h.session.snapshot?.game.run.runId,'next-run');assert.equal(h.session.pending,null);
+ const posts=h.calls.filter(c=>c.init.method==='POST');assert.equal(posts.length,2);assert.equal(posts[0]!.init.body,posts[1]!.init.body);assert.equal(JSON.parse(posts[0]!.init.body as string).previewToken,'a'.repeat(64));
+});
+test('Ascension preview clears on refresh and read-only sessions cannot confirm or request a transition preview',async()=>{
+ const h=harness();h.setStatus('AFTERCORE');await connect(h);await h.session.previewAscension();assert.ok(h.session.ascension);await h.session.refresh();assert.equal(h.session.ascension,null);
+ h.setWrite(false);await h.session.refresh();const before=h.calls.length;await h.session.previewAscension();await h.session.confirmAscension();assert.equal(h.calls.length,before);
 });

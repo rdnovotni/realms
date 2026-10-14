@@ -4,6 +4,8 @@ Generated from `feature-registry.json` and the fingerprinted `source-catalog.jso
 
 47 documents, 2096 section checklists, 13,187 source entries including 11,607 rules. Coverage is a mapping count, **not a feature completion percentage**.
 
+Current section assessments: historical: 37, partial: 3, unassessed: 2056.
+
 Finish reusable feature frameworks with minimal test fixtures before substantial authored content. Keep canonical launch tiers and post-launch/deployment gates visible; do not treat examples as locked catalogs.
 
 The system contract supplies owner, prerequisites, field scopes/reset rules, Action/permission families, authoring/editor work, client workflow and acceptance scenarios to every section. Individual section implementation is initially **unassessed**. Baseline subset evidence is listed separately; no whole system is verified. Field-level exceptions and per-rule executable assertions are required before implementation status can be promoted.

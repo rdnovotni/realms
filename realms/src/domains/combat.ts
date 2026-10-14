@@ -1,3 +1,4 @@
+import { rememberCampaign } from './ascension-contract.js';
 import type pg from 'pg';
 import { executeAction,advanceRevision,type ActionContext,type Envelope } from '../foundation/action.js';
 import { DomainError } from '../foundation/errors.js';
@@ -61,6 +62,7 @@ async function completeCampaign(c:ActionContext,id:string,definitionId:string,sp
   await checkPrerequisites(c,definitionId,spec);const campaign=await campaignFor(c,spec.campaignId);
   await c.client.query(`INSERT INTO run_completions(run_id,release_id,campaign_id,definition_revision,final_instance_id,action_id) VALUES($1,$2,$3,$4,$5,$6)`,[c.run.id,c.run.content_release_id,spec.campaignId,campaign.revision,id,c.actionId]);
   await c.client.query("UPDATE runs SET status='AFTERCORE',completed_at=now() WHERE id=$1",[c.run.id]);
+ await rememberCampaign(c,spec.campaignId!);
 }
 export function takeCombatAction(pool:pg.Pool,accountId:string,envelope:Envelope,instanceId:string,expectedRound:number,intent:CombatIntent){
   if(!['ATTACK','GUARD','RETREAT'].includes(intent) || !Number.isInteger(expectedRound) || expectedRound<0) throw new DomainError(400,'INVALID_COMBAT_INTENT');
