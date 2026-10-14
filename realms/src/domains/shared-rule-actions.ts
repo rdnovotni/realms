@@ -1,3 +1,5 @@
+import { carryLoad } from './inventory-load.js';
+import { carryCheckPenalty } from './inventory-rules.js';
 import { retryFingerprint,retryAvailability } from '../rules/retries.js';
 import { transaction } from '../foundation/transaction.js';
 import { randomBytes } from 'node:crypto';
@@ -38,7 +40,7 @@ async function resolveDomain(c:ActionContext,entityId:string,domain:RuleAction['
  const expiration=effectTransition(state.effects,definitions,clocksBefore,rawFacts,{kind:'CLOCK'});state.effects=expiration.effects;
  const facts=effectCapabilities(state.effects,rawFacts),eligibility=prerequisite(spec.prerequisite,facts);
  if(!eligibility.met)throw new DomainError(409,'PREREQUISITE_NOT_MET');
- const actor={attributeScore:Number(facts[spec.check.attribute]??0),rank:spec.check.skill?Number(facts[spec.check.skill]??0):0,canAttempt:facts['capability.act']!==false,modifiers:effectContributions(state.effects,`check.${spec.check.skill?.slice(6)??'general'}`)};
+ const actor={attributeScore:Number(facts[spec.check.attribute]??0),rank:spec.check.skill?Number(facts[spec.check.skill]??0):0,canAttempt:facts['capability.act']!==false,modifiers:[...effectContributions(state.effects,`check.${spec.check.skill?.slice(6)??'general'}`),...carryCheckPenalty(await carryLoad(c.client,c.run.id),spec.check.skill)]};
  const fingerprint=retryFingerprint(spec,facts,actor.modifiers,row.prerequisite??undefined);
  if(await retryAvailability(c.client,c.run.id,entityId,spec,fingerprint,clocksBefore.WORLD_TIME))throw new DomainError(409,'RULE_RETRY_NOT_READY');
  const chance=sharedCheckChance(spec.check,actor);
@@ -79,7 +81,8 @@ export function ruleActionPreview(pool:pg.Pool,accountId:string,entityId:string)
   const state:SharedState=(await client.query('SELECT state FROM shared_rules_state WHERE run_id=$1',[run.id])).rows[0]?.state??{local:{rounds:0,rests:0,fullRests:0},effects:[]};
   const rawFacts=await runFacts(c),clocks=await runClocks(c,state.local),definitions=await loadDefinitions(c),current=effectTransition(state.effects,definitions,clocks,rawFacts,{kind:'CLOCK'}),facts=effectCapabilities(current.effects,rawFacts);
   const eligibility=prerequisite(spec.prerequisite,facts),entityEligibility=row.prerequisite?prerequisite(row.prerequisite,facts).met:true;
-  const actor={attributeScore:Number(facts[spec.check.attribute]??0),rank:spec.check.skill?Number(facts[spec.check.skill]??0):0,canAttempt:facts['capability.act']!==false,modifiers:effectContributions(current.effects,`check.${spec.check.skill?.slice(6)??'general'}`)};
+  const load=await carryLoad(client,run.id),carryEntry=spec.domain!=='COMBAT'||!['OVERLOADED','UNMEASURED'].includes(load.state);
+  const actor={attributeScore:Number(facts[spec.check.attribute]??0),rank:spec.check.skill?Number(facts[spec.check.skill]??0):0,canAttempt:facts['capability.act']!==false,modifiers:[...effectContributions(current.effects,`check.${spec.check.skill?.slice(6)??'general'}`),...carryCheckPenalty(load,spec.check.skill)]};
   const flags=await featureAvailable(client,'shared.rules',accountId,true)&&await featureAvailable(client,'actions.global',accountId)&&await featureAvailable(client,`content.${entityId}`,accountId);
   const resources=(await client.query('SELECT p.resource_key,p.amount::text FROM resource_pools p JOIN state_scopes s ON s.id=p.scope_id WHERE s.run_id=$1',[run.id])).rows;
   const gold=(await client.query("SELECT w.balance::text FROM wallets w JOIN state_scopes s ON s.id=w.scope_id WHERE s.run_id=$1 AND w.currency_id='GOLD' AND w.purpose='PLAYER'",[run.id])).rows[0]?.balance??'0';
@@ -87,6 +90,6 @@ export function ruleActionPreview(pool:pg.Pool,accountId:string,entityId:string)
   const active=((await client.query("SELECT 1 FROM instance_participants p JOIN instances i ON i.id=p.instance_id WHERE p.run_id=$1 AND i.lifecycle='ACTIVE' LIMIT 1",[run.id])).rowCount??0)>0;
   const retry=await retryAvailability(client,run.id,entityId,spec,retryFingerprint(spec,facts,actor.modifiers,row.prerequisite??undefined),clocks.WORLD_TIME);
   const preview=effectTransition(current.effects,definitions,clocks,facts,{kind:'APPLY',ids:spec.effects,source:entityId,application:c.actionId});
-  return {entityId,domain:spec.domain,revision:run.revision,retry,eligible:!retry&&flags&&eligibility.met&&entityEligibility&&costsMet&&!active&&actor.canAttempt&&actor.rank>=spec.check.minimumRank,availability:flags?'ENABLED':'DISABLED',prerequisite:eligibility,costs:spec.costs,effects:preview.events.map(e=>({kind:e.kind,source:facts[`known.${e.effectId}`]?e.effectId:'unidentified.effect'})),...(spec.check.visibility==='KNOWN'?{check:{attribute:spec.check.attribute,skill:spec.check.skill,attributeModifier:Math.floor((actor.attributeScore-spec.check.attributeBaseline)/spec.check.attributeDivisor),proficiency:spec.check.rankBonuses[actor.rank],modifiers:actor.modifiers.map(m=>({...m,source:facts[`known.${m.source}`]?m.source:'unidentified.effect'})),difficulty:spec.check.difficulty,chance:sharedCheckChance(spec.check,actor)}}:{})};
+  return {entityId,domain:spec.domain,revision:run.revision,retry,eligible:carryEntry&&!retry&&flags&&eligibility.met&&entityEligibility&&costsMet&&!active&&actor.canAttempt&&actor.rank>=spec.check.minimumRank,availability:flags?'ENABLED':'DISABLED',prerequisite:eligibility,costs:spec.costs,effects:preview.events.map(e=>({kind:e.kind,source:facts[`known.${e.effectId}`]?e.effectId:'unidentified.effect'})),...(spec.check.visibility==='KNOWN'?{check:{attribute:spec.check.attribute,skill:spec.check.skill,attributeModifier:Math.floor((actor.attributeScore-spec.check.attributeBaseline)/spec.check.attributeDivisor),proficiency:spec.check.rankBonuses[actor.rank],modifiers:actor.modifiers.map(m=>({...m,source:m.source.startsWith('encumbrance:')?'Encumbrance':facts[`known.${m.source}`]?m.source:'unidentified.effect'})),difficulty:spec.check.difficulty,chance:sharedCheckChance(spec.check,actor)}}:{})};
  });
 }

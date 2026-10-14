@@ -7517,9 +7517,22 @@
         "FEAT-3F519D71B6E4C6",
         "FEAT-7601A8D0FAFFC3"
       ],
-      "implementation_status": "unassessed",
+      "implementation_status": "partial",
       "contract": "inherit-system",
-      "evidence": [],
+      "evidence": [
+        {
+          "path": "realms/src/domains/inventory-rules.ts",
+          "finding": "Opt-in exact weight/bulk bands, Strength and explicitly owned capacity; authored shared skill penalties; temporary magic/Mastery/Home adapters remain open."
+        },
+        {
+          "path": "realms/migrations/032_inventory_carry.sql",
+          "finding": "SQL dangerous-entry guard, immutable carrying evidence and independent historical quantity/custody audit; old releases remain unchanged."
+        },
+        {
+          "path": "realms/test/inventory-browser.test.ts",
+          "finding": "Paged all-load totals, overloaded entry without cost, immutable tactical penalties, later consumption reconciliation and safe inventory HTTP proofs."
+        }
+      ],
       "rule_assertions": {},
       "verification": null
     },
@@ -7539,9 +7552,18 @@
         "FEAT-3C9E3513F3832C",
         "FEAT-6D903285358074"
       ],
-      "implementation_status": "unassessed",
+      "implementation_status": "partial",
       "contract": "inherit-system",
-      "evidence": [],
+      "evidence": [
+        {
+          "path": "realms/src/domains/inventory-browser.ts",
+          "finding": "Owned carried/current-life Home/Material Vault and readonly archived storage browser; existing Casual access enforced, no Standard allowance or guild/mail/museum custody implementation."
+        },
+        {
+          "path": "realms/test/inventory-browser.test.ts",
+          "finding": "Foreign storage denied, current-life move conserves quantity, auto-storage handles exact int64 quantities and history omits private reasons."
+        }
+      ],
       "rule_assertions": {},
       "verification": null
     },
@@ -7555,9 +7577,22 @@
         "FEAT-723F762977B7DC",
         "FEAT-6DBFB7F9B0A1AF"
       ],
-      "implementation_status": "unassessed",
+      "implementation_status": "partial",
       "contract": "inherit-system",
-      "evidence": [],
+      "evidence": [
+        {
+          "path": "realms/client/inventory.ts",
+          "finding": "Paged grid, filters, public/advanced inspection, grouping expansion, explicit lock/equipment/stack/storage controls and keyboard alternatives to drag."
+        },
+        {
+          "path": "realms/src/domains/inventory-browser.ts",
+          "finding": "KEEP account preferences optionally route future material/mundane overflow grants to permitted storage; defaults false. No auto-salvage or hidden-destructive policies."
+        },
+        {
+          "path": "realms/test/client.test.ts",
+          "finding": "Inventory responses cannot overwrite later reads or survive account signout; crossed revisions require refresh."
+        }
+      ],
       "rule_assertions": {},
       "verification": null
     },

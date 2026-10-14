@@ -7,6 +7,8 @@ try{
   await assertRuntimeRole(pool);
   const role=(await pool.query('SELECT rolname,rolsuper,rolcreatedb,rolcreaterole,rolbypassrls FROM pg_roles WHERE rolname=current_user')).rows[0];
   if(role.rolname!=='realms_app' || role.rolsuper || role.rolcreatedb || role.rolcreaterole || role.rolbypassrls)throw new Error('Server role is overprivileged');
+  const ordering=(await pool.query("SELECT has_table_privilege(current_user,'inventory_quantity_order','SELECT') readable,has_table_privilege(current_user,'inventory_quantity_order','INSERT') appendable,has_table_privilege(current_user,'inventory_quantity_order','UPDATE') editable,has_table_privilege(current_user,'inventory_quantity_order','DELETE') deletable")).rows[0];
+  if(!ordering.readable||ordering.appendable||ordering.editable||ordering.deletable)throw new Error('Inventory history ordering privileges are incorrect');
   const quantityPermissions=(await pool.query(`SELECT has_table_privilege(current_user,'inventory_quantity_operations','SELECT') AS readable,
     has_table_privilege(current_user,'inventory_quantity_operations','INSERT') AS appendable,
     has_table_privilege(current_user,'inventory_quantity_operations','UPDATE') AS editable,

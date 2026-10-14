@@ -1,5 +1,7 @@
 # Equipment persistence
 
+Current inventory UI and optional carrying policy: [inventory grid, storage and measurements](inventory-grid.md).
+
 [Documentation map](README.md) · [Current status](implementation-status.md) · [Migration map](migration-guide.md)
 
 This guide records the owning feature’s implementation checkpoint. Table counts, dated checks and “remaining” notes refer to that checkpoint; newer combat, Ascension and shared-rule work is summarized in the current status.

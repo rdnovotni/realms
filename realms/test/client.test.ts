@@ -32,9 +32,11 @@ test('public page links support direct loads while unknown routes stay unavailab
  }finally{await app.close();}
 });
 function harness(authMode:'development'|'sessions'='development'){
+ let inventoryRead:(path:string)=>Promise<Response>=async()=>json({revision,runId,items:[],total:0,offset:0,pageSize:48,containers:[],hasMoreContainers:false,preferences:{autoStoreMaterials:false,autoOverflow:false}});
  let revision=0,canWrite=true,runId='run',status='ACTIVE',post:(path:string,init:RequestInit)=>Promise<Response>=async(path)=>json(path.endsWith('/login')?{token:'private-token'}:{}),readsFail=false;
  const calls:{path:string;init:RequestInit}[]=[];
  const fetcher:Fetcher=async(path,init={})=>{calls.push({path,init});if(init.method==='POST')return post(path,init);
+  if(path.startsWith('/api/v1/inventory?'))return inventoryRead(path);
   if(path.endsWith('/config'))return json({protocolVersion:1,authMode});
   if(readsFail)return json({error:'TECHNICAL_FAILURE'},503);
   if(path.endsWith('/state'))return json({protocolVersion:1,run:{runId,turns:20,revision,status,mode:'STANDARD'},canWrite,activeEncounter:null,latestEncounter:null,adventures:[],inventory:[],hasMoreItems:false,hasMoreAdventures:false});
@@ -44,7 +46,7 @@ function harness(authMode:'development'|'sessions'='development'){
   throw Error(`Unexpected request ${path}`);
  };
  const session=new GameSession(new ApiClient(fetcher),()=> '11111111-1111-4111-8111-111111111111');
- return {session,calls,setStatus:(s:string)=>{status=s;},setRun:(r:string)=>{runId=r;},setRevision:(n:number)=>{revision=n;},setWrite:(value:boolean)=>{canWrite=value;},setPost:(fn:typeof post)=>{post=fn;},setReadFailure:(value:boolean)=>{readsFail=value;}};
+ return {session,calls,setInventoryRead:(read:(path:string)=>Promise<Response>)=>{inventoryRead=read;},setStatus:(s:string)=>{status=s;},setRun:(r:string)=>{runId=r;},setRevision:(n:number)=>{revision=n;},setWrite:(value:boolean)=>{canWrite=value;},setPost:(fn:typeof post)=>{post=fn;},setReadFailure:(value:boolean)=>{readsFail=value;}};
 }
 async function connect(h:ReturnType<typeof harness>){await h.session.initialize();await h.session.connect({token:'private-token'});assert.ok(h.session.snapshot);}
 test('transport confines credentials to same-origin headers and normalizes malformed and unreachable responses',async()=>{
@@ -99,4 +101,18 @@ test('Ascension requires a current explicit preview and retries the same token a
 test('Ascension preview clears on refresh and read-only sessions cannot confirm or request a transition preview',async()=>{
  const h=harness();h.setStatus('AFTERCORE');await connect(h);await h.session.previewAscension();assert.ok(h.session.ascension);await h.session.refresh();assert.equal(h.session.ascension,null);
  h.setWrite(false);await h.session.refresh();const before=h.calls.length;await h.session.previewAscension();await h.session.confirmAscension();assert.equal(h.calls.length,before);
+});
+
+test('inventory paging ignores out-of-order reads and clears account data on sign out',async()=>{
+ const h=harness();await connect(h);
+ let release!:(response:Response)=>void;const delayed=new Promise<Response>(resolve=>{release=resolve;});
+ const page=(name:string)=>({revision:0,runId:'run',items:[{id:name,name}],total:1,offset:0,pageSize:48,containers:[],hasMoreContainers:false,preferences:{autoStoreMaterials:false,autoOverflow:false}});
+ h.setInventoryRead(async path=>path.includes('search=first')?delayed:json(page('second')));
+ const first=h.session.browseInventory({search:'first'});await h.session.browseInventory({search:'second'});release(json(page('first')));await first;
+ assert.equal(h.session.inventory?.items[0]?.name,'second');
+ await h.session.logout();assert.equal(h.session.inventory,null);assert.equal(h.session.selectedInventoryItem,null);assert.equal(h.session.inventoryHistory,null);
+});
+test('inventory reads refuse crossed revisions and search dots stay inside the query',async()=>{
+ const h=harness();await connect(h);h.setInventoryRead(async()=>json({revision:1,runId:'run',items:[]}));await h.session.browseInventory({search:'..'});assert.equal(h.session.inventory,null);assert.equal(h.session.needsRefresh,true);
+ const last=h.calls.find(c=>c.path.startsWith('/api/v1/inventory?'));assert.ok(last?.path.includes('search=..'));
 });

@@ -1,3 +1,4 @@
+import { requireCarryEntry } from './inventory-load.js';
 import { requireFeature } from '../rules/controls.js';
 import { requireEntityPrerequisite } from '../rules/requirements.js';
 import { randomBytes,randomUUID } from 'node:crypto';
@@ -29,7 +30,7 @@ function identity(value:string){
 // Internal server primitives: an owning gameplay handler validates choices, eligibility,
 // state transitions and rewards. Neither checkpoints nor settlements are client payloads.
 export async function beginEncounter(context:ActionContext,definitionId:string,initial:Record<string,Json>){
-  requireActive(context);const checkpoint=object(initial);
+  requireActive(context);await requireCarryEntry(context.client,context.run.id);const checkpoint=object(initial);
   const content=(await context.client.query(`SELECT e.revision,v.definition->'mechanics'->'encounter' AS spec,v.definition->'mechanics'->>'characterProfileId' AS character_profile_id
     FROM release_entries e JOIN content_entities c ON c.id=e.entity_id AND c.kind='ENCOUNTER'
     JOIN content_versions v ON v.entity_id=e.entity_id AND v.revision=e.revision

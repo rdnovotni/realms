@@ -1,5 +1,7 @@
 # Game client foundation
 
+Current inventory UI and optional carrying policy: [inventory grid, storage and measurements](inventory-grid.md).
+
 [Documentation map](README.md) · [Current status](implementation-status.md) · [Migration map](migration-guide.md)
 
 The first browser client is served from the same origin as the authoritative game server. It follows the uploaded core bible and Systems 16/23: Character on the left, Adventure/Combat in the center, Journal on the right, structured choices, keyboard access and knowledge-filtered reads. On small screens the panels stack. No client code or third-party service computes rewards, damage, random draws or recovery.

@@ -9,7 +9,7 @@ export class ApiClient {
  constructor(private readonly fetcher:Fetcher=(path,init)=>globalThis.fetch(path,init)){ }
  setToken(token:string){this.token=token;}
  async request<T>(path:string,body?:unknown,authenticated=true):Promise<T>{
-  if(!path.startsWith('/api/v1/')||path.includes('..'))throw new Error('Unsupported API path');
+  if(!path.startsWith('/api/v1/')||path.split('?')[0]!.includes('..'))throw new Error('Unsupported API path');
   let response:Response;
   try{response=await this.fetcher(path,{method:body===undefined?'GET':'POST',cache:'no-store',credentials:'omit',redirect:'error',headers:{Accept:'application/json',...(body===undefined?{}:{'Content-Type':'application/json'}),...(authenticated?{Authorization:`Bearer ${this.token}`}:{})},...(body===undefined?{}:{body:JSON.stringify(body)}),signal:AbortSignal.timeout(15000)});}
   catch{throw new ApiError(0,'CONNECTION_LOST');}

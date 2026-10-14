@@ -6,7 +6,7 @@ This pass makes the current reset boundary explicit and executable. It uses the 
 
 ## Field contracts
 
-[`lifetime-fields.ts`](../src/domains/lifetime-fields.ts) names 463 fields across 61 native owned-state tables. It documents the current domain handlers and checks the owned-state schema against that manifest. Every direct run-owned table and the listed identity/shared/custody roots are included. Adding a table with `run_id`, adding/removing a column in this boundary, or changing a field's lifetime requires a reviewed manifest update. This is the initial native-state boundary; new modules with indirect ownership must add their roots explicitly. It is not an automatic rewrite engine for arbitrary SQL tables.
+[`lifetime-fields.ts`](../src/domains/lifetime-fields.ts) names 465 fields across 62 native owned-state tables. It documents the current domain handlers and checks the owned-state schema against that manifest. Every direct run-owned table and the listed identity/shared/custody roots are included. Adding a table with `run_id`, adding/removing a column in this boundary, or changing a field's lifetime requires a reviewed manifest update. This is the initial native-state boundary; new modules with indirect ownership must add their roots explicitly. It is not an automatic rewrite engine for arbitrary SQL tables.
 
 [`state.ts`](../src/domains/state.ts) executes the immutable lifetime of generic scoped fields. Rollover and Ascension are separate policies. Carried/default values are revalidated before inserting next-run fields; invalid legacy state rolls back custody, archival and receipts together. Field keys are versioned; changing an existing schema, default, owner, scope or policy fails.
 

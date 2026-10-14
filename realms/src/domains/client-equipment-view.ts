@@ -5,6 +5,9 @@ export async function clientEquipmentView(client:pg.PoolClient,runId:string,acco
  const equipment=(await client.query('SELECT equipment_snapshot($1) AS state',[runId])).rows[0].state;
  const gear=(await client.query(`SELECT i.id,v.definition->>'name' AS name,i.binding,
  v.definition->'mechanics'->'equipment'->'slots' AS slots,
+ v.definition->'mechanics'->'inventory'->>'unitWeight' AS "unitWeight",
+ v.definition->'mechanics'->'inventory'->>'unitBulk' AS "unitBulk",
+ CASE WHEN EXISTS(SELECT 1 FROM discoveries known WHERE known.account_id=$2 AND known.entity_id=i.definition_id AND known.knowledge_level='ADVANCED') THEN (SELECT jsonb_object_agg(stat,amount) FROM (SELECT m->>'stat' stat,sum((m->>'amount')::integer) amount FROM jsonb_array_elements(v.definition->'mechanics'->'combatModifiers'->'modifiers') m GROUP BY m->>'stat') stat_values) END AS "knownStats",
  (v.definition->'mechanics'->'equipment'->>'hands')::integer AS hands,
  (v.definition->'mechanics'->'equipment'->>'minimumLevel')::integer AS "minimumLevel",
  v.definition->'mechanics'->'equipment'->>'bindingPolicy' AS "bindingPolicy",
@@ -20,7 +23,7 @@ export async function clientEquipmentView(client:pg.PoolClient,runId:string,acco
  JOIN content_versions v ON v.entity_id=i.definition_id AND v.revision=i.definition_revision
  LEFT JOIN inventory_item_locks l ON l.item_id=i.id
  WHERE r.id=$1 AND v.definition->'mechanics'->'equipment' IS NOT NULL
- ORDER BY i.created_at,i.id LIMIT 101`,[runId])).rows;
+ ORDER BY EXISTS(SELECT 1 FROM equipment_slots used WHERE used.item_id=i.id) DESC,i.created_at,i.id LIMIT 101`,[runId,accountId])).rows;
  const loadouts=(await client.query(`SELECT l.template_key AS key,l.state->>'name' AS name,l.state->'plan' AS plan,(l.state->>'protectItems')::boolean AS "protectItems" FROM equipment_loadouts l JOIN characters c ON c.id=l.character_id WHERE c.account_id=$1 AND l.state IS NOT NULL ORDER BY l.template_key`,[accountId])).rows;
  return {equipment,gear:gear.slice(0,100),hasMoreGear:gear.length>100,loadouts};
 }

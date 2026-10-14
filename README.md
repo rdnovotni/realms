@@ -19,3 +19,5 @@ Start with the [documentation map](realms/docs/README.md), [current implementati
 `realms/` contains the TypeScript/Fastify game, PostgreSQL migrations, client, tests and authored test content. `infra/` contains environment templates, operator scripts, Server Console and Development Studio.
 
 GitHub remains `rdnovotni/realms`, branch `main`; the Ubuntu canonical checkout remains `/srv/Realms/source`. These are compatibility identifiers, not the public game name. Credentials, data and backups stay outside Git. Deployed images and database versions are recorded independently: a source commit or passing test is not proof that it is running. This documentation pass does not deploy, migrate, enable flags, register accounts or activate public services.
+
+The [Follybound inventory grid](realms/docs/inventory-grid.md) provides paged item management, personal storage and optional release-pinned weight/bulk rules (migration 032). Live activation requires a separate reviewed rollout.
