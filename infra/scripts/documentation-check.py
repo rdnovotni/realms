@@ -39,11 +39,12 @@ for path in files:
             errors.append(f'{path.relative_to(ROOT)}: missing/outside local link {target}')
 # Verify the inventory lists each literal implemented endpoint, including client configuration.
 api_text = (ROOT / 'realms/docs/api-reference.md').read_text()
+documented_routes = set(re.findall(r'`((?:GET|POST|DELETE|PUT) /[^`\s]+)`', api_text))
 for source in ('realms/src/app.ts', 'realms/src/client-assets.ts'):
     text = (ROOT / source).read_text()
     routes = re.findall(r"(?:protectedApp|app)\.(get|post|delete|put)(?:<[^\n]*?>)?\(\s*['\"]([^'\"]+)", text)
     for method, route in routes:
-        if route.startswith(('/api/', '/health/')) and f'{method.upper()} {route}' not in api_text:
+        if route.startswith(('/api/', '/health/')) and f'{method.upper()} {route}' not in documented_routes:
             errors.append(f'{source}: undocumented {method.upper()} {route}')
 if errors:
     print('\n'.join(errors))

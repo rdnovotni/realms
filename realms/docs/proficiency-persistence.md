@@ -10,7 +10,7 @@ Migration 019 introduces typed `SKILL` content, immutable `run_proficiency_choic
 
 Systems 03 section 9 and 29 sections 7–8 define Untrained → Novice → Trained → Expert → Master → Legendary. System 03 requires build choices after an encounter and run ranks to reset/rebuild at Ascension. System 43 keeps skills distinct from classes. Repeated trivial uses must not grant optimal progression.
 
-A `SKILL` declares a version 1 `skill` mechanic: family (`PHYSICAL`, `SUBTERFUGE`, `KNOWLEDGE`, `SURVIVAL`, `SOCIAL`, `CARE`, or explicit `FORTUNE`), default attribute, maximum rank (1–5), and discovered access. Fortune uses Luck; ordinary skills do not. Contextual substitutions belong to the future check engine.
+A `SKILL` declares a version 1 `skill` mechanic: family (`PHYSICAL`, `SUBTERFUGE`, `KNOWLEDGE`, `SURVIVAL`, `SOCIAL`, `CARE`, or explicit `FORTUNE`), default attribute, maximum rank (1–5), and discovered access. Fortune uses Luck; ordinary skills do not. Later [shared checks](shared-rules.md) provide explicit authored stat contracts; domain-specific contextual substitutions still require their owning integration.
 
 A TUNING `proficiencyRules` profile declares version 1, `PROFICIENCY_CHOICES_V1`, a build-rules reference, allowed skill IDs and strictly ascending committed-level milestones. Every milestone funds exactly one next-rank advancement in a selected skill; no skip or client-selected rank is accepted. Profiles explicitly depend on their build rules and every allowed skill. Publication rejects milestones beyond the XP curve, invalid ranks, missing references and total budgets greater than the allowed skills' combined rank capacity. These are engine bounds, not the final game's balance schedule.
 
@@ -32,6 +32,6 @@ Ascension retains old-run history and opens a run without earned ranks. Owner re
 
 Focused tests cover the complete rank ladder, authored caps, replay/concurrency, level evidence, discovery, policy pinning, active instances, out-of-order milestones, later class levels, atomic rollback, SQL forgery, restricted runtime access, HTTP scopes, upgrade preservation, corruption detection and Ascension history/reset.
 
-This foundation covers explicit level-milestone allocations only. Class/species starting packages, tutors and training costs, meaningful practice with diminishing returns, broader capability expressions, contextual checks/DCs, RNG/retry contracts, party assistance, profession skills, mastery starting options and respec remain separate authored gameplay work. The game is not yet ready for public release.
+This foundation covers explicit level-milestone allocations only. Class/species starting packages, tutors and training costs, meaningful practice with diminishing returns, profession skills, Mastery starting options and respec remain separate authored gameplay work. [Shared rules](shared-rules.md) now supply supported capabilities, checks, RNG/retry and group primitives; full practice/contextual/group workflows still need domain integration. The game is not yet ready for public release.
 
-Migration 020 implements [minimum skill-rank gates for feats and equipment](proficiency-requirements.md); general capability tags remain separate gameplay work.
+Migration 020 implements [minimum skill-rank gates for feats and equipment](proficiency-requirements.md); supported capability expressions now come from [shared rules](shared-rules.md), with broader qualification workflows remaining domain work.

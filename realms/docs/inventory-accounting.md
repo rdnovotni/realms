@@ -40,7 +40,7 @@ Every legacy item receives a migration-only OPENING operation for its existing q
 
 New item identities begin at zero and require an issuance operation before commit. Fully consumed and merged source rows remain at zero as tombstones; later grants cannot revive them. They cannot move, and Ascension leaves their historical custody intact. Live materials still enter persistent Material Vault storage during Ascension. Ordinary live instances retain their identity when moved.
 
-The database denies direct quantity updates and item deletion. It freezes definition, binding, quality and provenance until a future explicit audited evolution mechanism is introduced. This intentionally leaves binding-on-acquire/equip transitions, repairs, durability changes, upgrades and protection edits unimplemented rather than permitting arbitrary metadata edits.
+The database denies direct quantity updates and item deletion. It freezes definition, binding, quality and provenance until a future explicit audited evolution mechanism is introduced. This original checkpoint refused arbitrary metadata edits. Later [active-equipment binding](item-binding.md), [item locks](item-locks.md), [loadout protection](saved-loadouts.md) and tactical condition/wear evidence add specific audited transitions. Full repair, upgrade and item-evolution workflows remain separate contracts.
 
 The read-only integrity audit reconciles each item against incoming and outgoing quantity operations, including consumed identities and opening balances. Restore verification runs this same reconciliation. Audit totals use SQL numeric arithmetic so many int64 rows cannot overflow an aggregate.
 
@@ -48,6 +48,6 @@ The read-only integrity audit reconciles each item against incoming and outgoing
 
 Tests cover duplicate rewards, split/merge conservation, incompatible provenance, int64 limits, concurrent consumption, cross-account and restricted-custody denial, atomic crafting rollback with a Turn cost, SQL mutation denial, retired identity protection, opening-balance upgrades, corruption detection, Ascension handling and restricted runtime privileges.
 
-Before declaring Items/Crafting complete, add authored recipes and yield rules, protection/automatic-consumption policy, capacity and weight/bulk, slot/anatomy requirements, equipment/loadouts, binding transitions, durability/repair, audited item evolution, salvage, loans, market/commission custody and knowledge-filtered inventory queries. These require their owning design rules and acceptance tests; the accounting primitives alone do not complete them.
+Later guides implement routine recipe yields, item/loadout protection, legal equipment snapshots, active binding and bounded knowledge-filtered client inventory. Before declaring Items/Crafting complete, finish advanced recipes/production, automatic-consumption policy, capacity and weight/bulk, broader slot/anatomy rules, durability/repair, audited item evolution, salvage, loans and market/commission custody. These require their owning design rules and acceptance tests; the accounting primitives alone do not complete them.
 
 Migration 012 permits one strictly recorded binding transition for selected equipment, while retaining all other identity and provenance guards. See [permanent equipment binding](item-binding.md).

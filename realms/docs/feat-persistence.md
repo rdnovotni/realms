@@ -4,7 +4,7 @@
 
 This guide records the owning feature’s implementation checkpoint. Table counts, dated checks and “remaining” notes refer to that checkpoint; newer combat, Ascension and shared-rule work is summarized in the current status.
 
-Migration 017 adds `run_feat_choices` and `run_feats`, bringing the private foundation to 77 tables. It persists legal choices and their eligibility evidence; production feats and their gameplay effects remain authored work. It makes no automatic grants to existing runs.
+Migration 017 adds `run_feat_choices` and `run_feats`, bringing the private foundation to 77 tables. It persists legal choices and their eligibility evidence; production feats remain authored work; supported selected-feat effects now execute in [character snapshots](character-mechanics.md) and [tactical combat](tactical-engine.md). It makes no automatic grants to existing runs.
 
 ## Content contracts
 
@@ -29,4 +29,4 @@ Ascension keeps old choices on the archived run and opens the new run without fe
 - `GET /api/v1/progression/feats` returns selected summaries and discovered options from one consistent database snapshot, with available earned milestones and eligibility explanations.
 - `POST /api/v1/progression/feats` accepts `requestId`, `actionType: CHOOSE_FEAT`, `expectedRevision`, `featId` and `milestone`.
 
-Reads use authenticated ownership; writes require GAME_WRITE. Responses exclude unknown definitions and full mechanics. An ELIGIBLE option still needs a nonempty availableMilestones array before it can be chosen. Feat selection does not change attributes or grant combat abilities, proficiency ranks, class engines or Mastery. Those remain separate gameplay systems.
+Reads use authenticated ownership; writes require GAME_WRITE. Responses exclude unknown definitions and full mechanics. An ELIGIBLE option still needs a nonempty availableMilestones array before it can be chosen. This choice journal does not directly mutate attributes, proficiency ranks or Mastery. Supported selected-feat combat modifiers and grants are derived by the later [character mechanics](character-mechanics.md) layer at encounter start; broader feature packages still need their owning gameplay integration.
