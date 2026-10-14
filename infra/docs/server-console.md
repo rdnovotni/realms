@@ -1,14 +1,14 @@
-# KoL Server Console
+# Follybound Server Console
 
 [Operations map](README.md) · [Current source status](../../realms/docs/implementation-status.md) · [Branding compatibility](../../realms/docs/branding-and-pages.md)
 
 The desktop app now includes container projects, gated releases, encrypted USB backups, website routing checks, job reports, searchable logs and alerts. See [operations-console.md](operations-console.md) for current controls and installation. The original native-only tools documented below remain under **Native tools**; they do not deploy the public container production game.
 
-A native Ubuntu desktop client for the existing KoL PostgreSQL and game system services. It uses the installed Python/Tk desktop library. It does not run an administration web server or require the laptop.
+A native Ubuntu desktop client for the existing Follybound PostgreSQL and game system services. It uses the installed Python/Tk desktop library. It does not run an administration web server or require the laptop.
 
 ## Launch
 
-Open **KoL Server Console** from Ubuntu's application menu. The current-user menu entry has been installed. From a terminal already inside `infra/`, alternatively run:
+Open **Follybound Server Console** from Ubuntu's application menu. The source installer now writes this name. Previously installed menus may still show the old working-name label until the operator reruns the launcher installer. From a terminal already inside `infra/`, alternatively run:
 
 ```bash
 bash scripts/server-console.sh

@@ -21,7 +21,7 @@ Start with [the development baseline](development-baseline.md), [game update gui
 - [Consolidate the server under /srv/Realms](realms-storage-layout.md)
 - [INFRA-002 — Rollback](rollback.md)
 - [INFRA-008 — Durable rollover and scheduled jobs](scheduling.md)
-- [KoL Server Console](server-console.md)
+- [Follybound Server Console](server-console.md)
 - [INFRA-001 — Server readiness and next ticket](server-readiness.md)
 - [INFRA-002 — Startup validation checklist](startup-validation.md)
 - [INFRA-009 — Caddy and Cloudflare Tunnel](tunnel-operations.md)

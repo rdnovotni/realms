@@ -2,9 +2,9 @@
 
 [Operations map](README.md) · [Current source status](../../realms/docs/implementation-status.md) · [Branding compatibility](../../realms/docs/branding-and-pages.md)
 
-The expanded **KoL Server Console** is a native Ubuntu desktop app. It administers the existing container projects, Caddy and dashboard-managed Cloudflare connector while retaining the older native service controls under **Original local tools**. It opens no administration HTTP listener and stores no administrator password. Closing it leaves the game running.
+The expanded **Follybound Server Console** is a native Ubuntu desktop app. It administers the existing container projects, Caddy and dashboard-managed Cloudflare connector while retaining the older native service controls under **Original local tools**. It opens no administration HTTP listener and stores no administrator password. Closing it leaves the game running.
 
-Launch from Ubuntu's application menu or run `bash scripts/server-console.sh` from `/srv/Realms/source/infra`, as your normal account. The launcher points to the canonical `/srv/Realms/source` tree.
+Launch **Follybound Server Console** from Ubuntu's application menu (older installed launchers keep their previous label until reinstalled), or run `bash scripts/server-console.sh` from `/srv/Realms/source/infra`, as your normal account. The launcher points to the canonical `/srv/Realms/source` tree.
 
 ## Initial monitoring and email setup
 

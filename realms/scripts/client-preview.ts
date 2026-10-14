@@ -26,7 +26,7 @@ await enrollPassword(db.pool,f.account,'wayfarer','A road worth wandering 47!');
 const app=buildApp(db.pool,{mode:'sessions',throttleKey:randomBytes(32).toString('hex')});
 try{await app.listen({host:'127.0.0.1',port:3001});}
 catch(error){await app.close();await db.close();throw error;}
-console.log('Disposable Realms playtest: http://127.0.0.1:3001');
+console.log('Disposable Follybound playtest: http://127.0.0.1:3001');
 console.log('Account: wayfarer · Password: A road worth wandering 47!');
 console.log('This isolated test schema is removed when the preview stops.');
 let closing=false;
