@@ -1,6 +1,6 @@
 # Follybound server architecture
 
-Reconciled October 14, 2026 through migration 031. [Documentation map](README.md) · [Implementation status](implementation-status.md) · [API](api-reference.md)
+Reconciled October 14, 2026 through migration 032. [Documentation map](README.md) · [Implementation status](implementation-status.md) · [API](api-reference.md)
 
 ## Authority and transactions
 
@@ -23,6 +23,10 @@ Queries project only owned and discovered information. Content reads require dis
 Content identities cannot be recycled. Versions and sealed manifests are immutable; runs and instances pin their release and rules. Reviewed new-run adoption is separate from publication. RETAIN_IDENTICAL permits retained-custody adoption only with every old entry at its identical revision; broader breaking/hotfix/multi-engine changes require another contract. Feature controls are audited, administration-only and read coherently by Actions. `shared.rules` starts disabled; global/action/content/reward disable and drain policies preserve committed history.
 
 Seven typed scopes distinguish account, character, run, instance, guild, event and world. Each has a real owner foreign key; generic state contracts declare module, schema, default and lifetime. Substantial domains use dedicated relational models. Migration 030 executes generic KEEP/CARRY/RESET/ARCHIVE rules and freezes terminal scopes. The small campaign proves victory → Aftercore → current keyed Ascension preview → explicit transition → fresh build and receipt replay. Mastery, Legacy and later domain lifetimes remain separate.
+
+## Inventory and carrying
+
+The [inventory grid](inventory-grid.md) pages owned physical copies without limiting total-load calculation. Storage/stack/equipment intents reuse account/run authority and quantity history. Release-opted carrying rules add exact weight/bulk, explicitly owned capacity and immutable encounter penalties; old releases keep their semantics. Historical audits independently reconstruct quantity/custody and capacity-source ownership from immutable journals.
 
 ## Database and deployment
 

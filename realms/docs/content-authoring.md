@@ -1,5 +1,7 @@
 # Feature fixtures and content authoring
 
+Current inventory UI and optional carrying policy: [inventory grid, storage and measurements](inventory-grid.md).
+
 Follybound completes feature frameworks before production content. Keep examples small and explicitly synthetic; test classes, opponents, items and recipes are proof inputs, not a balanced release catalog. Design sources/corrections remain authoritative; the [registry](../design/README.md) is the evidence map, not new canon.
 
 ## Existing workflow

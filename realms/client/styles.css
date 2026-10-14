@@ -146,3 +146,64 @@ button:disabled{opacity:.7}
 .binding-ack input{width:auto;flex:none;margin:.2rem 0}
 @media(max-width:680px){.equipment-grid{grid-template-columns:1fr}}
 .loadout-confirmation{border:1px solid var(--line);padding:1rem;margin-top:.75rem;background:var(--paper)}
+
+/* Inventory uses a visual grid; weight and bulk govern capacity, never slots. */
+.layout.inventory-layout{grid-template-columns:200px minmax(0,1fr)}
+.inventory-layout .right-column{display:none}
+.inventory-layout main{min-width:0}
+.carry-panel{margin-bottom:20px;border-top:3px solid #7d9876}
+.carry-heading,.carry-line{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:10px 0}
+.carry-state{font-size:.85rem;letter-spacing:.07em;text-transform:uppercase}
+.carry-line{font-size:.8rem}
+.carry-meter{height:7px;border-radius:6px;background:#d8d9c9;overflow:hidden}
+.carry-meter>span{height:100%;display:block;background:#789378}
+.carry-burdened{border-color:#b28b45}.carry-burdened .carry-meter>span{background:#b28b45}
+.carry-encumbered,.carry-overloaded{border-color:#a75343}.carry-encumbered .carry-meter>span,.carry-overloaded .carry-meter>span{background:#a75343}
+.carry-sources,.inventory-details dl{display:grid;grid-template-columns:minmax(90px,1fr) minmax(0,1fr);gap:8px 14px;font-size:.8rem;margin:16px 0}
+.carry-sources dd,.inventory-details dd{margin:0;overflow-wrap:anywhere}
+.carry-sources dt,.inventory-details dt{color:#68725f}
+.inventory-toolbar{display:flex;flex-wrap:wrap;align-items:end;gap:10px;margin:18px 0}
+.inventory-toolbar label{display:flex;flex-direction:column;gap:5px;font-size:.72rem;min-width:120px;flex:1}
+.inventory-toolbar label:first-child{flex:2;min-width:180px}
+.inventory-toolbar input,.inventory-toolbar select{min-height:40px;width:100%;margin:0}
+.inventory-check{display:flex!important;flex-direction:row!important;align-items:center;gap:8px!important;font-size:.8rem;min-width:170px}
+.inventory-check input{width:18px!important;min-height:18px;height:18px;flex:none}
+.inventory-workbench{display:grid;grid-template-columns:minmax(0,1fr) minmax(240px,30%);gap:20px;align-items:start}
+.inventory-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:10px;align-content:start;min-height:160px}
+.inventory-cell{min-width:0}
+.inventory-tile{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:7px;width:100%;min-height:142px;padding:14px 8px 10px;border:1px solid #c6c8b5;border-top:3px solid #8f9a83;border-radius:5px;background:linear-gradient(145deg,#f5f1df,#e9e7d4);color:#394a36;text-align:center;box-shadow:0 2px 4px #343e3210}
+.inventory-tile:hover{background:#f8f4e4;transform:translateY(-1px)}
+.inventory-tile[aria-pressed=true]{outline:2px solid #58775a;outline-offset:2px}
+.inventory-tile:focus-visible{outline:3px solid #a77a36;outline-offset:3px}
+.inventory-tile svg{width:42px;height:42px;fill:none;stroke:#65745b;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;margin:2px 0 5px}
+.inventory-tile .inventory-quantity{position:absolute;right:6px;top:5px;font-size:.65rem;max-width:95%;overflow-wrap:anywhere;background:#fcf9e9df;padding:1px 4px;border-radius:3px}
+.inventory-item-name{font-size:.78rem;line-height:1.3;overflow-wrap:anywhere}
+.inventory-tile small,.inventory-protection{font-size:.6rem;line-height:1.3;color:#68735f}
+.inventory-protection{padding:2px 5px;border-radius:3px;background:#dce4d2}
+.rarity-uncommon{border-top-color:#638e64}.rarity-rare{border-top-color:#6386a8}.rarity-very_rare{border-top-color:#8d6da3}.rarity-legendary{border-top-color:#b28b45}.rarity-mythic,.rarity-ultra_ultra_rare{border-top-color:#a45b68}
+.inventory-details{background:#e9eadf;border:1px solid #d0d3c1;border-radius:5px;padding:18px;min-width:0;position:sticky;top:16px}
+.inventory-details h3{margin-top:0}.inventory-details p{font-size:.8rem;line-height:1.6}
+.inventory-details .small{margin:4px 3px 4px 0;min-height:38px;white-space:normal}
+.inventory-actions{display:flex;flex-wrap:wrap;margin:12px 0}
+.inventory-split{display:flex;flex-wrap:wrap;gap:8px;align-items:end;margin:14px 0}
+.inventory-split label{font-size:.75rem;max-width:120px}.inventory-split input{width:100%;margin-top:5px}.inventory-split .help{flex-basis:100%;margin:0}
+.inventory-confirmation{border:1px solid #b39867;background:#f5eed9;padding:12px;margin:12px 0;border-radius:4px}
+.inventory-pagination{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin:20px 0;font-size:.8rem}
+.inventory-settings{margin-top:16px;border-top:1px solid #ced1bf;padding-top:14px}.inventory-settings label{margin:14px 0;min-height:32px}
+.inventory-empty{grid-column:1/-1;padding:25px 10px;color:#68725f}
+.inventory-merge-note{padding:12px;background:#e5eadb;border-left:3px solid #779275}
+@media(max-width:1100px){.layout.inventory-layout{grid-template-columns:1fr}.inventory-layout .left-column{display:none}.inventory-workbench{grid-template-columns:minmax(0,1fr) 260px}}
+@media(max-width:650px){.inventory-workbench{grid-template-columns:1fr}.inventory-details{position:static}.inventory-grid{grid-template-columns:repeat(auto-fill,minmax(82px,1fr));gap:8px}.inventory-tile{min-height:130px;padding-inline:6px}.inventory-toolbar{gap:8px}.inventory-toolbar label{min-width:115px}.carry-line{align-items:start}.carry-line strong{text-align:right}.inventory-panel{padding:14px}.inventory-pagination{justify-content:center}}
+@media(prefers-reduced-motion:reduce){.inventory-tile:hover{transform:none}}
+
+.inventory-location{color:#68725f;order:5}
+.inventory-comparison{border-top:1px solid #ccd1bd;margin-top:12px;padding-top:10px}
+.inventory-comparison h4{font-size:.8rem;margin:6px 0}
+.inventory-history{padding-left:18px;font-size:.75rem;max-height:280px;overflow:auto}
+.inventory-history li{margin:10px 0}.inventory-history small{display:block;color:#68725f;margin-top:3px}
+.inventory-details select{width:100%;min-height:40px}
+
+.inventory-destinations{display:flex;flex-wrap:wrap;gap:10px;margin:16px 0}
+.inventory-drop-zone{flex:1;min-width:110px;padding:11px 12px;border:1px dashed #9ba58a;border-radius:4px;background:#e9ecdf;text-align:center}
+.inventory-drop-zone strong,.inventory-drop-zone small{display:block}.inventory-drop-zone strong{font-size:.78rem}.inventory-drop-zone small{font-size:.65rem;color:#68725f;margin-top:4px}
+.inventory-drop-zone.drag-over{background:#d4e3c7;border:2px solid #65835a}

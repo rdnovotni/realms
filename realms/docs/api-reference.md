@@ -1,6 +1,6 @@
 # Follybound HTTP API reference
 
-This inventories the implemented routes in `src/app.ts` and `src/client-assets.ts` through migration 031. Route schemas and domain documents define exact parameters and response shapes; this is not a claim of a stable public SDK or a deployed version. Server checks reject extra body fields. There is no generic client write of stats, arbitrary state, roll results, rewards or content definitions.
+This inventories the implemented routes in `src/app.ts` and `src/client-assets.ts` through migration 032. Route schemas and domain documents define exact parameters and response shapes; this is not a claim of a stable public SDK or a deployed version. Server checks reject extra body fields. There is no generic client write of stats, arbitrary state, roll results, rewards or content definitions.
 
 ## Authentication and Action contract
 
@@ -37,6 +37,8 @@ Failures expose bounded error codes, not SQL or secrets. Validation/authenticati
 | Legacy basic duel | `POST /api/v1/combat/start`, `POST /api/v1/combat/actions`, `GET /api/v1/combat/:id` | Historical rules preserved; [basic combat](basic-combat-loop.md) |
 | Companions | `GET /api/v1/companions`, `POST /api/v1/companions/recruit` | Discovered authored recruitment and owned tactical companions; broader social features separate |
 | Routine crafting | `GET /api/v1/crafting/recipes/:id`, `POST /api/v1/crafting/routine` | Bounded trivial batches from owned materials; [routine recipes](routine-crafting.md) |
+| Inventory browser | `GET /api/v1/inventory`, `GET /api/v1/inventory/:id/history` | Owned paging/filter/sort/group reads and safe history; [grid contract](inventory-grid.md) |
+| Inventory intents | `POST /api/v1/inventory/move`, `POST /api/v1/inventory/split`, `POST /api/v1/inventory/merge`, `POST /api/v1/inventory/preferences` | MOVE_INVENTORY (itemId + destinationId or kind), SPLIT_STACK (itemId/quantity string), MERGE_STACKS (sourceId/targetId), SET_INVENTORY_PREFERENCES (preferences object); conserved authenticated Actions |
 | Item protection | `GET /api/v1/inventory/:id/binding`, `GET /api/v1/inventory/:id/lock`, `GET /api/v1/inventory/:id/protection`, `POST /api/v1/inventory/lock` | Owned item binding/lock/loadout protection; no arbitrary custody API |
 | Equipment | `GET /api/v1/equipment`, `POST /api/v1/equipment` | Complete legal preparation snapshot; [equipment](equipment-persistence.md) |
 | Loadouts | `GET /api/v1/equipment/loadouts`, `POST /api/v1/equipment/loadouts/save`, `POST /api/v1/equipment/loadouts/:key/apply`, `POST /api/v1/equipment/loadouts/:key/protection`, `POST /api/v1/equipment/loadouts/:key/delete` | Owned persistent templates and explicit protection; [loadouts](saved-loadouts.md) |
@@ -49,3 +51,5 @@ New Ascension confirmations require the current preview token at the domain boun
 The readonly shared preview reveals only known mechanics. Hidden checks reject automation; callers cannot submit bonuses, capabilities, RNG draws or reward amounts. Full quest graphs, dialogue sessions, travel workflows, trading, payments and public staff APIs are not supplied by these routes.
 
 Public pages are listed in [branding and pages](branding-and-pages.md). Same-origin assets are allowlisted with restrictive response headers. The visual preview registers those assets/configuration only, so login and gameplay calls there return unavailable.
+
+Inventory queries accept `container` (owned UUID or ALL; omitted means current Carried), `search` (literal, up to 80 characters), `category`, `rarity`, `binding`, `protection`, `sort` (NAME/NEWEST/QUANTITY/WEIGHT/BULK/QUALITY), `direction`, `grouped` (true/false strings), `definitionId`, `offset` and `expectedRevision`. History accepts `offset` and `expectedRevision`. Responses carry run/revision identity; paging never limits total carrying load. Move kinds are CARRIED/HOME/MATERIAL_VAULT. Preferences require boolean `autoStoreMaterials` and `autoOverflow`; both default false. Extra/invalid query/body fields are rejected.

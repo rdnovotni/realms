@@ -99,11 +99,11 @@ test('versioned policies reject daily refills, identity changes and edits to an 
 test('upgrade preserves existing values and derives explicit policies without rewriting past receipts',async()=>{
  const db=await testDatabase(false);try{
   await db.pool.query('CREATE TABLE schema_migrations(name text PRIMARY KEY,checksum text NOT NULL,applied_at timestamptz NOT NULL DEFAULT now())');const folder=new URL('../migrations/',import.meta.url);
-  for(const name of (await readdir(folder)).filter(n=>n.endsWith('.sql')&&!n.startsWith('030_')).sort()){const sql=await readFile(new URL(name,folder),'utf8');await db.pool.query(sql);await db.pool.query('INSERT INTO schema_migrations(name,checksum) VALUES($1,$2)',[name,createHash('sha256').update(sql).digest('hex')]);}
+  for(const name of (await readdir(folder)).filter(n=>n.endsWith('.sql')&&n<'030_').sort()){const sql=await readFile(new URL(name,folder),'utf8');await db.pool.query(sql);await db.pool.query('INSERT INTO schema_migrations(name,checksum) VALUES($1,$2)',[name,createHash('sha256').update(sql).digest('hex')]);}
   const f=await actor(db.pool),scope=(await db.pool.query('SELECT id FROM state_scopes WHERE run_id=$1',[f.run])).rows[0].id;
   await db.pool.query("INSERT INTO state_contracts(key,owner_module,scope_kind,reset_policy,value_schema,default_value) VALUES('old.daily.v1','fixtures','RUN','RESET_AT_ROLLOVER',$1,'0'),('old.run.v1','fixtures','RUN','KEEP',$1,'0'),('old.account.v1','fixtures','ACCOUNT','KEEP',$1,'0')",[integer]);await db.pool.query("INSERT INTO scoped_state(scope_id,scope_kind,key,value) VALUES($1,'RUN','old.daily.v1','5')",[scope]);
   const before=(await db.pool.query('SELECT * FROM scoped_state')).rows;await migrate(db.pool);await migrate(db.pool);assert.deepEqual((await db.pool.query('SELECT * FROM scoped_state')).rows,before);
-  assert.deepEqual((await db.pool.query('SELECT key,ascension_policy FROM state_contracts ORDER BY key')).rows,[{key:'old.account.v1',ascension_policy:'KEEP'},{key:'old.daily.v1',ascension_policy:'CARRY'},{key:'old.run.v1',ascension_policy:'ARCHIVE'}]);
+  assert.deepEqual((await db.pool.query("SELECT key,ascension_policy FROM state_contracts WHERE key LIKE 'old.%' ORDER BY key")).rows,[{key:'old.account.v1',ascension_policy:'KEEP'},{key:'old.daily.v1',ascension_policy:'CARRY'},{key:'old.run.v1',ascension_policy:'ARCHIVE'}]);
  }finally{await db.close();}
 });
 

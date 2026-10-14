@@ -2,7 +2,7 @@
 
 Migrations are ordered, append-only SQL with recorded checksums. `src/migrate.ts` applies them; readiness compares the exact expected version/checksums. Never rename or rewrite a deployed migration to rebrand the game. Runtime uses restricted `realms_app`; administration and migration credentials are private and separate. See [database foundation](database-foundation.md) and [backend deployment](../../infra/docs/backend-deployment.md).
 
-## Source migrations through 031
+## Source migrations through 032
 
 | Migration | Purpose and guide |
 |---|---|
@@ -20,9 +20,10 @@ Migrations are ordered, append-only SQL with recorded checksums. `src/migrate.ts
 | 024–027 | Pinned checks, failure contracts, owned companions and shared tactical encounters; [expansion](tactical-first-pass-expansion.md) |
 | 028–029 | Worker delivery receipts and scheduler; [workers](../../infra/docs/cache-worker-operations.md), [scheduling](../../infra/docs/scheduling.md) |
 | 030 | Generic Ascension lifetime policies and terminal-scope freezing; [reset contracts](ascension-reset-contracts.md) |
+| 032 | Inventory preference contract, protected quantity ordering, carrying policy/entry guards and immutable load evidence; [inventory grid](inventory-grid.md) |
 | 031 | Shared-rule state/events, feature-control history and reviewed release adoption; [shared rules](shared-rules.md) |
 
-Use `migrations/` for exact filenames and SQL. Historical per-feature table counts describe their migration checkpoint; the 463-field/61-table native lifetime manifest is a selected ownership inventory, not the total schema count. Do not infer the installed schema from this map.
+Use `migrations/` for exact filenames and SQL. Historical per-feature table counts describe their migration checkpoint; the 465-field/62-table native lifetime manifest is a selected ownership inventory, not the total schema count. Do not infer the installed schema from this map.
 
 ## Verification and rollout
 
@@ -30,7 +31,7 @@ For a disposable `realms_test` database, run typecheck, unit, integration, worke
 
 For an approved staging/live update, use the [game update guide](../../infra/docs/game-update-guide.md), [development baseline](../../infra/docs/development-baseline.md) and [rollback policy](../../infra/docs/rollback.md). Record source/image identity, pre-migration backup and restoration proof, the migration plan, runtime grants and exact readiness/audit evidence. Rehearse representative data and downtime before a live schema change.
 
-A source merge does not apply 030/031. Applying 031 does not enable `shared.rules`; administration must review content/controls separately. Existing runs and instances stay pinned. New-run adoption requires a reviewed sealed release; retained-custody compatibility is conservative and rejects changed/removed old entries.
+A source merge does not apply 030/031/032. Applying 031 does not enable `shared.rules`; administration must review content/controls separately. Existing runs and instances stay pinned. New-run adoption requires a reviewed sealed release; retained-custody compatibility is conservative and rejects changed/removed old entries.
 
 ## Recovery
 

@@ -1,5 +1,7 @@
 # Inventory accounting
 
+Current inventory UI and optional carrying policy: [inventory grid, storage and measurements](inventory-grid.md).
+
 [Documentation map](README.md) · [Current status](implementation-status.md) · [Migration map](migration-guide.md)
 
 This guide records the owning feature’s implementation checkpoint. Table counts, dated checks and “remaining” notes refer to that checkpoint; newer combat, Ascension and shared-rule work is summarized in the current status.
@@ -48,6 +50,6 @@ The read-only integrity audit reconciles each item against incoming and outgoing
 
 Tests cover duplicate rewards, split/merge conservation, incompatible provenance, int64 limits, concurrent consumption, cross-account and restricted-custody denial, atomic crafting rollback with a Turn cost, SQL mutation denial, retired identity protection, opening-balance upgrades, corruption detection, Ascension handling and restricted runtime privileges.
 
-Later guides implement routine recipe yields, item/loadout protection, legal equipment snapshots, active binding and bounded knowledge-filtered client inventory. Before declaring Items/Crafting complete, finish advanced recipes/production, automatic-consumption policy, capacity and weight/bulk, broader slot/anatomy rules, durability/repair, audited item evolution, salvage, loans and market/commission custody. These require their owning design rules and acceptance tests; the accounting primitives alone do not complete them.
+Later guides implement routine recipe yields, item/loadout protection, legal equipment snapshots, active binding, a paged knowledge-filtered inventory grid and optional carrying weight/bulk. Before declaring Items/Crafting complete, finish advanced recipes/production, automatic-consumption policy, additional capacity-source adapters, broader slot/anatomy rules, durability/repair, audited item evolution, salvage, loans and market/commission custody. These require their owning design rules and acceptance tests; the accounting primitives alone do not complete them.
 
 Migration 012 permits one strictly recorded binding transition for selected equipment, while retaining all other identity and provenance guards. See [permanent equipment binding](item-binding.md).

@@ -41,6 +41,7 @@ Current product name: **Follybound**. [Implementation status](implementation-sta
 
 ## Items and crafting
 
+- [Inventory grid, personal storage and carrying rules](inventory-grid.md)
 - [Inventory accounting](inventory-accounting.md)
 - [Authored ordinary item loot](authored-item-loot.md)
 - [Routine processing foundation](routine-crafting.md)

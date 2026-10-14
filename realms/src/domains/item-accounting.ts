@@ -1,3 +1,4 @@
+import { autoStorageDestination } from './inventory-browser.js';
 import { requireFeature } from '../rules/controls.js';
 import { randomUUID } from 'node:crypto';
 import type pg from 'pg';
@@ -7,12 +8,14 @@ import { type ActionContext, type Envelope, executeAction, advanceRevision, requ
 
 const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const maxQuantity=9223372036854775807n;
-export type ItemInventorySpec={version:1;storageMode:'STACK'|'INSTANCE';category:'MATERIAL'|'CONSUMABLE'|'EQUIPMENT'|'OTHER'};
+export type ItemInventorySpec={storageMode:'STACK'|'INSTANCE';category:'MATERIAL'|'CONSUMABLE'|'EQUIPMENT'|'OTHER'} & ({version:1}|{version:2;unitWeight:number;unitBulk:number;mundane:boolean});
 export function validateInventorySpec(value:unknown): asserts value is ItemInventorySpec {
   if(typeof value!=='object' || value===null || Array.isArray(value)) throw new DomainError(400,'INVALID_ITEM_INVENTORY_SPEC');
   const spec=value as Record<string,unknown>;
-  if(Object.keys(spec).some(k=>!['version','storageMode','category'].includes(k)) || spec.version!==1 ||
+  const keys=spec.version===2?['version','storageMode','category','unitWeight','unitBulk','mundane']:['version','storageMode','category'];
+  if(Object.keys(spec).some(k=>!keys.includes(k)) || ![1,2].includes(spec.version as number) ||
     !['STACK','INSTANCE'].includes(String(spec.storageMode)) || !['MATERIAL','CONSUMABLE','EQUIPMENT','OTHER'].includes(String(spec.category)) ||
+    (spec.version===2&&(!['unitWeight','unitBulk'].every(k=>Number.isSafeInteger(spec[k])&&Number(spec[k])>=0&&Number(spec[k])<=1000000000)||typeof spec.mundane!=='boolean')) ||
     (spec.category==='EQUIPMENT' && spec.storageMode!=='INSTANCE') ||
     (['MATERIAL','CONSUMABLE'].includes(String(spec.category)) && spec.storageMode!=='STACK')) throw new DomainError(400,'INVALID_ITEM_INVENTORY_SPEC');
 }
@@ -70,12 +73,14 @@ export async function grantItem(context:ActionContext,key:string,input:ItemGrant
     JOIN content_versions v ON v.entity_id=e.entity_id AND v.revision=e.revision WHERE e.release_id=$1 AND e.entity_id=$2`,[context.run.content_release_id,grant.definitionId])).rows[0];
   if(!content) throw new DomainError(409,'ITEM_NOT_IN_RULES_SNAPSHOT');
   validateInventorySpec(content.spec);
+  if(container.kind==='MATERIAL_VAULT'&&content.spec.category!=='MATERIAL')throw new DomainError(409,'MATERIAL_VAULT_ONLY');
   if(content.spec.storageMode==='INSTANCE' && amount!==1n) throw new DomainError(400,'INSTANCE_QUANTITY_REQUIRED');
   const binding=grant.binding??'TRADEABLE';
   if(binding==='RUN_BOUND' && container.run_id!==context.run.id) throw new DomainError(409,'BINDING_RESTRICTED');
+  const destinationId=await autoStorageDestination(context,container,grant.definitionId,content.spec,amount,binding);
   const id=randomUUID();
   await context.client.query(`INSERT INTO inventory_items(id,container_id,definition_id,release_id,definition_revision,storage_mode,quantity,quality,binding,bound_account_id,bound_run_id,source_code,metadata)
-    VALUES($1,$2,$3,$4,$5,$6,0,$7,$8,$9,$10,$11,$12)`,[id,container.id,grant.definitionId,context.run.content_release_id,content.revision,content.spec.storageMode,grant.quality??'1',binding,binding==='ACCOUNT_BOUND'?context.accountId:null,binding==='RUN_BOUND'?context.run.id:null,grant.sourceCode,metadata]);
+    VALUES($1,$2,$3,$4,$5,$6,0,$7,$8,$9,$10,$11,$12)`,[id,destinationId,grant.definitionId,context.run.content_release_id,content.revision,content.spec.storageMode,grant.quality??'1',binding,binding==='ACCOUNT_BOUND'?context.accountId:null,binding==='RUN_BOUND'?context.run.id:null,grant.sourceCode,metadata]);
   const operationId=await record(context,key,'GRANT',null,id,grant.quantity,reason);
   return {itemId:id,operationId};
 }

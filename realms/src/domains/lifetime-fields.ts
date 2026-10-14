@@ -3,7 +3,7 @@ import type pg from 'pg';
 /** Explicit native-field manifest. Policies document the existing domain handlers;
  * generic scoped fields execute their immutable registered Ascension policy.
  * New tables/columns in the owned-state boundary require a reviewed manifest update. */
-export const lifetimeRoots=["accounts", "characters", "runs", "state_scopes", "state_contracts", "scoped_state", "run_progression", "run_consumption", "inventory_items", "inventory_containers", "wallets", "discoveries", "resource_pools", "effect_instances", "instances", "guilds", "guild_members", "world_events", "worlds", "feature_controls", "feature_control_events", "release_adoptions"];
+export const lifetimeRoots=["accounts", "characters", "runs", "state_scopes", "state_contracts", "scoped_state", "run_progression", "run_consumption", "inventory_items", "inventory_containers", "wallets", "discoveries", "resource_pools", "effect_instances", "instances", "guilds", "guild_members", "world_events", "worlds", "feature_controls", "feature_control_events", "release_adoptions", "inventory_quantity_order"];
 export const lifetimeFields=[
   {
     "table": "accounts",
@@ -894,6 +894,11 @@ export const lifetimeFields=[
     "approved_at": "KEEP"
   },
   "reason": "Reviewed new-run adoption; existing snapshots remain pinned."
+}
+,{
+ "table":"inventory_quantity_order","scope":"ACCOUNT",
+ "fields":{"operation_no":"KEEP","operation_id":"KEEP"},
+ "reason":"Protected append-only ordering of physical quantity history survives lives and attests old encounter loads."
 }
 ] as const;
 

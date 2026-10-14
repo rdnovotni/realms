@@ -23,6 +23,10 @@ Build validated quest/objective graphs and reward identities; NPC memory/dialogu
 
 Finish when combat and a peaceful approach solve the same small objective, claim its principal reward once, reveal only known choices, and preserve/reset the correct consequences across Ascension. Test invalid graphs, dead ends, retries, foreign ownership, conflicting choices and concurrent claims.
 
+## Inventory checkpoint completed in source
+
+Migration 032 adds the [inventory grid, personal storage and carrying framework](inventory-grid.md): paging, search/sort/filter/grouping, stack/history/protection controls, weight/bulk bands and optional future-loot routing. Production measurement catalogs, Legacy Allowance, destructive economy actions, repair and advanced crafting remain separate.
+
 ## 3. Items and crafting lifecycle
 
 Extend routine recipes into profession/station eligibility, quality and capacity; delayed work and recovery; durability/repair; upgrades and commissions. Integrate item protections and binding with every destructive action and custody transition.
