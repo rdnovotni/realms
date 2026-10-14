@@ -38,6 +38,19 @@ class FeatureRegistryTests(unittest.TestCase):
         self.assertEqual(registry.report(self.source, self.overlay), (ROOT / registry.DESIGN / 'WORK_PLAN.md').read_text())
         self.assertNotIn('verified', counts['statuses'])
 
+    def test_source_manifest_is_reproducible_and_stale_reports_fail(self):
+        self.assertEqual(registry.manifest(self.source), (ROOT / registry.DESIGN / 'SOURCE_MANIFEST.md').read_text())
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / registry.DESIGN).mkdir(parents=True)
+            registry.check_reports(self.source, self.overlay, root, write=True)
+            registry.check_reports(self.source, self.overlay, root)
+            (root / registry.DESIGN / 'SOURCE_MANIFEST.md').write_text('stale')
+            with self.assertRaisesRegex(registry.RegistryError, 'SOURCE_MANIFEST.md is stale'):
+                registry.check_reports(self.source, self.overlay, root)
+            registry.check_reports(self.source, self.overlay, root, write=True)
+            registry.check_reports(self.source, self.overlay, root)
+
     def test_missing_section_fails_even_when_system_contract_exists(self):
         self.overlay['capabilities'].pop()
         self.invalid('Missing or multiply assigned source')

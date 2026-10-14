@@ -247,23 +247,40 @@ def report(source, registry):
             lines += ['No complete implementation evidence mapped; planned work remains.', '']
     return '\n'.join(lines).rstrip() + '\n'
 
+def manifest(source):
+    data = (json.dumps(source, ensure_ascii=False, separators=(',', ':')) + '\n').encode()
+    lines = ['# Imported design source manifest', '',
+        'Source archive: `kol2_master_feature_index_bundle.zip`.', '',
+        'Archive SHA-256: `' + source['archive_sha256'] + '`.', '',
+        'Uncompressed catalog SHA-256: `' + hashlib.sha256(data).hexdigest() + '`.', '',
+        'Original HTML lives under `kol2_master_feature_index_bundle/docs/` inside the supplied archive. Section anchors and exact indexed wording are available through the registry inspector.', '',
+        '| System | Source file | SHA-256 | Sections | Entries |', '|---|---|---|---:|---:|']
+    for doc in source['documents']:
+        lines.append(f"| {doc['system_label']} | {doc['source_file']} | `{doc['sha256']}` | {doc['source_units']} | {doc['indexed_entries']} |")
+    return '\n'.join(lines) + '\n'
+
+def check_reports(source, registry, root=ROOT, write=False):
+    for name, expected in [('WORK_PLAN.md', report(source, registry)), ('SOURCE_MANIFEST.md', manifest(source))]:
+        target = root / DESIGN / name
+        if write:
+            target.write_text(expected)
+        else:
+            require(target.is_file() and target.read_text() == expected, name + ' is stale; regenerate the derived reports')
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     group = parser.add_mutually_exclusive_group()
     group.add_argument('--show', metavar='ID', help='Show effective contract and source rules')
     group.add_argument('--search', metavar='TEXT', help='Search source wording; return owning checklist IDs')
-    group.add_argument('--write-report', action='store_true', help='Regenerate only the derived work-plan Markdown')
+    group.add_argument('--write-report', action='store_true', help='Regenerate the derived work plan and source manifest')
     args = parser.parse_args()
     try:
         source, registry = load()
         result = validate(source, registry)
-        expected = report(source, registry)
-        target = ROOT / DESIGN / 'WORK_PLAN.md'
+        check_reports(source, registry, write=args.write_report)
         if args.write_report:
-            target.write_text(expected)
-            print('Wrote ' + str(target))
+            print('Wrote work plan and source manifest under ' + str(ROOT / DESIGN))
         else:
-            require(target.is_file() and target.read_text() == expected, 'WORK_PLAN.md is stale; regenerate the derived report')
             if args.show:
                 print(json.dumps(effective(source, registry, args.show), ensure_ascii=False, indent=2))
             elif args.search:

@@ -69,7 +69,7 @@ Example shape for a section overlay (replace the illustrative values with actual
 
 Use the shared `framework-done` acceptance profile **and** the system-specific scenarios **and** individual source-rule assertions. Inspect permission failures, concurrent/repeated actions, restart/reconnect, rollover/Ascension, secret filtering and invalid content. A single happy-path fixture or existing SQL table is insufficient.
 
-Regenerate the report after overlay changes:
+Regenerate the work plan and source manifest after overlay/source changes:
 
 ```sh
 python3 infra/scripts/feature_registry.py --write-report
@@ -88,7 +88,7 @@ python3 infra/scripts/import_design_catalog.py \
   --output /tmp/reviewed-source-catalog.json.gz
 ```
 
-Compare the new document/entry IDs and corrections, explicitly reconcile renamed/added/removed sections and rule mappings, retain disposition history, then replace the repository snapshot and its uncompressed `catalog_sha256` in the overlay together. Regenerate the manifest/report and validate. The importer never regenerates or clears implementation status, assertions, evidence or decisions.
+Compare the new document/entry IDs and corrections, explicitly reconcile renamed/added/removed sections and rule mappings, retain disposition history, then replace the repository snapshot and its uncompressed `catalog_sha256` in the overlay together. Run `--write-report` to regenerate the manifest/work plan and validate. The importer never regenerates or clears implementation status, assertions, evidence or decisions.
 
 ## Deployment and rollback
 

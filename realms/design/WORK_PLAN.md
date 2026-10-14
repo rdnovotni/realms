@@ -64,7 +64,7 @@ Prerequisites: WP-04, WP-05, WP-06
 
 Systems: SYS-12, SYS-15, SYS-17, SYS-22, SYS-39, SYS-40
 
-Guild permissions/treasury, event claims, recreational games, entitlements/PvP/cards interfaces and disabled restricted activation gates; prove conservation and recovery using synthetic fixtures.
+Complete Guild permissions/treasury, event contributions/claims, recreational game rules, entitlement/refund contracts, consenting PvP with rating/async-defense rules, and card/deck/match/tournament frameworks using synthetic fixtures. Keep restricted activation disabled; prove conservation, consent, anti-abuse and interrupted settlement/recovery before real catalogs or providers.
 
 ### WP-08: Workflow/tooling completion and framework acceptance
 
