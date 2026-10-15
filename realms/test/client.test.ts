@@ -208,7 +208,7 @@ test('selected groups never become representative individuals when browse mode o
  h.session.selectInventory(item);assert.equal(h.session.selectedInventoryGrouped,true);
  await h.session.browseInventory({grouped:false});assert.equal(h.session.selectedInventoryItem,null);assert.equal(h.session.selectedInventoryGrouped,false);
  h.session.selectInventory(item);assert.equal(h.session.selectedInventoryGrouped,false);
- await h.session.browseInventory({grouped:true});assert.equal(h.session.selectedInventoryGrouped,false);assert.equal(h.session.selectedInventoryItem?.id,'copy');
+ await h.session.browseInventory({grouped:true});assert.equal(h.session.selectedInventoryGrouped,false);assert.deepEqual(h.session.selectedInventoryItem,item);
  h.session.selectInventory(item);assert.equal(h.session.selectedInventoryGrouped,true);h.session.inventoryQuery={grouped:true,search:'changed'};
  await h.session.browseInventory(h.session.inventoryQuery);assert.equal(h.session.selectedInventoryItem,null);
 });
