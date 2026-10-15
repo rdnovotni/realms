@@ -64,3 +64,10 @@ The game server retains the existing authenticated, versioned action protocol. T
 This is the client/framework foundation, not the complete client or world. Next work should extend real vertical slices: encounter presentation/name metadata and richer narration, feat/subclass choices, quest/world exploration, party recruitment/shared human controls, accessibility preferences and saved layouts. Parser interpretation and automation must use the same intents with explicit authorization. Production signup/enrollment, secure persistent session transport, catalogs/balance, pagination/search, offline handling and operational release gates remain separate work. An existing shared/basic encounter is shown as unsupported and blocks starting another encounter; this client does not silently abandon it.
 
 No external assets or dependencies are added. Automated tests cover action uncertainty/retry, stale resync, view-only writes, credential transport, bootstrap secrecy/ownership and the actual starting-build → encounter → reconnect → rewards/recovery → earned-level flow. Desktop/mobile browser checks verify the live client separately, including a reload mid-fight, actual healing, victory rewards and earned progression.
+
+The Pack's equipment paperdoll shows all worn slots and both prepared weapon
+sets above inventory browsing. Select an individual carried equipment item to
+highlight compatible positions; equipment changes and set activation use explicit
+confirmations and the existing revision-checked equipment intents. Item-grid
+weight glyphs show stack/group totals, with unknown measurements marked `?`.
+See [inventory grid](inventory-grid.md) for interaction and accessibility details.

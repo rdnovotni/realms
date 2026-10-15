@@ -68,3 +68,31 @@ python3 ../infra/scripts/documentation-check.py
 Focused proofs: `test/inventory-rules.test.ts`, `test/inventory-browser.test.ts`, `test/inventory.test.ts`, `test/client.test.ts` and the existing equipment/lock/binding/Ascension suites. `scripts/client-preview.ts` provides a few weighted test items, a capacity satchel, protected gear and stack copies for browser verification. No production content is added.
 
 Selling, salvage, trading, mail attachments, consumable use effects, item repair, advanced quality production, commissions, auto-equip/auto-salvage and full Legacy Allowance are separate features. This pass does not claim all of System 07 complete. For rollout, rehearse migration 032, runtime permissions, historical-load audits and representative saved snapshots in staging; preserve backup/image identity and verify exact readiness. A source merge does not migrate or deploy the live game. See [migration guide](migration-guide.md), [API reference](api-reference.md), [accounting](inventory-accounting.md) and [shared rules](shared-rules.md).
+
+### Equipped gear and weight labels
+
+The Pack screen begins with an equipment paperdoll beside carrying capacity on
+wide screens, and above it on narrow screens. All twelve worn positions are
+visible: Head, Neck, Shoulders, Chest, Hands, Waist, Legs, Feet, Ring 1, Ring 2,
+Trinket and Tool. Both weapon sets expose Main Hand and Off Hand; the current
+set is explicitly labelled Active and the other Prepared. This presents the
+existing broad equipment contract without adding inventory slot limits.
+
+Select a carried equipment instance in the grid to highlight compatible
+positions. Select a position, choose Equip, and confirm the preview. Replacements
+warn before clearing conflicting assignments. A two-handed main weapon marks
+its off hand as occupied; equipping an off-hand item instead clears the conflicting
+main weapon. Grouped copies must first be expanded to select a physical instance.
+Click an equipped position to inspect requirements, binding and condition or
+remove that assignment. Other prepared references to the same item are preserved.
+Weapon-set activation has its own confirmation, including any permanent binding.
+Equipment changes remain free outside encounters and server-authoritative.
+The paperdoll reads the complete committed plan and equipped-first gear projection,
+so filtering or paging the pack does not hide equipped possessions. It does not
+require the complete-plan editor's first-100-gear list to be exhaustive.
+
+Every grid tile displays a small weight glyph and total weight at its bottom
+right: the complete stack's total for an individual item, or all grouped copies'
+combined weight. Tooltips and accessible names describe the total explicitly.
+Unknown measurements display `?`, never zero. Integer quantities remain exact
+through BigInt formatting, including values above JavaScript's safe-integer limit.
