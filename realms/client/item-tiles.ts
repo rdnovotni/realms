@@ -35,3 +35,6 @@ export function itemStatuses(item:InventoryItem,grouped:boolean){
  if(!item.accessible)statuses.push({kind:'restricted',label:'Restricted storage'});
  return statuses;
 }
+
+
+export function groupedInspectionFacts(item:InventoryItem):[string,string][]{return [['Copies',String(item.copies)],['Total quantity',number(item.groupQuantity)],['Total weight',item.groupWeight===null?'—':number(item.groupWeight)],['Total bulk',item.groupBulk===null?'—':number(item.groupBulk)],['Locations',item.multipleLocations?'Multiple locations':'Expand copies for individual locations']];}

@@ -59,6 +59,13 @@ export class GameSession {
   }catch(error){if(epoch===this.epoch&&generation===this.historyGeneration){this.inventoryHistory=null;this.handleError(error);if(error instanceof ApiError&&error.status===409)this.needsRefresh=true;}}
   finally{if(epoch===this.epoch&&generation===this.historyGeneration){this.inventoryHistoryBusy=false;this.notify();}}
  }
+ async findEquipment(slot:string,search='',offset=0){
+  const snapshot=this.snapshot,epoch=this.epoch;if(!snapshot)throw new ApiError(401,'UNAUTHORIZED');
+  const query=new URLSearchParams({equipmentSlot:slot,search,offset:String(offset),grouped:'false',expectedRevision:String(snapshot.game.run.revision)});
+  const page=await this.api.request<InventoryPage>('/api/v1/inventory?'+query);
+  if(epoch!==this.epoch||!this.snapshot||page.runId!==this.snapshot.game.run.runId||page.revision!==this.snapshot.game.run.revision)throw new ApiError(409,'STALE_REVISION');
+  return page;
+ }
  async browseInventory(query:InventoryQuery=this.inventoryQuery){
   const snapshot=this.snapshot;if(!snapshot)return;
   this.inventoryWanted=true;this.inventoryQuery=structuredClone(query);

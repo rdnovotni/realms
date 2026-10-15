@@ -23,8 +23,8 @@ import { integrityReport,unindexedForeignKeys } from '../src/foundation/integrit
 const definitions=[['sword',['MAIN_HAND','OFF_HAND'],1,1],['shield',['OFF_HAND'],1,1],['greatsword',['MAIN_HAND'],2,1],['ring',['RING_1','RING_2'],0,1],['helm',['HEAD'],0,2],['charm',['TRINKET'],0,1]] as const;
 const pkg:ContentPackage={version:'equipment-fixture',engineVersion:'foundation-1',entities:[...buildPackage.entities,...definitions.map(([name,slots,hands,minimumLevel])=>({id:`item.${name}`,kind:'ITEM' as const,revision:1,schemaVersion:1,definition:{name,dependencies:[],public:{},mechanics:{inventory:{version:1,storageMode:'INSTANCE',category:'EQUIPMENT'},equipment:{version:1,slots:[...slots],hands,minimumLevel,bindingPolicy:'PRESERVE'}}}}))]};
 const env=(expectedRevision:number,actionType='SET_EQUIPMENT')=>({requestId:randomUUID(),expectedRevision,actionType});
-async function fixture(pool:Awaited<ReturnType<typeof testDatabase>>['pool']){
- const release=await publishContent(pool,pkg),f=await actor(pool,release,5,'CASUAL');
+async function fixture(pool:Awaited<ReturnType<typeof testDatabase>>['pool'],content:ContentPackage=pkg){
+ const release=await publishContent(pool,content),f=await actor(pool,release,5,'CASUAL');
  const container=(await pool.query("INSERT INTO inventory_containers(scope_id,kind) SELECT id,'CARRIED' FROM state_scopes WHERE run_id=$1 RETURNING id",[f.run])).rows[0].id;
  const items:Record<string,string>={};await executeAction(pool,f.account,env(0,'GEAR_FIXTURE'),{},async c=>{for(const [name] of definitions)items[name]=(await grantItem(c,name,{containerId:container,definitionId:`item.${name}`,quantity:'1',sourceCode:'FIXTURE'},'FIXTURE')).itemId;return {revision:await advanceRevision(c)};});
  return {...f,container,items};
@@ -95,6 +95,7 @@ test('HTTP derives ownership, rejects forged stats and requires write scope for 
  await db.pool.query(`INSERT INTO auth_sessions(account_id,token_digest,security_epoch,scopes,device_label,expires_at) SELECT id,$2,security_epoch,ARRAY['GAME_READ'],'Equipment test',now()+interval '1 hour' FROM accounts WHERE id=$1`,[f.account,createHash('sha256').update(token).digest('hex')]);
  const app=buildApp(db.pool,{mode:'sessions',throttleKey:'equipment-throttle-key-long-enough'}),headers={authorization:`Bearer ${token}`};try{
  assert.equal((await app.inject({method:'GET',url:'/api/v1/equipment',headers})).statusCode,200);
+ const choices=await app.inject({url:'/api/v1/inventory?equipmentSlot=TRINKET&grouped=false&expectedRevision=1',headers});assert.equal(choices.statusCode,200);assert.equal(choices.json().total,2);assert.equal((await app.inject({url:'/api/v1/inventory?equipmentSlot=INVALID',headers})).statusCode,400);
  const payload={...env(1),...sword(f.items.sword!)};assert.equal((await app.inject({method:'POST',url:'/api/v1/equipment',headers,payload})).statusCode,403);
  assert.equal((await app.inject({method:'POST',url:'/api/v1/equipment',headers,payload:{...payload,attack:999}})).statusCode,400);
  assert.equal((await app.inject({method:'GET',url:'/api/v1/equipment'})).statusCode,401);
@@ -147,6 +148,32 @@ test('trinket compatibility migration preserves old equipment and loadouts while
   const view=await inventoryView(db.pool,f.account,{grouped:false});for(const item of view.items.filter(i=>[f.items.ring,f.items.charm,third].includes(i.id)))assert.deepEqual(item.equipment.slots,slots);
   const client=await db.pool.connect();try{const projected=await clientEquipmentView(client,f.run,f.account);for(const item of projected.gear.filter(i=>ids.includes(i.id)))assert.deepEqual(item.slots,slots);}finally{client.release();}
   await applyLoadout(db.pool,f.account,env(revision++),'accessories');
+  assert.equal((await integrityReport(db.pool)).equipmentMismatches,0);
+ }finally{await db.close();}
+});
+
+
+test('equipment search reaches beyond 100 items, filters true eligibility, and retains saved references outside the quick list',async()=>{
+ const db=await testDatabase();try{
+  const content=structuredClone(pkg);content.version='large-equipment';content.entities.find(e=>e.id==='item.charm')!.definition.mechanics!.prerequisite={op:'FACT',key:'level',test:'GTE',value:99};
+  const f=await fixture(db.pool,content),extra:string[]=[];
+  await executeAction(db.pool,f.account,env(1,'GEAR_FIXTURE'),{},async c=>{for(let i=0;i<130;i++)extra.push((await grantItem(c,'many.'+i,{containerId:f.container,definitionId:'item.ring',quantity:'1',sourceCode:'FIXTURE'},'FIXTURE')).itemId);return {revision:await advanceRevision(c)};});
+  const client=await db.pool.connect();let summary;try{summary=await clientEquipmentView(client,f.run,f.account);}finally{client.release();}
+  assert.equal(summary.gear.length,100);
+  const seen=new Set<string>();let beyond='';for(let offset=0;offset<131;offset+=48){const page=await inventoryView(db.pool,f.account,{equipmentSlot:'TRINKET',search:'ring',offset,expectedRevision:2,grouped:false});assert.equal(page.total,131);assert.ok(page.items.length<=48);for(const item of page.items){assert.ok(!seen.has(item.id));seen.add(item.id);if(!summary.gear.some(g=>g.id===item.id))beyond=item.id;}}
+  assert.equal(seen.size,131);assert.ok(beyond);
+  assert.equal((await inventoryView(db.pool,f.account,{equipmentSlot:'HEAD'})).total,0);
+  assert.equal((await inventoryView(db.pool,f.account,{equipmentSlot:'TRINKET',search:'charm'})).total,0);
+  await assert.rejects(setEquipment(db.pool,f.account,env(2),{activeSet:'A',slots:[{set:'WORN',slot:'TRINKET',itemId:f.items.charm!}]}),/PREREQUISITE_NOT_MET/);
+  await setEquipment(db.pool,f.account,env(2),{activeSet:'A',slots:[{set:'WORN',slot:'TRINKET',itemId:beyond}]});
+  await saveLoadout(db.pool,f.account,env(3,'SAVE_LOADOUT'),'large','Large pack');await setEquipment(db.pool,f.account,env(4),emptyEquipment());
+  const conn=await db.pool.connect();try{assert.ok((await clientEquipmentView(conn,f.run,f.account)).gear.some(g=>g.id===beyond));}finally{conn.release();}
+  await applyLoadout(db.pool,f.account,env(5),'large');
+  await assert.rejects(inventoryView(db.pool,f.account,{equipmentSlot:'TRINKET',expectedRevision:2}),/STALE_REVISION/);
+  assert.throws(()=>inventoryView(db.pool,f.account,{equipmentSlot:'NOT_A_SLOT'}),/INVALID_INVENTORY_QUERY/);
+  const release=(await db.pool.query('SELECT content_release_id FROM runs WHERE id=$1',[f.run])).rows[0].content_release_id,other=await actor(db.pool,release);
+  assert.equal((await inventoryView(db.pool,other.account,{equipmentSlot:'TRINKET'})).total,0);
+  assert.equal((await inventoryView(db.pool,f.account,{equipmentSlot:'TRINKET',search:'%'})).total,0);
   assert.equal((await integrityReport(db.pool)).equipmentMismatches,0);
  }finally{await db.close();}
 });

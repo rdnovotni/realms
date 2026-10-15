@@ -1,3 +1,6 @@
+import { equipmentSlots } from './equipment-content.js';
+import { runFacts } from '../rules/facts.js';
+import { prerequisite,type Prerequisite } from '../rules/prerequisites.js';
 import type pg from 'pg';
 import { transaction } from '../foundation/transaction.js';
 import { executeAction,advanceRevision,requireActive,type Envelope,type ActionContext } from '../foundation/action.js';
@@ -5,7 +8,7 @@ import { DomainError } from '../foundation/errors.js';
 import { carryLoad,publicCarryLoad } from './inventory-load.js';
 import { writeState } from './state.js';
 
-export type InventoryQuery={container?:string;search?:string;category?:string;rarity?:string;binding?:string;protection?:'ALL'|'PROTECTED'|'UNPROTECTED';sort?:'NAME'|'NEWEST'|'QUANTITY'|'WEIGHT'|'BULK'|'QUALITY';direction?:'ASC'|'DESC';grouped?:boolean;definitionId?:string;offset?:number;expectedRevision?:number};
+export type InventoryQuery={equipmentSlot?:string;container?:string;search?:string;category?:string;rarity?:string;binding?:string;protection?:'ALL'|'PROTECTED'|'UNPROTECTED';sort?:'NAME'|'NEWEST'|'QUANTITY'|'WEIGHT'|'BULK'|'QUALITY';direction?:'ASC'|'DESC';grouped?:boolean;definitionId?:string;offset?:number;expectedRevision?:number};
 export const inventoryPageSize=48;
 const sorts={NAME:'name COLLATE "C"',NEWEST:'created_at',QUANTITY:'quantity::numeric',WEIGHT:'"totalWeight"::numeric',BULK:'"totalBulk"::numeric',QUALITY:'"numericQuality"::numeric'};
 export async function requireInventoryIdle(c:ActionContext) {
@@ -34,6 +37,7 @@ export async function personalStorage(c:ActionContext,kind:'CARRIED'|'HOME'|'MAT
  return (await c.client.query("INSERT INTO inventory_containers(scope_id,kind) VALUES($1,$2) ON CONFLICT(scope_id,kind,label) DO UPDATE SET label=EXCLUDED.label RETURNING id",[scope.id,kind])).rows[0].id as string;
 }
 export function inventoryView(pool:pg.Pool,accountId:string,q:InventoryQuery={}) {
+ if(q.equipmentSlot&&!equipmentSlots.includes(q.equipmentSlot as typeof equipmentSlots[number]))throw new DomainError(400,'INVALID_INVENTORY_QUERY');
  if(!Object.hasOwn(sorts,q.sort??'NAME')||!['ASC','DESC'].includes(q.direction??'ASC')||!Number.isSafeInteger(q.offset??0)||(q.offset??0)<0||(q.offset??0)>1000000||(q.search??'').length>80)throw new DomainError(400,'INVALID_INVENTORY_QUERY');
  return transaction(pool,async client=>{
   await client.query('SELECT id FROM accounts WHERE id=$1 FOR SHARE',[accountId]);
@@ -57,8 +61,13 @@ export function inventoryView(pool:pg.Pool,accountId:string,q:InventoryQuery={})
   if(q.search)terms.push(`name ILIKE ${bind('%'+q.search.replace(/[\\%_]/g,'\\$&')+'%')} ESCAPE '\\'`);
   for(const [field,value] of [['category',q.category],['rarity',q.rarity],['binding',q.binding],['definitionId',q.definitionId]] as const)if(value&&value!=='ALL')terms.push(`"${field}"=${bind(value)}`);
   if(q.protection&&q.protection!=='ALL')terms.push(`protected=${q.protection==='PROTECTED'?'true':'false'}`);
+  if(q.equipmentSlot){
+   terms.push(`kind='CARRIED' AND "runId"=$2 AND accessible AND eligible AND "proficiencyMet" AND quantity='1' AND "storageMode"='INSTANCE' AND (equipment->'slots') ? ${bind(q.equipmentSlot)} AND (equipment->>'minimumLevel')::integer <= (SELECT level FROM run_progression WHERE run_id=$2)`);
+   const expressions=(await client.query("SELECT e.entity_id,v.definition->'mechanics'->'prerequisite' expr FROM release_entries e JOIN content_versions v ON v.entity_id=e.entity_id AND v.revision=e.revision WHERE e.release_id=$1 AND v.definition->'mechanics'->'prerequisite' IS NOT NULL",[run.content_release_id])).rows;
+   if(expressions.length){const facts=await runFacts({client,run,accountId}),denied=expressions.filter(e=>!prerequisite(e.expr as Prerequisite,facts).met).map(e=>e.entity_id);if(denied.length)terms.push(`"definitionId" <> ALL(${bind(denied)}::text[])`);}
+  }
   const cte=`WITH owned AS (
-   SELECT i.id,i.definition_id AS "definitionId",i.container_id AS "containerId",c.kind,s.run_id AS "runId",v.definition->>'name' AS name,i.quantity::text,i.binding,i.created_at,
+   SELECT i.id,i.definition_id AS "definitionId",i.container_id AS "containerId",c.kind,s.run_id AS "runId",v.definition->>'name' AS name,v.definition->'public'->>'itemArt' AS artwork,v.definition->'public'->>'itemIcon' AS icon,i.quantity::text,i.binding,i.created_at,
    coalesce(v.definition->'mechanics'->'inventory'->>'category',v.definition->'mechanics'->>'inventoryCategory','OTHER') AS category,
    coalesce(v.definition->'public'->>'rarity','UNKNOWN') AS rarity,
    coalesce(v.definition->'public'->>'description','') AS description,
@@ -93,7 +102,7 @@ export function inventoryView(pool:pg.Pool,accountId:string,q:InventoryQuery={})
    CASE WHEN count("totalBulk") OVER(PARTITION BY "definitionId")=count(*) OVER(PARTITION BY "definitionId") THEN (sum("totalBulk"::numeric) OVER(PARTITION BY "definitionId"))::text END AS "groupBulk",
    max(created_at) OVER(PARTITION BY "definitionId") AS "groupNewest",
    row_number() OVER(PARTITION BY "definitionId" ORDER BY name COLLATE "C",id) AS representative FROM filtered
-  ),selected AS (SELECT * FROM numbered ${q.grouped?'WHERE representative=1':''})`;
+  ),selected AS (SELECT * FROM numbered ${q.grouped&&!q.equipmentSlot?'WHERE representative=1':''})`;
   const sortExpression=q.grouped&&q.sort==='NEWEST'?'"groupNewest"':q.grouped&&q.sort==='QUANTITY'?'"groupQuantity"::numeric':q.grouped&&q.sort==='WEIGHT'?'"groupWeight"::numeric':q.grouped&&q.sort==='BULK'?'"groupBulk"::numeric':sorts[q.sort??'NAME'];
   const total=Number((await client.query(cte+' SELECT count(*)::integer AS total FROM selected',parameters)).rows[0].total);
   const items=(await client.query(cte+` SELECT * FROM selected ORDER BY ${sortExpression} ${q.direction??'ASC'} NULLS LAST,id LIMIT ${inventoryPageSize} OFFSET ${q.offset??0}`,parameters)).rows.map(({representative,created_at,groupNewest,runId,...item})=>({...item,copies:Number(item.copies)}));

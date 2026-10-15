@@ -34,7 +34,7 @@ Pack includes the complete worn setup, both prepared weapon sets and the selecte
 
 Saved loadouts capture the committed setup, never an unsaved draft. You can apply, explicitly replace, delete, or release/restore a template's protection. Releasing protection or deleting requires confirmation and does not remove manual locks, unequip items or undo binding. A/B preparation is locked during encounters; this is not a combat weapon-swap action. Saving templates and explicit protection operations retain their existing server rules.
 
-The bootstrap projects owned carried gear names, position/level/binding contracts, qualification status, current condition, manual locks and loadout references, together with the current setup and owned templates. Advanced discovery may reveal aggregated known stat modifiers for comparisons; raw source definitions and hidden grants stay private. The original complete-plan editor remains bounded to 100 gear entries and pauses if its list is truncated. Equipped items are included first. The new paged grid can inspect and prepare individual gear beyond that list while preserving the complete existing plan under server validation. Search, filtering, sorting, per-copy expansion, known comparisons and storage/stack/history controls are documented in the [inventory contract](inventory-grid.md). Refreshing discards an unsaved equipment draft.
+The bootstrap projects owned carried gear names, position/level/binding contracts, qualification status, current condition, manual locks and loadout references, together with the current setup and owned templates. Advanced discovery may reveal aggregated known stat modifiers for comparisons; raw source definitions and hidden grants stay private. The bootstrap includes a bounded quick list plus every currently equipped or carried saved-loadout reference. The complete-plan editor stays enabled for large inventories: each slot has a paged Search control that can select any eligible carried item, beyond the quick list, while preserving the rest of the draft. Both Character and Pack reuse the same paperdoll, with searchable empty slots, replacement controls and confirmed equip/unequip drag shortcuts. Search, filtering, sorting, per-copy expansion, known comparisons and storage/stack/history controls are documented in the [inventory contract](inventory-grid.md). Refreshing discards an unsaved equipment draft.
 
 ## Boundaries and modules
 
@@ -54,7 +54,7 @@ Public account signup, email-based password recovery, and newsletter delivery ar
 - `client/equipment.ts`: equipment drafts, binding acknowledgement and saved-template controls, all submitted through the central session.
 - `client/views.ts` and `client/app.ts`: semantic, text-safe DOM, navigation and structured intents. All server-provided text is inserted with `textContent`, never HTML. UI target/range/resource hints support clicks; the server decides legality.
 - `client/landing.ts`: public main screen, account-access navigation, and authored development updates.
-- `src/domains/game-view.ts`: authenticated bounded bootstrap: owned current run, effective write permission, saved encounter identity, latest solo tactical outcome, discovered solo adventures and carried item names/counts. Uses account/run read locks in action-compatible order. Lists return the first 100 entries and an explicit overflow indicator. Mechanics, loot tables, unrevealed definitions, seeds and other accounts are excluded.
+- `src/domains/game-view.ts`: authenticated bounded bootstrap: owned current run, effective write permission, saved encounter identity, latest solo tactical outcome, discovered solo adventures and carried item names/counts. Uses account/run read locks in action-compatible order. Adventure and compact inventory lists return their first 100 entries with an overflow indicator. Equipment uses a quick list plus equipped/saved references and a separate paged search. Mechanics, loot tables, unrevealed definitions, seeds and other accounts are excluded.
 - `src/client-assets.ts`: explicit asset allowlist, same-origin Content Security Policy, no caching of the shell/config, no credential-bearing templates or arbitrary file paths. Assets are plain browser ES modules compiled by TypeScript; no framework/bundler or external fonts are required.
 
 The game server retains the existing authenticated, versioned action protocol. The client submits a chosen class/preset or a tactical intent, with a request ID and expected revisions. It never fabricates an XP award, inventory operation, die roll or outcome. Browsing is free. Adventure cards disclose entry/recovery costs before commitment. Technical failure remains separate from gameplay defeat. A view-only session receives the same permitted information with play controls disabled, and server authorization still rejects writes.
@@ -73,3 +73,20 @@ weight glyphs show unit weight for instances and totals for stacks/groups, with
 unknown measurements marked `—`. Durability uses exact fractions and configurable
 percentage color thresholds; the footer stays anchored across wrapping names.
 See [inventory grid](inventory-grid.md) for interaction and accessibility details.
+
+
+Equipment search uses `equipmentSlot` on the inventory read endpoint, returns at
+most 48 physical instances per page, and checks current run/revision, ownership,
+carried custody, slot eligibility, level, proficiency and shared prerequisites.
+The picker does not change the Pack query or selected item. Searches ignore stale
+responses, close on game refresh/sign-out, trap focus in a native dialog, and
+restore the opener on close/Escape. Touch users can use the same search and
+confirmation buttons instead of dragging. Drafts are discarded on game refresh.
+
+The new `client/equipment-picker.ts`, `client/equipment-drag.ts` and
+`client/item-art.ts` modules supply shared search, owned-assignment drag parsing,
+and a safe artwork hierarchy. Illustrations in `client/art/items/` are original
+repository-native vectors served only from an explicit same-origin allowlist.
+Authored public `itemArt` keys take priority over public `itemIcon`, then specific
+public item/slot identity and a category/unknown fallback; arbitrary URLs and paths
+are never loaded. Missing illustrations fall back to the neutral item glyph.
