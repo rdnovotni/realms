@@ -27,8 +27,10 @@ export function equipmentProblems(plan:EquipmentPlan,gear:Gear[],level:number){
  }
  return [...new Set(problems)];
 }
-export function bindingConsequences(plan:EquipmentPlan,gear:Gear[]){
- return gear.filter(g=>g.binding==='TRADEABLE'&&g.bindingPolicy==='ACCOUNT_ON_ACTIVE_EQUIP'&&plan.slots.some(s=>s.itemId===g.id&&(s.set==='WORN'||s.set===plan.activeSet))).map(g=>g.name);
+export function bindingConsequences(plan:EquipmentPlan,gear:Gear[],candidate?:InventoryItem|null){
+ const sources:Pick<Gear,'id'|'name'|'binding'|'bindingPolicy'>[]=[...gear];
+ if(candidate?.equipment&&!sources.some(g=>g.id===candidate.id))sources.push({id:candidate.id,name:candidate.name,binding:candidate.binding,bindingPolicy:candidate.equipment.bindingPolicy});
+ return sources.filter(g=>g.binding==='TRADEABLE'&&g.bindingPolicy==='ACCOUNT_ON_ACTIVE_EQUIP'&&plan.slots.some(s=>s.itemId===g.id&&(s.set==='WORN'||s.set===plan.activeSet))).map(g=>g.name);
 }
 
 /** A preparation preview only; the server validates the complete owned setup. */

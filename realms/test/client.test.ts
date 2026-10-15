@@ -1,4 +1,4 @@
-import { paperdollPositions } from '../client/paperdoll.js';
+import { paperdollPositions,paperdollCandidate } from '../client/paperdoll.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import Fastify from 'fastify';
@@ -126,4 +126,16 @@ test('paperdoll includes every worn position and both weapon sets independent of
  assert.equal(positions.find(p=>p.slot==='RING_1')?.itemId,null);assert.equal(positions.find(p=>p.slot==='RING_2')?.itemId,'ring');
  assert.equal(positions.filter(p=>p.itemId==='sword').length,2);assert.deepEqual(plan,before);
  assert.equal(positions.filter(p=>p.set==='WORN').length,12);
+});
+
+
+test('expanded equipment copies are candidates and off-page gear still warns before permanent binding',()=>{
+ const item={id:'off-page',name:'Off-page ring',binding:'TRADEABLE',kind:'CARRIED',accessible:true,copies:3,eligible:true,proficiencyMet:true,equipment:{slots:['RING_1','RING_2'],hands:0,minimumLevel:1,bindingPolicy:'ACCOUNT_ON_ACTIVE_EQUIP'}} as import('../client/types.js').InventoryItem;
+ assert.equal(paperdollCandidate(item,true,1),null);
+ assert.equal(paperdollCandidate(item,false,1),item);
+ assert.equal(paperdollCandidate({...item,accessible:false},false,1),null);
+ const plan:EquipmentPlan={activeSet:'A',slots:[{set:'WORN',slot:'RING_1',itemId:item.id}]};
+ assert.deepEqual(bindingConsequences(plan,equipmentGear,item),['Off-page ring']);
+ assert.deepEqual(bindingConsequences({...plan,slots:[{set:'B',slot:'MAIN_HAND',itemId:item.id}]},equipmentGear,item),[]);
+ assert.deepEqual(bindingConsequences(plan,[...equipmentGear,{...equipmentGear[0]!,id:item.id,name:item.name}],item),['Off-page ring']);
 });

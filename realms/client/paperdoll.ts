@@ -1,4 +1,4 @@
-import type { EquipmentPlan,Snapshot } from './types.js';
+import type { EquipmentPlan,Snapshot,InventoryItem } from './types.js';
 import type { GameSession } from './session.js';
 import { bindingConsequences,prepareInventoryEquipment,worn } from './equipment.js';
 const title=(s:string)=>s.toLowerCase().split('_').map(w=>w[0]!.toUpperCase()+w.slice(1)).join(' ');
@@ -6,6 +6,7 @@ function node<K extends keyof HTMLElementTagNameMap>(tag:K,text='',className='')
 function button(text:string,run:()=>void,disabled=false){const b=node('button',text);b.type='button';b.disabled=disabled;b.addEventListener('click',run);return b;}
 /** Every assignment is represented, including prepared weapons outside the active set. */
 export function paperdollPositions(plan:EquipmentPlan){return [...worn.map(slot=>({set:'WORN' as const,slot})),...(['A','B'] as const).flatMap(set=>['MAIN_HAND','OFF_HAND'].map(slot=>({set,slot})))].map(position=>({...position,itemId:plan.slots.find(s=>s.set===position.set&&s.slot===position.slot)?.itemId??null}));}
+export function paperdollCandidate(selected:InventoryItem|null,grouped:boolean,level:number){return selected?.equipment&&selected.kind==='CARRIED'&&selected.accessible&&!(grouped&&selected.copies>1)&&selected.eligible&&selected.proficiencyMet&&selected.equipment.minimumLevel<=level?selected:null;}
 function silhouette(){
  const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('viewBox','0 0 180 330');svg.setAttribute('aria-hidden','true');svg.classList.add('paperdoll-silhouette');
  for(const [tag,attrs]of [['ellipse',{cx:'90',cy:'167',rx:'78',ry:'145'}],['path',{d:'M90 19v292M20 165h140'}],['path',{d:'M73 60Q90 45 107 60L110 81 102 98 78 98 70 81ZM75 103 48 117 29 177 40 185 65 143 68 192 58 273 70 290 89 218 91 218 110 290 122 273 112 192 115 143 140 185 151 177 132 117 105 103 90 114ZM68 160 112 160M75 103 90 139 105 103M70 290 60 306H78L90 255 102 306H120L110 290'}]] as [string,Record<string,string>][]){const shape=document.createElementNS(svg.namespaceURI,tag);for(const [key,value]of Object.entries(attrs))shape.setAttribute(key,value);svg.append(shape);}return svg;
@@ -16,7 +17,7 @@ export function renderPaperdoll(snapshot:Snapshot,session:GameSession,disabled:b
  if(!plan){panel.append(node('p','Equipment information is unavailable.','help'));return panel;}
  const blocked=disabled||session.inventoryBusy||!!snapshot.game.activeEncounter||snapshot.progression.build.mode!=='CONFIGURED';
  const selected=session.selectedInventoryItem;
- const candidate=selected?.equipment&&selected.kind==='CARRIED'&&selected.accessible&&selected.copies===1&&selected.eligible&&selected.proficiencyMet&&selected.equipment.minimumLevel<=snapshot.progression.level?selected:null;
+ const candidate=paperdollCandidate(selected,session.inventoryQuery.grouped??true,snapshot.progression.level);
  panel.append(node('p',candidate?`Select a highlighted slot to equip ${candidate.name}.`:'Select equipment in your pack, then choose a compatible slot. Click worn gear to inspect or remove it.','help'));
  if(snapshot.game.activeEncounter)panel.append(node('p','Gear changes are locked during an encounter.','cost'));
  const body=node('div','','paperdoll-body'),figure=node('div','','paperdoll-figure');figure.append(silhouette());body.append(figure);
@@ -25,7 +26,7 @@ export function renderPaperdoll(snapshot:Snapshot,session:GameSession,disabled:b
   inspector.replaceChildren();const assignment=plan!.slots.find(a=>a.set===set&&a.slot===slot),item=gear.find(g=>g.id===assignment?.itemId),position=`${set==='WORN'?'Worn':`Set ${set}`} · ${title(slot)}`;
   const heading=node('h3',position);heading.tabIndex=-1;inspector.append(heading);
   const commit=(draft:EquipmentPlan,message:string)=>{
-   const binding=bindingConsequences(draft,gear);inspector.replaceChildren(heading,node('p',message+(binding.length?` Permanently binds to your account: ${binding.join(', ')}. Unequipping does not undo binding.`:'')));
+   const binding=bindingConsequences(draft,gear,candidate);inspector.replaceChildren(heading,node('p',message+(binding.length?` Permanently binds to your account: ${binding.join(', ')}. Unequipping does not undo binding.`:'')));
    inspector.append(button('Cancel gear change',()=>{inspect(set,slot,origin);}),button('Confirm gear change',()=>void session.action('/api/v1/equipment','SET_EQUIPMENT',draft),blocked));heading.focus();
   };
   if(item){inspector.append(node('strong',item.name),node('p',`Required level ${item.minimumLevel} · ${title(item.binding)}${item.hands===2?' · Two hands':''}`,'help'));
