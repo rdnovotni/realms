@@ -76,7 +76,7 @@ export class GameSession {
   // These independent projections may cross another window's action. Refuse a
   // mixed revision and let the player explicitly refresh, never write from it.
   if(progression.revision!==game.run.revision||(battle&&battle.revision!==game.run.revision))throw new ApiError(409,'STALE_REVISION');
-  if(epoch===this.epoch){this.snapshot={game,progression,options,battle};this.needsRefresh=false;
+  if(epoch===this.epoch){if(this.snapshot?.game.run.runId!==game.run.runId)this.equipmentContext=undefined;this.equipmentPreviewError=null;this.snapshot={game,progression,options,battle};this.needsRefresh=false;
    if(this.equipmentDraft&&(this.equipmentDraft.runId!==game.run.runId||game.equipment&&equipmentKey(this.equipmentDraft.plan)===equipmentKey(game.equipment)))this.equipmentDraft=null;
    this.equipmentPreview=null;this.previewGeneration++;this.equipmentPreviewBusy=false;if(this.inventoryWanted)await this.browseInventory(this.inventoryQuery);}
  }

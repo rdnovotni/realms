@@ -110,7 +110,9 @@ mana, damage range, resistance percentages, conditional resistances, penetration
 guard/heal availability and carrying capacities. Only worn and active-set gear
 contributes. Prepared weapons remain visible without contributing. Equipping never
 reduces carried weight. Temporary battle effects and target/roll outcomes are not
-predicted; the context is labelled and a missing discovered context is explicit.
+predicted. Numerical totals and comparisons are concealed until every item in
+both the currently active and proposed active setups has ADVANCED knowledge,
+including removal previews, so subtraction cannot reveal hidden modifiers. The context is labelled and a missing discovered context is explicit.
 
 The paperdoll includes a saved-loadout preview selector and a control to save the
 committed setup. Apply the draft before saving it as a template. Existing template

@@ -222,5 +222,6 @@ test('equipment drafts survive refresh, refuse stale Apply and are forgotten on 
  const plan:EquipmentPlan={activeSet:'B',slots:[{set:'B',slot:'MAIN_HAND',itemId:'sword'}]};h.session.stageEquipment(plan,equipmentGear);assert.deepEqual(h.session.equipmentState(),plan);plan.activeSet='A';assert.equal(h.session.equipmentState()?.activeSet,'B');
  await h.session.refresh();h.session.snapshot!.game.equipment={activeSet:'A',slots:[]};assert.equal(h.session.equipmentState()?.activeSet,'B');
  h.setRevision(1);await h.session.refresh();await h.session.applyEquipment();assert.equal(h.calls.filter(c=>c.init.method==='POST').length,0);assert.ok(h.session.equipmentDraft);
+ h.session.equipmentContext='encounter.old';h.setRun('next-run');await h.session.refresh();assert.equal(h.session.equipmentContext,undefined);assert.equal(h.session.equipmentDraft,null);
  await h.session.logout();assert.equal(h.session.equipmentDraft,null);assert.equal(h.session.equipmentPreview,null);
 });

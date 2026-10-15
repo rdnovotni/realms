@@ -30,6 +30,13 @@ export function equipmentPreview(pool:pg.Pool,accountId:string,expectedRevision:
   const options=contexts.map(({id,name})=>({id,name}));
   if(contextId&&!selected)throw new DomainError(404,'STAT_CONTEXT_NOT_FOUND');
   if(!selected)return {runId:run.id,revision:run.revision,contexts:options,current:null,preview:null,reason:'Discover a character-stat encounter to view contextual totals.'};
+  // Current totals also contain private modifiers. Suppress both sides when
+  // either active setup includes an unassessed physical item, including removal
+  // previews; otherwise subtraction would identify the hidden contribution.
+  const exposedIds=[...new Set([committed,draft].flatMap(p=>p.slots.filter(s=>s.set==='WORN'||s.set===p.activeSet).map(s=>s.itemId)))];
+  const unknown=(await client.query(`SELECT 1 FROM inventory_items i LEFT JOIN discoveries d ON d.account_id=$1 AND d.entity_id=i.definition_id
+   WHERE i.id=ANY($2::uuid[]) AND d.knowledge_level IS DISTINCT FROM 'ADVANCED' LIMIT 1`,[accountId,exposedIds])).rowCount;
+  if(unknown)return {runId:run.id,revision:run.revision,contexts:options,contextId:selected.id,current:null,preview:null,reason:'Assess all currently active and proposed active equipment before viewing numerical totals and comparisons. Hidden item mechanics remain concealed.'};
   const inputs=(await client.query('SELECT character_snapshot_inputs($1,$2) inputs',[run.id,selected.profile])).rows[0].inputs as CharacterInputs;
   const activeIds=new Set(draft.slots.filter(s=>s.set==='WORN'||s.set===draft.activeSet).map(s=>s.itemId));
   const afterSources:MechanicsSource[]=inputs.sources.filter(s=>!s.instanceId);

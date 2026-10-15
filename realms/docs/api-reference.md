@@ -73,7 +73,9 @@ The selected discovered encounter supplies character profile and resistance rule
 omitting `contextId` chooses the first compatible discovered context. The result
 includes `runId`, `revision`, labelled `contexts`, `current`, `preview`, displaced
 assignments and explanatory notes. With no compatible discovered context, totals
-are null and `reason` explains their absence. Invalid identities/requirements and
+are null and `reason` explains their absence. Totals are also suppressed if either
+active setup contains an item below ADVANCED knowledge; removing that item does
+not bypass concealment. Invalid identities/requirements and
 stale revisions are rejected by the shared equipment validator. The endpoint
 creates no events, binding, receipts, rewards or random draws.
 
