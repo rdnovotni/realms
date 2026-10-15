@@ -20,7 +20,7 @@ export function renderPaperdoll(snapshot:Snapshot,session:GameSession,disabled:b
  if(!plan){panel.append(node('p','Equipment information is unavailable.','help'));return panel;}
  const blocked=disabled||session.inventoryBusy||!!snapshot.game.activeEncounter||snapshot.progression.build.mode!=='CONFIGURED';
  const selected=session.selectedInventoryItem;
- const candidate=paperdollCandidate(selected,session.inventoryQuery.grouped??true,snapshot.progression.level);
+ const candidate=paperdollCandidate(selected,session.selectedInventoryGrouped,snapshot.progression.level);
  panel.append(node('p',candidate?`Select a highlighted slot to equip ${candidate.name}.`:'Click a slot to search your equipment. Drag carried items onto slots, or return equipped gear to your pack.','help'));
  if(snapshot.game.activeEncounter)panel.append(node('p','Gear changes are locked during an encounter.','cost'));
  const body=node('div','','paperdoll-body'),figure=node('div','','paperdoll-figure');figure.append(silhouette());body.append(figure);

@@ -201,3 +201,14 @@ test('curated item illustrations use same-origin whitelisted routes',async()=>{
  const app=Fastify();registerClient(app,{mode:'sessions',throttleKey:'not-public'});
  try{const image=await app.inject({url:'/assets/items/sword.svg'});assert.equal(image.statusCode,200);assert.match(image.headers['content-type']!,/image\/svg\+xml/);assert.match(image.body,/<svg/);assert.equal((await app.inject({url:'/assets/items/not-approved.svg'})).statusCode,404);}finally{await app.close();}
 });
+
+
+test('selected groups never become representative individuals when browse mode or filters change',async()=>{
+ const h=harness();await connect(h);const item={id:'copy',name:'Group',copies:3} as import('../client/types.js').InventoryItem;
+ h.session.selectInventory(item);assert.equal(h.session.selectedInventoryGrouped,true);
+ await h.session.browseInventory({grouped:false});assert.equal(h.session.selectedInventoryItem,null);assert.equal(h.session.selectedInventoryGrouped,false);
+ h.session.selectInventory(item);assert.equal(h.session.selectedInventoryGrouped,false);
+ await h.session.browseInventory({grouped:true});assert.equal(h.session.selectedInventoryGrouped,false);assert.equal(h.session.selectedInventoryItem?.id,'copy');
+ h.session.selectInventory(item);assert.equal(h.session.selectedInventoryGrouped,true);h.session.inventoryQuery={grouped:true,search:'changed'};
+ await h.session.browseInventory(h.session.inventoryQuery);assert.equal(h.session.selectedInventoryItem,null);
+});

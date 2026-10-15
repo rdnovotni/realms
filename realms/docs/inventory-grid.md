@@ -140,7 +140,7 @@ Search and unequip buttons provide keyboard/touch equivalents to every drag acti
 A grouped inspector shows only copy count, total quantity, total measured weight
 and bulk, and location scope. It never presents a representative's description,
 quality, binding, protection, condition, unit dimensions or requirement as shared
-by every copy. Expanding the group exposes the actual individual records.
+by every copy. Expanding the group exposes the actual individual records. Selection remembers whether a group or a physical copy was chosen: changing grouping never turns a group into a representative instance, and changing a selected group’s filters clears its aggregate inspection.
 
 Verification: use the isolated `npm run dev:client` fixture; optionally set
 `PLAYTEST_EQUIPMENT_COPIES=125` (allowed 0–160) to exercise more than 100 gear items.
