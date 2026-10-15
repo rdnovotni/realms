@@ -188,9 +188,7 @@ from a consumed merge source to its target, nor between different accounts.
 
 Double-click expands a group or stages the existing equipment preview, preserving
 conflict and permanent-binding consent before Apply. It never immediately commits
-equipment or consumes anything. Other items open their inspector: the current
-server has no consumable Use or loot-container Open domain, so this UI does not
-invent those actions. Keyboard inspection and the explicit equip button remain
+equipment or consumes anything. Items with authored `mechanics.itemUse` now open a Use/Open confirmation with one-item consumption and consequences; items without that contract open details. See [inventory services](inventory-services.md). Keyboard inspection and the explicit equip button remain
 available. Single-click inspection waits briefly to distinguish native double
 activation; modifier clicks only select.
 
@@ -210,3 +208,31 @@ pre-034 image fails strict schema readiness against the upgraded database. Keep
 annotation data/contracts and all bulk lock history; do not rewrite old migration
 checksums or drop player annotations as a rollback. Production migration
 and deployment require the separate operations approval.
+
+
+## Inventory workspace and services
+
+Compact, Standard and Detailed views share the same physical item identities,
+selection, rarity borders, status markers and bottom-anchored condition/weight.
+Compact uses smaller art; Detailed adds category, binding and descriptions.
+The account `inventory.workspace.v1` contract persists layout independently of
+existing tile preferences. Layout changes do not advance gameplay revision.
+
+Wide screens keep an independently scrollable paperdoll/loadout column beside the
+pack and sticky inspector. Narrow screens use Items/Equipment buttons, preserving
+filters, selected items and the equipment draft while switching. Common search,
+location, category and sort remain visible; More filters reveals the rest.
+
+Compare side by side opens a dedicated dialog with current/candidate artwork,
+property columns, known modifiers, true durability, binding consequences and
+conflicting assignments. Select either prepared weapon set. Character before/after
+totals come from the existing equipment preview service in a known rules context;
+unknown modifiers remain Unknown. It can stage the candidate but Apply and any
+binding acknowledgement remain separate. A candidate in an inactive set does not
+change active totals; other staged changes are included in candidate totals.
+
+Repair selected, Repair all and individual inspector repair request fresh server
+quotes. Use/Open appears on authored eligible items and through double-click and
+the context menu's existing inspector actions. These workflows and their precise
+supported authoring scope are documented in [inventory services](inventory-services.md).
+Migration 035 and refreshed runtime grants are required before deploying this UI.

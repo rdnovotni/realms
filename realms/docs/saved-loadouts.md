@@ -25,3 +25,18 @@ This completes equipment-template persistence and quantity protection. Build/abi
 The local suite passes 119 tests: seven unit tests and 112 integration tests, including 13 loadout tests. Coverage includes duplicate requests, canonical noops, shared item references, explicit protection overrides, independent locks, restore/replay after deletion, overwrite, storage and Ascension, ownership and active-instance restrictions, direct SQL bypasses, rollback, template limits under concurrent SQL writes, read-only API access, restricted runtime permissions and audit corruption detection. Type checking and build pass.
 
 The private development upgrade preserved every pre-existing game table by before/after hashes after server restart. Permission, integrity and live endpoint checks passed. The post-upgrade backup restored into a disposable database with all 68 tables, matching migrations and reconciled invariants.
+
+
+## Readiness in the inventory workspace
+
+The Character planner and inventory paperdoll reuse one searchable loadout manager.
+Each card shows Ready to prepare or Needs attention. Server readiness checks the
+complete saved plan using the existing equipment validator, including released
+protection references that fall outside the recent 100-item summary. Missing or
+consumed items identify the saved position; stored items identify Home or other
+storage; archived-life items explain inaccessible custody. Level, proficiency,
+shared prerequisite, release, duplicate identity and hand conflicts remain enforced.
+Binding consequences are shown before a ready plan is staged. Readiness is a hint
+at the snapshot revision, not a promise against later changes: Apply still performs
+all authoritative checks. Saving/replacing always captures committed equipment,
+not a pending draft. The maximum remains 32 saved plans.

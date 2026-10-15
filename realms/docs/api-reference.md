@@ -1,6 +1,6 @@
 # Follybound HTTP API reference
 
-This inventories the implemented routes in `src/app.ts` and `src/client-assets.ts` through migration 034. Route schemas and domain documents define exact parameters and response shapes; this is not a claim of a stable public SDK or a deployed version. Server checks reject extra body fields. There is no generic client write of stats, arbitrary state, roll results, rewards or content definitions.
+This inventories the implemented routes in `src/app.ts` and `src/client-assets.ts` through migration 035. Route schemas and domain documents define exact parameters and response shapes; this is not a claim of a stable public SDK or a deployed version. Server checks reject extra body fields. There is no generic client write of stats, arbitrary state, roll results, rewards or content definitions.
 
 ## Authentication and Action contract
 
@@ -105,3 +105,36 @@ revision. Existing loot-routing preferences keep their separate contract.
 Inventory reads add `favorite`, `isNew`, opaque `inspectionToken`, grouped
 `groupFavoriteCount`/`groupNewCount`, and top-level `displayPreferences`. Optional
 `favorite=true` and `uninspected=true` filters run before grouping/counting/paging.
+
+
+## Inventory workspace, repair and item-use services
+
+Quote routes are `GET /api/v1/inventory/repair-preview` and `GET /api/v1/inventory/use-preview`.
+
+- `POST /api/v1/inventory/workspace`: Action `SET_INVENTORY_WORKSPACE`, with
+  `layout` equal to `COMPACT`, `STANDARD` or `DETAILED`. Account scoped, no gameplay
+  revision increment. `GET /api/v1/inventory` returns `workspacePreferences` and
+  each physical row's optional `useKind` (`USE`, `OPEN`, or null).
+- `GET /api/v1/inventory/repair-preview?expectedRevision=N`: quote all damaged
+  repairable gear carried or in this life's Home. Optional `items` is a comma
+  separated list of 1–48 distinct physical UUIDs. Returns `runId`, `revision`,
+  `items` (condition `before`/`after`, authored `rate`, `cost`), `unavailable`,
+  `total`, `balance`, `affordable`, and `token`. A selected foreign/inaccessible
+  identity rejects the quote rather than being skipped.
+- `POST /api/v1/inventory/repair`: Action `REPAIR_ITEMS`, `itemIds` (UUID array or
+  null for all), `token`. Recomputes and matches the quote, transfers one complete
+  Gold payment, journals repairs, advances once. Any denial rolls back all items.
+- `GET /api/v1/inventory/use-preview?expectedRevision=N&itemId=UUID`: owned carried
+  item preview; returns one-item consumption, remaining quantity, known effects/
+  contents, protection, eligibility, and token. Unknown reward/effect names stay
+  unidentified. No item quantity, receipt or reward changes during preview.
+- `POST /api/v1/inventory/use`: Action `USE_ITEM`, `itemId`, `token`, and explicit
+  boolean `allowFavorite`. Revalidates ownership, rules, prerequisites, protection,
+  flags and quote, consumes exactly one and settles authored effects/rewards once.
+
+Both commitment endpoints accept only MANUAL_UI/API intent and require GAME_WRITE;
+read-only sessions may inspect quotes. Requests cannot choose prices, condition,
+reward amounts, effect definitions or quantities. Encounter-active states reject
+these services. Tokens are content/state digests bound to the current run revision;
+receipt replay returns the original result after successful commitment.
+See [authoring, verification and operations](inventory-services.md).

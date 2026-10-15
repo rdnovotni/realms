@@ -1,4 +1,4 @@
-import { displayPreferences } from './inventory-presentation.js';
+import { displayPreferences,workspacePreferences } from './inventory-presentation.js';
 import { equipmentSlots } from './equipment-content.js';
 import { runFacts } from '../rules/facts.js';
 import { prerequisite,type Prerequisite } from '../rules/prerequisites.js';
@@ -91,6 +91,7 @@ export function inventoryView(pool:pg.Pool,accountId:string,q:InventoryQuery={})
    CASE WHEN v.definition->'mechanics'->'inventory'->>'version'='2' THEN v.definition->'mechanics'->'inventory'->>'unitBulk' END AS "unitBulk",
    CASE WHEN v.definition->'mechanics'->'inventory'->>'version'='2' THEN (i.quantity::numeric*(v.definition->'mechanics'->'inventory'->>'unitWeight')::numeric)::text END AS "totalWeight",
    CASE WHEN v.definition->'mechanics'->'inventory'->>'version'='2' THEN (i.quantity::numeric*(v.definition->'mechanics'->'inventory'->>'unitBulk')::numeric)::text END AS "totalBulk",
+   v.definition->'mechanics'->'itemUse'->>'kind' AS "useKind",
    jsonb_set(v.definition->'mechanics'->'equipment','{slots}',equipment_eligible_slots(v.definition->'mechanics'->'equipment')) AS equipment,
    (i.release_id=(SELECT content_release_id FROM runs WHERE id=$2) AND i.binding<>'SYSTEM_UNTRADEABLE' AND s.run_id=$2 AND s.lifecycle='ACTIVE') AS eligible,
    proficiency_requirements_met($2,v.definition->'mechanics'->'proficiencyRequirements') AS "proficiencyMet",
@@ -100,7 +101,7 @@ export function inventoryView(pool:pg.Pool,accountId:string,q:InventoryQuery={})
    ARRAY(SELECT t.template_key FROM equipment_loadout_items p JOIN equipment_loadouts t ON t.id=p.loadout_id WHERE p.item_id=i.id ORDER BY t.template_key) AS loadouts,
    (coalesce(l.locked,false) OR EXISTS(SELECT 1 FROM equipment_slots slot WHERE slot.item_id=i.id) OR EXISTS(SELECT 1 FROM equipment_loadout_items p WHERE p.item_id=i.id)) AS protected,
    (s.lifecycle='ACTIVE' AND (s.run_id=$2 OR (s.account_id=$1 AND $3='CASUAL'))) AS accessible,
-   coalesce((SELECT w.after_condition FROM tactical_equipment_wear w WHERE w.item_id=i.id ORDER BY w.id DESC LIMIT 1),(v.definition->'mechanics'->'tacticalDurability'->>'maximum')::integer) AS condition,
+   inventory_condition(i.id) AS condition,
    (v.definition->'mechanics'->'tacticalDurability'->>'maximum')::integer AS "maximumCondition"
    FROM inventory_items i JOIN inventory_containers c ON c.id=i.container_id JOIN state_scopes s ON s.id=c.scope_id
    JOIN content_versions v ON v.entity_id=i.definition_id AND v.revision=i.definition_revision
@@ -122,7 +123,7 @@ export function inventoryView(pool:pg.Pool,accountId:string,q:InventoryQuery={})
   const total=Number((await client.query(cte+' SELECT count(*)::integer AS total FROM selected',parameters)).rows[0].total);
   const items=(await client.query(cte+` SELECT * FROM selected ORDER BY ${sortExpression} ${q.direction??'ASC'} NULLS LAST,id LIMIT ${inventoryPageSize} OFFSET ${q.offset??0}`,parameters)).rows.map(({representative,created_at,groupNewest,runId,...item})=>({...item,copies:Number(item.copies)}));
   const preferences=await inventoryPreferences(client,accountId);
-  return {displayPreferences:(await displayPreferences(client,accountId)).value,revision:run.revision,runId:run.id,items,total,offset:q.offset??0,pageSize:inventoryPageSize,containers:containers.slice(0,200),hasMoreContainers:containers.length>200,carry:publicCarryLoad(await carryLoad(client,run.id)),preferences:preferences.value};
+  return {workspacePreferences:await workspacePreferences(client,accountId),displayPreferences:(await displayPreferences(client,accountId)).value,revision:run.revision,runId:run.id,items,total,offset:q.offset??0,pageSize:inventoryPageSize,containers:containers.slice(0,200),hasMoreContainers:containers.length>200,carry:publicCarryLoad(await carryLoad(client,run.id)),preferences:preferences.value};
  });
 }
 
@@ -154,6 +155,7 @@ export function inventoryHistory(pool:pg.Pool,accountId:string,itemId:string,off
    SELECT 'quantity:'||o.operation_no::text id,q.kind||CASE WHEN q.from_item_id=$1 THEN '_OUT' WHEN q.kind IN('SPLIT','MERGE') THEN '_IN' ELSE '' END kind,q.quantity::text quantity,q.created_at at,NULL::text location
     FROM inventory_quantity_operations q JOIN inventory_quantity_order o ON o.operation_id=q.id WHERE q.from_item_id=$1 OR q.to_item_id=$1
    UNION ALL SELECT 'move:'||m.id::text,'MOVE',NULL,m.created_at,c.kind FROM inventory_movements m JOIN inventory_containers c ON c.id=m.to_container_id WHERE m.item_id=$1
+   UNION ALL SELECT 'repair:'||r.action_id::text,'REPAIR',NULL,a.created_at,NULL FROM inventory_repairs r JOIN action_receipts a ON a.action_id=r.action_id WHERE r.item_id=$1
    UNION ALL SELECT 'lock:'||l.id::text,CASE WHEN l.locked THEN 'LOCK' ELSE 'UNLOCK' END,NULL,l.created_at,NULL FROM inventory_lock_events l WHERE l.item_id=$1
   )`;
   const total=Number((await client.query(cte+' SELECT count(*)::integer total FROM events',[itemId])).rows[0].total);

@@ -10,6 +10,11 @@ export const bulkOperations=['LOCK','FAVORITE','UNFAVORITE','MARK_INSPECTED','MO
 export type BulkOperation=typeof bulkOperations[number];
 export type ItemSelection={itemId:string;inspectionToken?:string};
 export const defaultDisplayPreferences={healthyPercent:70,wornPercent:25,showSingleQuantity:true};
+export async function workspacePreferences(client:pg.PoolClient,accountId:string){return (await client.query("SELECT value FROM scoped_state f JOIN state_scopes s ON s.id=f.scope_id WHERE s.account_id=$1 AND f.key='inventory.workspace.v1'",[accountId])).rows[0]?.value??{layout:'STANDARD'};}
+export function setWorkspacePreferences(pool:pg.Pool,accountId:string,envelope:Envelope,layout:string){
+ if(envelope.actionType!=='SET_INVENTORY_WORKSPACE'||!['COMPACT','STANDARD','DETAILED'].includes(layout))throw new DomainError(400,'INVALID_INVENTORY_LAYOUT');
+ return executeAction(pool,accountId,envelope,{layout},async c=>{const prior=(await c.client.query("SELECT f.revision::text FROM scoped_state f JOIN state_scopes s ON s.id=f.scope_id WHERE s.account_id=$1 AND f.key='inventory.workspace.v1'",[accountId])).rows[0],scope=(await c.client.query("SELECT id FROM state_scopes WHERE account_id=$1 AND kind='ACCOUNT'",[accountId])).rows[0];await writeState(c.client,'inventory',scope.id,'inventory.workspace.v1',{layout},prior?.revision??null);return {layout,revision:c.run.revision};});
+}
 export type DisplayPreferences=typeof defaultDisplayPreferences;
 export async function displayPreferences(client:pg.PoolClient,accountId:string){
  const row=(await client.query("SELECT f.value,f.revision::text FROM scoped_state f JOIN state_scopes s ON s.id=f.scope_id WHERE s.account_id=$1 AND f.key='inventory.display.v1'",[accountId])).rows[0];return {value:row?.value??defaultDisplayPreferences,revision:row?.revision??null};
