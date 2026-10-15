@@ -1,7 +1,7 @@
-import type { EquipmentPlan,Gear,Snapshot } from './types.js';
+import type { EquipmentPlan,Gear,Snapshot,InventoryItem } from './types.js';
 import type { GameSession } from './session.js';
 
-const worn=['HEAD','NECK','SHOULDERS','CHEST','HANDS','WAIST','LEGS','FEET','RING_1','RING_2','TRINKET','TOOL'];
+export const worn=['HEAD','NECK','SHOULDERS','CHEST','HANDS','WAIST','LEGS','FEET','RING_1','RING_2','TRINKET','TOOL'];
 const title=(s:string)=>s.split('_').map(w=>w[0]!+w.slice(1).toLowerCase()).join(' ');
 function node<K extends keyof HTMLElementTagNameMap>(tag:K,text='',className=''){const n=document.createElement(tag);n.textContent=text;n.className=className;return n;}
 function btn(text:string,run:()=>void,disabled:boolean){const n=node('button',text,'small');n.type='button';n.dataset.focus=text;n.disabled=disabled;n.addEventListener('click',run);return n;}
@@ -27,8 +27,19 @@ export function equipmentProblems(plan:EquipmentPlan,gear:Gear[],level:number){
  }
  return [...new Set(problems)];
 }
-export function bindingConsequences(plan:EquipmentPlan,gear:Gear[]){
- return gear.filter(g=>g.binding==='TRADEABLE'&&g.bindingPolicy==='ACCOUNT_ON_ACTIVE_EQUIP'&&plan.slots.some(s=>s.itemId===g.id&&(s.set==='WORN'||s.set===plan.activeSet))).map(g=>g.name);
+export function bindingConsequences(plan:EquipmentPlan,gear:Gear[],candidate?:InventoryItem|null){
+ const sources:Pick<Gear,'id'|'name'|'binding'|'bindingPolicy'>[]=[...gear];
+ if(candidate?.equipment&&!sources.some(g=>g.id===candidate.id))sources.push({id:candidate.id,name:candidate.name,binding:candidate.binding,bindingPolicy:candidate.equipment.bindingPolicy});
+ return sources.filter(g=>g.binding==='TRADEABLE'&&g.bindingPolicy==='ACCOUNT_ON_ACTIVE_EQUIP'&&plan.slots.some(s=>s.itemId===g.id&&(s.set==='WORN'||s.set===plan.activeSet))).map(g=>g.name);
+}
+
+/** A preparation preview only; the server validates the complete owned setup. */
+export function prepareInventoryEquipment(plan:EquipmentPlan,item:InventoryItem,set:'WORN'|'A'|'B',slot:string,gear:Gear[]):EquipmentPlan {
+ if(!item.equipment||!item.equipment.slots.includes(slot)||((set==='WORN')===['MAIN_HAND','OFF_HAND'].includes(slot)))throw new Error('Choose a legal equipment position.');
+ let slots=plan.slots.filter(s=>!(s.set===set&&s.slot===slot)&&!(s.itemId===item.id&&(set==='WORN'||s.set==='WORN'||s.slot!==slot)));
+ if(item.equipment.hands===2)slots=slots.filter(s=>!(s.set===set&&s.slot==='OFF_HAND'));
+ if(slot==='OFF_HAND'){const main=slots.find(s=>s.set===set&&s.slot==='MAIN_HAND');if(main&&gear.find(g=>g.id===main.itemId)?.hands===2)slots=slots.filter(s=>s!==main);}
+ return {activeSet:plan.activeSet,slots:[...slots,{set,slot,itemId:item.id}]};
 }
 
 export function renderEquipment(main:HTMLElement,s:Snapshot,session:GameSession,disabled:boolean){

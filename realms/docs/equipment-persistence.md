@@ -27,3 +27,22 @@ The private development upgrade was rehearsed with preservation hashes for every
 Migration 013 adds [named saved equipment loadouts and item protection](saved-loadouts.md), using the same equipment legality service.
 
 Migration 020 adds optional [skill-rank prerequisites and immutable qualification evidence](proficiency-requirements.md), enforced for worn gear, both prepared sets and saved-loadout application. [Shared rules](shared-rules.md) now add structured equipment prerequisites and supported server-derived capabilities; a complete authored weapon/armor training and respec workflow remains future work.
+
+The inventory now presents committed equipment in a paperdoll above the item grid
+(`client/paperdoll.ts`). It shares `prepareInventoryEquipment` and
+`bindingConsequences` with the existing equipment controls; its previews do not
+replace server validation. Slot removal affects only the selected assignment,
+while inventory's "Unequip this item" removes all its assignments. Both weapon
+sets remain visible, with two-hand reservations explained in the empty off-hand
+position. The complete-plan editor and saved loadouts remain available in the expandable
+Equipment planner & saved loadouts section below the pack for preparing several
+changes together.
+
+Verification: `npm run typecheck`, `npm run build`, `npm test`, and
+`node --env-file=.env --import tsx --test --test-concurrency=2 test/equipment.test.ts test/loadouts.test.ts test/inventory-browser.test.ts test/client-integration.test.ts`
+with the documented isolated `TEST_DATABASE_URL`. For visual verification, run
+`npm run dev:client` against the disposable test database, open Pack, equip the
+fixture sword and shield, replace them with the practice greatblade, activate the
+other set, and wear the fixture Tool satchel. Confirm capacity updates, binding
+warnings, filter-independent equipped gear, and a narrow-screen layout without
+horizontal overflow. No database migration or production content change is needed.
