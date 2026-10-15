@@ -8,7 +8,7 @@ export type EquipmentAssignment={set:'WORN'|'A'|'B';slot:EquipmentSlot;itemId:st
 export type EquipmentPlan={activeSet:'A'|'B';slots:EquipmentAssignment[]};
 export const emptyEquipment=():EquipmentPlan=>({activeSet:'A',slots:[]});
 export function normalizeEquipment(input:EquipmentPlan):EquipmentPlan{
- if(!input||!['A','B'].includes(input.activeSet)||!Array.isArray(input.slots)||input.slots.length>16)throw new DomainError(400,'INVALID_EQUIPMENT_PLAN');
+ if(!input||Object.keys(input).some(k=>!['activeSet','slots'].includes(k))||!['A','B'].includes(input.activeSet)||!Array.isArray(input.slots)||input.slots.length>16)throw new DomainError(400,'INVALID_EQUIPMENT_PLAN');
  const slots=input.slots.map(s=>{if(!s||!['WORN','A','B'].includes(s.set)||!equipmentSlots.includes(s.slot)||typeof s.itemId!=='string'||!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s.itemId)||Object.keys(s).some(k=>!['set','slot','itemId'].includes(k)))throw new DomainError(400,'INVALID_EQUIPMENT_PLAN');
  if((s.set==='WORN')!==wornSlots.includes(s.slot as typeof wornSlots[number]))throw new DomainError(400,'INVALID_EQUIPMENT_PLAN');return {...s,itemId:s.itemId.toLowerCase()};});
  slots.sort((a,b)=>{const x=a.set+a.slot,y=b.set+b.slot;return x<y?-1:x>y?1:0;});
