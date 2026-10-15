@@ -204,7 +204,9 @@ sign-out so it cannot leak into another account.
 Migration 034 adds cosmetic annotation storage, the account display contract and
 bulk-capable lock receipt validation. No released content definitions change.
 Deploy with normal migration/grant refresh and readiness checks; do not hot-run
-new code on an older schema. Roll back the application image while retaining the
-additive annotation data/contract and compatible lock view; do not rewrite old
-migration checksums or drop player annotations as a rollback. Production migration
+new code on an older schema. Rollback requires a compatibility build that restores prior UI/domain behavior
+while retaining the migration-034 manifest and compatible lock view. An older
+pre-034 image fails strict schema readiness against the upgraded database. Keep
+annotation data/contracts and all bulk lock history; do not rewrite old migration
+checksums or drop player annotations as a rollback. Production migration
 and deployment require the separate operations approval.
