@@ -1,6 +1,10 @@
+import { defaultTileSettings,validTileSettings,type TileSettings } from './item-tiles.js';
 import { ApiClient,ApiError,errorMessage } from './api.js';
 import type { Config,GameView,Progression,BuildOptions,Tactical,Snapshot,Notice,AscensionPreview,InventoryPage,InventoryQuery,InventoryItem,InventoryHistory } from './types.js';
 export class GameSession {
+ tileSettingsOpen=false;
+ tileSettings:TileSettings={...defaultTileSettings};
+ updateTileSettings(patch:Partial<TileSettings>){const next={...this.tileSettings,...patch};if(!validTileSettings(next))return false;this.tileSettings=next;this.notify();return true;}
  snapshot:Snapshot|null=null;
  inventory:InventoryPage|null=null;
  selectedInventoryItem:InventoryItem|null=null;

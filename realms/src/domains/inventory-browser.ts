@@ -69,7 +69,7 @@ export function inventoryView(pool:pg.Pool,accountId:string,q:InventoryQuery={})
    CASE WHEN v.definition->'mechanics'->'inventory'->>'version'='2' THEN v.definition->'mechanics'->'inventory'->>'unitBulk' END AS "unitBulk",
    CASE WHEN v.definition->'mechanics'->'inventory'->>'version'='2' THEN (i.quantity::numeric*(v.definition->'mechanics'->'inventory'->>'unitWeight')::numeric)::text END AS "totalWeight",
    CASE WHEN v.definition->'mechanics'->'inventory'->>'version'='2' THEN (i.quantity::numeric*(v.definition->'mechanics'->'inventory'->>'unitBulk')::numeric)::text END AS "totalBulk",
-   v.definition->'mechanics'->'equipment' AS equipment,
+   jsonb_set(v.definition->'mechanics'->'equipment','{slots}',equipment_eligible_slots(v.definition->'mechanics'->'equipment')) AS equipment,
    (i.release_id=(SELECT content_release_id FROM runs WHERE id=$2) AND i.binding<>'SYSTEM_UNTRADEABLE' AND s.run_id=$2 AND s.lifecycle='ACTIVE') AS eligible,
    proficiency_requirements_met($2,v.definition->'mechanics'->'proficiencyRequirements') AS "proficiencyMet",
    CASE WHEN d.knowledge_level='ADVANCED' THEN (SELECT jsonb_object_agg(stat,amount) FROM (SELECT m->>'stat' stat,sum((m->>'amount')::integer) amount FROM jsonb_array_elements(v.definition->'mechanics'->'combatModifiers'->'modifiers') m GROUP BY m->>'stat') stat_values) END AS "knownStats",

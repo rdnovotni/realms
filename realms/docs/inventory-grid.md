@@ -73,8 +73,8 @@ Selling, salvage, trading, mail attachments, consumable use effects, item repair
 
 The Pack screen begins with an equipment paperdoll beside carrying capacity on
 wide screens, and above it on narrow screens. All twelve worn positions are
-visible: Head, Neck, Shoulders, Chest, Hands, Waist, Legs, Feet, Ring 1, Ring 2,
-Trinket and Tool. Both weapon sets expose Main Hand and Off Hand; the current
+visible: Head, Neck, Shoulders, Chest, Hands, Waist, Legs, Feet, Trinket 1, Trinket 2,
+Trinket 3 and Tool. Both weapon sets expose Main Hand and Off Hand; the current
 set is explicitly labelled Active and the other Prepared. This presents the
 existing broad equipment contract without adding inventory slot limits.
 
@@ -91,8 +91,30 @@ The paperdoll reads the complete committed plan and equipped-first gear projecti
 so filtering or paging the pack does not hide equipped possessions. It does not
 require the complete-plan editor's first-100-gear list to be exhaustive.
 
-Every grid tile displays a small weight glyph and total weight at its bottom
-right: the complete stack's total for an individual item, or all grouped copies'
-combined weight. Tooltips and accessible names describe the total explicitly.
-Unknown measurements display `?`, never zero. Integer quantities remain exact
-through BigInt formatting, including values above JavaScript's safe-integer limit.
+Item tiles show only applicable status icons at the top left (locked, equipped,
+loadout protection or restricted access), and quantities prefixed with `x` at the
+top right. The centered item glyph sits above the name. Requirement level and
+known quality appear beneath it; other items use known quality or a public key
+property. The complete border indicates rarity, which is also named in the item
+inspection panel. Group cards identify multiple copies rather than implying that
+the representative's level, quality, protection or condition applies to every copy.
+Expand them to inspect each physical instance.
+
+The bottom row is anchored to the tile edge: condition at the left, weight at the
+right. Cards stretch together within a grid row, so wrapping names do not shift
+the footers. Condition preserves the true `current/maximum`, including maxima of
+200, 250 and other authored values. It appears only when a durability mechanic
+exists. Defaults are healthy at 70% or more (muted green), worn at 25% or more
+(amber), and critically damaged below 25% (red). A shield glyph, exact fraction
+and state text accompany color. Item tile display controls let players change the
+two percentage thresholds or hide `x1`; these are session-local presentation
+choices, not saved account preferences. Thresholds require whole numbers with
+`0 < worn < healthy <= 100`.
+
+Individual items show unit weight; stacks show total weight. A stack of 20 pieces
+at 2 each shows `40` with `2 each × 20 = 40 total` in its tooltip. Grouped copies
+show combined measured weight and explain that individual weights require expansion.
+Unknown measurements display `—`, never zero. Authored zero remains `0`.
+All quantities and weight calculations remain exact through BigInt formatting;
+visible truncation for a very large value retains the exact tooltip/accessibility
+text. Tile presentation does not change encumbrance calculations.

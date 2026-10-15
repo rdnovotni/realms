@@ -1,7 +1,7 @@
 import type { EquipmentPlan,Snapshot,InventoryItem } from './types.js';
 import type { GameSession } from './session.js';
-import { bindingConsequences,prepareInventoryEquipment,worn } from './equipment.js';
-const title=(s:string)=>s.toLowerCase().split('_').map(w=>w[0]!.toUpperCase()+w.slice(1)).join(' ');
+import { bindingConsequences,prepareInventoryEquipment,worn,equipmentSlotTitle } from './equipment.js';
+const title=equipmentSlotTitle;
 function node<K extends keyof HTMLElementTagNameMap>(tag:K,text='',className=''){const n=document.createElement(tag);n.textContent=text;n.className=className;return n;}
 function button(text:string,run:()=>void,disabled=false){const b=node('button',text);b.type='button';b.disabled=disabled;b.addEventListener('click',run);return b;}
 /** Every assignment is represented, including prepared weapons outside the active set. */

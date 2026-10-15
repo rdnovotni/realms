@@ -46,3 +46,32 @@ fixture sword and shield, replace them with the practice greatblade, activate th
 other set, and wear the fixture Tool satchel. Confirm capacity updates, binding
 warnings, filter-independent equipped gear, and a narrow-screen layout without
 horizontal overflow. No database migration or production content change is needed.
+
+
+### Three interchangeable trinkets
+
+Rings and trinkets can occupy any of the three accessory positions, displayed as
+Trinket 1, Trinket 2 and Trinket 3. Existing persisted identifiers `RING_1`,
+`RING_2` and `TRINKET` remain stable for receipts, equipment history and saved
+loadouts. Equipment specifications that include any one of those positions are
+interpreted as eligible for all three; non-accessory positions are unchanged.
+This compatibility rule applies to existing pinned releases as well as new runs.
+It does not grant extra copies: three positions require three distinct item IDs.
+
+Migration `033_interchangeable_trinkets.sql` adds `equipment_eligible_slots` and
+updates the database integrity view to match the server's normalized specification.
+The inventory and equipment projections expose the same effective slots. It does
+not rewrite authored definitions, existing assignments, immutable history, saved
+loadouts or account data. The integration test restores the old integrity policy,
+creates legacy gear/loadout history, applies the migration, verifies unchanged
+records, equips mixed accessories in each position and reapplies the saved loadout.
+
+Deployment requires the normal reviewed source/schema release procedure and a
+backup. Apply migrations before activating the matching server build; do not run
+an older build against the new schema. Verify with `npm run typecheck`,
+`npm run build`, `npm test` and the equipment/loadout/client integration commands
+above against an isolated test database. No production migration is performed by
+this implementation pass. Rollback after activation requires restoring the matching
+pre-release database backup and previous packaged release together under maintenance;
+reverting only the slot policy could invalidate new accessory placements. A UI-only
+rollback can retain the broadened server/database policy.

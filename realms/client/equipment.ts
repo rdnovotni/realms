@@ -2,7 +2,8 @@ import type { EquipmentPlan,Gear,Snapshot,InventoryItem } from './types.js';
 import type { GameSession } from './session.js';
 
 export const worn=['HEAD','NECK','SHOULDERS','CHEST','HANDS','WAIST','LEGS','FEET','RING_1','RING_2','TRINKET','TOOL'];
-const title=(s:string)=>s.split('_').map(w=>w[0]!+w.slice(1).toLowerCase()).join(' ');
+export const equipmentSlotTitle=(s:string)=>(({RING_1:'Trinket 1',RING_2:'Trinket 2',TRINKET:'Trinket 3'} as Record<string,string>)[s]??s.split('_').map(w=>w[0]!+w.slice(1).toLowerCase()).join(' '));
+const title=equipmentSlotTitle;
 function node<K extends keyof HTMLElementTagNameMap>(tag:K,text='',className=''){const n=document.createElement(tag);n.textContent=text;n.className=className;return n;}
 function btn(text:string,run:()=>void,disabled:boolean){const n=node('button',text,'small');n.type='button';n.dataset.focus=text;n.disabled=disabled;n.addEventListener('click',run);return n;}
 
