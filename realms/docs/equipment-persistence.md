@@ -28,7 +28,8 @@ Migration 013 adds [named saved equipment loadouts and item protection](saved-lo
 
 Migration 020 adds optional [skill-rank prerequisites and immutable qualification evidence](proficiency-requirements.md), enforced for worn gear, both prepared sets and saved-loadout application. [Shared rules](shared-rules.md) now add structured equipment prerequisites and supported server-derived capabilities; a complete authored weapon/armor training and respec workflow remains future work.
 
-The inventory now presents committed equipment in a paperdoll above the item grid
+Character and inventory present committed equipment through the same paperdoll;
+on Pack it sits above the item grid
 (`client/paperdoll.ts`). It shares `prepareInventoryEquipment` and
 `bindingConsequences` with the existing equipment controls; its previews do not
 replace server validation. Slot removal affects only the selected assignment,
@@ -75,3 +76,22 @@ this implementation pass. Rollback after activation requires restoring the match
 pre-release database backup and previous packaged release together under maintenance;
 reverting only the slot policy could invalidate new accessory placements. A UI-only
 rollback can retain the broadened server/database policy.
+
+
+### Large inventories and equipment search
+
+The complete-plan editor no longer disables itself above 100 equipment items.
+Its quick list is supplemented with every currently equipped item and carried
+saved-loadout reference (bounded by the equipment/loadout contracts), while every
+slot can search all eligible carried instances through 48-item inventory pages.
+Selection adds the exact owned identity to the local draft and reuses the common
+preparation helper to clear only conflicts. Saving submits the complete plan.
+
+`GET /api/v1/inventory?equipmentSlot=TRINKET&grouped=false&expectedRevision=...`
+(and other persisted slot identifiers) is a read-only, ownership-scoped picker.
+It filters level, proficiency and the existing shared prerequisite evaluator;
+its response does not reveal raw prerequisites or definitions. Existing equipment
+writes perform their own revision, custody and requirement validation again.
+No schema migration is needed beyond the existing 033 trinket compatibility schema.
+A source merge does not deploy the server. Rollback this UI/query change with the
+previous matching packaged release; it does not rewrite equipment or loadout data.

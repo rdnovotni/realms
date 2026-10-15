@@ -1,3 +1,4 @@
+import { openEquipmentPicker,inventoryGear } from './equipment-picker.js';
 import type { EquipmentPlan,Gear,Snapshot,InventoryItem } from './types.js';
 import type { GameSession } from './session.js';
 
@@ -45,10 +46,11 @@ export function prepareInventoryEquipment(plan:EquipmentPlan,item:InventoryItem,
 
 export function renderEquipment(main:HTMLElement,s:Snapshot,session:GameSession,disabled:boolean){
  const game=s.game;if(!game.equipment||!game.gear||!game.loadouts){main.append(node('p','Equipment controls will be available after the server is updated.','help'));return;}
- const gear=game.gear,blocked=disabled||!!game.activeEncounter||!!game.hasMoreGear;
+ const gear=[...game.gear],blocked=disabled||!!game.activeEncounter;
  const panel=node('section','','panel equipment-panel');panel.append(node('h2','Prepare for the road'),node('p','Choose worn gear and two prepared weapon sets. Changes are free outside an encounter. Save commits the complete setup.','help'));
  if(game.activeEncounter)panel.append(node('p','Equipment changes are locked until this encounter ends.','cost'));
- if(game.hasMoreGear)panel.append(node('p','Showing the first 100 gear items. Editing is paused to preserve equipment beyond this list.','cost'));
+
+ const selections=new Map<string,HTMLSelectElement>();
  const form=node('form'),fields=node('fieldset'),draft=structuredClone(game.equipment);
  fields.disabled=blocked;
  const activeLabel=node('label','Active weapon set'),active=node('select');active.setAttribute('aria-label','Active weapon set');active.dataset.focus='active-weapon-set';
@@ -73,13 +75,17 @@ export function renderEquipment(main:HTMLElement,s:Snapshot,session:GameSession,
    for(const item of gear.filter(g=>g.slots.includes(slot))){const option=node('option',`${item.name}${item.hands===2?' · Two hands':''}${item.minimumLevel>s.progression.level?` · Level ${item.minimumLevel}`:''}${!item.proficiencyMet?' · Proficiency required':''}${!item.eligible?' · Unavailable':''}`);option.value=item.id;option.disabled=!item.eligible||!item.proficiencyMet||item.minimumLevel>s.progression.level;select.append(option);}
    const equipped=draft.slots.find(a=>a.set===set&&a.slot===slot)?.itemId??'';
    if(equipped&&!Array.from(select.options).some(o=>o.value===equipped)){const missing=node('option','Current item · unavailable');missing.value=equipped;select.append(missing);}select.value=equipped;
-   select.addEventListener('change',()=>{draft.slots=draft.slots.filter(a=>a.set!==set||a.slot!==slot);if(select.value)draft.slots.push({set,slot,itemId:select.value});ack.checked=false;update();});label.append(select);grid.append(label);
+   select.addEventListener('change',()=>{draft.slots=draft.slots.filter(a=>a.set!==set||a.slot!==slot);if(select.value)draft.slots.push({set,slot,itemId:select.value});ack.checked=false;update();});selections.set(set+':'+slot,select);label.append(select,btn('Search '+(set==='WORN'?'':`Set ${set} `)+title(slot),()=>openEquipmentPicker(select,s,session,slot,title(slot),item=>{
+    if(!gear.some(g=>g.id===item.id))gear.push(inventoryGear(item));draft.slots=prepareInventoryEquipment(draft,item,set,slot,gear).slots;
+    for(const [key,control]of selections){const [positionSet,positionSlot]=key.split(':'),id=draft.slots.find(a=>a.set===positionSet&&a.slot===positionSlot)?.itemId??'';if(id&&!Array.from(control.options).some(o=>o.value===id)){const option=node('option',gear.find(g=>g.id===id)?.name??'Selected item');option.value=id;control.append(option);}control.value=id;}
+    ack.checked=false;update();
+   }),blocked));grid.append(label);
   }
   group.append(grid);fields.append(group);
  }
  fields.append(preview,ackLabel,save);form.append(fields);form.addEventListener('submit',e=>{e.preventDefault();update();if(!save.disabled)void session.action('/api/v1/equipment','SET_EQUIPMENT',{activeSet:draft.activeSet,slots:draft.slots});});panel.append(form);update();main.append(panel);
 
- const items=node('section','','panel');items.append(node('h2','Your gear'));
+ const items=node('details','','panel quick-gear-summary');items.append(node('summary','Quick & saved gear'),node('p','This summary includes recent gear and saved equipment. Use a slot’s Search control to find any carried item.','help'));
  for(const item of gear){const card=node('article','','gear-card');card.append(node('h3',item.name),node('p',`${title(item.binding)} · Level ${item.minimumLevel}${item.hands===2?' · Two hands':''}`,'help'));
   if(item.bindingPolicy==='ACCOUNT_ON_ACTIVE_EQUIP'&&item.binding==='TRADEABLE')card.append(node('p','Permanently binds when worn or equipped in the active weapon set.','cost'));
   if(item.maximumCondition!==null)card.append(node('p',`Condition ${item.condition} / ${item.maximumCondition}`,'help'));
