@@ -8,7 +8,7 @@ import { DomainError } from '../foundation/errors.js';
 import { carryLoad,publicCarryLoad } from './inventory-load.js';
 import { writeState } from './state.js';
 
-export type InventoryQuery={equipmentSlot?:string;container?:string;search?:string;category?:string;rarity?:string;binding?:string;protection?:'ALL'|'PROTECTED'|'UNPROTECTED';sort?:'NAME'|'NEWEST'|'QUANTITY'|'WEIGHT'|'BULK'|'QUALITY';direction?:'ASC'|'DESC';grouped?:boolean;definitionId?:string;offset?:number;expectedRevision?:number};
+export type InventoryQuery={equipmentSlot?:string;slot?:string;equipmentState?:'ALL'|'EQUIPPED'|'UNEQUIPPED'|'USABLE';condition?:'ALL'|'NEEDS_REPAIR'|'BROKEN'|'FULL';container?:string;search?:string;category?:string;rarity?:string;binding?:string;protection?:'ALL'|'PROTECTED'|'UNPROTECTED';sort?:'NAME'|'NEWEST'|'QUANTITY'|'WEIGHT'|'BULK'|'QUALITY';direction?:'ASC'|'DESC';grouped?:boolean;definitionId?:string;offset?:number;expectedRevision?:number};
 export const inventoryPageSize=48;
 const sorts={NAME:'name COLLATE "C"',NEWEST:'created_at',QUANTITY:'quantity::numeric',WEIGHT:'"totalWeight"::numeric',BULK:'"totalBulk"::numeric',QUALITY:'"numericQuality"::numeric'};
 export async function requireInventoryIdle(c:ActionContext) {
@@ -37,7 +37,7 @@ export async function personalStorage(c:ActionContext,kind:'CARRIED'|'HOME'|'MAT
  return (await c.client.query("INSERT INTO inventory_containers(scope_id,kind) VALUES($1,$2) ON CONFLICT(scope_id,kind,label) DO UPDATE SET label=EXCLUDED.label RETURNING id",[scope.id,kind])).rows[0].id as string;
 }
 export function inventoryView(pool:pg.Pool,accountId:string,q:InventoryQuery={}) {
- if(q.equipmentSlot&&!equipmentSlots.includes(q.equipmentSlot as typeof equipmentSlots[number]))throw new DomainError(400,'INVALID_INVENTORY_QUERY');
+ if((q.equipmentState&&!['ALL','EQUIPPED','UNEQUIPPED','USABLE'].includes(q.equipmentState))||(q.condition&&!['ALL','NEEDS_REPAIR','BROKEN','FULL'].includes(q.condition))||(q.slot&&q.slot!=='ALL'&&!equipmentSlots.includes(q.slot as typeof equipmentSlots[number]))||q.equipmentSlot&&!equipmentSlots.includes(q.equipmentSlot as typeof equipmentSlots[number]))throw new DomainError(400,'INVALID_INVENTORY_QUERY');
  if(!Object.hasOwn(sorts,q.sort??'NAME')||!['ASC','DESC'].includes(q.direction??'ASC')||!Number.isSafeInteger(q.offset??0)||(q.offset??0)<0||(q.offset??0)>1000000||(q.search??'').length>80)throw new DomainError(400,'INVALID_INVENTORY_QUERY');
  return transaction(pool,async client=>{
   await client.query('SELECT id FROM accounts WHERE id=$1 FOR SHARE',[accountId]);
@@ -61,8 +61,15 @@ export function inventoryView(pool:pg.Pool,accountId:string,q:InventoryQuery={})
   if(q.search)terms.push(`name ILIKE ${bind('%'+q.search.replace(/[\\%_]/g,'\\$&')+'%')} ESCAPE '\\'`);
   for(const [field,value] of [['category',q.category],['rarity',q.rarity],['binding',q.binding],['definitionId',q.definitionId]] as const)if(value&&value!=='ALL')terms.push(`"${field}"=${bind(value)}`);
   if(q.protection&&q.protection!=='ALL')terms.push(`protected=${q.protection==='PROTECTED'?'true':'false'}`);
-  if(q.equipmentSlot){
-   terms.push(`kind='CARRIED' AND "runId"=$2 AND accessible AND eligible AND "proficiencyMet" AND quantity='1' AND "storageMode"='INSTANCE' AND (equipment->'slots') ? ${bind(q.equipmentSlot)} AND (equipment->>'minimumLevel')::integer <= (SELECT level FROM run_progression WHERE run_id=$2)`);
+  if(q.slot&&q.slot!=='ALL')terms.push(`(equipment->'slots') ? ${bind(q.slot)}`);
+  if(q.equipmentState==='EQUIPPED')terms.push('equipped');
+  if(q.equipmentState==='UNEQUIPPED')terms.push('equipment IS NOT NULL AND NOT equipped');
+  if(q.condition==='NEEDS_REPAIR')terms.push('"maximumCondition" IS NOT NULL AND condition < "maximumCondition"');
+  if(q.condition==='BROKEN')terms.push('"maximumCondition" IS NOT NULL AND condition=0');
+  if(q.condition==='FULL')terms.push('"maximumCondition" IS NOT NULL AND condition="maximumCondition"');
+  if(q.equipmentSlot||q.equipmentState==='USABLE'){
+   terms.push(`kind='CARRIED' AND "runId"=$2 AND accessible AND eligible AND "proficiencyMet" AND quantity='1' AND "storageMode"='INSTANCE' AND equipment IS NOT NULL AND (equipment->>'minimumLevel')::integer <= (SELECT level FROM run_progression WHERE run_id=$2)`);
+   if(q.equipmentSlot)terms.push(`(equipment->'slots') ? ${bind(q.equipmentSlot)}`);
    const expressions=(await client.query("SELECT e.entity_id,v.definition->'mechanics'->'prerequisite' expr FROM release_entries e JOIN content_versions v ON v.entity_id=e.entity_id AND v.revision=e.revision WHERE e.release_id=$1 AND v.definition->'mechanics'->'prerequisite' IS NOT NULL",[run.content_release_id])).rows;
    if(expressions.length){const facts=await runFacts({client,run,accountId}),denied=expressions.filter(e=>!prerequisite(e.expr as Prerequisite,facts).met).map(e=>e.entity_id);if(denied.length)terms.push(`"definitionId" <> ALL(${bind(denied)}::text[])`);}
   }

@@ -1,3 +1,5 @@
+import { renderEquipmentPreview } from './equipment-preview.js';
+import { inventoryGear } from './equipment-picker.js';
 import { openEquipmentPicker,gearCandidate } from './equipment-picker.js';
 import { equipmentDrag,equipmentDragType,removeEquipmentAssignment } from './equipment-drag.js';
 import { renderItemArt } from './item-art.js';
@@ -16,7 +18,7 @@ function silhouette(){
 }
 export function renderPaperdoll(snapshot:Snapshot,session:GameSession,disabled:boolean){
  const panel=node('section','','panel paperdoll-panel');panel.setAttribute('aria-label','Equipped gear');panel.append(node('h2','Equipped gear'));
- const plan=snapshot.game.equipment,gear=snapshot.game.gear??[];
+ const plan=session.equipmentState(),gear=session.equipmentGear();
  if(!plan){panel.append(node('p','Equipment information is unavailable.','help'));return panel;}
  const blocked=disabled||session.inventoryBusy||!!snapshot.game.activeEncounter||snapshot.progression.build.mode!=='CONFIGURED';
  const selected=session.selectedInventoryItem;
@@ -30,7 +32,7 @@ export function renderPaperdoll(snapshot:Snapshot,session:GameSession,disabled:b
   const heading=node('h3',position);heading.tabIndex=-1;inspector.append(heading);
   const commit=(draft:EquipmentPlan,message:string,picked:InventoryItem|null=candidate)=>{
    const binding=bindingConsequences(draft,gear,picked);inspector.replaceChildren(heading,node('p',message+(binding.length?` Permanently binds to your account: ${binding.join(', ')}. Unequipping does not undo binding.`:'')));
-   inspector.append(button('Cancel gear change',()=>{inspect(set,slot,origin);}),button('Confirm gear change',()=>void session.action('/api/v1/equipment','SET_EQUIPMENT',draft),blocked));heading.focus();
+   inspector.append(button('Cancel gear change',()=>{inspect(set,slot,origin);}),button('Stage gear change',()=>session.stageEquipment(draft,picked?[inventoryGear(picked)]:[]),blocked));heading.focus();
   };
   if(item){inspector.append(node('strong',item.name),node('p',`Required level ${item.minimumLevel} · ${title(item.binding)}${item.hands===2?' · Two hands':''}`,'help'));
    if(item.maximumCondition!==null)inspector.append(node('p',`Condition ${item.condition} / ${item.maximumCondition}`,'help'));
@@ -62,8 +64,10 @@ export function renderPaperdoll(snapshot:Snapshot,session:GameSession,disabled:b
   control.append(node('span',title(slot),'paperdoll-slot-label'),node('strong',name));if(item)control.append(node('small',`Lv ${item.minimumLevel}${item.maximumCondition!==null?` · ${item.condition}/${item.maximumCondition}`:''}`));target.append(control);
  }
  panel.insertBefore(body,panel.children[2]??null);
- const swap=button(`Activate weapon set ${plan.activeSet==='A'?'B':'A'}`,()=>{panel.querySelectorAll('[aria-expanded]').forEach(n=>n.setAttribute('aria-expanded','false'));const next={...plan,activeSet:plan.activeSet==='A'?'B' as const:'A' as const};const binding=bindingConsequences(next,gear);inspector.replaceChildren(node('h3',`Activate weapon set ${next.activeSet}?`),node('p',binding.length?`Permanently binds to your account: ${binding.join(', ')}.`:'Your other weapons remain prepared.'),button('Cancel weapon switch',()=>{inspector.replaceChildren();swap.focus();}),button('Confirm weapon switch',()=>void session.action('/api/v1/equipment','SET_EQUIPMENT',next),blocked));inspector.querySelector('button')?.focus();},blocked);swap.className='small';swap.dataset.focus='Switch weapon set';const pack=node('div','','equipment-return-zone');pack.setAttribute('role','group');pack.setAttribute('aria-label','Return equipped item to pack');pack.append(node('strong','Return to pack'),node('small','Drop equipped gear here to remove that assignment.'));
+ const swap=button(`Activate weapon set ${plan.activeSet==='A'?'B':'A'}`,()=>{panel.querySelectorAll('[aria-expanded]').forEach(n=>n.setAttribute('aria-expanded','false'));const next={...plan,activeSet:plan.activeSet==='A'?'B' as const:'A' as const};const binding=bindingConsequences(next,gear);inspector.replaceChildren(node('h3',`Activate weapon set ${next.activeSet}?`),node('p',binding.length?`Permanently binds to your account: ${binding.join(', ')}.`:'Your other weapons remain prepared.'),button('Cancel weapon switch',()=>{inspector.replaceChildren();swap.focus();}),button('Stage weapon switch',()=>session.stageEquipment(next),blocked));inspector.querySelector('button')?.focus();},blocked);swap.className='small';swap.dataset.focus='Switch weapon set';const pack=node('div','','equipment-return-zone');pack.setAttribute('role','group');pack.setAttribute('aria-label','Return equipped item to pack');pack.append(node('strong','Return to pack'),node('small','Drop equipped gear here to remove that assignment.'));
  pack.addEventListener('dragover',e=>{if(!blocked&&e.dataTransfer?.types.includes(equipmentDragType)){e.preventDefault();pack.classList.add('drag-over');}});pack.addEventListener('dragleave',()=>pack.classList.remove('drag-over'));
- pack.addEventListener('drop',e=>{e.preventDefault();pack.classList.remove('drag-over');if(blocked)return;const origin=equipmentDrag(e.dataTransfer?.getData(equipmentDragType)??'',plan);if(!origin)return;inspector.replaceChildren(node('h3','Return equipped item to pack?'),node('p','Only this assignment is removed. Other prepared references and item protection remain.'),button('Cancel unequip',()=>inspector.replaceChildren()),button('Confirm unequip',()=>void session.action('/api/v1/equipment','SET_EQUIPMENT',removeEquipmentAssignment(plan,origin)),blocked));inspector.querySelector('button')?.focus();});
- panel.append(swap,pack,inspector);return panel;
+ pack.addEventListener('drop',e=>{e.preventDefault();pack.classList.remove('drag-over');if(blocked)return;const origin=equipmentDrag(e.dataTransfer?.getData(equipmentDragType)??'',plan);if(!origin)return;inspector.replaceChildren(node('h3','Return equipped item to pack?'),node('p','Only this assignment is removed. Other prepared references and item protection remain.'),button('Cancel unequip',()=>inspector.replaceChildren()),button('Stage unequip',()=>session.stageEquipment(removeEquipmentAssignment(plan,origin)),blocked));inspector.querySelector('button')?.focus();});
+ const loadouts=node('div','','paperdoll-loadouts'),select=node('select');select.setAttribute('aria-label','Preview saved loadout');const empty=node('option','Choose a saved loadout…');empty.value='';select.append(empty);for(const loadout of snapshot.game.loadouts??[]){const option=node('option',loadout.name);option.value=loadout.key;select.append(option);}select.disabled=blocked;select.addEventListener('change',()=>{const loadout=snapshot.game.loadouts?.find(l=>l.key===select.value);if(loadout)session.stageEquipment(loadout.plan);});loadouts.append(node('label','Preview saved loadout'),select);
+ const naming=node('form'),name=node('input');name.placeholder='Loadout name';name.maxLength=80;name.required=true;name.setAttribute('aria-label','New loadout name');const save=node('button','Save committed setup');save.type='submit';save.disabled=blocked||!!session.equipmentDraft||(snapshot.game.loadouts?.length??0)>=32;naming.append(name,save);naming.addEventListener('submit',e=>{e.preventDefault();if(!save.disabled&&name.value.trim())void session.action('/api/v1/equipment/loadouts/save','SAVE_LOADOUT',{key:`loadout-${crypto.randomUUID().slice(0,8)}`,name:name.value.trim()});});loadouts.append(naming);
+ panel.append(swap,loadouts,pack,inspector,renderEquipmentPreview(snapshot,session,blocked));return panel;
 }

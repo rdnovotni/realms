@@ -11,8 +11,9 @@ export function itemArtKey(item:ArtItem){
  if(slots.some(s=>['RING_1','RING_2','TRINKET'].includes(s)))return 'charm';if(slots.includes('OFF_HAND')&&!slots.includes('MAIN_HAND'))return 'shield';
  if(item.category==='EQUIPMENT')return /great|two.hand/.test(name)?'greatsword':'sword';return null;
 }
+export function authoredItemImage(value:string|null|undefined){return typeof value==='string'&&/^authored\/[a-z0-9][a-z0-9_-]{0,79}\.(png|webp|jpg|avif)$/.test(value)?`/assets/items/${value}`:null;}
 export function renderItemArt(item:ArtItem):HTMLElement|SVGElement{
- const key=itemArtKey(item);if(key){const image=document.createElement('img');image.src=`/assets/items/${key}.svg`;image.alt='';image.setAttribute('aria-hidden','true');image.className='item-illustration';image.addEventListener('error',()=>image.replaceWith(fallbackArt()),{once:true});return image;}
+ const source=authoredItemImage(item.artwork)??authoredItemImage(item.icon),key=itemArtKey(item);if(source||key){const image=document.createElement('img');image.src=source??`/assets/items/${key}.svg`;image.alt='';image.setAttribute('aria-hidden','true');image.className='item-illustration';image.addEventListener('error',()=>image.replaceWith(source?renderItemArt({...item,artwork:null,icon:authoredItemImage(item.artwork)&&item.icon!==item.artwork?item.icon:known(item.icon)}):fallbackArt()),{once:true});return image;}
  return fallbackArt();
 }
 function fallbackArt(){const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('viewBox','0 0 64 64');svg.setAttribute('aria-hidden','true');const path=document.createElementNS(svg.namespaceURI,'path');path.setAttribute('d','m15 17 17-9 17 9 4 33-21 8-21-8ZM15 17l17 11 17-11M32 28v30');svg.append(path);return svg;}

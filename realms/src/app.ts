@@ -1,3 +1,5 @@
+import { DomainError } from './foundation/errors.js';
+import { equipmentPreview } from './domains/equipment-preview.js';
 import { inventoryView,inventoryHistory,setInventoryPreferences,type InventoryQuery } from './domains/inventory-browser.js';
 import { moveItem,moveToPersonalStorage } from './domains/inventory.js';
 import { splitStack,mergeStacks } from './domains/item-accounting.js';
@@ -92,6 +94,10 @@ export function buildApp(pool: pg.Pool, auth:Authentication, logger = false, cac
         const client=await pool.connect();try{await authorizeSession(client,request.principal,'GAME_READ');}finally{client.release();}
       }
     });
+    protectedApp.get<{Querystring:{expectedRevision:string;plan?:string;contextId?:string}}>('/api/v1/equipment/preview',{schema:{querystring:{type:'object',additionalProperties:false,required:['expectedRevision'],properties:{expectedRevision:{type:'string',pattern:'^[0-9]{1,10}$'},plan:{type:'string',maxLength:4000},contextId:{type:'string',pattern:'^[a-z][a-z0-9_.-]{2,119}$'}}}}},async request=>{
+      let plan;try{plan=request.query.plan===undefined?undefined:JSON.parse(request.query.plan);}catch{throw new DomainError(400,'INVALID_EQUIPMENT_PLAN');}
+      return equipmentPreview(pool,actor(request),Number(request.query.expectedRevision),plan,request.query.contextId);
+    });
     protectedApp.get('/api/v1/client/state',async(request,reply)=>{reply.header('Cache-Control','no-store');return gameView(pool,actor(request),request.principal??undefined);});
     protectedApp.get('/api/v1/progression/proficiencies',async request=>proficiencyView(pool,actor(request)));
     protectedApp.get('/api/v1/progression/attributes',async request=>attributeView(pool,actor(request)));
@@ -102,7 +108,7 @@ export function buildApp(pool: pg.Pool, auth:Authentication, logger = false, cac
     const envelopeProperties={requestId:{type:'string',format:'uuid'},expectedRevision:{type:'integer',minimum:0,maximum:2147483646}};
     const classIdField={type:'string',pattern:'^[a-z][a-z0-9_.-]{2,119}$'};
     protectedApp.get<{Querystring:Record<string,string>}>('/api/v1/inventory',{schema:{querystring:{type:'object',additionalProperties:false,properties:{
-      equipmentSlot:{type:'string',enum:equipmentSlots},container:{type:'string',maxLength:36},search:{type:'string',maxLength:80},category:{type:'string',enum:['ALL','MATERIAL','CONSUMABLE','EQUIPMENT','OTHER']},rarity:{type:'string',maxLength:80},binding:{type:'string',enum:['ALL','TRADEABLE','ACCOUNT_BOUND','RUN_BOUND','SYSTEM_UNTRADEABLE']},protection:{type:'string',enum:['ALL','PROTECTED','UNPROTECTED']},sort:{type:'string',enum:['NAME','NEWEST','QUANTITY','WEIGHT','BULK','QUALITY']},direction:{type:'string',enum:['ASC','DESC']},grouped:{type:'string',enum:['true','false']},definitionId:classIdField,offset:{type:'string',pattern:'^[0-9]{1,7}$'},expectedRevision:{type:'string',pattern:'^[0-9]{1,10}$'}
+      slot:{type:'string',enum:['ALL',...equipmentSlots]},equipmentState:{type:'string',enum:['ALL','EQUIPPED','UNEQUIPPED','USABLE']},condition:{type:'string',enum:['ALL','NEEDS_REPAIR','BROKEN','FULL']},equipmentSlot:{type:'string',enum:equipmentSlots},container:{type:'string',maxLength:36},search:{type:'string',maxLength:80},category:{type:'string',enum:['ALL','MATERIAL','CONSUMABLE','EQUIPMENT','OTHER']},rarity:{type:'string',maxLength:80},binding:{type:'string',enum:['ALL','TRADEABLE','ACCOUNT_BOUND','RUN_BOUND','SYSTEM_UNTRADEABLE']},protection:{type:'string',enum:['ALL','PROTECTED','UNPROTECTED']},sort:{type:'string',enum:['NAME','NEWEST','QUANTITY','WEIGHT','BULK','QUALITY']},direction:{type:'string',enum:['ASC','DESC']},grouped:{type:'string',enum:['true','false']},definitionId:classIdField,offset:{type:'string',pattern:'^[0-9]{1,7}$'},expectedRevision:{type:'string',pattern:'^[0-9]{1,10}$'}
     }}}},async request=>{
       const {offset,expectedRevision,grouped,...query}=request.query;
       return inventoryView(pool,actor(request),{...query,...(offset!==undefined?{offset:Number(offset)}:{}),...(expectedRevision!==undefined?{expectedRevision:Number(expectedRevision)}:{}),...(grouped!==undefined?{grouped:grouped==='true'}:{})} as InventoryQuery);

@@ -1,7 +1,9 @@
+import { attachItemContextMenu } from './item-context-menu.js';
+import { inventoryGear } from './equipment-picker.js';
 import { equipmentDrag,equipmentDragType,removeEquipmentAssignment } from './equipment-drag.js';
 import { renderItemArt } from './item-art.js';
 import { itemCondition,itemWeight,itemTileDetails,itemStatuses,groupedInspectionFacts } from './item-tiles.js';
-import { prepareInventoryEquipment,equipmentSlotTitle } from './equipment.js';
+import { prepareInventoryEquipment,equipmentSlotTitle,worn as wornSlots } from './equipment.js';
 import { renderPaperdoll } from './paperdoll.js';
 import type { GameSession } from './session.js';
 import type { CarryView,InventoryItem,InventoryQuery,Snapshot,EquipmentPlan,Gear } from './types.js';
@@ -58,6 +60,9 @@ export function renderInventory(main:HTMLElement,snapshot:Snapshot,session:GameS
  select('Rarity','rarity',[['ALL','All rarities'],...['COMMON','UNCOMMON','RARE','VERY_RARE','LEGENDARY','MYTHIC','ULTRA_ULTRA_RARE','UNKNOWN'].map(v=>[v,label(v)] as [string,string])],query.rarity??'ALL');
  select('Binding','binding',[['ALL','All bindings'],...['TRADEABLE','ACCOUNT_BOUND','RUN_BOUND','SYSTEM_UNTRADEABLE'].map(v=>[v,label(v)] as [string,string])],query.binding??'ALL');
  select('Protection','protection',[['ALL','All items'],['PROTECTED','Protected'],['UNPROTECTED','Unprotected']],query.protection??'ALL');
+ select('Equipment','equipmentState',[['ALL','All items'],['EQUIPPED','Equipped or prepared'],['UNEQUIPPED','Unequipped gear'],['USABLE','Usable equipment']],query.equipmentState??'ALL');
+ select('Condition','condition',[['ALL','Any condition'],['NEEDS_REPAIR','Needs repair'],['BROKEN','Broken'],['FULL','Full condition']],query.condition??'ALL');
+ select('Slot','slot',[['ALL','Any slot'],...[...wornSlots,'MAIN_HAND','OFF_HAND'].map(s=>[s,equipmentSlotTitle(s)] as [string,string])],query.slot??'ALL');
  select('Sort','sort',[['NAME','Name'],['NEWEST','Acquired'],['QUANTITY','Quantity'],['WEIGHT','Weight'],['BULK','Bulk'],['QUALITY','Known quality']],query.sort??'NAME');
  toolbar.append(button(query.direction==='DESC'?'Descending ↓':'Ascending ↑',()=>browse({direction:query.direction==='DESC'?'ASC':'DESC'})));
  const groupLabel=node('label','','inventory-check'),group=node('input');group.type='checkbox';group.checked=query.grouped??true;group.dataset.focus='Group matching bases';group.addEventListener('change',()=>browse({grouped:group.checked}));groupLabel.append(group,node('span','Group matching bases'));toolbar.append(groupLabel);
@@ -93,11 +98,11 @@ export function renderInventory(main:HTMLElement,snapshot:Snapshot,session:GameS
   if(condition){const durability=node('span','','inventory-durability condition-'+condition.state);durability.title=condition.description;durability.setAttribute('aria-label',condition.description);durability.append(statusIcon('durability'),node('span',condition.text),node('span',condition.label,'condition-label'));footer.append(durability);}
   const weightBadge=node('span','','inventory-weight');weightBadge.append(weightIcon(),node('span',weight.text));weightBadge.title=weight.description;weightBadge.setAttribute('aria-label',weight.description);footer.append(weightBadge);tile.append(footer);
   tile.draggable=!blocked&&item.accessible&&(!item.equipped||!!item.equipment)&&!grouped&&item.binding!=='SYSTEM_UNTRADEABLE';tile.addEventListener('dragstart',e=>{e.dataTransfer?.setData('text/plain',item.id);if(e.dataTransfer)e.dataTransfer.effectAllowed='move';});
-  cell.append(tile);grid.append(cell);
+  attachItemContextMenu(tile,()=>session.selectInventory(item));cell.append(tile);grid.append(cell);
  }
  if(!page.items.length)grid.append(node('p',page.total?'No items on this page. Return to the first page.':'No items match these filters.','inventory-empty'));
  const detail=node('aside','','inventory-details');detail.id='inventory-details';detail.setAttribute('aria-label','Selected item');bench.append(detail);panel.append(bench);
- grid.addEventListener('dragover',e=>{if(!blocked&&e.dataTransfer?.types.includes(equipmentDragType)){e.preventDefault();grid.classList.add('drag-over');}});grid.addEventListener('dragleave',()=>grid.classList.remove('drag-over'));grid.addEventListener('drop',e=>{e.preventDefault();grid.classList.remove('drag-over');const plan=snapshot.game.equipment;if(blocked||!plan)return;const origin=equipmentDrag(e.dataTransfer?.getData(equipmentDragType)??'',plan);if(!origin)return;confirm(detail,'Return this equipped item to your pack? Only this assignment will be removed.',()=>void session.action('/api/v1/equipment','SET_EQUIPMENT',removeEquipmentAssignment(plan,origin)));detail.querySelector<HTMLElement>('.inventory-confirmation button')?.focus();});
+ grid.addEventListener('dragover',e=>{if(!blocked&&e.dataTransfer?.types.includes(equipmentDragType)){e.preventDefault();grid.classList.add('drag-over');}});grid.addEventListener('dragleave',()=>grid.classList.remove('drag-over'));grid.addEventListener('drop',e=>{e.preventDefault();grid.classList.remove('drag-over');const plan=session.equipmentState();if(blocked||!plan)return;const origin=equipmentDrag(e.dataTransfer?.getData(equipmentDragType)??'',plan);if(!origin)return;confirm(detail,'Return this equipped item to your pack? Only this assignment will be removed.',()=>session.stageEquipment(removeEquipmentAssignment(plan,origin)));detail.querySelector<HTMLElement>('.inventory-confirmation button')?.focus();});
  const selected=session.selectedInventoryItem;
  if(!selected)detail.append(node('h3','Select an item'),node('p','Inspect its details, protect it, manage stacks, or move it into storage.','muted'));
  else {
@@ -115,12 +120,12 @@ export function renderInventory(main:HTMLElement,snapshot:Snapshot,session:GameS
    if(selected.equipment&&selected.kind==='CARRIED'){
     const positions=node('select');positions.setAttribute('aria-label','Equipment position');
     for(const slot of selected.equipment.slots)for(const set of (['MAIN_HAND','OFF_HAND'].includes(slot)?[snapshot.game.equipment?.activeSet??'A',(snapshot.game.equipment?.activeSet??'A')==='A'?'B':'A']:['WORN']) as ('WORN'|'A'|'B')[]){const option=node('option',set==='WORN'?label(slot):`Set ${set} · ${label(slot)}${snapshot.game.equipment?.activeSet===set?' (active)':''}`);option.value=set+':'+slot;positions.append(option);}
-    detail.append(node('p',`Requires level ${selected.equipment.minimumLevel}${selected.proficiencyMet?'':' · proficiency not met'}`,'help'),positions,button('Equip or prepare',()=>{
-     const plan=snapshot.game.equipment;if(!plan)return;const [set,slot]=positions.value.split(':');
-     const draft=prepareInventoryEquipment(plan,selected,set as 'WORN'|'A'|'B',slot!,snapshot.game.gear??[]);
+    detail.append(node('p',`Requires level ${selected.equipment.minimumLevel}${selected.proficiencyMet?'':' · proficiency not met'}`,'help'),positions,button('Stage equip or prepare',()=>{
+     const plan=session.equipmentState();if(!plan)return;const [set,slot]=positions.value.split(':');
+     const draft=prepareInventoryEquipment(plan,selected,set as 'WORN'|'A'|'B',slot!,session.equipmentGear());
      const binding=selected.binding==='TRADEABLE'&&selected.equipment?.bindingPolicy==='ACCOUNT_ON_ACTIVE_EQUIP'&&(set==='WORN'||set===plan.activeSet)?' This permanently binds the item to your account.':'';
      const displaced=plan.slots.filter(old=>!draft.slots.some(next=>next.itemId===old.itemId&&next.set===old.set&&next.slot===old.slot));
-     confirm(detail,`Prepare ${selected.name} in ${set==='WORN'?'worn equipment':`set ${set}`} · ${label(slot!)}?${displaced.length?' Conflicting assignments will be cleared; items remain in your pack.':''}${binding}`,()=>void session.action('/api/v1/equipment','SET_EQUIPMENT',draft));
+     confirm(detail,`Prepare ${selected.name} in ${set==='WORN'?'worn equipment':`set ${set}`} · ${label(slot!)}?${displaced.length?' Conflicting assignments will be cleared; items remain in your pack.':''}${binding}`,()=>session.stageEquipment(draft,[inventoryGear(selected)]));
     },changes||!selected.eligible||!selected.proficiencyMet||snapshot.progression.level<selected.equipment.minimumLevel||snapshot.progression.build.mode!=='CONFIGURED'));
     const equipped=snapshot.game.equipment?.slots.filter(slot=>selected.equipment!.slots.includes(slot.slot)&&(slot.set==='WORN'||slot.set===snapshot.game.equipment?.activeSet))??[];
     for(const current of equipped){const gear=snapshot.game.gear?.find(g=>g.id===current.itemId);if(!gear||gear.id===selected.id)continue;const comparison=node('div','','inventory-comparison');comparison.append(node('h4',`Compared with ${gear.name}`));
@@ -129,7 +134,7 @@ export function renderInventory(main:HTMLElement,snapshot:Snapshot,session:GameS
      else comparison.append(node('p','Further numerical effects must be known on both items before comparison.','help'));detail.append(comparison);
     }
    }
-   if(selected.equipped)detail.append(button('Unequip this item',()=>{const plan=snapshot.game.equipment;if(plan)void session.action('/api/v1/equipment','SET_EQUIPMENT',{activeSet:plan.activeSet,slots:plan.slots.filter(slot=>slot.itemId!==selected.id)});},changes));
+   if(selected.equipped)detail.append(button('Unequip this item',()=>{const plan=session.equipmentState();if(plan)session.stageEquipment({activeSet:plan.activeSet,slots:plan.slots.filter(slot=>slot.itemId!==selected.id)});},changes));
   }
   if(!grouped){detail.append(button('View item history',()=>void session.loadInventoryHistory(selected.id),session.inventoryHistoryBusy));
    if(session.inventoryHistoryBusy)detail.append(node('p','Loading item history…','help'));

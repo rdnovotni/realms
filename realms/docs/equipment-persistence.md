@@ -28,7 +28,7 @@ Migration 013 adds [named saved equipment loadouts and item protection](saved-lo
 
 Migration 020 adds optional [skill-rank prerequisites and immutable qualification evidence](proficiency-requirements.md), enforced for worn gear, both prepared sets and saved-loadout application. [Shared rules](shared-rules.md) now add structured equipment prerequisites and supported server-derived capabilities; a complete authored weapon/armor training and respec workflow remains future work.
 
-Character and inventory present committed equipment through the same paperdoll;
+Character and inventory present the shared equipment draft (or committed equipment when no draft exists) through the same paperdoll;
 on Pack it sits above the item grid
 (`client/paperdoll.ts`). It shares `prepareInventoryEquipment` and
 `bindingConsequences` with the existing equipment controls; its previews do not
@@ -36,8 +36,7 @@ replace server validation. Slot removal affects only the selected assignment,
 while inventory's "Unequip this item" removes all its assignments. Both weapon
 sets remain visible, with two-hand reservations explained in the empty off-hand
 position. The complete-plan editor and saved loadouts remain available in the expandable
-Equipment planner & saved loadouts section below the pack for preparing several
-changes together.
+Equipment planner & saved loadouts section below the pack. The paperdoll also offers saved-loadout preview and capture; all preparation shares Apply/Revert.
 
 Verification: `npm run typecheck`, `npm run build`, `npm test`, and
 `node --env-file=.env --import tsx --test --test-concurrency=2 test/equipment.test.ts test/loadouts.test.ts test/inventory-browser.test.ts test/client-integration.test.ts`
@@ -95,3 +94,11 @@ writes perform their own revision, custody and requirement validation again.
 No schema migration is needed beyond the existing 033 trinket compatibility schema.
 A source merge does not deploy the server. Rollback this UI/query change with the
 previous matching packaged release; it does not rewrite equipment or loadout data.
+
+
+Preparation now uses a session-owned shared draft, Apply/Revert and a read-only
+comparison endpoint. The same validator enforces plan shape, custody, level,
+proficiency, prerequisites, distinct physical identities and hand conflicts for
+previews and commits. Read previews take consistent account/run locks but produce
+no write evidence or binding. See [client behavior](game-client.md) and
+[API reference](api-reference.md). Production schemas require no new migration.

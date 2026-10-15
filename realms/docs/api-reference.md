@@ -1,6 +1,6 @@
 # Follybound HTTP API reference
 
-This inventories the implemented routes in `src/app.ts` and `src/client-assets.ts` through migration 032. Route schemas and domain documents define exact parameters and response shapes; this is not a claim of a stable public SDK or a deployed version. Server checks reject extra body fields. There is no generic client write of stats, arbitrary state, roll results, rewards or content definitions.
+This inventories the implemented routes in `src/app.ts` and `src/client-assets.ts` through migration 033. Route schemas and domain documents define exact parameters and response shapes; this is not a claim of a stable public SDK or a deployed version. Server checks reject extra body fields. There is no generic client write of stats, arbitrary state, roll results, rewards or content definitions.
 
 ## Authentication and Action contract
 
@@ -63,3 +63,23 @@ with sufficient level, proficiency and shared prerequisites. They require the
 normal authenticated game-read scope and perform no mutation. See
 [equipment persistence](equipment-persistence.md) and
 [inventory grid](inventory-grid.md) for UI behavior and constraints.
+
+### Equipment comparison read
+
+`GET /api/v1/equipment/preview` accepts `expectedRevision=N&plan=JSON&contextId=ID`
+requires GAME_READ. `plan` is optional (defaults to committed equipment), bounded
+to 4000 characters, and contains only the existing `activeSet` and `slots` setup.
+The selected discovered encounter supplies character profile and resistance rules;
+omitting `contextId` chooses the first compatible discovered context. The result
+includes `runId`, `revision`, labelled `contexts`, `current`, `preview`, displaced
+assignments and explanatory notes. With no compatible discovered context, totals
+are null and `reason` explains their absence. Totals are also suppressed if either
+active setup contains an item below ADVANCED knowledge; removing that item does
+not bypass concealment. Invalid identities/requirements and
+stale revisions are rejected by the shared equipment validator. The endpoint
+creates no events, binding, receipts, rewards or random draws.
+
+Inventory queries additionally accept `slot=ALL|<equipment slot>`,
+`equipmentState=ALL|EQUIPPED|UNEQUIPPED|USABLE`, and
+`condition=ALL|NEEDS_REPAIR|BROKEN|FULL`. `equipmentSlot` retains its stricter
+physical-copy equipment-picker behavior.
