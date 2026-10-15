@@ -150,3 +150,11 @@ binding and save. Inspect the grouped rings and verify aggregate-only facts. Che
 Escape focus return, empty/retry search states, a 320px viewport, and native browser
 equip/unequip dragging. Unit tests separately verify owned drag identities and
 preservation of other weapon-set references.
+
+Equipment preparation now persists in session memory across rerenders and screen
+changes, with Apply/Revert on the paperdoll. Saved setups can be previewed there.
+Slot, equipped/usable and actual-condition filters run before grouping and paging.
+Right-click/keyboard context menu and touch long-press expose the same guarded
+item actions as the inspector. See game-client.md for draft lifetime, comparison
+context and accessibility details; artwork authoring is documented in
+client/art/items/README.md.

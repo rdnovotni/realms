@@ -95,3 +95,11 @@ writes perform their own revision, custody and requirement validation again.
 No schema migration is needed beyond the existing 033 trinket compatibility schema.
 A source merge does not deploy the server. Rollback this UI/query change with the
 previous matching packaged release; it does not rewrite equipment or loadout data.
+
+
+Preparation now uses a session-owned shared draft, Apply/Revert and a read-only
+comparison endpoint. The same validator enforces plan shape, custody, level,
+proficiency, prerequisites, distinct physical identities and hand conflicts for
+previews and commits. Read previews take consistent account/run locks but produce
+no write evidence or binding. See [client behavior](game-client.md) and
+[API reference](api-reference.md). Production schemas require no new migration.

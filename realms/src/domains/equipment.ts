@@ -7,7 +7,7 @@ import { equipmentSlots,wornSlots,equipmentSpec,type EquipmentSlot } from './equ
 export type EquipmentAssignment={set:'WORN'|'A'|'B';slot:EquipmentSlot;itemId:string};
 export type EquipmentPlan={activeSet:'A'|'B';slots:EquipmentAssignment[]};
 export const emptyEquipment=():EquipmentPlan=>({activeSet:'A',slots:[]});
-function normalize(input:EquipmentPlan):EquipmentPlan{
+export function normalizeEquipment(input:EquipmentPlan):EquipmentPlan{
  if(!input||!['A','B'].includes(input.activeSet)||!Array.isArray(input.slots)||input.slots.length>16)throw new DomainError(400,'INVALID_EQUIPMENT_PLAN');
  const slots=input.slots.map(s=>{if(!s||!['WORN','A','B'].includes(s.set)||!equipmentSlots.includes(s.slot)||typeof s.itemId!=='string'||!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s.itemId)||Object.keys(s).some(k=>!['set','slot','itemId'].includes(k)))throw new DomainError(400,'INVALID_EQUIPMENT_PLAN');
  if((s.set==='WORN')!==wornSlots.includes(s.slot as typeof wornSlots[number]))throw new DomainError(400,'INVALID_EQUIPMENT_PLAN');return {...s,itemId:s.itemId.toLowerCase()};});
@@ -22,10 +22,9 @@ async function record(c:ActionContext,after:EquipmentPlan,reason:'PLAYER_SETUP'|
  if(BigInt(revision)>=9223372036854775807n)throw new DomainError(409,'EQUIPMENT_REVISION_EXHAUSTED');
  await c.client.query('INSERT INTO equipment_events(action_id,run_id,revision,before_state,after_state,reason) VALUES($1,$2,$3,$4,$5,$6)',[c.actionId,c.run.id,(BigInt(revision)+1n).toString(),before,after,reason]);return true;
 }
-export async function applyEquipment(c:ActionContext,input:EquipmentPlan){
- const plan=normalize(input);
- if((await c.client.query("SELECT 1 FROM instances i JOIN instance_participants p ON p.instance_id=i.id WHERE p.run_id=$1 AND i.lifecycle='ACTIVE' LIMIT 1",[c.run.id])).rows.length)throw new DomainError(409,'INSTANCE_STILL_ACTIVE');
- const ids=[...new Set(plan.slots.map(s=>s.itemId))],items=(await c.client.query(`SELECT i.*,s.run_id,s.lifecycle,b.kind,v.definition->'mechanics'->'equipment' AS spec,v.definition->'mechanics'->'proficiencyRequirements' AS proficiency_requirements FROM inventory_items i JOIN inventory_containers b ON b.id=i.container_id JOIN state_scopes s ON s.id=b.scope_id JOIN content_versions v ON v.entity_id=i.definition_id AND v.revision=i.definition_revision WHERE i.id=ANY($1::uuid[]) ORDER BY i.id FOR UPDATE OF i FOR SHARE OF b,s`,[ids])).rows;
+export async function validateEquipment(c:Pick<ActionContext,'client'|'run'|'accountId'>,input:EquipmentPlan){
+ const plan=normalizeEquipment(input);
+ const ids=[...new Set(plan.slots.map(s=>s.itemId))],items=(await c.client.query(`SELECT i.*,s.run_id,s.lifecycle,b.kind,v.definition->'mechanics'->'equipment' AS spec,v.definition->'mechanics'->'proficiencyRequirements' AS proficiency_requirements FROM inventory_items i JOIN inventory_containers b ON b.id=i.container_id JOIN state_scopes s ON s.id=b.scope_id JOIN content_versions v ON v.entity_id=i.definition_id AND v.revision=i.definition_revision WHERE i.id=ANY($1::uuid[]) ORDER BY i.id FOR SHARE OF i,b,s`,[ids])).rows;
  const level=(await c.client.query('SELECT level FROM run_progression WHERE run_id=$1 FOR SHARE',[c.run.id])).rows[0]?.level;
  for(const slot of plan.slots){const item=items.find(i=>i.id===slot.itemId);
  if(!item||item.run_id!==c.run.id||item.lifecycle!=='ACTIVE'||item.kind!=='CARRIED')throw new DomainError(403,'EQUIPMENT_NOT_OWNED');
@@ -36,10 +35,15 @@ export async function applyEquipment(c:ActionContext,input:EquipmentPlan){
  const repeats=plan.slots.filter(s=>s.itemId===slot.itemId);if(repeats.length>1&&(repeats.some(s=>s.set==='WORN')||new Set(repeats.map(s=>s.set)).size!==repeats.length||new Set(repeats.map(s=>s.slot)).size!==1))throw new DomainError(409,'EQUIPMENT_DUPLICATE_IDENTITY');
  if(spec.hands===2&&plan.slots.some(s=>s.set===slot.set&&s.slot==='OFF_HAND'))throw new DomainError(409,'TWO_HANDED_CONFLICT');
  }
+ return {plan,items};
+}
+export async function applyEquipment(c:ActionContext,input:EquipmentPlan){
+ if((await c.client.query("SELECT 1 FROM instances i JOIN instance_participants p ON p.instance_id=i.id WHERE p.run_id=$1 AND i.lifecycle='ACTIVE' LIMIT 1",[c.run.id])).rows.length)throw new DomainError(409,'INSTANCE_STILL_ACTIVE');
+ const {plan}=await validateEquipment(c,input);
  const changed=await record(c,plan,'PLAYER_SETUP');const boundItemIds=(await c.client.query('SELECT item_id FROM item_binding_events WHERE action_id=$1 ORDER BY item_id',[c.actionId])).rows.map(r=>r.item_id as string);return {activeSet:plan.activeSet,slots:plan.slots,boundItemIds,changed,revision:changed?await advanceRevision(c):c.run.revision};
 }
 export function setEquipment(pool:pg.Pool,accountId:string,envelope:Envelope,input:EquipmentPlan){
- if(envelope.actionType!=='SET_EQUIPMENT')throw new DomainError(400,'INVALID_EQUIPMENT_ACTION');const plan=normalize(input);
+ if(envelope.actionType!=='SET_EQUIPMENT')throw new DomainError(400,'INVALID_EQUIPMENT_ACTION');const plan=normalizeEquipment(input);
  return executeAction(pool,accountId,envelope,plan,c=>applyEquipment(c,plan));
 }
 export async function clearEquipmentForAscension(c:ActionContext){await record(c,emptyEquipment(),'ASCENSION_CLEAR');}

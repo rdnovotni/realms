@@ -46,25 +46,25 @@ export function prepareInventoryEquipment(plan:EquipmentPlan,item:InventoryItem,
 
 export function renderEquipment(main:HTMLElement,s:Snapshot,session:GameSession,disabled:boolean){
  const game=s.game;if(!game.equipment||!game.gear||!game.loadouts){main.append(node('p','Equipment controls will be available after the server is updated.','help'));return;}
- const gear=[...game.gear],blocked=disabled||!!game.activeEncounter;
- const panel=node('section','','panel equipment-panel');panel.append(node('h2','Prepare for the road'),node('p','Choose worn gear and two prepared weapon sets. Changes are free outside an encounter. Save commits the complete setup.','help'));
+ const gear=session.equipmentGear(),blocked=disabled||!!game.activeEncounter;
+ const panel=node('section','','panel equipment-panel');panel.append(node('h2','Prepare for the road'),node('p','Choose worn gear and two prepared weapon sets. Changes are free outside an encounter. Stage choices here or on the paperdoll, then Apply or Revert there.','help'));
  if(game.activeEncounter)panel.append(node('p','Equipment changes are locked until this encounter ends.','cost'));
 
  const selections=new Map<string,HTMLSelectElement>();
- const form=node('form'),fields=node('fieldset'),draft=structuredClone(game.equipment);
+ const form=node('form'),fields=node('fieldset'),draft=structuredClone(session.equipmentState()??game.equipment);
  fields.disabled=blocked;
  const activeLabel=node('label','Active weapon set'),active=node('select');active.setAttribute('aria-label','Active weapon set');active.dataset.focus='active-weapon-set';
  for(const set of ['A','B']){const option=node('option',`Set ${set}`);option.value=set;active.append(option);}active.value=draft.activeSet;activeLabel.append(active);fields.append(activeLabel);
  const preview=node('div','','equipment-preview'),ackLabel=node('label','','binding-ack'),ack=node('input');ack.type='checkbox';ack.setAttribute('aria-label','Confirm permanent account binding');ackLabel.append(ack,node('span','I understand these items will permanently bind to this account.'));
- const save=node('button','Save equipment','primary');save.type='submit';save.dataset.focus='Save equipment';
+ const save=node('button','Apply equipment','primary');save.type='submit';save.dataset.focus='Save equipment';
  const update=()=>{
   const issues=equipmentProblems(draft,gear,s.progression.level),binding=bindingConsequences(draft,gear);preview.replaceChildren();
   preview.append(node('p',`Prepared Set ${draft.activeSet} will be active. Unequipped items stay in your pack.`,'help'));
   for(const issue of issues)preview.append(node('p',issue,'cost'));
   if(binding.length)preview.append(node('p',`Permanently binds on save: ${binding.join(', ')}. Unequipping will not undo binding.`,'cost'));
-  ackLabel.hidden=!binding.length;save.disabled=blocked||issues.length>0||(binding.length>0&&!ack.checked);
+  ackLabel.hidden=!binding.length;save.disabled=blocked||!!session.equipmentDraft&&session.equipmentDraft.revision!==s.game.run.revision||issues.length>0||(binding.length>0&&!ack.checked);
  };
- active.addEventListener('change',()=>{draft.activeSet=active.value as 'A'|'B';ack.checked=false;update();});ack.addEventListener('change',update);
+ active.addEventListener('change',()=>{draft.activeSet=active.value as 'A'|'B';ack.checked=false;session.stageEquipment(draft,gear);update();});ack.addEventListener('change',update);
  for(const set of ['A','B','WORN'] as const){
   const group=set==='WORN'?node('details','','worn-gear'):node('div','','equipment-set');
   group.append(node(set==='WORN'?'summary':'h3',set==='WORN'?'Worn equipment':`Weapon Set ${set}`));
@@ -75,15 +75,15 @@ export function renderEquipment(main:HTMLElement,s:Snapshot,session:GameSession,
    for(const item of gear.filter(g=>g.slots.includes(slot))){const option=node('option',`${item.name}${item.hands===2?' · Two hands':''}${item.minimumLevel>s.progression.level?` · Level ${item.minimumLevel}`:''}${!item.proficiencyMet?' · Proficiency required':''}${!item.eligible?' · Unavailable':''}`);option.value=item.id;option.disabled=!item.eligible||!item.proficiencyMet||item.minimumLevel>s.progression.level;select.append(option);}
    const equipped=draft.slots.find(a=>a.set===set&&a.slot===slot)?.itemId??'';
    if(equipped&&!Array.from(select.options).some(o=>o.value===equipped)){const missing=node('option','Current item · unavailable');missing.value=equipped;select.append(missing);}select.value=equipped;
-   select.addEventListener('change',()=>{draft.slots=draft.slots.filter(a=>a.set!==set||a.slot!==slot);if(select.value)draft.slots.push({set,slot,itemId:select.value});ack.checked=false;update();});selections.set(set+':'+slot,select);label.append(select,btn('Search '+(set==='WORN'?'':`Set ${set} `)+title(slot),()=>openEquipmentPicker(select,s,session,slot,title(slot),item=>{
+   select.addEventListener('change',()=>{draft.slots=draft.slots.filter(a=>a.set!==set||a.slot!==slot);if(select.value)draft.slots.push({set,slot,itemId:select.value});ack.checked=false;session.stageEquipment(draft,gear);update();});selections.set(set+':'+slot,select);label.append(select,btn('Search '+(set==='WORN'?'':`Set ${set} `)+title(slot),()=>openEquipmentPicker(select,s,session,slot,title(slot),item=>{
     if(!gear.some(g=>g.id===item.id))gear.push(inventoryGear(item));draft.slots=prepareInventoryEquipment(draft,item,set,slot,gear).slots;
     for(const [key,control]of selections){const [positionSet,positionSlot]=key.split(':'),id=draft.slots.find(a=>a.set===positionSet&&a.slot===positionSlot)?.itemId??'';if(id&&!Array.from(control.options).some(o=>o.value===id)){const option=node('option',gear.find(g=>g.id===id)?.name??'Selected item');option.value=id;control.append(option);}control.value=id;}
-    ack.checked=false;update();
+    ack.checked=false;session.stageEquipment(draft,gear);update();
    }),blocked));grid.append(label);
   }
   group.append(grid);fields.append(group);
  }
- fields.append(preview,ackLabel,save);form.append(fields);form.addEventListener('submit',e=>{e.preventDefault();update();if(!save.disabled)void session.action('/api/v1/equipment','SET_EQUIPMENT',{activeSet:draft.activeSet,slots:draft.slots});});panel.append(form);update();main.append(panel);
+ fields.append(preview,ackLabel,save);form.append(fields);form.addEventListener('submit',e=>{e.preventDefault();update();if(!save.disabled)void session.applyEquipment();});panel.append(form);update();main.append(panel);
 
  const items=node('details','','panel quick-gear-summary');items.append(node('summary','Quick & saved gear'),node('p','This summary includes recent gear and saved equipment. Use a slot’s Search control to find any carried item.','help'));
  for(const item of gear){const card=node('article','','gear-card');card.append(node('h3',item.name),node('p',`${title(item.binding)} · Level ${item.minimumLevel}${item.hands===2?' · Two hands':''}`,'help'));
@@ -99,16 +99,14 @@ export function renderEquipment(main:HTMLElement,s:Snapshot,session:GameSession,
 
  const saved=node('section','','panel');saved.append(node('h2','Saved loadouts'),node('p','Save the currently committed setup, including both weapon sets. Saving protects its item identities from consumption. Draft choices above are not included until saved.','help'));
  const naming=node('form'),nameLabel=node('label','Loadout name'),name=node('input');name.required=true;name.maxLength=80;name.disabled=disabled;name.setAttribute('aria-label','Loadout name');nameLabel.append(name);
- const capture=node('button','Save current loadout','primary');capture.type='submit';capture.dataset.focus='Save current loadout';capture.disabled=disabled||game.loadouts.length>=32;naming.append(nameLabel,capture);naming.addEventListener('submit',e=>{e.preventDefault();if(!capture.disabled&&name.value.trim())void session.action('/api/v1/equipment/loadouts/save','SAVE_LOADOUT',{key:`loadout-${crypto.randomUUID().slice(0,8)}`,name:name.value.trim()});});saved.append(naming);
+ const capture=node('button','Save current loadout','primary');capture.type='submit';capture.dataset.focus='Save current loadout';capture.disabled=disabled||!!session.equipmentDraft||game.loadouts.length>=32;naming.append(nameLabel,capture);naming.addEventListener('submit',e=>{e.preventDefault();if(!capture.disabled&&name.value.trim())void session.action('/api/v1/equipment/loadouts/save','SAVE_LOADOUT',{key:`loadout-${crypto.randomUUID().slice(0,8)}`,name:name.value.trim()});});saved.append(naming);
  if(game.loadouts.length>=32)saved.append(node('p','You have 32 saved loadouts. Replace or delete one to make room.','help'));
  for(const loadout of game.loadouts){
   const card=node('article','','gear-card');card.append(node('h3',loadout.name),node('p',`${loadout.plan.slots.length} positions · Active Set ${loadout.plan.activeSet} · ${loadout.protectItems?'Items protected':'Protection released'}`,'help'));
-  const issues=equipmentProblems(loadout.plan,gear,s.progression.level),binding=bindingConsequences(loadout.plan,gear);
+  const issues=equipmentProblems(loadout.plan,gear,s.progression.level);
   for(const issue of issues)card.append(node('p',issue,'help'));
-  const consentLabel=node('label','','binding-ack'),consent=node('input');consent.type='checkbox';consent.setAttribute('aria-label',`Confirm binding for ${loadout.name}`);consent.disabled=blocked;
-  if(binding.length){consentLabel.append(consent,node('span',`Applying permanently binds: ${binding.join(', ')}. I understand.`));card.append(consentLabel);}
-  const apply=btn(`Apply ${loadout.name}`,()=>void session.action(`/api/v1/equipment/loadouts/${loadout.key}/apply`,'SET_EQUIPMENT',{}),blocked||issues.length>0||binding.length>0);consent.addEventListener('change',()=>{apply.disabled=blocked||issues.length>0||(binding.length>0&&!consent.checked);});
-  card.append(apply,btn(`Replace ${loadout.name}`,()=>{requestConfirmation(card,`Replace ${loadout.name} with the committed equipment? This protects its new items and releases this template's old references.`,()=>void session.action('/api/v1/equipment/loadouts/save','SAVE_LOADOUT',{key:loadout.key,name:loadout.name}));},disabled),btn(`${loadout.protectItems?'Release':'Restore'} protection for ${loadout.name}`,()=>{const submit=()=>void session.action(`/api/v1/equipment/loadouts/${loadout.key}/protection`,'SET_LOADOUT_PROTECTION',{protectItems:!loadout.protectItems});if(loadout.protectItems)requestConfirmation(card,`Release ${loadout.name}'s item protection? Equipped items, manual locks and other loadouts remain protected.`,submit);else submit();},disabled),btn(`Delete ${loadout.name}`,()=>{requestConfirmation(card,`Delete ${loadout.name}? This releases its item protection but does not unequip anything or undo binding.`,()=>void session.action(`/api/v1/equipment/loadouts/${loadout.key}/delete`,'DELETE_LOADOUT',{}));},disabled));saved.append(card);
+  const apply=btn(`Preview ${loadout.name}`,()=>session.stageEquipment(loadout.plan),blocked);
+  card.append(apply,btn(`Replace ${loadout.name}`,()=>{requestConfirmation(card,`Replace ${loadout.name} with the committed equipment? This protects its new items and releases this template's old references.`,()=>void session.action('/api/v1/equipment/loadouts/save','SAVE_LOADOUT',{key:loadout.key,name:loadout.name}));},disabled||!!session.equipmentDraft),btn(`${loadout.protectItems?'Release':'Restore'} protection for ${loadout.name}`,()=>{const submit=()=>void session.action(`/api/v1/equipment/loadouts/${loadout.key}/protection`,'SET_LOADOUT_PROTECTION',{protectItems:!loadout.protectItems});if(loadout.protectItems)requestConfirmation(card,`Release ${loadout.name}'s item protection? Equipped items, manual locks and other loadouts remain protected.`,submit);else submit();},disabled),btn(`Delete ${loadout.name}`,()=>{requestConfirmation(card,`Delete ${loadout.name}? This releases its item protection but does not unequip anything or undo binding.`,()=>void session.action(`/api/v1/equipment/loadouts/${loadout.key}/delete`,'DELETE_LOADOUT',{}));},disabled));saved.append(card);
  }
  if(!game.loadouts.length)saved.append(node('p','No loadouts saved yet.','muted'));main.append(saved);
 }

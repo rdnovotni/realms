@@ -212,3 +212,15 @@ test('selected groups never become representative individuals when browse mode o
  h.session.selectInventory(item);assert.equal(h.session.selectedInventoryGrouped,true);h.session.inventoryQuery={grouped:true,search:'changed'};
  await h.session.browseInventory(h.session.inventoryQuery);assert.equal(h.session.selectedInventoryItem,null);
 });
+
+test('authored images accept bounded local raster filenames and reject remote or traversing paths',async()=>{
+ const { authoredItemImage }=await import('../client/item-art.js');assert.equal(authoredItemImage('authored/wardens-blade.webp'),'/assets/items/authored/wardens-blade.webp');
+ for(const value of ['https://example.com/a.png','authored/../a.png','authored/x.svg','authored/x.png?x','authored/a/b.png','Authored/a.png'])assert.equal(authoredItemImage(value),null,value);
+});
+test('equipment drafts survive refresh, refuse stale Apply and are forgotten on logout',async()=>{
+ const h=harness();await connect(h);h.session.snapshot!.game.equipment={activeSet:'A',slots:[]};
+ const plan:EquipmentPlan={activeSet:'B',slots:[{set:'B',slot:'MAIN_HAND',itemId:'sword'}]};h.session.stageEquipment(plan,equipmentGear);assert.deepEqual(h.session.equipmentState(),plan);plan.activeSet='A';assert.equal(h.session.equipmentState()?.activeSet,'B');
+ await h.session.refresh();h.session.snapshot!.game.equipment={activeSet:'A',slots:[]};assert.equal(h.session.equipmentState()?.activeSet,'B');
+ h.setRevision(1);await h.session.refresh();await h.session.applyEquipment();assert.equal(h.calls.filter(c=>c.init.method==='POST').length,0);assert.ok(h.session.equipmentDraft);
+ await h.session.logout();assert.equal(h.session.equipmentDraft,null);assert.equal(h.session.equipmentPreview,null);
+});

@@ -96,6 +96,7 @@ test('HTTP derives ownership, rejects forged stats and requires write scope for 
  const app=buildApp(db.pool,{mode:'sessions',throttleKey:'equipment-throttle-key-long-enough'}),headers={authorization:`Bearer ${token}`};try{
  assert.equal((await app.inject({method:'GET',url:'/api/v1/equipment',headers})).statusCode,200);
  const choices=await app.inject({url:'/api/v1/inventory?equipmentSlot=TRINKET&grouped=false&expectedRevision=1',headers});assert.equal(choices.statusCode,200);assert.equal(choices.json().total,2);assert.equal((await app.inject({url:'/api/v1/inventory?equipmentSlot=INVALID',headers})).statusCode,400);
+ const preview=await app.inject({url:'/api/v1/equipment/preview?expectedRevision=1',headers});assert.equal(preview.statusCode,200);assert.equal(preview.json().current,null);assert.equal((await app.inject({url:'/api/v1/equipment/preview?expectedRevision=1&plan=bad',headers})).statusCode,400);assert.equal((await app.inject({url:'/api/v1/equipment/preview?expectedRevision=0',headers})).statusCode,409);
  const payload={...env(1),...sword(f.items.sword!)};assert.equal((await app.inject({method:'POST',url:'/api/v1/equipment',headers,payload})).statusCode,403);
  assert.equal((await app.inject({method:'POST',url:'/api/v1/equipment',headers,payload:{...payload,attack:999}})).statusCode,400);
  assert.equal((await app.inject({method:'GET',url:'/api/v1/equipment'})).statusCode,401);
@@ -175,5 +176,34 @@ test('equipment search reaches beyond 100 items, filters true eligibility, and r
   assert.equal((await inventoryView(db.pool,other.account,{equipmentSlot:'TRINKET'})).total,0);
   assert.equal((await inventoryView(db.pool,f.account,{equipmentSlot:'TRINKET',search:'%'})).total,0);
   assert.equal((await integrityReport(db.pool)).equipmentMismatches,0);
+ }finally{await db.close();}
+});
+
+test('read-only equipment previews match committed encounter snapshots and leave no receipts or binding',async()=>{
+ const { tacticalFixture,tacticalPackage }=await import('./tactical-fixture.js');const { equipmentPreview }=await import('../src/domains/equipment-preview.js');const { readCharacterSnapshot }=await import('../src/domains/character-snapshots.js');
+ const db=await testDatabase();try{
+  const p=tacticalPackage(),spec=p.entities.find(e=>e.id==='encounter.tactical')!.definition.mechanics!.tacticalCombat as any;spec.rules.roundEffects={version:1};spec.rules.statusDefense={version:2,tags:['poison']};p.entities.find(e=>e.id==='item.shield')!.definition.mechanics!.tacticalStatusTraits={version:2,minimumNativeLevel:0,immuneTags:['poison'],durationReductionBps:{}};spec.rules.typedDamage={version:1,types:['physical','fire'],defaultType:'physical',resistanceStacking:'SUM_CAPPED'};
+  p.entities.find(e=>e.id==='item.shield')!.definition.mechanics!.tacticalDamageTraits={version:1,minimumNativeLevel:0,resistances:{fire:2500}};
+  const { inventoryPackage }=await import('./inventory-fixture.js');p.entities.push(inventoryPackage().entities.find(e=>e.id==='rules.inventory')!);for(const item of p.entities.filter(e=>e.kind==='ITEM'&&e.definition.mechanics?.inventory)){item.definition.mechanics!.inventory={...(item.definition.mechanics!.inventory as any),version:2,unitWeight:1,unitBulk:1,mundane:true};}p.entities.find(e=>e.id==='item.shield')!.definition.mechanics!.inventoryCapacity={version:1,weight:50,bulk:20,minimumNativeLevel:0};
+  const f=await tacticalFixture(db.pool,p),before=(await db.pool.query('SELECT count(*) n FROM action_receipts')).rows[0].n;
+  const draft:EquipmentPlan={activeSet:'B',slots:[{set:'A',slot:'MAIN_HAND',itemId:f.gear.sword!},{set:'A',slot:'OFF_HAND',itemId:f.gear.shield!}]};
+  const view=await equipmentPreview(db.pool,f.account,f.revision,draft);assert.equal(view.current!.stats.armor,3);assert.equal(view.preview!.stats.armor,2);assert.equal(view.current!.damage!.resistances.fire,2500);assert.equal(view.preview!.damage!.resistances.fire,0);assert.equal(view.current!.capabilities.guard,true);assert.equal(view.preview!.capabilities.guard,false);assert.equal(view.preview!.stats.attackMin,6);assert.deepEqual(view.current!.status!.immuneTags,['poison']);assert.deepEqual(view.preview!.status!.immuneTags,[]);assert.equal(view.current!.carry.weightCapacity,'72');assert.equal(view.preview!.carry.weightCapacity,'22');assert.equal(view.current!.carry.weight,view.preview!.carry.weight);
+  assert.equal((await db.pool.query('SELECT count(*) n FROM action_receipts')).rows[0].n,before);assert.equal((await equipmentView(db.pool,f.account)).activeSet,'A');
+  await assert.rejects(equipmentPreview(db.pool,f.account,f.revision-1,draft),/STALE_REVISION/);await assert.rejects(equipmentPreview(db.pool,f.account,f.revision,draft,'encounter.secret'),/STAT_CONTEXT_NOT_FOUND/);
+  await setEquipment(db.pool,f.account,env(f.revision),draft);const after=await equipmentPreview(db.pool,f.account,f.revision+1);assert.deepEqual(after.current,view.preview);
+  const { startTacticalCombat }=await import('../src/domains/tactical-combat.js');const result=await startTacticalCombat(db.pool,f.account,env(f.revision+1,'START_TACTICAL'),'encounter.tactical');
+  const client=await db.pool.connect();try{assert.deepEqual((await readCharacterSnapshot(client,result.instanceId as string,f.run)).derived.stats,view.preview!.stats);}finally{client.release();}
+ }finally{await db.close();}
+});
+
+test('equipment and condition filters apply before grouping and pagination',async()=>{
+ const db=await testDatabase();try{
+  const p=structuredClone(pkg);p.entities.find(e=>e.id==='item.sword')!.definition.mechanics!.tacticalDurability={version:1,maximum:250};const f=await fixture(db.pool,p);
+  await setEquipment(db.pool,f.account,env(1),sword(f.items.sword!));
+  assert.equal((await inventoryView(db.pool,f.account,{equipmentState:'EQUIPPED'})).total,1);
+  assert.equal((await inventoryView(db.pool,f.account,{slot:'MAIN_HAND',equipmentState:'EQUIPPED'})).items[0].id,f.items.sword);
+  assert.equal((await inventoryView(db.pool,f.account,{condition:'FULL'})).total,1);assert.equal((await inventoryView(db.pool,f.account,{condition:'NEEDS_REPAIR'})).total,0);assert.equal((await inventoryView(db.pool,f.account,{condition:'BROKEN'})).total,0);
+  assert.equal((await inventoryView(db.pool,f.account,{equipmentState:'USABLE',slot:'HEAD'})).total,0);
+  assert.throws(()=>inventoryView(db.pool,f.account,{slot:'WRONG'}),/INVALID_INVENTORY_QUERY/);
  }finally{await db.close();}
 });

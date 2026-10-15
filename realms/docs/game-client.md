@@ -90,3 +90,38 @@ repository-native vectors served only from an explicit same-origin allowlist.
 Authored public `itemArt` keys take priority over public `itemIcon`, then specific
 public item/slot identity and a category/unknown fallback; arbitrary URLs and paths
 are never loaded. Missing illustrations fall back to the neutral item glyph.
+
+### Equipment preparation and contextual statistics
+
+The Character and Pack paperdolls share a session-owned equipment draft. Slot
+choices, weapon switches, unequips and saved-loadout previews stage the complete
+plan. The draft survives screen changes, inventory browsing and rerenders. Apply
+uses the existing revision-checked equipment command and explicit permanent
+binding consent; Revert discards preparation. A refreshed game revision keeps the
+draft visible but prevents Apply until it is reverted. Successful matching commits
+clear it. Logout, reconnect and a different run discard it. Drafts are deliberately
+in memory, never stored across account sessions or browser reloads.
+
+Statistics use a discovered encounter as a rules context, because profiles and
+damage vocabularies are encounter authored. The read-only preview reuses equipment
+legality, character scaling, native-level modifiers, encumbrance and typed-damage
+calculation. It displays current/after armor, accuracy, evasion, initiative, health,
+mana, damage range, resistance percentages, conditional resistances, penetration,
+guard/heal availability and carrying capacities. Only worn and active-set gear
+contributes. Prepared weapons remain visible without contributing. Equipping never
+reduces carried weight. Temporary battle effects and target/roll outcomes are not
+predicted; the context is labelled and a missing discovered context is explicit.
+
+The paperdoll includes a saved-loadout preview selector and a control to save the
+committed setup. Apply the draft before saving it as a template. Existing template
+replacement, protection and deletion controls remain in the advanced planner.
+
+Inventory offers server-side Equipped/Unequipped/Usable, slot and condition
+filters. Needs Repair means actual condition below its authored maximum; Broken
+means zero, and Full means equal to maximum. Items without durability never match
+condition filters. Usable means eligible carried equipment whose level,
+proficiency and shared prerequisite requirements are met; it does not mean a
+consumable has an implemented use action. Filters apply before grouping/counts.
+Right click, Shift+F10/context-menu key, or a stationary 550ms touch press opens
+item actions. Movement cancels touch activation. These actions reuse the inspector
+and its confirmations; the inspector remains the accessible fallback.
