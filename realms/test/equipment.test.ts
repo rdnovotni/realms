@@ -1,3 +1,7 @@
+import { readFile } from 'node:fs/promises';
+import { saveLoadout,applyLoadout } from '../src/domains/loadouts.js';
+import { clientEquipmentView } from '../src/domains/client-equipment-view.js';
+import { inventoryView } from '../src/domains/inventory-browser.js';
 import { test } from 'node:test';
 import { buildPackage } from './build-fixture.js';
 import { startBuild,levelUp } from '../src/domains/builds.js';
@@ -16,7 +20,7 @@ import { setItemLock,itemLockView } from '../src/domains/item-locks.js';
 import { moveItem } from '../src/domains/inventory.js';
 import { ascend } from '../src/domains/lifecycle.js';
 import { integrityReport,unindexedForeignKeys } from '../src/foundation/integrity.js';
-const definitions=[['sword',['MAIN_HAND','OFF_HAND'],1,1],['shield',['OFF_HAND'],1,1],['greatsword',['MAIN_HAND'],2,1],['ring',['RING_1','RING_2'],0,1],['helm',['HEAD'],0,2]] as const;
+const definitions=[['sword',['MAIN_HAND','OFF_HAND'],1,1],['shield',['OFF_HAND'],1,1],['greatsword',['MAIN_HAND'],2,1],['ring',['RING_1','RING_2'],0,1],['helm',['HEAD'],0,2],['charm',['TRINKET'],0,1]] as const;
 const pkg:ContentPackage={version:'equipment-fixture',engineVersion:'foundation-1',entities:[...buildPackage.entities,...definitions.map(([name,slots,hands,minimumLevel])=>({id:`item.${name}`,kind:'ITEM' as const,revision:1,schemaVersion:1,definition:{name,dependencies:[],public:{},mechanics:{inventory:{version:1,storageMode:'INSTANCE',category:'EQUIPMENT'},equipment:{version:1,slots:[...slots],hands,minimumLevel,bindingPolicy:'PRESERVE'}}}}))]};
 const env=(expectedRevision:number,actionType='SET_EQUIPMENT')=>({requestId:randomUUID(),expectedRevision,actionType});
 async function fixture(pool:Awaited<ReturnType<typeof testDatabase>>['pool']){
@@ -118,5 +122,31 @@ test('deferred SQL rejects forged ownership and Ascension clears without actual 
 test('the integrity audit detects equipment projection corruption without changing game data',async()=>{
  const db=await testDatabase();try{const f=await fixture(db.pool);await setEquipment(db.pool,f.account,env(1),sword(f.items.sword!));
  await db.pool.query('ALTER TABLE run_equipment DISABLE TRIGGER equipment_header_projection; ALTER TABLE run_equipment DISABLE TRIGGER equipment_header_integrity');await db.pool.query("UPDATE run_equipment SET active_set='B'");assert.equal((await integrityReport(db.pool)).equipmentMismatches,1);
+ }finally{await db.close();}
+});
+
+
+test('trinket compatibility migration preserves old equipment and loadouts while allowing any three distinct accessories',async()=>{
+ const db=await testDatabase();try{
+  const old=await readFile(new URL('../migrations/012_item_binding_transitions.sql',import.meta.url),'utf8');
+  await db.pool.query(old.slice(old.indexOf('CREATE OR REPLACE VIEW equipment_integrity_issues'),old.indexOf('CREATE VIEW item_binding_integrity_issues')));
+  await db.pool.query('DROP FUNCTION equipment_eligible_slots(jsonb)');
+  const f=await fixture(db.pool);let revision=1;
+  const original:EquipmentPlan={activeSet:'A',slots:[{set:'WORN',slot:'RING_1',itemId:f.items.ring!},{set:'WORN',slot:'TRINKET',itemId:f.items.charm!}]};
+  await setEquipment(db.pool,f.account,env(revision++),original);
+  await saveLoadout(db.pool,f.account,env(revision++,'SAVE_LOADOUT'),'accessories','Accessories');
+  const historyBefore=(await db.pool.query('SELECT jsonb_agg(to_jsonb(e) ORDER BY revision) AS data FROM equipment_events e')).rows[0].data;
+  const loadoutBefore=(await db.pool.query('SELECT state FROM equipment_loadouts')).rows[0].state;
+  await db.pool.query(await readFile(new URL('../migrations/033_interchangeable_trinkets.sql',import.meta.url),'utf8'));
+  assert.deepEqual((await db.pool.query('SELECT jsonb_agg(to_jsonb(e) ORDER BY revision) AS data FROM equipment_events e')).rows[0].data,historyBefore);
+  assert.deepEqual((await db.pool.query('SELECT state FROM equipment_loadouts')).rows[0].state,loadoutBefore);
+  let third='';await executeAction(db.pool,f.account,env(revision++,'GEAR_FIXTURE'),{},async c=>{third=(await grantItem(c,'third',{containerId:f.container,definitionId:'item.ring',quantity:'1',sourceCode:'FIXTURE'},'FIXTURE')).itemId;return {revision:await advanceRevision(c)};});
+  const slots=['RING_1','RING_2','TRINKET'] as const,ids=[f.items.ring!,f.items.charm!,third];
+  for(let shift=0;shift<3;shift++)await setEquipment(db.pool,f.account,env(revision++),{activeSet:'A',slots:slots.map((slot,i)=>({set:'WORN',slot,itemId:ids[(i+shift)%3]!}))});
+  await assert.rejects(setEquipment(db.pool,f.account,env(revision),{activeSet:'A',slots:slots.map(slot=>({set:'WORN',slot,itemId:f.items.ring!}))}),/EQUIPMENT_DUPLICATE_IDENTITY/);
+  const view=await inventoryView(db.pool,f.account,{grouped:false});for(const item of view.items.filter(i=>[f.items.ring,f.items.charm,third].includes(i.id)))assert.deepEqual(item.equipment.slots,slots);
+  const client=await db.pool.connect();try{const projected=await clientEquipmentView(client,f.run,f.account);for(const item of projected.gear.filter(i=>ids.includes(i.id)))assert.deepEqual(item.slots,slots);}finally{client.release();}
+  await applyLoadout(db.pool,f.account,env(revision++),'accessories');
+  assert.equal((await integrityReport(db.pool)).equipmentMismatches,0);
  }finally{await db.close();}
 });

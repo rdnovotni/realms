@@ -69,5 +69,7 @@ The Pack's equipment paperdoll shows all worn slots and both prepared weapon
 sets above inventory browsing. Select an individual carried equipment item to
 highlight compatible positions; equipment changes and set activation use explicit
 confirmations and the existing revision-checked equipment intents. Item-grid
-weight glyphs show stack/group totals, with unknown measurements marked `?`.
+weight glyphs show unit weight for instances and totals for stacks/groups, with
+unknown measurements marked `—`. Durability uses exact fractions and configurable
+percentage color thresholds; the footer stays anchored across wrapping names.
 See [inventory grid](inventory-grid.md) for interaction and accessibility details.

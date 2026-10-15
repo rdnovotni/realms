@@ -3,6 +3,8 @@ import { DomainError } from '../foundation/errors.js';
 import type { ContentEntity } from './content.js';
 import { validateInventorySpec } from './item-accounting.js';
 export const wornSlots=['HEAD','NECK','SHOULDERS','CHEST','HANDS','WAIST','LEGS','FEET','RING_1','RING_2','TRINKET','TOOL'] as const;
+// Stable persisted identities keep old event chains and loadouts intact.
+export const trinketSlots=['RING_1','RING_2','TRINKET'] as const;
 export const equipmentSlots=[...wornSlots,'MAIN_HAND','OFF_HAND'] as const;
 export type EquipmentSlot=typeof equipmentSlots[number];
 export type EquipmentSpec={version:1|2;slots:EquipmentSlot[];hands:0|1|2;minimumLevel:number;bindingPolicy:'PRESERVE'|'ACCOUNT_ON_ACTIVE_EQUIP'};
@@ -11,7 +13,8 @@ export function equipmentSpec(value:unknown):EquipmentSpec{
  if(!validate(value))throw new DomainError(400,'INVALID_EQUIPMENT_SPEC');const s=value as EquipmentSpec;
  if(s.version===1&&s.bindingPolicy!=='PRESERVE')throw new DomainError(400,'INVALID_EQUIPMENT_SPEC');
  if(s.slots.some(slot=>s.hands===0?!wornSlots.includes(slot as typeof wornSlots[number]):!['MAIN_HAND','OFF_HAND'].includes(slot)) || (s.hands===2 && (s.slots.length!==1||s.slots[0]!=='MAIN_HAND')))throw new DomainError(400,'INVALID_EQUIPMENT_SPEC');
- return s;
+ // Rings and other trinkets share all three accessory positions, including old releases.
+ return {...s,slots:s.slots.some(slot=>trinketSlots.includes(slot as typeof trinketSlots[number]))?[...s.slots.filter(slot=>!trinketSlots.includes(slot as typeof trinketSlots[number])),...trinketSlots]:[...s.slots]};
 }
 const durabilityShape=new Ajv({strict:true}).compile({type:'object',additionalProperties:false,required:['version','maximum'],properties:{version:{const:1},maximum:{type:'integer',minimum:1,maximum:1000000}}});
 export function validateEquipmentContent(e:ContentEntity){if(e.definition.mechanics?.tacticalDurability!==undefined&&(!durabilityShape(e.definition.mechanics.tacticalDurability)||e.definition.mechanics.equipment===undefined))throw new DomainError(400,'INVALID_TACTICAL_DURABILITY');const value=e.definition.mechanics?.equipment;if(value===undefined)return;

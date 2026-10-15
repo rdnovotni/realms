@@ -1,3 +1,5 @@
+import { itemCondition,itemWeight,itemTileDetails,validTileSettings,defaultTileSettings } from '../client/item-tiles.js';
+import { equipmentSpec } from '../src/domains/equipment-content.js';
 import { paperdollPositions,paperdollCandidate } from '../client/paperdoll.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -138,4 +140,32 @@ test('expanded equipment copies are candidates and off-page gear still warns bef
  assert.deepEqual(bindingConsequences(plan,equipmentGear,item),['Off-page ring']);
  assert.deepEqual(bindingConsequences({...plan,slots:[{set:'B',slot:'MAIN_HAND',itemId:item.id}]},equipmentGear,item),[]);
  assert.deepEqual(bindingConsequences(plan,[...equipmentGear,{...equipmentGear[0]!,id:item.id,name:item.name}],item),['Off-page ring']);
+});
+
+
+test('condition presentation preserves true maxima and uses configurable inclusive percentage thresholds',()=>{
+ for(const [value,max,state]of [[87,100,'healthy'],[46,100,'worn'],[12,100,'critical'],[180,200,'healthy'],[180,250,'healthy'],[70,100,'healthy'],[25,100,'worn'],[0,100,'critical']] as const){const result=itemCondition({condition:value,maximumCondition:max});assert.equal(result?.state,state);assert.equal(result?.text,`${value}/${max}`);}
+ assert.equal(itemCondition({condition:null,maximumCondition:null}),null);
+ assert.equal(itemCondition({condition:180,maximumCondition:250},{healthyPercent:80,wornPercent:40,showSingleQuantity:true})?.state,'worn');
+ assert.equal(validTileSettings({...defaultTileSettings,wornPercent:70}),false);assert.equal(validTileSettings({...defaultTileSettings,healthyPercent:101}),false);
+});
+test('tile weights distinguish units, stack totals, authored zero and unmeasured values without losing integer precision',()=>{
+ const stack={unitWeight:'2',totalWeight:'40',groupWeight:'60',quantity:'20',groupQuantity:'30',storageMode:'STACK'};
+ assert.deepEqual(itemWeight(stack,false),{text:'40',description:'2 each × 20 = 40 total'});
+ assert.deepEqual(itemWeight({...stack,storageMode:'INSTANCE'},false),{text:'2',description:'2 unit weight'});
+ assert.equal(itemWeight({...stack,unitWeight:null,totalWeight:null},false).text,'—');assert.equal(itemWeight({...stack,unitWeight:'0',totalWeight:'0'},false).text,'0');
+ assert.equal(itemWeight({...stack,totalWeight:'18446744073709551614'},false).text,BigInt('18446744073709551614').toLocaleString());
+ assert.equal(itemWeight(stack,true).text,'60');
+});
+test('all accessory definitions include three interchangeable positions without mutating authored content',()=>{
+ for(const slots of [['RING_1','RING_2'],['TRINKET'],['RING_2']]){const spec={version:1,slots,hands:0,minimumLevel:1,bindingPolicy:'PRESERVE'},before=structuredClone(spec);assert.deepEqual(equipmentSpec(spec).slots,['RING_1','RING_2','TRINKET']);assert.deepEqual(spec,before);}
+});
+
+
+test('tile facts never invent levels or expose a grouped representative quality as a shared fact',()=>{
+ const item={copies:3,equipment:null,numericQuality:null,qualityLabel:'Unassessed',family:'Crafting material',category:'MATERIAL'} as import('../client/types.js').InventoryItem;
+ assert.deepEqual(itemTileDetails(item,false),[['property','Crafting material']]);
+ assert.deepEqual(itemTileDetails({...item,numericQuality:'1.2345'},false),[['quality','Quality 1.2345']]);
+ assert.deepEqual(itemTileDetails({...item,numericQuality:'1.2345'},true),[['copies','3 copies · inspect individually']]);
+ const session=new GameSession();assert.equal(session.updateTileSettings({healthyPercent:20}),false);assert.equal(session.tileSettings.healthyPercent,70);assert.equal(session.updateTileSettings({showSingleQuantity:false}),true);assert.equal(session.tileSettings.showSingleQuantity,false);
 });

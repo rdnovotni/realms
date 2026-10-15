@@ -4,7 +4,7 @@ import type pg from 'pg';
 export async function clientEquipmentView(client:pg.PoolClient,runId:string,accountId:string) {
  const equipment=(await client.query('SELECT equipment_snapshot($1) AS state',[runId])).rows[0].state;
  const gear=(await client.query(`SELECT i.id,v.definition->>'name' AS name,i.binding,
- v.definition->'mechanics'->'equipment'->'slots' AS slots,
+ equipment_eligible_slots(v.definition->'mechanics'->'equipment') AS slots,
  v.definition->'mechanics'->'inventory'->>'unitWeight' AS "unitWeight",
  v.definition->'mechanics'->'inventory'->>'unitBulk' AS "unitBulk",
  CASE WHEN EXISTS(SELECT 1 FROM discoveries known WHERE known.account_id=$2 AND known.entity_id=i.definition_id AND known.knowledge_level='ADVANCED') THEN (SELECT jsonb_object_agg(stat,amount) FROM (SELECT m->>'stat' stat,sum((m->>'amount')::integer) amount FROM jsonb_array_elements(v.definition->'mechanics'->'combatModifiers'->'modifiers') m GROUP BY m->>'stat') stat_values) END AS "knownStats",
