@@ -7,8 +7,8 @@ export class GameSession {
  inventorySelection=new Set<string>();
  inventorySelectionAnchor:string|null=null;
  selectInventoryRange(item:InventoryItem,options:{toggle?:boolean;range?:boolean}={}){
-  const items=this.inventory?.items??[],physical=items.filter(i=>!this.inventoryQuery.grouped||i.copies===1),index=items.findIndex(i=>i.id===item.id),anchor=items.findIndex(i=>i.id===this.inventorySelectionAnchor);
-  if(this.inventoryQuery.grouped&&item.copies>1)return;
+  const items=this.inventory?.items??[],physical=items.filter(i=>i.accessible&&(!this.inventoryQuery.grouped||i.copies===1)),index=items.findIndex(i=>i.id===item.id),anchor=items.findIndex(i=>i.id===this.inventorySelectionAnchor);
+  if(!item.accessible||this.inventoryQuery.grouped&&item.copies>1)return;
   if(options.range&&anchor>=0){if(!options.toggle)this.inventorySelection.clear();for(const row of items.slice(Math.min(anchor,index),Math.max(anchor,index)+1))if(physical.some(i=>i.id===row.id))this.inventorySelection.add(row.id);}
   else if(options.toggle){if(this.inventorySelection.has(item.id))this.inventorySelection.delete(item.id);else this.inventorySelection.add(item.id);}
   else {this.inventorySelection.clear();this.inventorySelection.add(item.id);}
@@ -125,7 +125,7 @@ export class GameSession {
    if(page.runId!==runId||page.revision!==this.snapshot.game.run.revision)throw new ApiError(409,'STALE_REVISION');
    if(this.selectedInventoryRevision!==page.revision){this.selectedInventoryItem=null;this.selectedInventoryGrouped=false;this.inventoryHistory=null;this.historyGeneration++;this.inventoryHistoryBusy=false;}
    const selectionPage=JSON.stringify([page.runId,page.revision,query]);if(this.selectionPage!==selectionPage){this.inventorySelection.clear();this.inventorySelectionAnchor=null;}this.selectionPage=selectionPage;
-   for(const id of this.inventorySelection)if(!page.items.some(i=>i.id===id))this.inventorySelection.delete(id);
+   for(const id of this.inventorySelection)if(!page.items.some(i=>i.id===id&&i.accessible&&(!this.inventoryQuery.grouped||i.copies===1)))this.inventorySelection.delete(id);
    this.inventory=page;if(page.displayPreferences&&validTileSettings(page.displayPreferences))this.tileSettings={...page.displayPreferences};
    if(this.selectedInventoryItem&&!this.selectedInventoryGrouped){const fresh=page.items.find(i=>i.id===this.selectedInventoryItem?.id);if(fresh&&(!this.inventoryQuery.grouped||fresh.copies===1))this.selectedInventoryItem=structuredClone(fresh);}
   }catch(error){if(epoch===this.epoch&&generation===this.inventoryGeneration){this.inventory=null;this.inventoryError=errorMessage(error);this.handleError(error);if(error instanceof ApiError&&error.status===409)this.needsRefresh=true;}}

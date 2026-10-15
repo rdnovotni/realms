@@ -227,14 +227,14 @@ test('equipment drafts survive refresh, refuse stale Apply and are forgotten on 
 });
 
 test('page selection supports toggles and ranges without selecting grouped representatives',()=>{
- const session=new GameSession();const rows=[{id:'a',copies:1},{id:'b',copies:2},{id:'c',copies:1},{id:'d',copies:1}] as any;session.inventory={items:rows} as any;session.inventoryQuery={grouped:true};session.selectInventoryRange(rows[0]);session.selectInventoryRange(rows[3],{range:true});assert.deepEqual([...session.inventorySelection],['a','c','d']);session.selectInventoryRange(rows[2],{toggle:true});assert.deepEqual([...session.inventorySelection],['a','d']);session.clearInventorySelection();assert.equal(session.inventorySelection.size,0);
+ const session=new GameSession();const rows=[{id:'a',copies:1,accessible:true},{id:'b',copies:2,accessible:true},{id:'c',copies:1,accessible:true},{id:'d',copies:1,accessible:true}] as any;session.inventory={items:rows} as any;session.inventoryQuery={grouped:true};session.selectInventoryRange(rows[0]);session.selectInventoryRange(rows[3],{range:true});assert.deepEqual([...session.inventorySelection],['a','c','d']);session.selectInventoryRange(rows[2],{toggle:true});assert.deepEqual([...session.inventorySelection],['a','d']);session.clearInventorySelection();assert.equal(session.inventorySelection.size,0);rows[2].accessible=false;session.selectInventoryRange(rows[0]);session.selectInventoryRange(rows[3],{range:true});assert.deepEqual([...session.inventorySelection],['a','d']);session.selectInventoryRange(rows[2],{toggle:true});assert.deepEqual([...session.inventorySelection],['a','d']);
 });
 test('favorite and new badges are distinct and grouped counts never use a representative status',()=>{
  const item={favorite:true,isNew:true,locked:false,equipped:false,loadouts:[],accessible:true,groupFavoriteCount:2,groupNewCount:1} as any;assert.deepEqual(itemStatuses(item,false).map(s=>s.kind),['favorite','new']);assert.deepEqual(itemStatuses(item,true).map(s=>s.label),['Grouped copies — expand to inspect individual statuses','2 favorite copies','1 uninspected copies']);
 });
 
 test('selection survives cosmetic page reloads but clears on query or gameplay revision changes',async()=>{
- const h=harness();await connect(h);let revision=0;h.setInventoryRead(async()=>json({revision,runId:'run',items:[{id:'a',copies:1},{id:'b',copies:1}],total:2,offset:0,pageSize:48,containers:[],preferences:{}}));
+ const h=harness();await connect(h);let revision=0;h.setInventoryRead(async()=>json({revision,runId:'run',items:[{id:'a',copies:1,accessible:true},{id:'b',copies:1,accessible:true}],total:2,offset:0,pageSize:48,containers:[],preferences:{}}));
  await h.session.browseInventory({grouped:false});h.session.selectInventoryRange(h.session.inventory!.items[0]!);h.session.inventory=null;await h.session.browseInventory({grouped:false});assert.deepEqual([...h.session.inventorySelection],['a']);assert.equal(h.session.inventorySelectionAnchor,'a');
  await h.session.browseInventory({grouped:false,search:'other'});assert.equal(h.session.inventorySelection.size,0);h.session.selectInventoryRange(h.session.inventory!.items[1]!);revision=1;h.setRevision(1);await h.session.refresh();assert.equal(h.session.inventorySelection.size,0);
 });
