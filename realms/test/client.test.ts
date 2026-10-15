@@ -1,4 +1,4 @@
-import { groupedInspectionFacts } from '../client/item-tiles.js';
+import { itemStatuses,groupedInspectionFacts } from '../client/item-tiles.js';
 import { itemArtKey } from '../client/item-art.js';
 import { equipmentDrag,removeEquipmentAssignment } from '../client/equipment-drag.js';
 import { itemCondition,itemWeight,itemTileDetails,validTileSettings,defaultTileSettings } from '../client/item-tiles.js';
@@ -224,4 +224,22 @@ test('equipment drafts survive refresh, refuse stale Apply and are forgotten on 
  h.setRevision(1);await h.session.refresh();await h.session.applyEquipment();assert.equal(h.calls.filter(c=>c.init.method==='POST').length,0);assert.ok(h.session.equipmentDraft);
  h.session.equipmentContext='encounter.old';h.setRun('next-run');await h.session.refresh();assert.equal(h.session.equipmentContext,undefined);assert.equal(h.session.equipmentDraft,null);
  await h.session.logout();assert.equal(h.session.equipmentDraft,null);assert.equal(h.session.equipmentPreview,null);
+});
+
+test('page selection supports toggles and ranges without selecting grouped representatives',()=>{
+ const session=new GameSession();const rows=[{id:'a',copies:1},{id:'b',copies:2},{id:'c',copies:1},{id:'d',copies:1}] as any;session.inventory={items:rows} as any;session.inventoryQuery={grouped:true};session.selectInventoryRange(rows[0]);session.selectInventoryRange(rows[3],{range:true});assert.deepEqual([...session.inventorySelection],['a','c','d']);session.selectInventoryRange(rows[2],{toggle:true});assert.deepEqual([...session.inventorySelection],['a','d']);session.clearInventorySelection();assert.equal(session.inventorySelection.size,0);
+});
+test('favorite and new badges are distinct and grouped counts never use a representative status',()=>{
+ const item={favorite:true,isNew:true,locked:false,equipped:false,loadouts:[],accessible:true,groupFavoriteCount:2,groupNewCount:1} as any;assert.deepEqual(itemStatuses(item,false).map(s=>s.kind),['favorite','new']);assert.deepEqual(itemStatuses(item,true).map(s=>s.label),['Grouped copies — expand to inspect individual statuses','2 favorite copies','1 uninspected copies']);
+});
+
+test('selection survives cosmetic page reloads but clears on query or gameplay revision changes',async()=>{
+ const h=harness();await connect(h);let revision=0;h.setInventoryRead(async()=>json({revision,runId:'run',items:[{id:'a',copies:1},{id:'b',copies:1}],total:2,offset:0,pageSize:48,containers:[],preferences:{}}));
+ await h.session.browseInventory({grouped:false});h.session.selectInventoryRange(h.session.inventory!.items[0]!);h.session.inventory=null;await h.session.browseInventory({grouped:false});assert.deepEqual([...h.session.inventorySelection],['a']);assert.equal(h.session.inventorySelectionAnchor,'a');
+ await h.session.browseInventory({grouped:false,search:'other'});assert.equal(h.session.inventorySelection.size,0);h.session.selectInventoryRange(h.session.inventory!.items[1]!);revision=1;h.setRevision(1);await h.session.refresh();assert.equal(h.session.inventorySelection.size,0);
+});
+test('double activation cancels a pending inspection and modifier clicks never activate items',async t=>{
+ const { attachInventoryActivation }=await import('../client/inventory-activation.js');t.mock.timers.enable({apis:['setTimeout']});const tile=new EventTarget() as EventTarget & {isConnected:boolean};tile.isConnected=true;let inspect=0,activate=0,select=0;attachInventoryActivation(tile as unknown as HTMLButtonElement,()=>inspect++,()=>activate++,()=>select++);
+ function fire(type:string,properties:Record<string,unknown>={}){const e=new Event(type);Object.assign(e,{detail:1,ctrlKey:false,metaKey:false,shiftKey:false,...properties});tile.dispatchEvent(e);}
+ fire('click');fire('click',{detail:2});fire('dblclick');t.mock.timers.tick(400);assert.equal(inspect,0);assert.equal(activate,1);fire('click',{ctrlKey:true});t.mock.timers.tick(400);assert.equal(select,1);assert.equal(activate,1);fire('click');t.mock.timers.tick(350);assert.equal(inspect,1);
 });

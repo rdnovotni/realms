@@ -127,3 +127,11 @@ consumable has an implemented use action. Filters apply before grouping/counts.
 Right click, Shift+F10/context-menu key, or a stationary 550ms touch press opens
 item actions. Movement cancels touch activation. These actions reuse the inspector
 and its confirmations; the inspector remains the accessible fallback.
+
+
+Inventory P3 adds page-bounded physical multiselection and atomic bulk-safe
+operations, persistent account favorites/uninspected acquisition markers and tile
+preferences. Double-click reuses equipment preparation or opens groups/details;
+consumable Use and loot-container Open still need their owning server domains.
+See [inventory interaction details](inventory-grid.md). Migration 034 is required;
+source merge does not imply live migration/deployment.
