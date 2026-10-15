@@ -139,7 +139,12 @@ export function renderInventory(main:HTMLElement,snapshot:Snapshot,session:GameS
     const pages=node('div','','inventory-actions');pages.append(button('Earlier history',()=>void session.loadInventoryHistory(selected.id,history.offset+history.pageSize),session.inventoryHistoryBusy||history.offset+history.events.length>=history.total),button('Newer history',()=>void session.loadInventoryHistory(selected.id,Math.max(0,history.offset-history.pageSize)),session.inventoryHistoryBusy||history.offset===0));detail.append(pages);
    }
   }
-  detail.append(button('Close item details',()=>{session.selectInventory(null);Array.from(document.querySelectorAll<HTMLElement>('[data-focus]')).find(n=>n.dataset.focus==='Inventory item '+selected.id)?.focus();}));
+  detail.append(button('Close item details',()=>{
+   session.selectInventory(null);
+   const controls=Array.from(document.querySelectorAll<HTMLElement>('[data-focus]'));
+   const target=controls.find(n=>n.dataset.focus==='Inventory item '+selected.id)??controls.find(n=>n.dataset.focus==='Inventory search');
+   target?.focus();
+  }));
  }
  const paging=node('nav','','inventory-pagination');paging.setAttribute('aria-label','Inventory pages');const first=page.total? page.offset+1:0,last=Math.min(page.total,page.offset+page.items.length);paging.append(button('← Previous',()=>browse({offset:Math.max(0,page.offset-page.pageSize)}),session.inventoryBusy||page.offset===0),node('span',`${first}–${last} of ${page.total}${query.grouped?' item groups':' items'}`),button('Next →',()=>browse({offset:page.offset+page.pageSize}),session.inventoryBusy||page.offset+page.items.length>=page.total));panel.append(paging);
  const settings=node('details','','inventory-settings');settings.append(node('summary','Loot storage preferences'));
