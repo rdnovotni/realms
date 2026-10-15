@@ -79,15 +79,15 @@ set is explicitly labelled Active and the other Prepared. This presents the
 existing broad equipment contract without adding inventory slot limits.
 
 Select a carried equipment instance in the grid to highlight compatible
-positions. Select a position, choose Equip, and confirm the preview. Replacements
+positions. Select a position, choose Equip, stage the preview, then Apply the shared draft. Replacements
 warn before clearing conflicting assignments. A two-handed main weapon marks
 its off hand as occupied; equipping an off-hand item instead clears the conflicting
 main weapon. Grouped copies must first be expanded to select a physical instance.
 Click an equipped position to inspect requirements, binding and condition or
 remove that assignment. Other prepared references to the same item are preserved.
-Weapon-set activation has its own confirmation, including any permanent binding.
+Weapon-set activation is staged with its own confirmation; Apply requires consent for permanent binding.
 Equipment changes remain free outside encounters and server-authoritative.
-The paperdoll reads the complete committed plan and equipped-first gear projection,
+The paperdoll reads the complete shared draft or committed plan and equipped-first gear projection,
 so filtering or paging the pack does not hide equipped possessions. It does not
 require the bootstrap quick list to be exhaustive; both the paperdoll and complete-plan editor can search all eligible equipment in pages.
 
@@ -125,13 +125,13 @@ text. Tile presentation does not change encumbrance calculations.
 The same paperdoll is available on Character. An empty slot opens a searchable,
 paged list of eligible physical items; occupied slots offer inspection, unequip
 and replacement search. Complete-plan editor Search controls use the same picker
-without committing until Save equipment. Its quick dropdown list is a convenience,
+without committing until Apply equipment. Its quick dropdown list is a convenience,
 not an inventory size limit. Current equipment and carried saved-loadout references
 remain available for validation even when outside the quick list.
 
 Drag an individual carried equipment tile onto a compatible slot to preview the
-complete change, then confirm. Drag an equipped slot onto Return to pack (on either
-screen), or onto the Pack grid, to remove only that assignment after confirmation.
+complete change, then stage and Apply. Drag an equipped slot onto Return to pack (on either
+screen), or onto the Pack grid, to stage removal of only that assignment before Apply.
 Other prepared references survive. Group cards must be expanded before equipping;
 storage drops still reject equipped items. Binding and displacement warnings, stale
 revision checks and active-encounter locks use the existing equipment authority.
@@ -145,8 +145,8 @@ by every copy. Expanding the group exposes the actual individual records. Select
 Verification: use the isolated `npm run dev:client` fixture; optionally set
 `PLAYTEST_EQUIPMENT_COPIES=125` (allowed 0–160) to exercise more than 100 gear items.
 Open Character → empty Trinket slot → page/search; choose an item on the third page;
-confirm and verify it on Pack. In the full planner search for Sword, acknowledge
-binding and save. Inspect the grouped rings and verify aggregate-only facts. Check
+stage, switch to Pack to verify draft retention, then Apply. In the full planner search for Sword, acknowledge
+binding and Apply. Inspect the grouped rings and verify aggregate-only facts. Check
 Escape focus return, empty/retry search states, a 320px viewport, and native browser
 equip/unequip dragging. Unit tests separately verify owned drag identities and
 preservation of other weapon-set references.

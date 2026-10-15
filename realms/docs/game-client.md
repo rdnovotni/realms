@@ -30,11 +30,11 @@ Choose a starting build, begin The Old Watchtower, act as the hero and companion
 
 The disposable playtest grants a sword, shield, two-handed practice greatblade, material stack copies, a test vial, compass and carrying-capacity satchel. Weighted measurements and a fixture carrying policy demonstrate the Pack meters; these values are test balance only. Open Pack to prepare A/B sets; the sword demonstrates permanent account binding on active equipping, while the shield grants Guard in the next encounter. These are isolated fixture items, not production grants. Restart the playtest after rebuilding to load the new server projection and asset routes.
 
-Pack includes the complete worn setup, both prepared weapon sets and the selected active set. Select gear, inspect conflicts and binding consequences, then explicitly save the complete plan. The editor retains unchanged positions, permits one weapon identity in both sets in the same hand, and asks you to clear an off hand before preparing a two-handed weapon. Permanent binding requires acknowledgement. Ownership, proficiency, level and hand legality remain server decisions.
+Pack includes the complete worn setup, both prepared weapon sets and the selected active set. Select gear, inspect conflicts and binding consequences, then explicitly Apply the complete draft. The editor retains unchanged positions, permits one weapon identity in both sets in the same hand, and asks you to clear an off hand before preparing a two-handed weapon. Permanent binding requires acknowledgement. Ownership, proficiency, level and hand legality remain server decisions.
 
-Saved loadouts capture the committed setup, never an unsaved draft. You can apply, explicitly replace, delete, or release/restore a template's protection. Releasing protection or deleting requires confirmation and does not remove manual locks, unequip items or undo binding. A/B preparation is locked during encounters; this is not a combat weapon-swap action. Saving templates and explicit protection operations retain their existing server rules.
+Saved loadouts capture the committed setup, never an unsaved draft. You can preview and Apply, explicitly replace, delete, or release/restore a template's protection. Releasing protection or deleting requires confirmation and does not remove manual locks, unequip items or undo binding. A/B preparation is locked during encounters; this is not a combat weapon-swap action. Saving templates and explicit protection operations retain their existing server rules.
 
-The bootstrap projects owned carried gear names, position/level/binding contracts, qualification status, current condition, manual locks and loadout references, together with the current setup and owned templates. Advanced discovery may reveal aggregated known stat modifiers for comparisons; raw source definitions and hidden grants stay private. The bootstrap includes a bounded quick list plus every currently equipped or carried saved-loadout reference. The complete-plan editor stays enabled for large inventories: each slot has a paged Search control that can select any eligible carried item, beyond the quick list, while preserving the rest of the draft. Both Character and Pack reuse the same paperdoll, with searchable empty slots, replacement controls and confirmed equip/unequip drag shortcuts. Search, filtering, sorting, per-copy expansion, known comparisons and storage/stack/history controls are documented in the [inventory contract](inventory-grid.md). Refreshing discards an unsaved equipment draft.
+The bootstrap projects owned carried gear names, position/level/binding contracts, qualification status, current condition, manual locks and loadout references, together with the current setup and owned templates. Advanced discovery may reveal aggregated known stat modifiers for comparisons; raw source definitions and hidden grants stay private. The bootstrap includes a bounded quick list plus every currently equipped or carried saved-loadout reference. The complete-plan editor stays enabled for large inventories: each slot has a paged Search control that can select any eligible carried item, beyond the quick list, while preserving the rest of the draft. Both Character and Pack reuse the same paperdoll, with searchable empty slots, replacement controls and confirmed equip/unequip drag shortcuts. Search, filtering, sorting, per-copy expansion, known comparisons and storage/stack/history controls are documented in the [inventory contract](inventory-grid.md). Refreshing retains a draft; a changed revision requires Revert before new preparation.
 
 ## Boundaries and modules
 
@@ -81,7 +81,7 @@ carried custody, slot eligibility, level, proficiency and shared prerequisites.
 The picker does not change the Pack query or selected item. Searches ignore stale
 responses, close on game refresh/sign-out, trap focus in a native dialog, and
 restore the opener on close/Escape. Touch users can use the same search and
-confirmation buttons instead of dragging. Drafts are discarded on game refresh.
+confirmation buttons instead of dragging. Drafts remain in memory on refresh, with stale revision protection.
 
 The new `client/equipment-picker.ts`, `client/equipment-drag.ts` and
 `client/item-art.ts` modules supply shared search, owned-assignment drag parsing,
@@ -89,7 +89,7 @@ and a safe artwork hierarchy. Illustrations in `client/art/items/` are original
 repository-native vectors served only from an explicit same-origin allowlist.
 Authored public `itemArt` keys take priority over public `itemIcon`, then specific
 public item/slot identity and a category/unknown fallback; arbitrary URLs and paths
-are never loaded. Missing illustrations fall back to the neutral item glyph.
+are never loaded. Reviewed local authored raster paths are also supported as described in `client/art/items/README.md`; missing artwork falls back through known icons and contextual illustrations to the neutral glyph.
 
 ### Equipment preparation and contextual statistics
 
