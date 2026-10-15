@@ -6,7 +6,7 @@ import { DomainError } from '../foundation/errors.js';
 export function moveItem(pool: pg.Pool, accountId: string, envelope: Envelope, itemId: string, destinationId: string) {
   return executeAction(pool, accountId, envelope, { itemId,destinationId }, async context => moveOwnedItem(context,itemId,destinationId));
 }
-export async function moveOwnedItem(context:ActionContext,itemId:string,destinationId:string) {
+export async function moveOwnedItem(context:ActionContext,itemId:string,destinationId:string,advance=true) {
     await requireInventoryIdle(context);const accountId=context.accountId;
     const item = (await context.client.query('SELECT * FROM inventory_items WHERE id=$1 FOR UPDATE', [itemId])).rows[0];
     if (!item || BigInt(item.quantity)===0n) throw new DomainError(404,'ITEM_NOT_FOUND');
@@ -23,7 +23,7 @@ export async function moveOwnedItem(context:ActionContext,itemId:string,destinat
     if(to.kind==='MATERIAL_VAULT'){const spec=(await context.client.query("SELECT coalesce(v.definition->'mechanics'->'inventory'->>'category',v.definition->'mechanics'->>'inventoryCategory') AS category FROM inventory_items i JOIN content_versions v ON v.entity_id=i.definition_id AND v.revision=i.definition_revision WHERE i.id=$1",[itemId])).rows[0];if(spec.category!=='MATERIAL')throw new DomainError(409,'MATERIAL_VAULT_ONLY');}
     await context.client.query('UPDATE inventory_items SET container_id=$1 WHERE id=$2',[destinationId,itemId]);
     await context.client.query('INSERT INTO inventory_movements(item_id,from_container_id,to_container_id,action_id,reason) VALUES($1,$2,$3,$4,$5)', [itemId,from.id,to.id,context.actionId,'PLAYER_STORAGE_MOVE']);
-    return { itemId,containerId:destinationId,revision:await advanceRevision(context) };
+    return { itemId,containerId:destinationId,revision:advance?await advanceRevision(context):context.run.revision };
 }
 export function moveToPersonalStorage(pool:pg.Pool,accountId:string,envelope:Envelope,itemId:string,kind:'CARRIED'|'HOME'|'MATERIAL_VAULT') {
  return executeAction(pool,accountId,envelope,{itemId,kind},async c=>{

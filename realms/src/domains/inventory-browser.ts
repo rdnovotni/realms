@@ -1,3 +1,4 @@
+import { displayPreferences } from './inventory-presentation.js';
 import { equipmentSlots } from './equipment-content.js';
 import { runFacts } from '../rules/facts.js';
 import { prerequisite,type Prerequisite } from '../rules/prerequisites.js';
@@ -8,7 +9,7 @@ import { DomainError } from '../foundation/errors.js';
 import { carryLoad,publicCarryLoad } from './inventory-load.js';
 import { writeState } from './state.js';
 
-export type InventoryQuery={equipmentSlot?:string;slot?:string;equipmentState?:'ALL'|'EQUIPPED'|'UNEQUIPPED'|'USABLE';condition?:'ALL'|'NEEDS_REPAIR'|'BROKEN'|'FULL';container?:string;search?:string;category?:string;rarity?:string;binding?:string;protection?:'ALL'|'PROTECTED'|'UNPROTECTED';sort?:'NAME'|'NEWEST'|'QUANTITY'|'WEIGHT'|'BULK'|'QUALITY';direction?:'ASC'|'DESC';grouped?:boolean;definitionId?:string;offset?:number;expectedRevision?:number};
+export type InventoryQuery={equipmentSlot?:string;slot?:string;equipmentState?:'ALL'|'EQUIPPED'|'UNEQUIPPED'|'USABLE';favorite?:boolean;uninspected?:boolean;condition?:'ALL'|'NEEDS_REPAIR'|'BROKEN'|'FULL';container?:string;search?:string;category?:string;rarity?:string;binding?:string;protection?:'ALL'|'PROTECTED'|'UNPROTECTED';sort?:'NAME'|'NEWEST'|'QUANTITY'|'WEIGHT'|'BULK'|'QUALITY';direction?:'ASC'|'DESC';grouped?:boolean;definitionId?:string;offset?:number;expectedRevision?:number};
 export const inventoryPageSize=48;
 const sorts={NAME:'name COLLATE "C"',NEWEST:'created_at',QUANTITY:'quantity::numeric',WEIGHT:'"totalWeight"::numeric',BULK:'"totalBulk"::numeric',QUALITY:'"numericQuality"::numeric'};
 export async function requireInventoryIdle(c:ActionContext) {
@@ -37,7 +38,7 @@ export async function personalStorage(c:ActionContext,kind:'CARRIED'|'HOME'|'MAT
  return (await c.client.query("INSERT INTO inventory_containers(scope_id,kind) VALUES($1,$2) ON CONFLICT(scope_id,kind,label) DO UPDATE SET label=EXCLUDED.label RETURNING id",[scope.id,kind])).rows[0].id as string;
 }
 export function inventoryView(pool:pg.Pool,accountId:string,q:InventoryQuery={}) {
- if((q.equipmentState&&!['ALL','EQUIPPED','UNEQUIPPED','USABLE'].includes(q.equipmentState))||(q.condition&&!['ALL','NEEDS_REPAIR','BROKEN','FULL'].includes(q.condition))||(q.slot&&q.slot!=='ALL'&&!equipmentSlots.includes(q.slot as typeof equipmentSlots[number]))||q.equipmentSlot&&!equipmentSlots.includes(q.equipmentSlot as typeof equipmentSlots[number]))throw new DomainError(400,'INVALID_INVENTORY_QUERY');
+ if((q.favorite!==undefined&&typeof q.favorite!=='boolean')||(q.uninspected!==undefined&&typeof q.uninspected!=='boolean')||(q.equipmentState&&!['ALL','EQUIPPED','UNEQUIPPED','USABLE'].includes(q.equipmentState))||(q.condition&&!['ALL','NEEDS_REPAIR','BROKEN','FULL'].includes(q.condition))||(q.slot&&q.slot!=='ALL'&&!equipmentSlots.includes(q.slot as typeof equipmentSlots[number]))||q.equipmentSlot&&!equipmentSlots.includes(q.equipmentSlot as typeof equipmentSlots[number]))throw new DomainError(400,'INVALID_INVENTORY_QUERY');
  if(!Object.hasOwn(sorts,q.sort??'NAME')||!['ASC','DESC'].includes(q.direction??'ASC')||!Number.isSafeInteger(q.offset??0)||(q.offset??0)<0||(q.offset??0)>1000000||(q.search??'').length>80)throw new DomainError(400,'INVALID_INVENTORY_QUERY');
  return transaction(pool,async client=>{
   await client.query('SELECT id FROM accounts WHERE id=$1 FOR SHARE',[accountId]);
@@ -61,6 +62,8 @@ export function inventoryView(pool:pg.Pool,accountId:string,q:InventoryQuery={})
   if(q.search)terms.push(`name ILIKE ${bind('%'+q.search.replace(/[\\%_]/g,'\\$&')+'%')} ESCAPE '\\'`);
   for(const [field,value] of [['category',q.category],['rarity',q.rarity],['binding',q.binding],['definitionId',q.definitionId]] as const)if(value&&value!=='ALL')terms.push(`"${field}"=${bind(value)}`);
   if(q.protection&&q.protection!=='ALL')terms.push(`protected=${q.protection==='PROTECTED'?'true':'false'}`);
+  if(q.favorite)terms.push('favorite');
+  if(q.uninspected)terms.push('"isNew"');
   if(q.slot&&q.slot!=='ALL')terms.push(`(equipment->'slots') ? ${bind(q.slot)}`);
   if(q.equipmentState==='EQUIPPED')terms.push('equipped');
   if(q.equipmentState==='UNEQUIPPED')terms.push('equipment IS NOT NULL AND NOT equipped');
@@ -74,7 +77,10 @@ export function inventoryView(pool:pg.Pool,accountId:string,q:InventoryQuery={})
    if(expressions.length){const facts=await runFacts({client,run,accountId}),denied=expressions.filter(e=>!prerequisite(e.expr as Prerequisite,facts).met).map(e=>e.entity_id);if(denied.length)terms.push(`"definitionId" <> ALL(${bind(denied)}::text[])`);}
   }
   const cte=`WITH owned AS (
-   SELECT i.id,i.definition_id AS "definitionId",i.container_id AS "containerId",c.kind,s.run_id AS "runId",v.definition->>'name' AS name,v.definition->'public'->>'itemArt' AS artwork,v.definition->'public'->>'itemIcon' AS icon,i.quantity::text,i.binding,i.created_at,
+   SELECT coalesce(annotation.favorite,false) AS favorite,
+   incoming.operation_id::text AS "inspectionToken",
+   coalesce(incoming.operation_no,0)>coalesce(annotation.seen_operation_no,0) AS "isNew",
+   i.id,i.definition_id AS "definitionId",i.container_id AS "containerId",c.kind,s.run_id AS "runId",v.definition->>'name' AS name,v.definition->'public'->>'itemArt' AS artwork,v.definition->'public'->>'itemIcon' AS icon,i.quantity::text,i.binding,i.created_at,
    coalesce(v.definition->'mechanics'->'inventory'->>'category',v.definition->'mechanics'->>'inventoryCategory','OTHER') AS category,
    coalesce(v.definition->'public'->>'rarity','UNKNOWN') AS rarity,
    coalesce(v.definition->'public'->>'description','') AS description,
@@ -98,11 +104,13 @@ export function inventoryView(pool:pg.Pool,accountId:string,q:InventoryQuery={})
    (v.definition->'mechanics'->'tacticalDurability'->>'maximum')::integer AS "maximumCondition"
    FROM inventory_items i JOIN inventory_containers c ON c.id=i.container_id JOIN state_scopes s ON s.id=c.scope_id
    JOIN content_versions v ON v.entity_id=i.definition_id AND v.revision=i.definition_revision
+   LEFT JOIN inventory_item_annotations annotation ON annotation.item_id=i.id AND annotation.account_id=$1
+   LEFT JOIN LATERAL(SELECT o.operation_no,q.id operation_id FROM inventory_quantity_operations q JOIN inventory_quantity_order o ON o.operation_id=q.id WHERE q.to_item_id=i.id ORDER BY o.operation_no DESC LIMIT 1) incoming ON true
    LEFT JOIN inventory_item_locks l ON l.item_id=i.id LEFT JOIN discoveries d ON d.account_id=$1 AND d.entity_id=i.definition_id
    WHERE i.quantity>0 AND c.kind IN('CARRIED','HOME','MATERIAL_VAULT','LEGACY') AND
     (s.account_id=$1 OR EXISTS(SELECT 1 FROM runs owned JOIN characters ch ON ch.id=owned.character_id WHERE owned.id=s.run_id AND ch.account_id=$1))
   ),filtered AS (SELECT * FROM owned WHERE ${terms.join(' AND ')||'true'}),numbered AS (
-   SELECT *,count(*) OVER(PARTITION BY "definitionId") AS copies,
+   SELECT *,sum(favorite::integer) OVER(PARTITION BY "definitionId")::integer AS "groupFavoriteCount",sum("isNew"::integer) OVER(PARTITION BY "definitionId")::integer AS "groupNewCount",count(*) OVER(PARTITION BY "definitionId") AS copies,
    (min("containerId"::text) OVER(PARTITION BY "definitionId")<>max("containerId"::text) OVER(PARTITION BY "definitionId")) AS "multipleLocations",
    (sum(quantity::numeric) OVER(PARTITION BY "definitionId"))::text AS "groupQuantity",
    CASE WHEN count("totalWeight") OVER(PARTITION BY "definitionId")=count(*) OVER(PARTITION BY "definitionId") THEN (sum("totalWeight"::numeric) OVER(PARTITION BY "definitionId"))::text END AS "groupWeight",
@@ -114,7 +122,7 @@ export function inventoryView(pool:pg.Pool,accountId:string,q:InventoryQuery={})
   const total=Number((await client.query(cte+' SELECT count(*)::integer AS total FROM selected',parameters)).rows[0].total);
   const items=(await client.query(cte+` SELECT * FROM selected ORDER BY ${sortExpression} ${q.direction??'ASC'} NULLS LAST,id LIMIT ${inventoryPageSize} OFFSET ${q.offset??0}`,parameters)).rows.map(({representative,created_at,groupNewest,runId,...item})=>({...item,copies:Number(item.copies)}));
   const preferences=await inventoryPreferences(client,accountId);
-  return {revision:run.revision,runId:run.id,items,total,offset:q.offset??0,pageSize:inventoryPageSize,containers:containers.slice(0,200),hasMoreContainers:containers.length>200,carry:publicCarryLoad(await carryLoad(client,run.id)),preferences:preferences.value};
+  return {displayPreferences:(await displayPreferences(client,accountId)).value,revision:run.revision,runId:run.id,items,total,offset:q.offset??0,pageSize:inventoryPageSize,containers:containers.slice(0,200),hasMoreContainers:containers.length>200,carry:publicCarryLoad(await carryLoad(client,run.id)),preferences:preferences.value};
  });
 }
 

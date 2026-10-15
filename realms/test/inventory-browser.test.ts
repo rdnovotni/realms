@@ -92,6 +92,14 @@ test('inventory HTTP intents preserve receipts, safe history, locks and session 
   assert.equal((await app.inject('/api/v1/inventory')).statusCode,401);
   const page=await app.inject({url:'/api/v1/inventory?grouped=false&offset=0&expectedRevision=1&search=..',headers});assert.equal(page.statusCode,200,page.body);assert.equal(page.json().total,0);
   for(const url of ['/api/v1/inventory?offset=-1','/api/v1/inventory?sort=quantity;DROP','/api/v1/inventory?grouped=1','/api/v1/inventory?extra=true'])assert.equal((await app.inject({url,headers})).statusCode,400,url);
+  const bulk={...env(1,'BULK_INVENTORY'),operation:'FAVORITE',selections:[{itemId:item}]};
+  assert.equal((await app.inject({method:'POST',url:'/api/v1/inventory/bulk',headers:{authorization:`Bearer ${ro.token}`},payload:bulk})).statusCode,403);
+  assert.equal((await app.inject({method:'POST',url:'/api/v1/inventory/bulk',headers,payload:bulk})).statusCode,200);
+  assert.equal((await app.inject({url:'/api/v1/inventory?favorite=true',headers})).json().total,1);
+  assert.equal((await app.inject({method:'POST',url:'/api/v1/inventory/bulk',headers,payload:{...bulk,...env(1,'BULK_INVENTORY'),selections:[{itemId:item},{itemId:item}]}})).statusCode,400);
+  const display={...env(1,'SET_TILE_PREFERENCES'),preferences:{healthyPercent:80,wornPercent:30,showSingleQuantity:false}};
+  assert.equal((await app.inject({method:'POST',url:'/api/v1/inventory/display-preferences',headers:{authorization:`Bearer ${ro.token}`},payload:display})).statusCode,403);
+  assert.equal((await app.inject({method:'POST',url:'/api/v1/inventory/display-preferences',headers,payload:display})).statusCode,200);
   const split={...env(1,'SPLIT_STACK'),itemId:item,quantity:'3'};
   assert.equal((await app.inject({method:'POST',url:'/api/v1/inventory/split',headers:{authorization:`Bearer ${ro.token}`},payload:split})).statusCode,403);
   const r=await app.inject({method:'POST',url:'/api/v1/inventory/split',headers,payload:split});assert.equal(r.statusCode,200,r.body);const child=r.json().splitItemId;
@@ -137,5 +145,41 @@ test('capacity counts an active physical item once and refuses unmeasured opted-
   const saved=(await db.pool.query('SELECT inputs FROM character_encounter_snapshots WHERE instance_id=$1',[started.instanceId])).rows[0].inputs;
   assert.equal(saved.inventory.sources.length,1);assert.equal(saved.inventory.sources[0].itemId,f.gear.sword);
   assert.ok(Object.values(await integrityReport(db.pool)).every(n=>n===0));
+ }finally{await db.close();}
+});
+
+test('favorites, inspection watermarks and tile preferences persist without advancing gameplay',async()=>{
+ const { bulkInventory,setDisplayPreferences }=await import('../src/domains/inventory-presentation.js');const { mergeStacks }=await import('../src/domains/item-accounting.js');
+ const db=await testDatabase();try{
+  const release=await publishContent(db.pool,inventoryPackage()),f=await actor(db.pool,release),other=await actor(db.pool,release);
+  const container=(await db.pool.query("INSERT INTO inventory_containers(scope_id,kind) SELECT id,'CARRIED' FROM state_scopes WHERE run_id=$1 RETURNING id",[f.run])).rows[0].id;const ids:string[]=[];
+  await executeAction(db.pool,f.account,env(0,'FIXTURE'),{},async c=>{for(let n=0;n<2;n++)ids.push((await grantItem(c,'ore'+n,{containerId:container,definitionId:'item.ore',quantity:'2',sourceCode:'FIXTURE'},'Presentation fixture')).itemId);return {revision:await advanceRevision(c)};});
+  let page=await inventoryView(db.pool,f.account,{grouped:false});assert.ok(page.items.every(i=>i.isNew));const token=page.items.find(i=>i.id===ids[0])!.inspectionToken;
+  const request=env(1,'BULK_INVENTORY');await bulkInventory(db.pool,f.account,request,'FAVORITE',[{itemId:ids[0]!}]);assert.equal((await bulkInventory(db.pool,f.account,request,'FAVORITE',[{itemId:ids[0]!}])).replayed,true);
+  await bulkInventory(db.pool,f.account,env(1,'BULK_INVENTORY'),'MARK_INSPECTED',[{itemId:ids[0]!,inspectionToken:token}]);
+  page=await inventoryView(db.pool,f.account,{grouped:false});assert.equal(page.revision,1);assert.equal(page.items.find(i=>i.id===ids[0])!.isNew,false);assert.equal(page.items.find(i=>i.id===ids[0])!.favorite,true);
+  const grouped=await inventoryView(db.pool,f.account,{grouped:true});assert.equal(grouped.items[0].groupFavoriteCount,1);assert.equal(grouped.items[0].groupNewCount,1);assert.equal((await inventoryView(db.pool,f.account,{favorite:true})).total,1);
+  await assert.rejects(bulkInventory(db.pool,other.account,env(0,'BULK_INVENTORY'),'FAVORITE',[{itemId:ids[0]!}]),/CONTAINER_NOT_OWNED/);
+  await assert.rejects(bulkInventory(db.pool,f.account,env(1,'BULK_INVENTORY'),'MARK_INSPECTED',[{itemId:ids[0]!,inspectionToken:randomUUID()}]),/INVALID_INSPECTION_TOKEN/);
+  await setDisplayPreferences(db.pool,f.account,env(1,'SET_TILE_PREFERENCES'),{healthyPercent:85,wornPercent:30,showSingleQuantity:false});assert.equal((await inventoryView(db.pool,f.account)).displayPreferences.showSingleQuantity,false);assert.equal((await inventoryView(db.pool,other.account)).displayPreferences.showSingleQuantity,true);
+  await mergeStacks(db.pool,f.account,env(1,'MERGE_STACKS'),ids[1]!,ids[0]!);page=await inventoryView(db.pool,f.account,{grouped:false});assert.equal(page.items[0].isNew,true);assert.equal(page.items[0].favorite,true);
+  await bulkInventory(db.pool,f.account,env(2,'BULK_INVENTORY'),'MARK_INSPECTED',[{itemId:ids[0]!,inspectionToken:token}]);assert.equal((await inventoryView(db.pool,f.account)).items[0].isNew,true,'old observations cannot hide later acquisitions');
+ }finally{await db.close();}
+});
+
+test('bulk protection and moves are bounded, atomic, replayable and retain lock history',async()=>{
+ const { bulkInventory }=await import('../src/domains/inventory-presentation.js');const { unindexedForeignKeys }=await import('../src/foundation/integrity.js');
+ const db=await testDatabase();try{
+  const release=await publishContent(db.pool,inventoryPackage()),f=await actor(db.pool,release),container=(await db.pool.query("INSERT INTO inventory_containers(scope_id,kind) SELECT id,'CARRIED' FROM state_scopes WHERE run_id=$1 RETURNING id",[f.run])).rows[0].id;const ids:string[]=[];
+  await executeAction(db.pool,f.account,env(0,'FIXTURE'),{},async c=>{for(let n=0;n<3;n++)ids.push((await grantItem(c,'ore'+n,{containerId:container,definitionId:'item.ore',quantity:'1',sourceCode:'FIXTURE'},'Bulk fixture')).itemId);return {revision:await advanceRevision(c)};});
+  const protect=env(1,'BULK_INVENTORY');const selection=ids.slice(0,2).map(itemId=>({itemId}));assert.equal((await bulkInventory(db.pool,f.account,protect,'LOCK',selection)).changed,2);assert.equal((await bulkInventory(db.pool,f.account,protect,'LOCK',selection)).replayed,true);assert.equal((await db.pool.query('SELECT count(*)::int n FROM inventory_lock_events')).rows[0].n,2);assert.equal((await integrityReport(db.pool)).itemLockMismatches,0);
+  await assert.rejects(bulkInventory(db.pool,f.account,env(2,'BULK_INVENTORY'),'MOVE_HOME',ids.map(itemId=>({itemId}))),/BULK_ITEM_PROTECTED/);assert.equal((await inventoryView(db.pool,f.account)).items.length,3);
+  const move=env(2,'BULK_INVENTORY');assert.equal((await bulkInventory(db.pool,f.account,move,'MOVE_HOME',[{itemId:ids[2]!}])).changed,1);assert.equal((await bulkInventory(db.pool,f.account,move,'MOVE_HOME',[{itemId:ids[2]!}])).replayed,true);
+  await assert.rejects(bulkInventory(db.pool,f.account,env(2,'BULK_INVENTORY'),'FAVORITE',selection),/STALE_REVISION/);
+  assert.throws(()=>bulkInventory(db.pool,f.account,env(3,'BULK_INVENTORY'),'LOCK',[...selection,...selection]),/INVALID_INVENTORY_SELECTION/);
+  let ordinary='',bound='';await executeAction(db.pool,f.account,env(3,'FIXTURE'),{},async c=>{ordinary=(await grantItem(c,'ordinary',{containerId:container,definitionId:'item.ore',quantity:'1',sourceCode:'FIXTURE'},'Bulk rollback')).itemId;bound=(await grantItem(c,'restricted',{containerId:container,definitionId:'item.ore',quantity:'1',binding:'SYSTEM_UNTRADEABLE',sourceCode:'FIXTURE'},'Bulk rollback')).itemId;return {revision:await advanceRevision(c)};});
+  await assert.rejects(bulkInventory(db.pool,f.account,env(4,'BULK_INVENTORY'),'MOVE_HOME',[{itemId:ordinary},{itemId:bound}]),/BINDING_RESTRICTED/);
+  assert.equal((await db.pool.query('SELECT container_id FROM inventory_items WHERE id=$1',[ordinary])).rows[0].container_id,container);assert.equal((await db.pool.query('SELECT revision FROM runs WHERE id=$1',[f.run])).rows[0].revision,4);
+  assert.deepEqual(await unindexedForeignKeys(db.pool),[]);
  }finally{await db.close();}
 });

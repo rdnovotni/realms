@@ -1,6 +1,6 @@
 # Follybound HTTP API reference
 
-This inventories the implemented routes in `src/app.ts` and `src/client-assets.ts` through migration 033. Route schemas and domain documents define exact parameters and response shapes; this is not a claim of a stable public SDK or a deployed version. Server checks reject extra body fields. There is no generic client write of stats, arbitrary state, roll results, rewards or content definitions.
+This inventories the implemented routes in `src/app.ts` and `src/client-assets.ts` through migration 034. Route schemas and domain documents define exact parameters and response shapes; this is not a claim of a stable public SDK or a deployed version. Server checks reject extra body fields. There is no generic client write of stats, arbitrary state, roll results, rewards or content definitions.
 
 ## Authentication and Action contract
 
@@ -83,3 +83,25 @@ Inventory queries additionally accept `slot=ALL|<equipment slot>`,
 `equipmentState=ALL|EQUIPPED|UNEQUIPPED|USABLE`, and
 `condition=ALL|NEEDS_REPAIR|BROKEN|FULL`. `equipmentSlot` retains its stricter
 physical-copy equipment-picker behavior.
+
+### Inventory presentation and bulk operations
+
+`POST /api/v1/inventory/bulk` accepts the Action envelope with
+`actionType=BULK_INVENTORY`, `operation` and `selections` (1–48 unique physical
+`itemId` UUIDs). Operations: `LOCK`, `FAVORITE`, `UNFAVORITE`, `MARK_INSPECTED`,
+`MOVE_HOME`, `MOVE_CARRIED`, `MOVE_MATERIAL_VAULT`. Inspection selections also carry
+the opaque `inspectionToken` from their inventory read. Tokens are item-bound,
+never future/global sequence numbers. All operations require GAME_WRITE and
+explicit MANUAL_UI/API intent. The response records item IDs, selected/changed
+counts and revision. Lock/move advances gameplay once if changed; annotations do
+not. Any denial rolls back the complete batch. Replay uses the same envelope.
+
+`POST /api/v1/inventory/display-preferences` accepts
+`actionType=SET_TILE_PREFERENCES` and `preferences` containing `healthyPercent`,
+`wornPercent`, `showSingleQuantity`. Whole thresholds must satisfy
+`0 < worn < healthy <= 100`. This account-scoped cosmetic write retains the run
+revision. Existing loot-routing preferences keep their separate contract.
+
+Inventory reads add `favorite`, `isNew`, opaque `inspectionToken`, grouped
+`groupFavoriteCount`/`groupNewCount`, and top-level `displayPreferences`. Optional
+`favorite=true` and `uninspected=true` filters run before grouping/counting/paging.

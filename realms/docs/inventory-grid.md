@@ -107,8 +107,8 @@ the footers. Condition preserves the true `current/maximum`, including maxima of
 exists. Defaults are healthy at 70% or more (muted green), worn at 25% or more
 (amber), and critically damaged below 25% (red). A shield glyph, exact fraction
 and state text accompany color. Item tile display controls let players change the
-two percentage thresholds or hide `x1`; these are session-local presentation
-choices, not saved account preferences. Thresholds require whole numbers with
+two percentage thresholds or hide `x1`; these are saved account presentation
+preferences. Thresholds require whole numbers with
 `0 < worn < healthy <= 100`.
 
 Individual items show unit weight; stacks show total weight. A stack of 20 pieces
@@ -158,3 +158,55 @@ Right-click/keyboard context menu and touch long-press expose the same guarded
 item actions as the inspector. See game-client.md for draft lifetime, comparison
 context and accessibility details; artwork authoring is documented in
 client/art/items/README.md.
+
+### Selection, favorites, inspection and default activation
+
+Ctrl/Cmd-click toggles physical items and Shift-click selects an inclusive range.
+Per-item checkboxes and Select page provide touch/keyboard equivalents. Group
+representatives cannot be selected: expand copies first. Selection is bounded to
+48 visible physical identities and clears on query/page/run or gameplay revision
+changes. Cosmetic refreshes preserve selection and its range anchor.
+
+Review selected action confirms an explicit list. Supported bulk operations are
+protect, favorite/unfavorite, mark inspected and move to Carried/Home/Material
+Vault. Each is one idempotent transaction. A foreign, inaccessible, bound,
+equipped, locked or saved-loadout protected item rejects the complete move batch;
+no partial move or silent skipping of denied items occurs. Already-at-destination
+items are harmless noops. Bulk unlock, consume, sell and destroy are intentionally
+not provided. Protection uses each item's existing immutable lock history.
+Favorites are a separate presentation choice, not a replacement for manual locks.
+
+Favorites and inspection state follow physical item identity at account scope.
+Stars label favorites; a distinct New badge labels uninspected incoming quantity.
+Groups show favorite/new copy counts rather than a representative's status.
+Opening an individual inspector marks its displayed acquisition as seen; explicit
+and bulk Mark inspected controls are also available. Opaque acquisition tokens
+prevent an old observation from clearing a later grant/merge. Moving an item does
+not make it new; a newly split identity or incoming merge does. Historical items
+without an inspection record initially appear uninspected. Favorites do not copy
+from a consumed merge source to its target, nor between different accounts.
+
+Double-click expands a group or stages the existing equipment preview, preserving
+conflict and permanent-binding consent before Apply. It never immediately commits
+equipment or consumes anything. Other items open their inspector: the current
+server has no consumable Use or loot-container Open domain, so this UI does not
+invent those actions. Keyboard inspection and the explicit equip button remain
+available. Single-click inspection waits briefly to distinguish native double
+activation; modifier clicks only select.
+
+Tile preferences now persist at account scope through `inventory.display.v1`:
+show x1, healthy threshold and worn threshold. Reloading or using another browser
+loads the same values. Favorites, inspection and display changes do not advance
+the gameplay revision or invalidate an equipment draft. Server write permissions,
+revision checks and replay receipts still apply. Display state resets locally on
+sign-out so it cannot leak into another account.
+
+Migration 034 adds cosmetic annotation storage, the account display contract and
+bulk-capable lock receipt validation. No released content definitions change.
+Deploy with normal migration/grant refresh and readiness checks; do not hot-run
+new code on an older schema. Rollback requires a compatibility build that restores prior UI/domain behavior
+while retaining the migration-034 manifest and compatible lock view. An older
+pre-034 image fails strict schema readiness against the upgraded database. Keep
+annotation data/contracts and all bulk lock history; do not rewrite old migration
+checksums or drop player annotations as a rollback. Production migration
+and deployment require the separate operations approval.

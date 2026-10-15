@@ -1,5 +1,5 @@
 import type pg from 'pg';
-import { executeAction,advanceRevision,type Envelope } from '../foundation/action.js';
+import { executeAction,advanceRevision,type ActionContext,type Envelope } from '../foundation/action.js';
 import { DomainError } from '../foundation/errors.js';
 import { lockPersonalContainer } from './item-accounting.js';
 const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -8,6 +8,10 @@ export function setItemLock(pool:pg.Pool,accountId:string,envelope:Envelope,item
   if(!['MANUAL_UI','API'].includes(envelope.authorizationSource??'MANUAL_UI'))throw new DomainError(403,'EXPLICIT_ITEM_LOCK_ACTION_REQUIRED');
   const id=itemId.toLowerCase();
   return executeAction(pool,accountId,envelope,{itemId:id,locked},async c=>{
+    const result=await applyItemLock(c,id,locked);return {...result,revision:result.changed?await advanceRevision(c):c.run.revision};
+  });
+}
+export async function applyItemLock(c:ActionContext,id:string,locked:boolean){
     const item=(await c.client.query('SELECT container_id,quantity FROM inventory_items WHERE id=$1 FOR UPDATE',[id])).rows[0];
     if(!item||BigInt(item.quantity)===0n)throw new DomainError(404,'ITEM_NOT_FOUND');
     await lockPersonalContainer(c,item.container_id);
@@ -16,8 +20,7 @@ export function setItemLock(pool:pg.Pool,accountId:string,envelope:Envelope,item
     if((prior?.locked??false)===locked)return {itemId:id,locked,changed:false,protectionRevision:revision.toString(),revision:c.run.revision};
     if(revision>=9223372036854775807n)throw new DomainError(409,'ITEM_LOCK_REVISION_EXHAUSTED');
     await c.client.query(`INSERT INTO inventory_lock_events(item_id,action_id,run_id,revision,previous_locked,locked) VALUES($1,$2,$3,$4,$5,$6)`,[id,c.actionId,c.run.id,(revision+1n).toString(),prior?.locked??false,locked]);
-    return {itemId:id,locked,changed:true,protectionRevision:(revision+1n).toString(),revision:await advanceRevision(c)};
-  });
+    return {itemId:id,locked,changed:true,protectionRevision:(revision+1n).toString(),revision:c.run.revision};
 }
 export async function itemLockView(pool:pg.Pool,accountId:string,itemId:string){
   const row=(await pool.query(`SELECT i.id AS "itemId",coalesce(p.locked,false) AS locked,coalesce(p.revision,0)::text AS "protectionRevision"
