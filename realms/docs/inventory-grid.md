@@ -89,11 +89,11 @@ Weapon-set activation has its own confirmation, including any permanent binding.
 Equipment changes remain free outside encounters and server-authoritative.
 The paperdoll reads the complete committed plan and equipped-first gear projection,
 so filtering or paging the pack does not hide equipped possessions. It does not
-require the complete-plan editor's first-100-gear list to be exhaustive.
+require the bootstrap quick list to be exhaustive; both the paperdoll and complete-plan editor can search all eligible equipment in pages.
 
 Item tiles show only applicable status icons at the top left (locked, equipped,
 loadout protection or restricted access), and quantities prefixed with `x` at the
-top right. The centered item glyph sits above the name. Requirement level and
+top right. The centered item illustration sits above the name. Requirement level and
 known quality appear beneath it; other items use known quality or a public key
 property. The complete border indicates rarity, which is also named in the item
 inspection panel. Group cards identify multiple copies rather than implying that
@@ -118,3 +118,35 @@ Unknown measurements display `—`, never zero. Authored zero remains `0`.
 All quantities and weight calculations remain exact through BigInt formatting;
 visible truncation for a very large value retains the exact tooltip/accessibility
 text. Tile presentation does not change encumbrance calculations.
+
+
+### Shared equipment picker, drag shortcuts and grouped inspection
+
+The same paperdoll is available on Character. An empty slot opens a searchable,
+paged list of eligible physical items; occupied slots offer inspection, unequip
+and replacement search. Complete-plan editor Search controls use the same picker
+without committing until Save equipment. Its quick dropdown list is a convenience,
+not an inventory size limit. Current equipment and carried saved-loadout references
+remain available for validation even when outside the quick list.
+
+Drag an individual carried equipment tile onto a compatible slot to preview the
+complete change, then confirm. Drag an equipped slot onto Return to pack (on either
+screen), or onto the Pack grid, to remove only that assignment after confirmation.
+Other prepared references survive. Group cards must be expanded before equipping;
+storage drops still reject equipped items. Binding and displacement warnings, stale
+revision checks and active-encounter locks use the existing equipment authority.
+Search and unequip buttons provide keyboard/touch equivalents to every drag action.
+
+A grouped inspector shows only copy count, total quantity, total measured weight
+and bulk, and location scope. It never presents a representative's description,
+quality, binding, protection, condition, unit dimensions or requirement as shared
+by every copy. Expanding the group exposes the actual individual records. Selection remembers whether a group or a physical copy was chosen: changing grouping never turns a group into a representative instance, and changing a selected group’s filters clears its aggregate inspection.
+
+Verification: use the isolated `npm run dev:client` fixture; optionally set
+`PLAYTEST_EQUIPMENT_COPIES=125` (allowed 0–160) to exercise more than 100 gear items.
+Open Character → empty Trinket slot → page/search; choose an item on the third page;
+confirm and verify it on Pack. In the full planner search for Sword, acknowledge
+binding and save. Inspect the grouped rings and verify aggregate-only facts. Check
+Escape focus return, empty/retry search states, a 320px viewport, and native browser
+equip/unequip dragging. Unit tests separately verify owned drag identities and
+preservation of other weapon-set references.

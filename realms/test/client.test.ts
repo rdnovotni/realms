@@ -1,3 +1,6 @@
+import { groupedInspectionFacts } from '../client/item-tiles.js';
+import { itemArtKey } from '../client/item-art.js';
+import { equipmentDrag,removeEquipmentAssignment } from '../client/equipment-drag.js';
 import { itemCondition,itemWeight,itemTileDetails,validTileSettings,defaultTileSettings } from '../client/item-tiles.js';
 import { equipmentSpec } from '../src/domains/equipment-content.js';
 import { paperdollPositions,paperdollCandidate } from '../client/paperdoll.js';
@@ -168,4 +171,44 @@ test('tile facts never invent levels or expose a grouped representative quality 
  assert.deepEqual(itemTileDetails({...item,numericQuality:'1.2345'},false),[['quality','Quality 1.2345']]);
  assert.deepEqual(itemTileDetails({...item,numericQuality:'1.2345'},true),[['copies','3 copies · inspect individually']]);
  const session=new GameSession();assert.equal(session.updateTileSettings({healthyPercent:20}),false);assert.equal(session.tileSettings.healthyPercent,70);assert.equal(session.updateTileSettings({showSingleQuantity:false}),true);assert.equal(session.tileSettings.showSingleQuantity,false);
+});
+
+
+test('artwork hierarchy uses only curated assets and distinct public item identities',()=>{
+ assert.equal(itemArtKey({name:'Sword',category:'EQUIPMENT',artwork:'compass',icon:'ring'}),'compass');
+ assert.equal(itemArtKey({name:'Sword',category:'EQUIPMENT',artwork:'https://untrusted.invalid/x',icon:'ring'}),'ring');
+ assert.equal(itemArtKey({name:'Knotted charm',equipment:{slots:['TRINKET']}}),'charm');assert.equal(itemArtKey({name:'Road medallion',equipment:{slots:['TRINKET']}}),'medallion');assert.equal(itemArtKey({name:'Copper ring'}),'ring');
+ assert.equal(itemArtKey({name:'Unrecognized thing',artwork:'../../private'}),null);
+});
+test('equipment drag payloads must reference a current assignment and unequip preserves other prepared references',()=>{
+ const plan:EquipmentPlan={activeSet:'A',slots:[{set:'A',slot:'MAIN_HAND',itemId:'sword'},{set:'B',slot:'MAIN_HAND',itemId:'sword'}]};
+ const payload={set:'A',slot:'MAIN_HAND',itemId:'sword'};const parsed=equipmentDrag(JSON.stringify(payload),plan);assert.ok(parsed);assert.equal(removeEquipmentAssignment(plan,parsed).slots.length,1);assert.equal(plan.slots.length,2);
+ for(const value of ['bad','null',JSON.stringify({...payload,itemId:'foreign'}),JSON.stringify({...payload,set:'WORN'})])assert.equal(equipmentDrag(value,plan),null);
+});
+test('equipment search does not alter pack state and rejects responses from signed-out sessions',async()=>{
+ const h=harness();await connect(h);h.session.inventoryQuery={search:'ore',grouped:true};
+ h.setInventoryRead(async path=>{assert.ok(path.includes('equipmentSlot=HEAD'));assert.ok(path.includes('grouped=false'));return json({runId:'run',revision:0,items:[],total:0,offset:0,pageSize:48});});
+ await h.session.findEquipment('HEAD','helm');assert.deepEqual(h.session.inventoryQuery,{search:'ore',grouped:true});assert.equal(h.session.inventory,null);
+ let resolve!:(value:Response)=>void;h.setInventoryRead(()=>new Promise(r=>{resolve=r;}));const pending=h.session.findEquipment('HEAD');await h.session.logout();resolve(json({runId:'run',revision:0,items:[]}));await assert.rejects(pending,/STALE_REVISION/);
+});
+
+
+test('group inspector exposes aggregate facts without representative binding, quality, condition or protection',()=>{
+ const facts=groupedInspectionFacts({copies:2,groupQuantity:'20',groupWeight:null,groupBulk:'5',multipleLocations:true,binding:'ACCOUNT_BOUND',numericQuality:'9.999',condition:87,maximumCondition:100,locked:true} as import('../client/types.js').InventoryItem);
+ assert.deepEqual(facts,[['Copies','2'],['Total quantity','20'],['Total weight','—'],['Total bulk','5'],['Locations','Multiple locations']]);
+});
+test('curated item illustrations use same-origin whitelisted routes',async()=>{
+ const app=Fastify();registerClient(app,{mode:'sessions',throttleKey:'not-public'});
+ try{const image=await app.inject({url:'/assets/items/sword.svg'});assert.equal(image.statusCode,200);assert.match(image.headers['content-type']!,/image\/svg\+xml/);assert.match(image.body,/<svg/);assert.equal((await app.inject({url:'/assets/items/not-approved.svg'})).statusCode,404);}finally{await app.close();}
+});
+
+
+test('selected groups never become representative individuals when browse mode or filters change',async()=>{
+ const h=harness();await connect(h);const item={id:'copy',name:'Group',copies:3} as import('../client/types.js').InventoryItem;
+ h.session.selectInventory(item);assert.equal(h.session.selectedInventoryGrouped,true);
+ await h.session.browseInventory({grouped:false});assert.equal(h.session.selectedInventoryItem,null);assert.equal(h.session.selectedInventoryGrouped,false);
+ h.session.selectInventory(item);assert.equal(h.session.selectedInventoryGrouped,false);
+ await h.session.browseInventory({grouped:true});assert.equal(h.session.selectedInventoryGrouped,false);assert.deepEqual(h.session.selectedInventoryItem,item);
+ h.session.selectInventory(item);assert.equal(h.session.selectedInventoryGrouped,true);h.session.inventoryQuery={grouped:true,search:'changed'};
+ await h.session.browseInventory(h.session.inventoryQuery);assert.equal(h.session.selectedInventoryItem,null);
 });

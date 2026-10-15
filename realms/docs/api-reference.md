@@ -53,3 +53,13 @@ The readonly shared preview reveals only known mechanics. Hidden checks reject a
 Public pages are listed in [branding and pages](branding-and-pages.md). Same-origin assets are allowlisted with restrictive response headers. The visual preview registers those assets/configuration only, so login and gameplay calls there return unavailable.
 
 Inventory queries accept `container` (owned UUID or ALL; omitted means current Carried), `search` (literal, up to 80 characters), `category`, `rarity`, `binding`, `protection`, `sort` (NAME/NEWEST/QUANTITY/WEIGHT/BULK/QUALITY), `direction`, `grouped` (true/false strings), `definitionId`, `offset` and `expectedRevision`. History accepts `offset` and `expectedRevision`. Responses carry run/revision identity; paging never limits total carrying load. Move kinds are CARRIED/HOME/MATERIAL_VAULT. Preferences require boolean `autoStoreMaterials` and `autoOverflow`; both default false. Extra/invalid query/body fields are rejected.
+
+
+Equipment option search reuses `GET /api/v1/inventory` with optional
+`equipmentSlot` (one of the existing equipment slot IDs), `search`, `offset`,
+`grouped=false` and `expectedRevision`. Slot queries always return physical
+instances, at most 48 per page, restricted to eligible current-run carried gear
+with sufficient level, proficiency and shared prerequisites. They require the
+normal authenticated game-read scope and perform no mutation. See
+[equipment persistence](equipment-persistence.md) and
+[inventory grid](inventory-grid.md) for UI behavior and constraints.

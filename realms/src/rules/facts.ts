@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 import type { ActionContext } from '../foundation/action.js';
 import type { Facts } from './prerequisites.js';
 /** Only canonical, owned facts enter rules. No HTTP body supplies this object. */
-export async function runFacts(c:ActionContext):Promise<Facts>{
+export async function runFacts(c:Pick<ActionContext,'client'|'run'|'accountId'>):Promise<Facts>{
  const p=(await c.client.query('SELECT * FROM run_progression WHERE run_id=$1',[c.run.id])).rows[0];
  const facts:Facts={mode:c.run.mode,level:p?.level??1,'capability.act':true};
  for(const key of ['strength','dexterity','constitution','intelligence','wisdom','charisma','luck'])if(p?.[key]!==undefined)facts[`attribute.${key}`]=p[key];
