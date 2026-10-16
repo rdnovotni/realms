@@ -101,12 +101,13 @@ export class GameSession {
    if(this.equipmentDraft&&(this.equipmentDraft.runId!==game.run.runId||game.equipment&&equipmentKey(this.equipmentDraft.plan)===equipmentKey(game.equipment)))this.equipmentDraft=null;
    this.equipmentPreview=null;this.previewGeneration++;this.equipmentPreviewBusy=false;if(this.inventoryWanted)await this.browseInventory(this.inventoryQuery);}
  }
- selectInventory(item:InventoryItem|null){this.inventoryHistory=null;this.inventoryHistoryBusy=false;this.historyGeneration++;this.selectedInventoryItem=item?structuredClone(item):null;this.selectedInventoryGrouped=!!item&&!!this.inventoryQuery.grouped&&item.copies>1;this.selectedInventoryQuery=JSON.stringify(this.inventoryQuery);this.selectedInventoryRevision=this.snapshot?.game.run.revision??-1;this.notify();}
+ selectInventory(item:InventoryItem|null){this.equippedInspectionGeneration++;this.inventoryHistory=null;this.inventoryHistoryBusy=false;this.historyGeneration++;this.selectedInventoryItem=item?structuredClone(item):null;this.selectedInventoryGrouped=!!item&&!!this.inventoryQuery.grouped&&item.copies>1;this.selectedInventoryQuery=JSON.stringify(this.inventoryQuery);this.selectedInventoryRevision=this.snapshot?.game.run.revision??-1;this.notify();}
+ private equippedInspectionGeneration=0;
  async inspectEquippedItem(itemId:string){
-  const snapshot=this.snapshot,epoch=this.epoch;if(!snapshot)return false;
+  const snapshot=this.snapshot,epoch=this.epoch,generation=++this.equippedInspectionGeneration;if(!snapshot)return false;
   const visible=this.inventory?.items.find(i=>i.id===itemId&&i.accessible);if(visible&&(!this.inventoryQuery.grouped||visible.copies===1)){this.selectInventory({...visible,copies:1});return true;}
   try{const page=await this.api.request<InventoryPage>('/api/v1/inventory?equipmentState=EQUIPPED&grouped=false&expectedRevision='+snapshot.game.run.revision);
-   if(epoch!==this.epoch||this.snapshot?.game.run.runId!==page.runId||this.snapshot.game.run.revision!==page.revision)return false;
+   if(epoch!==this.epoch||generation!==this.equippedInspectionGeneration||this.snapshot?.game.run.runId!==page.runId||this.snapshot.game.run.revision!==page.revision)return false;
    const item=page.items.find(i=>i.id===itemId);if(!item)return false;
    this.selectInventory({...item,copies:1});return true;
   }catch(error){if(epoch===this.epoch){this.handleError(error);this.notify();}return false;}
