@@ -138,7 +138,7 @@ source merge does not imply live migration/deployment.
 
 
 The current inventory workspace offers Compact/Standard/Detailed account-saved
-viewing modes, nearby equipment on wide displays and Items/Equipment switching on
+viewing modes, nearby equipment on wide displays and a collapsible equipment section above inventory on
 narrow displays. Comparison uses a dedicated two-column dialog and server-derived
 character totals. Repair quotes show condition before/after, per-item Gold cost,
 total and affordability. Shared loadout cards show readiness, explain missing or

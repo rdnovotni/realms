@@ -31,7 +31,7 @@ export class GameSession {
  stageEquipment(plan:EquipmentPlan,gear:Gear[]=[]){
   const s=this.snapshot;if(!s||this.busy||this.needsRefresh)return;
   if(!this.equipmentDraft)this.equipmentDraft={runId:s.game.run.runId,revision:s.game.run.revision,plan:structuredClone(plan),gear:[]};
-  this.equipmentDraft.plan=structuredClone(plan);for(const item of gear)if(!this.equipmentDraft.gear.some(g=>g.id===item.id))this.equipmentDraft.gear.push(structuredClone(item));
+  this.equipmentDraft.plan=structuredClone(plan);for(const item of gear)if(!this.equipmentDraft.gear.some(g=>g.id===item.id))this.equipmentDraft.gear.push(structuredClone(item));else if(item.inspection)this.equipmentDraft.gear.find(g=>g.id===item.id)!.inspection=structuredClone(item.inspection);
   this.equipmentPreview=null;this.notify();void this.previewEquipment();
  }
  revertEquipment(){this.equipmentDraft=null;this.equipmentPreview=null;this.notify();void this.previewEquipment();}
@@ -46,7 +46,10 @@ export class GameSession {
  }
  inventoryFiltersOpen=false;
  inventoryLayout:'COMPACT'|'STANDARD'|'DETAILED'='STANDARD';
- inventoryWorkspace:'ITEMS'|'EQUIPMENT'='ITEMS';
+ inventoryEquipmentOpen=false;
+ inventoryLoadoutsOpen=false;
+ inventoryStatsOpen=false;
+ setInventoryEquipmentOpen(open:boolean){this.inventoryEquipmentOpen=open;this.notify();}
  setInventoryLayout(layout:'COMPACT'|'STANDARD'|'DETAILED'){if(this.busy||this.pending||this.needsRefresh||!this.snapshot?.game.canWrite)return;void this.action('/api/v1/inventory/workspace','SET_INVENTORY_WORKSPACE',{layout});}
  tileSettingsOpen=false;
  tileSettings:TileSettings={...defaultTileSettings};
@@ -79,7 +82,7 @@ export class GameSession {
  private notify(){for(const listener of this.listeners)listener();}
  async initialize(){try{this.config=await this.api.request<Config>('/api/v1/client/config',undefined,false);}catch(error){this.notice={text:errorMessage(error),kind:'error'};}this.notify();}
  async connect(credentials:{handle?:string;password?:string;token?:string}){
-  if(this.busy)return;this.inventorySelection.clear();this.inventorySelectionAnchor=null;this.inventoryLayout='STANDARD';this.inventoryWorkspace='ITEMS';this.tileSettings={...defaultTileSettings};this.equipmentDraft=null;this.equipmentPreview=null;this.equipmentContext=undefined;this.previewGeneration++;this.inventory=null;this.inventoryBusy=false;this.inventoryError=null;this.inventoryHistory=null;this.historyGeneration++;this.inventoryHistoryBusy=false;this.selectedInventoryItem=null;this.selectedInventoryGrouped=false;this.inventoryWanted=false;this.inventoryQuery={sort:'NAME',direction:'ASC',grouped:true,offset:0};this.inventoryGeneration++;this.busy=true;const epoch=++this.epoch;this.notify();
+  if(this.busy)return;this.inventorySelection.clear();this.inventorySelectionAnchor=null;this.inventoryLayout='STANDARD';this.inventoryEquipmentOpen=false;this.inventoryLoadoutsOpen=false;this.inventoryStatsOpen=false;this.tileSettings={...defaultTileSettings};this.equipmentDraft=null;this.equipmentPreview=null;this.equipmentContext=undefined;this.previewGeneration++;this.inventory=null;this.inventoryBusy=false;this.inventoryError=null;this.inventoryHistory=null;this.historyGeneration++;this.inventoryHistoryBusy=false;this.selectedInventoryItem=null;this.selectedInventoryGrouped=false;this.inventoryWanted=false;this.inventoryQuery={sort:'NAME',direction:'ASC',grouped:true,offset:0};this.inventoryGeneration++;this.busy=true;const epoch=++this.epoch;this.notify();
   try{let token=credentials.token;if(this.config?.authMode==='sessions'){const result=await this.api.request<{token:string}>('/api/v1/auth/login',{handle:credentials.handle,password:credentials.password,deviceLabel:'Follybound browser'},false);token=result.token;}
    if(epoch!==this.epoch)return;if(!token)throw new ApiError(401,'UNAUTHORIZED');this.api.setToken(token);await this.load(epoch);this.notice={text:'Connected. Your progress is saved by the server.',kind:'success'};
   }catch(error){if(epoch===this.epoch){this.api.setToken('');this.snapshot=null;this.notice={text:errorMessage(error),kind:'error'};}}
@@ -98,7 +101,19 @@ export class GameSession {
    if(this.equipmentDraft&&(this.equipmentDraft.runId!==game.run.runId||game.equipment&&equipmentKey(this.equipmentDraft.plan)===equipmentKey(game.equipment)))this.equipmentDraft=null;
    this.equipmentPreview=null;this.previewGeneration++;this.equipmentPreviewBusy=false;if(this.inventoryWanted)await this.browseInventory(this.inventoryQuery);}
  }
- selectInventory(item:InventoryItem|null){this.inventoryHistory=null;this.inventoryHistoryBusy=false;this.historyGeneration++;this.selectedInventoryItem=item?structuredClone(item):null;this.selectedInventoryGrouped=!!item&&!!this.inventoryQuery.grouped&&item.copies>1;this.selectedInventoryQuery=JSON.stringify(this.inventoryQuery);this.selectedInventoryRevision=this.snapshot?.game.run.revision??-1;this.notify();}
+ selectInventory(item:InventoryItem|null){this.equippedInspectionGeneration++;this.inventoryHistory=null;this.inventoryHistoryBusy=false;this.historyGeneration++;this.selectedInventoryItem=item?structuredClone(item):null;this.selectedInventoryGrouped=!!item&&!!this.inventoryQuery.grouped&&item.copies>1;this.selectedInventoryQuery=JSON.stringify(this.inventoryQuery);this.selectedInventoryRevision=this.snapshot?.game.run.revision??-1;this.notify();}
+ private equippedInspectionGeneration=0;
+ async inspectEquippedItem(itemId:string){
+  const snapshot=this.snapshot,epoch=this.epoch,generation=++this.equippedInspectionGeneration;if(!snapshot)return false;
+  const visible=this.inventory?.items.find(i=>i.id===itemId&&i.accessible);if(visible&&(!this.inventoryQuery.grouped||visible.copies===1)){this.selectInventory({...visible,copies:1});return true;}
+  const draft=this.equipmentDraft,cached=draft?.runId===snapshot.game.run.runId&&draft.revision===snapshot.game.run.revision?draft.gear.find(g=>g.id===itemId)?.inspection:undefined;
+  if(cached){this.selectInventory({...cached,copies:1});return true;}
+  try{const page=await this.api.request<InventoryPage>('/api/v1/inventory?equipmentState=EQUIPPED&grouped=false&expectedRevision='+snapshot.game.run.revision);
+   if(epoch!==this.epoch||generation!==this.equippedInspectionGeneration||this.snapshot?.game.run.runId!==page.runId||this.snapshot.game.run.revision!==page.revision)return false;
+   const item=page.items.find(i=>i.id===itemId);if(!item)return false;
+   this.selectInventory({...item,copies:1});return true;
+  }catch(error){if(epoch===this.epoch){this.handleError(error);this.notify();}return false;}
+ }
  async loadInventoryHistory(itemId:string,offset=0){
   const snapshot=this.snapshot;if(!snapshot||this.selectedInventoryItem?.id!==itemId)return;
   const generation=++this.historyGeneration,epoch=this.epoch,revision=snapshot.game.run.revision;
@@ -161,13 +176,13 @@ export class GameSession {
   catch(error){if(epoch!==this.epoch)return;if(!this.pending){this.needsRefresh=true;this.notice={text:'Your action was saved, but the latest view could not be loaded. Refresh to reconnect.',kind:'error'};return;}if(!(error instanceof ApiError)||!error.ambiguous)this.pending=null;this.handleError(error);if(error instanceof ApiError&&error.ambiguous&&this.pending)this.notice.text+=' The action may have completed. Retry the same action to confirm.';if(error instanceof ApiError&&error.status===409){try{await this.load(epoch);}catch{/* Keep the stale snapshot disabled until an explicit refresh succeeds. */this.snapshot=null;}}}
   finally{if(epoch===this.epoch){this.busy=false;this.notify();}}
  }
- private handleError(error:unknown){this.notice={text:errorMessage(error),kind:'error'};if(error instanceof ApiError&&error.status===401){this.inventorySelection.clear();this.inventorySelectionAnchor=null;this.inventoryLayout='STANDARD';this.inventoryWorkspace='ITEMS';this.tileSettings={...defaultTileSettings};this.equipmentDraft=null;this.equipmentPreview=null;this.equipmentContext=undefined;this.previewGeneration++;this.equipmentPreviewBusy=false;this.api.setToken('');this.snapshot=null;this.pending=null;this.inventory=null;this.inventoryHistory=null;this.historyGeneration++;this.inventoryHistoryBusy=false;this.selectedInventoryItem=null;this.selectedInventoryGrouped=false;this.inventoryWanted=false;this.inventoryBusy=false;this.inventoryGeneration++;}}
+ private handleError(error:unknown){this.notice={text:errorMessage(error),kind:'error'};if(error instanceof ApiError&&error.status===401){this.inventorySelection.clear();this.inventorySelectionAnchor=null;this.inventoryLayout='STANDARD';this.inventoryEquipmentOpen=false;this.inventoryLoadoutsOpen=false;this.inventoryStatsOpen=false;this.tileSettings={...defaultTileSettings};this.equipmentDraft=null;this.equipmentPreview=null;this.equipmentContext=undefined;this.previewGeneration++;this.equipmentPreviewBusy=false;this.api.setToken('');this.snapshot=null;this.pending=null;this.inventory=null;this.inventoryHistory=null;this.historyGeneration++;this.inventoryHistoryBusy=false;this.selectedInventoryItem=null;this.selectedInventoryGrouped=false;this.inventoryWanted=false;this.inventoryBusy=false;this.inventoryGeneration++;}}
  async logout(){
   if(this.busy||this.pending)return;this.busy=true;this.notify();
   let confirmed=true;
   try{if(this.config?.authMode==='sessions')await this.api.request('/api/v1/auth/logout',{});}
   catch{confirmed=false;}
   // Forget local account data even if revocation succeeded but its reply was lost.
-  ++this.epoch;this.inventorySelection.clear();this.inventorySelectionAnchor=null;this.inventoryLayout='STANDARD';this.inventoryWorkspace='ITEMS';this.tileSettings={...defaultTileSettings};this.equipmentDraft=null;this.equipmentPreview=null;this.equipmentContext=undefined;this.previewGeneration++;this.equipmentPreviewBusy=false;this.api.setToken('');this.snapshot=null;this.ascension=null;this.pending=null;this.inventory=null;this.selectedInventoryItem=null;this.selectedInventoryGrouped=false;this.inventoryHistory=null;this.inventoryWanted=false;this.inventoryBusy=false;this.inventoryHistoryBusy=false;this.inventoryError=null;this.inventoryGeneration++;this.historyGeneration++;this.inventoryQuery={sort:'NAME',direction:'ASC',grouped:true,offset:0};this.needsRefresh=false;this.busy=false;this.notice={text:confirmed?'Signed out. Your game is saved; sign in to resume.':'Signed out on this device. Server session revocation could not be confirmed.',kind:'info'};this.notify();
+  ++this.epoch;this.inventorySelection.clear();this.inventorySelectionAnchor=null;this.inventoryLayout='STANDARD';this.inventoryEquipmentOpen=false;this.inventoryLoadoutsOpen=false;this.inventoryStatsOpen=false;this.tileSettings={...defaultTileSettings};this.equipmentDraft=null;this.equipmentPreview=null;this.equipmentContext=undefined;this.previewGeneration++;this.equipmentPreviewBusy=false;this.api.setToken('');this.snapshot=null;this.ascension=null;this.pending=null;this.inventory=null;this.selectedInventoryItem=null;this.selectedInventoryGrouped=false;this.inventoryHistory=null;this.inventoryWanted=false;this.inventoryBusy=false;this.inventoryHistoryBusy=false;this.inventoryError=null;this.inventoryGeneration++;this.historyGeneration++;this.inventoryQuery={sort:'NAME',direction:'ASC',grouped:true,offset:0};this.needsRefresh=false;this.busy=false;this.notice={text:confirmed?'Signed out. Your game is saved; sign in to resume.':'Signed out on this device. Server session revocation could not be confirmed.',kind:'info'};this.notify();
  }
 }

@@ -218,9 +218,12 @@ Compact uses smaller art; Detailed adds category, binding and descriptions.
 The account `inventory.workspace.v1` contract persists layout independently of
 existing tile preferences. Layout changes do not advance gameplay revision.
 
-Wide screens keep an independently scrollable paperdoll/loadout column beside the
-pack and sticky inspector. Narrow screens use Items/Equipment buttons, preserving
-filters, selected items and the equipment draft while switching. Common search,
+Wide screens allocate roughly 35% to a sticky equipment column and 65% to the
+pack, with selected-item details beneath the grid. Both weapon sets remain in the
+equipment section; carrying totals stay beside it. Loadouts and statistics are
+secondary disclosures directly within the paperdoll. Narrow screens keep equipment above the grid in a collapsible section. A floating
+Equipment control reopens it without losing filters, selection or the shared draft.
+Equipment and items are never mutually exclusive views. Common search,
 location, category and sort remain visible; More filters reveals the rest.
 
 Compare side by side opens a dedicated dialog with current/candidate artwork,
