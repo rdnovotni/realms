@@ -19,7 +19,7 @@ export function inventorySuccess(type:string,body:Record<string,unknown>,result:
  if(type==='SET_INVENTORY_INTELLIGENCE'){const value=body.value as {views?:unknown;automation?:unknown}|undefined;return value?.automation?'Keep-N routing rules saved for future rewards.':'Saved inventory views updated.';}
  if(type==='SET_ITEM_LOCK')return `${body.locked?'Locked':'Unlocked'} ${name}.`;
  if(type==='MOVE_INVENTORY')return `Moved ${name} to ${storageTitle(String(body.kind??'')).toLowerCase()}.`;
- if(type==='SPLIT_STACK')return `Split ${String(body.amount??'')} units into a separate stack.`;
+ if(type==='SPLIT_STACK')return `Split ${String(body.quantity??'')} units into a separate stack.`;
  if(type==='MERGE_STACKS')return 'Merged the selected compatible stacks.';
  if(type==='REPAIR_ITEMS'){const count=Array.isArray(result.items)?result.items.length:0;return `Repaired ${count} ${count===1?'item':'items'} for ${String(result.total??'0')} Gold.`;}
  if(type==='USE_ITEM')return `${result.kind==='OPEN'?'Opened':'Used'} ${name}${typeof result.remaining==='string'?`; ${result.remaining} remaining`:''}.`;
