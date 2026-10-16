@@ -312,3 +312,15 @@ button:disabled{opacity:.7}
 .slot-condition.healthy{color:#376345}.slot-condition.worn{color:#7d5100}.slot-condition.critical{color:#a12d2d}
 .comparison-increase .comparison-delta{color:#376345}.comparison-decrease .comparison-delta{color:#a12d2d}
 .inventory-comparison-dialog{overflow-wrap:anywhere}.inventory-comparison-dialog>input,.inventory-comparison-dialog>select{max-width:100%;margin-block:.4rem}
+/* Compact controls and bounded names preserve the aligned tile footer. */
+.inventory-tile .inventory-item-name{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;line-height:1.35;min-height:2.7em;max-height:2.7em;flex-shrink:0}
+.inventory-detailed-description{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden}
+.inventory-filter-panel{margin:12px 0;border:1px solid #bdc5ad;border-radius:6px;padding:0 12px;background:#f4f2e7}
+.inventory-filter-panel>summary{cursor:pointer;padding:12px 0;font-size:.85rem;font-weight:600}
+.inventory-filter-panel h3{font-size:.85rem}.inventory-panel>label:has(input[type=search]){display:block;margin:10px 0;font-size:.8rem}.inventory-panel>label>input[type=search]{width:100%;min-height:42px;margin-top:4px}
+.inventory-storage-nav{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}.inventory-storage-nav button{flex:1;min-height:42px;white-space:normal}.inventory-storage-nav button[aria-pressed=true]{background:#315e4f;color:#fff;border-color:#315e4f}
+.inventory-storage-section{margin:8px 0}.inventory-storage-section>summary{cursor:pointer;font-size:.8rem;padding:6px 0}.inventory-storage-section select{max-width:100%;min-height:40px}
+.item-action-icon{width:16px;height:16px;vertical-align:-3px;margin-right:6px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.inventory-quick-comparison{position:fixed;z-index:40;box-sizing:border-box;max-height:calc(100dvh - 24px);overflow:hidden;border:1px solid #829572;border-radius:7px;background:#fffcf2;color:#344c3c;padding:12px;box-shadow:0 5px 18px #172c3040;font-size:.76rem;line-height:1.5;pointer-events:auto;overflow-wrap:anywhere}
+.inventory-quick-comparison strong{display:block;margin-bottom:5px}.inventory-quick-comparison small{display:block;margin-top:7px;color:#5c6a52}
+@media(max-width:400px){.inventory-storage-nav{gap:4px}.inventory-storage-nav button{font-size:.72rem;padding:7px 6px}.inventory-filter-panel{padding-inline:8px}.inventory-view-presets button{white-space:normal}.inventory-view-presets input{min-width:0;max-width:100%}}

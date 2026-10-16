@@ -10,9 +10,9 @@ import { DomainError } from '../foundation/errors.js';
 import { carryLoad,publicCarryLoad } from './inventory-load.js';
 import { writeState } from './state.js';
 
-export type InventoryQuery={equipmentSlot?:string;slot?:string;equipmentState?:'ALL'|'EQUIPPED'|'UNEQUIPPED'|'USABLE';favorite?:boolean;uninspected?:boolean;condition?:'ALL'|'NEEDS_REPAIR'|'BROKEN'|'FULL';container?:string;search?:string;category?:string;rarity?:string;binding?:string;protection?:'ALL'|'PROTECTED'|'UNPROTECTED';sort?:'NAME'|'NEWEST'|'QUANTITY'|'WEIGHT'|'BULK'|'QUALITY';direction?:'ASC'|'DESC';grouped?:boolean;definitionId?:string;offset?:number;expectedRevision?:number};
+export type InventoryQuery={location?:'CARRIED'|'HOME'|'MATERIAL_VAULT';equipmentSlot?:string;slot?:string;equipmentState?:'ALL'|'EQUIPPED'|'UNEQUIPPED'|'USABLE';favorite?:boolean;uninspected?:boolean;condition?:'ALL'|'NEEDS_REPAIR'|'BROKEN'|'FULL';container?:string;search?:string;category?:string;rarity?:string;binding?:string;protection?:'ALL'|'PROTECTED'|'UNPROTECTED';sort?:'NAME'|'NEWEST'|'QUANTITY'|'WEIGHT'|'BULK'|'QUALITY'|'DURABILITY';direction?:'ASC'|'DESC';grouped?:boolean;definitionId?:string;offset?:number;expectedRevision?:number};
 export const inventoryPageSize=48;
-const sorts={NAME:'name COLLATE "C"',NEWEST:'created_at',QUANTITY:'quantity::numeric',WEIGHT:'"totalWeight"::numeric',BULK:'"totalBulk"::numeric',QUALITY:'"numericQuality"::numeric'};
+const sorts={DURABILITY:'condition::numeric/nullif("maximumCondition",0)',NAME:'name COLLATE "C"',NEWEST:'created_at',QUANTITY:'quantity::numeric',WEIGHT:'"totalWeight"::numeric',BULK:'"totalBulk"::numeric',QUALITY:'"numericQuality"::numeric'};
 export async function requireInventoryIdle(c:ActionContext) {
  requireActive(c);
  if((await c.client.query("SELECT 1 FROM instance_participants p JOIN instances i ON i.id=p.instance_id WHERE p.run_id=$1 AND i.lifecycle='ACTIVE' LIMIT 1",[c.run.id])).rowCount)throw new DomainError(409,'INSTANCE_STILL_ACTIVE');
@@ -39,6 +39,7 @@ export async function personalStorage(c:ActionContext,kind:'CARRIED'|'HOME'|'MAT
  return (await c.client.query("INSERT INTO inventory_containers(scope_id,kind) VALUES($1,$2) ON CONFLICT(scope_id,kind,label) DO UPDATE SET label=EXCLUDED.label RETURNING id",[scope.id,kind])).rows[0].id as string;
 }
 export function inventoryView(pool:pg.Pool,accountId:string,q:InventoryQuery={}) {
+ if(q.location&&(!['CARRIED','HOME','MATERIAL_VAULT'].includes(q.location)||q.container))throw new DomainError(400,'INVALID_INVENTORY_QUERY');
  if((q.favorite!==undefined&&typeof q.favorite!=='boolean')||(q.uninspected!==undefined&&typeof q.uninspected!=='boolean')||(q.equipmentState&&!['ALL','EQUIPPED','UNEQUIPPED','USABLE'].includes(q.equipmentState))||(q.condition&&!['ALL','NEEDS_REPAIR','BROKEN','FULL'].includes(q.condition))||(q.slot&&q.slot!=='ALL'&&!equipmentSlots.includes(q.slot as typeof equipmentSlots[number]))||q.equipmentSlot&&!equipmentSlots.includes(q.equipmentSlot as typeof equipmentSlots[number]))throw new DomainError(400,'INVALID_INVENTORY_QUERY');
  if(!Object.hasOwn(sorts,q.sort??'NAME')||!['ASC','DESC'].includes(q.direction??'ASC')||!Number.isSafeInteger(q.offset??0)||(q.offset??0)<0||(q.offset??0)>1000000||(q.search??'').length>80)throw new DomainError(400,'INVALID_INVENTORY_QUERY');
  return transaction(pool,async client=>{
@@ -59,7 +60,7 @@ export function inventoryView(pool:pg.Pool,accountId:string,q:InventoryQuery={})
   const terms:string[]=[];
   function bind(value:unknown){parameters.push(value);return '$'+parameters.length;}
   if(q.container&&q.container!=='ALL')terms.push(`"containerId"=${bind(q.container)}::uuid`);
-  else if(!q.container)terms.push("kind='CARRIED' AND \"runId\"=$2");
+  else if(!q.container)terms.push(`kind=${bind(q.location??'CARRIED')} AND "runId"=$2`);
   if(q.search)terms.push(`name ILIKE ${bind('%'+q.search.replace(/[\\%_]/g,'\\$&')+'%')} ESCAPE '\\'`);
   for(const [field,value] of [['category',q.category],['rarity',q.rarity],['binding',q.binding],['definitionId',q.definitionId]] as const)if(value&&value!=='ALL')terms.push(`"${field}"=${bind(value)}`);
   if(q.protection&&q.protection!=='ALL')terms.push(`protected=${q.protection==='PROTECTED'?'true':'false'}`);
@@ -113,7 +114,7 @@ export function inventoryView(pool:pg.Pool,accountId:string,q:InventoryQuery={})
    WHERE i.quantity>0 AND c.kind IN('CARRIED','HOME','MATERIAL_VAULT','LEGACY') AND
     (s.account_id=$1 OR EXISTS(SELECT 1 FROM runs owned JOIN characters ch ON ch.id=owned.character_id WHERE owned.id=s.run_id AND ch.account_id=$1))
   ),filtered AS (SELECT * FROM owned WHERE ${terms.join(' AND ')||'true'}),numbered AS (
-   SELECT *,sum(favorite::integer) OVER(PARTITION BY "definitionId")::integer AS "groupFavoriteCount",sum("isNew"::integer) OVER(PARTITION BY "definitionId")::integer AS "groupNewCount",count(*) OVER(PARTITION BY "definitionId") AS copies,
+   SELECT *,CASE WHEN count(condition) OVER(PARTITION BY "definitionId")=count(*) OVER(PARTITION BY "definitionId") THEN min(condition::numeric/nullif("maximumCondition",0)) OVER(PARTITION BY "definitionId") END AS "groupConditionRatio",sum(favorite::integer) OVER(PARTITION BY "definitionId")::integer AS "groupFavoriteCount",sum("isNew"::integer) OVER(PARTITION BY "definitionId")::integer AS "groupNewCount",count(*) OVER(PARTITION BY "definitionId") AS copies,
    (min("containerId"::text) OVER(PARTITION BY "definitionId")<>max("containerId"::text) OVER(PARTITION BY "definitionId")) AS "multipleLocations",
    (sum(quantity::numeric) OVER(PARTITION BY "definitionId"))::text AS "groupQuantity",
    CASE WHEN count("totalWeight") OVER(PARTITION BY "definitionId")=count(*) OVER(PARTITION BY "definitionId") THEN (sum("totalWeight"::numeric) OVER(PARTITION BY "definitionId"))::text END AS "groupWeight",
@@ -121,9 +122,9 @@ export function inventoryView(pool:pg.Pool,accountId:string,q:InventoryQuery={})
    max(created_at) OVER(PARTITION BY "definitionId") AS "groupNewest",
    row_number() OVER(PARTITION BY "definitionId" ORDER BY name COLLATE "C",id) AS representative FROM filtered
   ),selected AS (SELECT * FROM numbered ${q.grouped&&!q.equipmentSlot?'WHERE representative=1':''})`;
-  const sortExpression=q.grouped&&q.sort==='NEWEST'?'"groupNewest"':q.grouped&&q.sort==='QUANTITY'?'"groupQuantity"::numeric':q.grouped&&q.sort==='WEIGHT'?'"groupWeight"::numeric':q.grouped&&q.sort==='BULK'?'"groupBulk"::numeric':sorts[q.sort??'NAME'];
+  const sortExpression=q.grouped&&q.sort==='DURABILITY'?'"groupConditionRatio"':q.grouped&&q.sort==='NEWEST'?'"groupNewest"':q.grouped&&q.sort==='QUANTITY'?'"groupQuantity"::numeric':q.grouped&&q.sort==='WEIGHT'?'"groupWeight"::numeric':q.grouped&&q.sort==='BULK'?'"groupBulk"::numeric':sorts[q.sort??'NAME'];
   const total=Number((await client.query(cte+' SELECT count(*)::integer AS total FROM selected',parameters)).rows[0].total);
-  const items=(await client.query(cte+` SELECT * FROM selected ORDER BY ${sortExpression} ${q.direction??'ASC'} NULLS LAST,id LIMIT ${inventoryPageSize} OFFSET ${q.offset??0}`,parameters)).rows.map(({representative,created_at,groupNewest,runId,...item})=>({...item,copies:Number(item.copies)}));
+  const items=(await client.query(cte+` SELECT * FROM selected ORDER BY ${sortExpression} ${q.direction??'ASC'} NULLS LAST,id LIMIT ${inventoryPageSize} OFFSET ${q.offset??0}`,parameters)).rows.map(({representative,created_at,groupNewest,groupConditionRatio,runId,...item})=>({...item,copies:Number(item.copies)}));
   const preferences=await inventoryPreferences(client,accountId);
   return {...await inventoryIntelligence(client,accountId),workspacePreferences:await workspacePreferences(client,accountId),displayPreferences:(await displayPreferences(client,accountId)).value,revision:run.revision,runId:run.id,items,total,offset:q.offset??0,pageSize:inventoryPageSize,containers:containers.slice(0,200),hasMoreContainers:containers.length>200,carry:publicCarryLoad(await carryLoad(client,run.id)),preferences:preferences.value};
  });
