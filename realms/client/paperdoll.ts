@@ -26,6 +26,7 @@ export function renderPaperdoll(snapshot:Snapshot,session:GameSession,disabled:b
  const candidate=paperdollCandidate(selected,session.selectedInventoryGrouped,snapshot.progression.level);
  panel.append(node('p',candidate?`Select a highlighted slot to equip ${candidate.name}.`:'Click a slot to search your equipment. Drag carried items onto slots, or return equipped gear to your pack.','help'));
  if(snapshot.game.activeEncounter)panel.append(node('p','Gear changes are locked during an encounter.','cost'));
+ const weapons=node('div','','paperdoll-weapon-bank');panel.append(weapons);
  const body=node('div','','paperdoll-body'),figure=node('div','','paperdoll-figure');figure.append(silhouette());body.append(figure);
  const inspector=node('div','','paperdoll-inspector');inspector.id='equipment-inspector';inspector.setAttribute('aria-live','polite');
  function inspect(set:'WORN'|'A'|'B',slot:string,origin:HTMLButtonElement,choice?:InventoryItem){
@@ -37,6 +38,7 @@ export function renderPaperdoll(snapshot:Snapshot,session:GameSession,disabled:b
   };
   if(item){inspector.append(node('strong',item.name),node('p',`Required level ${item.minimumLevel} · ${title(item.binding)}${item.hands===2?' · Two hands':''}`,'help'));
    if(item.maximumCondition!==null)inspector.append(node('p',`Condition ${item.condition} / ${item.maximumCondition}`,'help'));
+   if(document.getElementById('inventory-items'))inspector.append(button('Inspect '+item.name+' in inventory',()=>{void session.inspectEquippedItem(item.id).then(found=>{if(found){const heading=document.querySelector<HTMLElement>('#inventory-details h3');heading?.focus({preventScroll:true});heading?.scrollIntoView({block:'nearest'});}});},disabled));
    inspector.append(button('Unequip '+item.name,()=>commit({...plan!,slots:plan!.slots.filter(a=>a.set!==set||a.slot!==slot)},`Remove ${item.name} from ${position}? It stays in your pack; other positions are preserved.`),blocked));
   }else inspector.append(node('p','This slot is empty.','muted'));
   const equipChoice=(picked:InventoryItem)=>{const draft=prepareInventoryEquipment(plan!,picked,set,slot,gear),displaced=plan!.slots.some(a=>!draft.slots.some(b=>a.set===b.set&&a.slot===b.slot&&a.itemId===b.itemId));commit(draft,`Equip ${picked.name} in ${position}?${displaced?' Conflicting positions will be cleared; their items stay in your pack.':''}`,picked);};
@@ -50,7 +52,7 @@ export function renderPaperdoll(snapshot:Snapshot,session:GameSession,disabled:b
  for(const position of positions){
   const {set,slot,itemId}=position,item=gear.find(g=>g.id===itemId),hand=slot==='MAIN_HAND'||slot==='OFF_HAND';
   let target:HTMLElement=body;
-  if(hand){let bank=panel.querySelector<HTMLElement>(`[data-weapon-set="${set}"]`);if(!bank){bank=node('div','','paperdoll-weapons');bank.dataset.weaponSet=set;bank.append(node('h3',`Weapon set ${set}${plan.activeSet===set?' · Active':' · Prepared'}`));panel.append(bank);}target=bank;}
+  if(hand){let bank=weapons.querySelector<HTMLElement>(`[data-weapon-set="${set}"]`);if(!bank){bank=node('div','','paperdoll-weapons');bank.dataset.weaponSet=set;bank.append(node('h3',`Weapon set ${set}${plan.activeSet===set?' · Active':' · Prepared'}`));weapons.append(bank);}target=bank;}
   const compatible=!!candidate?.equipment?.slots.includes(slot),twoHand=!item&&slot==='OFF_HAND'&&gear.find(g=>g.id===plan.slots.find(a=>a.set===set&&a.slot==='MAIN_HAND')?.itemId)?.hands===2;
   const control=button('',()=>inspect(set,slot,control));control.className=`paperdoll-slot ${hand?'hand-slot':'slot-'+slot.toLowerCase()}${item?' occupied':''}${compatible?' compatible':''}`;control.dataset.focus=`Gear ${set} ${slot}`;
   const name=item?.name??(itemId?'Item unavailable':twoHand?'Two-handed weapon':'Empty');control.setAttribute('aria-label',`${set==='WORN'?'Worn':`Set ${set}`} ${title(slot)}: ${name}${compatible?`, can equip ${candidate!.name}`:''}`);control.setAttribute('aria-controls','equipment-inspector');control.setAttribute('aria-expanded','false');control.addEventListener('click',()=>{panel.querySelectorAll('[aria-expanded]').forEach(n=>n.setAttribute('aria-expanded','false'));control.setAttribute('aria-expanded','true');});
@@ -64,10 +66,11 @@ export function renderPaperdoll(snapshot:Snapshot,session:GameSession,disabled:b
   if(item)control.append(renderItemArt({...item,category:'EQUIPMENT',equipment:{slots:item.slots}}));
   control.append(node('span',title(slot),'paperdoll-slot-label'),node('strong',name));if(item)control.append(node('small',`Lv ${item.minimumLevel}${item.maximumCondition!==null?` · ${item.condition}/${item.maximumCondition}`:''}`));target.append(control);
  }
- panel.insertBefore(body,panel.children[2]??null);
+ panel.insertBefore(body,panel.children[3]??null);
  const swap=button(`Activate weapon set ${plan.activeSet==='A'?'B':'A'}`,()=>{panel.querySelectorAll('[aria-expanded]').forEach(n=>n.setAttribute('aria-expanded','false'));const next={...plan,activeSet:plan.activeSet==='A'?'B' as const:'A' as const};const binding=bindingConsequences(next,gear);inspector.replaceChildren(node('h3',`Activate weapon set ${next.activeSet}?`),node('p',binding.length?`Permanently binds to your account: ${binding.join(', ')}.`:'Your other weapons remain prepared.'),button('Cancel weapon switch',()=>{inspector.replaceChildren();swap.focus();}),button('Stage weapon switch',()=>session.stageEquipment(next),blocked));inspector.querySelector('button')?.focus();},blocked);swap.className='small';swap.dataset.focus='Switch weapon set';const pack=node('div','','equipment-return-zone');pack.setAttribute('role','group');pack.setAttribute('aria-label','Return equipped item to pack');pack.append(node('strong','Return to pack'),node('small','Drop equipped gear here to remove that assignment.'));
  pack.addEventListener('dragover',e=>{if(!blocked&&e.dataTransfer?.types.includes(equipmentDragType)){e.preventDefault();pack.classList.add('drag-over');}});pack.addEventListener('dragleave',()=>pack.classList.remove('drag-over'));
  pack.addEventListener('drop',e=>{e.preventDefault();pack.classList.remove('drag-over');if(blocked)return;const origin=equipmentDrag(e.dataTransfer?.getData(equipmentDragType)??'',plan);if(!origin)return;inspector.replaceChildren(node('h3','Return equipped item to pack?'),node('p','Only this assignment is removed. Other prepared references and item protection remain.'),button('Cancel unequip',()=>inspector.replaceChildren()),button('Stage unequip',()=>session.stageEquipment(removeEquipmentAssignment(plan,origin)),blocked));inspector.querySelector('button')?.focus();});
- const loadouts=renderLoadoutManager(snapshot,session,blocked);
- panel.append(swap,loadouts,pack,inspector,renderEquipmentPreview(snapshot,session,blocked));return panel;
+ const loadouts=node('details','','paperdoll-loadout-section');loadouts.open=session.inventoryLoadoutsOpen;loadouts.append(node('summary',`Loadouts (${snapshot.game.loadouts?.length??0})`),renderLoadoutManager(snapshot,session,blocked));loadouts.addEventListener('toggle',()=>session.inventoryLoadoutsOpen=loadouts.open);
+ const stats=node('details','','paperdoll-stat-section');stats.open=!!session.equipmentDraft||session.inventoryStatsOpen;stats.append(node('summary',session.equipmentDraft?'Equipment draft · Apply / Revert':'Character statistics'),renderEquipmentPreview(snapshot,session,blocked));stats.addEventListener('toggle',()=>session.inventoryStatsOpen=stats.open);
+ panel.append(swap,inspector,stats,loadouts,pack);return panel;
 }

@@ -39,7 +39,7 @@ export function weightIcon(){const svg=document.createElementNS('http://www.w3.o
 export { prepareInventoryEquipment } from './equipment.js';
 function focusItemDetails(){
  const detail=document.getElementById('inventory-details');detail?.querySelector<HTMLElement>('h3')?.focus({preventScroll:true});
- if(matchMedia('(max-width:650px)').matches)detail?.scrollIntoView({block:'start'});
+ detail?.scrollIntoView({block:matchMedia('(max-width:900px)').matches?'start':'nearest'});
 }
 let searchTimer:ReturnType<typeof setTimeout>|undefined;
 let mergeSource:InventoryItem|null=null,mergeRevision=-1,lastRun:string|null=null;
@@ -49,10 +49,16 @@ export function renderInventory(main:HTMLElement,snapshot:Snapshot,session:GameS
  if(mergeRevision!==snapshot.game.run.revision)mergeSource=null;
  const page=session.inventory,query=session.inventoryQuery;
  const title=node('h1','Your inventory');title.tabIndex=-1;main.append(title,node('p','Everything you carry, carefully kept. Browse copies without losing their individual histories.','muted'));
- const tabs=node('nav','','inventory-workspace-tabs');tabs.setAttribute('aria-label','Inventory workspace');for(const [key,text] of [['ITEMS','Items'],['EQUIPMENT','Equipment']] as const){const b=button(text,()=>{session.inventoryWorkspace=key;session.selectInventory(session.selectedInventoryItem);});b.setAttribute('aria-pressed',String(session.inventoryWorkspace===key));tabs.append(b);}main.append(tabs);
- const workspace=node('div','','inventory-workspace workspace-'+session.inventoryWorkspace.toLowerCase());main.append(workspace);
- const overview=node('div','','inventory-overview');overview.id='inventory-equipment';overview.append(renderPaperdoll(snapshot,session,disabled),renderCarry(page?.carry??snapshot.game.carry));workspace.append(overview);
- const panel=node('section','','panel inventory-panel');panel.id='inventory-items';panel.append(node('h2','Pack & storage'));workspace.append(panel);
+ const workspace=node('div','','inventory-workspace');main.append(workspace);
+ const overview=node('section','','inventory-overview '+(session.inventoryEquipmentOpen?'equipment-expanded':'equipment-collapsed'));overview.id='inventory-equipment';overview.setAttribute('aria-label','Equipment workspace');
+ const load=page?.carry??snapshot.game.carry;
+ const toggle=button(session.inventoryEquipmentOpen?'Equipment · Hide':'Equipment · Show',()=>session.setInventoryEquipmentOpen(!session.inventoryEquipmentOpen),false,'equipment-toggle');toggle.id='inventory-equipment-toggle';toggle.setAttribute('aria-expanded',String(session.inventoryEquipmentOpen));toggle.setAttribute('aria-controls','inventory-equipment-content');
+ const carrying=node('p',load?`Weight ${inventoryNumber(load.weight)} / ${inventoryNumber(load.weightCapacity)} · Bulk ${inventoryNumber(load.bulk)} / ${inventoryNumber(load.bulkCapacity)} · ${label(load.state)}`:'Carrying information is loading.','inventory-carry-summary');
+ const content=node('div','','inventory-equipment-content');content.id='inventory-equipment-content';
+ const carryDetails=node('details','','inventory-carry-details');carryDetails.append(node('summary','Carrying details'),renderCarry(load));
+ content.append(renderPaperdoll(snapshot,session,disabled),carryDetails);overview.append(toggle,carrying,content);workspace.append(overview);
+ const floating=button('Equipment ↑',()=>{session.setInventoryEquipmentOpen(true);queueMicrotask(()=>{const target=document.getElementById('inventory-equipment-toggle');target?.focus({preventScroll:true});target?.scrollIntoView({block:'start'});});},false,'inventory-equipment-shortcut');floating.hidden=session.inventoryEquipmentOpen;floating.setAttribute('aria-controls','inventory-equipment-content');floating.setAttribute('aria-label','Show equipment above inventory');main.append(floating);
+ const panel=node('section','','panel inventory-panel');panel.id='inventory-items';panel.append(node('h2','Inventory'));workspace.append(panel);
  const viewLabel=node('label','View'),view=node('select');view.setAttribute('aria-label','Inventory layout');for(const mode of ['COMPACT','STANDARD','DETAILED'] as const){const option=node('option',label(mode));option.value=mode;view.append(option);}view.value=session.inventoryLayout;view.disabled=disabled||session.inventoryBusy;view.addEventListener('change',()=>session.setInventoryLayout(view.value as 'COMPACT'|'STANDARD'|'DETAILED'));viewLabel.append(view);panel.append(viewLabel);
  function browse(patch:InventoryQuery){if(searchTimer)clearTimeout(searchTimer);void session.browseInventory({...session.inventoryQuery,...patch,offset:patch.offset??0});}
  const toolbar=node('div','','inventory-toolbar');let toolbarTarget:HTMLElement=toolbar;const advanced=node('details','','inventory-advanced-filters'),advancedFields=node('div','','inventory-toolbar');advanced.open=session.inventoryFiltersOpen;advanced.append(node('summary','More filters'),advancedFields);advanced.addEventListener('toggle',()=>session.inventoryFiltersOpen=advanced.open);
@@ -61,6 +67,7 @@ export function renderInventory(main:HTMLElement,snapshot:Snapshot,session:GameS
  function select(title:string,key:keyof InventoryQuery,options:[string,string][],value:string){const labelNode=node('label',title),control=node('select');control.dataset.focus='Inventory '+title;for(const [v,text]of options){const option=node('option',text);option.value=v;control.append(option);}control.value=value;control.addEventListener('change',()=>browse({[key]:control.value}));labelNode.append(control);toolbarTarget.append(labelNode);return control;}
  const containers:[string,string][]=[['','Carried'],['ALL','All personal storage']];for(const c of page?.containers??[])containers.push([c.id,`${c.archived?'Archived · ':''}${c.label||label(c.kind)}${c.accessible?'':' · restricted'} (${c.count})`]);
  const storage=select('Location','container',containers,query.container??'');
+ const storageSection=node('details','','inventory-storage-section');storageSection.open=!!query.container;storageSection.append(node('summary','Storage · '+(storage.selectedOptions[0]?.textContent??'Carried')),storage.parentElement!);
 
  select('Category','category',[['ALL','All categories'],['EQUIPMENT','Equipment'],['CONSUMABLE','Consumables'],['MATERIAL','Materials'],['OTHER','Other']],query.category??'ALL');
  toolbarTarget=advancedFields;
@@ -76,7 +83,7 @@ export function renderInventory(main:HTMLElement,snapshot:Snapshot,session:GameS
  select('Sort','sort',[['NAME','Name'],['NEWEST','Acquired'],['QUANTITY','Quantity'],['WEIGHT','Weight'],['BULK','Bulk'],['QUALITY','Known quality']],query.sort??'NAME');
  toolbar.append(button(query.direction==='DESC'?'Descending ↓':'Ascending ↑',()=>browse({direction:query.direction==='DESC'?'ASC':'DESC'})));
  const groupLabel=node('label','','inventory-check'),group=node('input');group.type='checkbox';group.checked=query.grouped??true;group.dataset.focus='Group matching bases';group.addEventListener('change',()=>browse({grouped:group.checked}));groupLabel.append(group,node('span','Group matching bases'));toolbar.append(groupLabel);
- toolbar.append(button('Reset filters',()=>{if(searchTimer)clearTimeout(searchTimer);mergeSource=null;void session.browseInventory({sort:'NAME',direction:'ASC',grouped:true,offset:0});}));panel.append(toolbar,advanced,node('p','The grid has no fixed slot limit. Weight and bulk govern what you carry.','help'));
+ toolbar.append(button('Reset filters',()=>{if(searchTimer)clearTimeout(searchTimer);mergeSource=null;void session.browseInventory({sort:'NAME',direction:'ASC',grouped:true,offset:0});}));panel.append(toolbar,storageSection,advanced,node('p','The grid has no fixed slot limit. Weight and bulk govern what you carry.','help'));
  if(query.definitionId)panel.append(button('← All item bases',()=>browse({definitionId:undefined,grouped:true})));
  if(session.inventoryBusy)panel.append(node('p','Loading your inventory…','help'));
  if(!page){panel.append(node('p',session.inventoryError??'Opening your inventory…',session.inventoryError?'notice error':'muted'));if(session.inventoryError)panel.append(button('Try inventory again',()=>void session.browseInventory(query),session.needsRefresh));else if(!session.inventoryBusy)queueMicrotask(()=>{if(session.snapshot&&!session.inventoryBusy&&!session.inventory&&!session.inventoryError)void session.browseInventory(query);});return;}

@@ -1,7 +1,6 @@
 import { renderPaperdoll } from './paperdoll.js';
 import { renderInventory } from './inventory.js';
 import { renderLanding } from './landing.js';
-import { renderEquipment } from './equipment.js';
 import type { GameSession } from './session.js';
 import type { Command,Snapshot,Failure } from './types.js';
 export type Screen='adventure'|'character'|'pack'|'combat';
@@ -77,7 +76,7 @@ function renderCharacter(main:HTMLElement,s:Snapshot,session:GameSession,disable
   else main.append(el('p','Your next level becomes available through earned experience.','empty'));
  }
 }
-function renderPack(main:HTMLElement,s:Snapshot,session:GameSession,disabled:boolean){renderInventory(main,s,session,disabled);const planner=document.createElement('details'),summary=document.createElement('summary');planner.className='equipment-planner';summary.textContent='Equipment planner & saved loadouts';planner.append(summary);renderEquipment(planner,s,session,disabled);main.append(planner);}
+function renderPack(main:HTMLElement,s:Snapshot,session:GameSession,disabled:boolean){renderInventory(main,s,session,disabled);}
 function renderCombat(main:HTMLElement,s:Snapshot,disabled:boolean,send:(c:Command)=>void,navigate:(s:Screen)=>void){
  const b=s.battle!;add(main,add(el('div','','battle-top'),add(el('div'),el('span',`Round ${b.round}`,'eyebrow'),heading(b.outcome?'An encounter remembered.':'Choose your next move.')),el('span',b.outcome?label(b.outcome):b.currentActor==='hero'?'Your turn':`${label(b.currentActor??'')} acts next`,'tag')));
  const battlefield=el('div','','battlefield');for(const zone of b.battlefield.zones){const box=add(el('section','','zone'),el('h3',label(zone))),units=el('div','','units');for(const u of b.units.filter(u=>u.zone===zone)){const card=add(el('article','',`unit ${u.side.toLowerCase()} ${u.id===b.currentActor?'current':''}`),el('strong',label(u.id)),el('p',`${u.health} / ${u.maxHealth} health · ${label(u.state)}`));const meter=el('div','','meter'),filled=el('span'),missing=el('span');filled.style.flexGrow=String(u.health);missing.className='missing';missing.style.flexGrow=String(Math.max(0,u.maxHealth-u.health));add(card,add(meter,filled,missing),el('p',`${u.mana} / ${u.maxMana} Mana`));for(const effect of u.effects??[])card.append(el('p',`${label(effect.family)} · ${effect.remaining} ${label(effect.clock)}`,'tag'));units.append(card);}box.append(units);battlefield.append(box);}main.append(battlefield);
