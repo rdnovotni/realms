@@ -116,7 +116,7 @@ including removal previews, so subtraction cannot reveal hidden modifiers. The c
 
 The paperdoll includes a saved-loadout preview selector and a control to save the
 committed setup. Apply the draft before saving it as a template. Existing template
-replacement, protection and deletion controls remain in the advanced planner.
+replacement, protection and deletion controls are shared between the paperdoll and advanced planner.
 
 Inventory offers server-side Equipped/Unequipped/Usable, slot and condition
 filters. Needs Repair means actual condition below its authored maximum; Broken
@@ -132,6 +132,16 @@ and its confirmations; the inspector remains the accessible fallback.
 Inventory P3 adds page-bounded physical multiselection and atomic bulk-safe
 operations, persistent account favorites/uninspected acquisition markers and tile
 preferences. Double-click reuses equipment preparation or opens groups/details;
-consumable Use and loot-container Open still need their owning server domains.
-See [inventory interaction details](inventory-grid.md). Migration 034 is required;
+authored consumables and parcels now open confirmed server-backed Use/Open actions.
+See [inventory interaction details](inventory-grid.md). Migration 035 is required;
 source merge does not imply live migration/deployment.
+
+
+The current inventory workspace offers Compact/Standard/Detailed account-saved
+viewing modes, nearby equipment on wide displays and Items/Equipment switching on
+narrow displays. Comparison uses a dedicated two-column dialog and server-derived
+character totals. Repair quotes show condition before/after, per-item Gold cost,
+total and affordability. Shared loadout cards show readiness, explain missing or
+stored gear, flag binding, search by name and provide Preview/Replace/Protection/
+Delete controls. Preview preserves the Apply/Revert draft flow.
+See [inventory service contracts and limitations](inventory-services.md).

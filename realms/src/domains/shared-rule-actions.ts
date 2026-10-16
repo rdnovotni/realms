@@ -93,3 +93,16 @@ export function ruleActionPreview(pool:pg.Pool,accountId:string,entityId:string)
   return {entityId,domain:spec.domain,revision:run.revision,retry,eligible:carryEntry&&!retry&&flags&&eligibility.met&&entityEligibility&&costsMet&&!active&&actor.canAttempt&&actor.rank>=spec.check.minimumRank,availability:flags?'ENABLED':'DISABLED',prerequisite:eligibility,costs:spec.costs,effects:preview.events.map(e=>({kind:e.kind,source:facts[`known.${e.effectId}`]?e.effectId:'unidentified.effect'})),...(spec.check.visibility==='KNOWN'?{check:{attribute:spec.check.attribute,skill:spec.check.skill,attributeModifier:Math.floor((actor.attributeScore-spec.check.attributeBaseline)/spec.check.attributeDivisor),proficiency:spec.check.rankBonuses[actor.rank],modifiers:actor.modifiers.map(m=>({...m,source:m.source.startsWith('encumbrance:')?'Encumbrance':facts[`known.${m.source}`]?m.source:'unidentified.effect'})),difficulty:spec.check.difficulty,chance:sharedCheckChance(spec.check,actor)}}:{})};
  });
 }
+
+/** Item effects use the same clock, stacking, bounded triggers and immutable
+ * projection as interaction effects. No client supplies an effect definition. */
+export async function applyItemEffects(c:ActionContext,entityId:string,revision:number,ids:string[]){
+ await requireFeature(c.client,'shared.rules',c.accountId,false,true);
+ const row=(await c.client.query('SELECT state,revision FROM shared_rules_state WHERE run_id=$1 FOR UPDATE',[c.run.id])).rows[0];
+ const before=row?.state??{},state:SharedState=row?structuredClone(before):{local:{rounds:0,rests:0,fullRests:0},effects:[]};
+ const definitions=await loadDefinitions(c),facts=await runFacts(c),clocks=await runClocks(c,state.local);
+ const expired=effectTransition(state.effects,definitions,clocks,facts,{kind:'CLOCK'});
+ const applied=effectTransition(expired.effects,definitions,clocks,effectCapabilities(expired.effects,facts),{kind:'APPLY',ids,source:entityId,application:c.actionId});state.effects=applied.effects;
+ await c.client.query('INSERT INTO shared_rules_events(action_id,run_id,release_id,entity_id,entity_revision,seed,evidence,before_state,after_state,state_revision) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)',[c.actionId,c.run.id,c.run.content_release_id,entityId,revision,randomBytes(32),{version:1,domain:'ITEM',clocks,effectEvents:[...expired.events,...applied.events]},before,state,Number(row?.revision??0)+1]);
+ return applied.events.length;
+}

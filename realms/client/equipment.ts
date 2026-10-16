@@ -1,3 +1,4 @@
+import { renderLoadoutManager } from './loadout-manager.js';
 import { openEquipmentPicker,inventoryGear } from './equipment-picker.js';
 import type { EquipmentPlan,Gear,Snapshot,InventoryItem } from './types.js';
 import type { GameSession } from './session.js';
@@ -97,16 +98,5 @@ export function renderEquipment(main:HTMLElement,s:Snapshot,session:GameSession,
  }
  if(!gear.length)items.append(node('p','No carried equipment yet.','muted'));main.append(items);
 
- const saved=node('section','','panel');saved.append(node('h2','Saved loadouts'),node('p','Save the currently committed setup, including both weapon sets. Saving protects its item identities from consumption. Draft choices above are not included until saved.','help'));
- const naming=node('form'),nameLabel=node('label','Loadout name'),name=node('input');name.required=true;name.maxLength=80;name.disabled=disabled;name.setAttribute('aria-label','Loadout name');nameLabel.append(name);
- const capture=node('button','Save current loadout','primary');capture.type='submit';capture.dataset.focus='Save current loadout';capture.disabled=disabled||!!session.equipmentDraft||game.loadouts.length>=32;naming.append(nameLabel,capture);naming.addEventListener('submit',e=>{e.preventDefault();if(!capture.disabled&&name.value.trim())void session.action('/api/v1/equipment/loadouts/save','SAVE_LOADOUT',{key:`loadout-${crypto.randomUUID().slice(0,8)}`,name:name.value.trim()});});saved.append(naming);
- if(game.loadouts.length>=32)saved.append(node('p','You have 32 saved loadouts. Replace or delete one to make room.','help'));
- for(const loadout of game.loadouts){
-  const card=node('article','','gear-card');card.append(node('h3',loadout.name),node('p',`${loadout.plan.slots.length} positions · Active Set ${loadout.plan.activeSet} · ${loadout.protectItems?'Items protected':'Protection released'}`,'help'));
-  const issues=equipmentProblems(loadout.plan,gear,s.progression.level);
-  for(const issue of issues)card.append(node('p',issue,'help'));
-  const apply=btn(`Preview ${loadout.name}`,()=>session.stageEquipment(loadout.plan),blocked);
-  card.append(apply,btn(`Replace ${loadout.name}`,()=>{requestConfirmation(card,`Replace ${loadout.name} with the committed equipment? This protects its new items and releases this template's old references.`,()=>void session.action('/api/v1/equipment/loadouts/save','SAVE_LOADOUT',{key:loadout.key,name:loadout.name}));},disabled||!!session.equipmentDraft),btn(`${loadout.protectItems?'Release':'Restore'} protection for ${loadout.name}`,()=>{const submit=()=>void session.action(`/api/v1/equipment/loadouts/${loadout.key}/protection`,'SET_LOADOUT_PROTECTION',{protectItems:!loadout.protectItems});if(loadout.protectItems)requestConfirmation(card,`Release ${loadout.name}'s item protection? Equipped items, manual locks and other loadouts remain protected.`,submit);else submit();},disabled),btn(`Delete ${loadout.name}`,()=>{requestConfirmation(card,`Delete ${loadout.name}? This releases its item protection but does not unequip anything or undo binding.`,()=>void session.action(`/api/v1/equipment/loadouts/${loadout.key}/delete`,'DELETE_LOADOUT',{}));},disabled));saved.append(card);
- }
- if(!game.loadouts.length)saved.append(node('p','No loadouts saved yet.','muted'));main.append(saved);
+ main.append(renderLoadoutManager(s,session,blocked));
 }

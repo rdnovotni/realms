@@ -900,6 +900,11 @@ export const lifetimeFields=[
  "fields":{"operation_no":"KEEP","operation_id":"KEEP"},
  "reason":"Protected append-only ordering of physical quantity history survives lives and attests old encounter loads."
 }
+ ,{
+ "table":"inventory_repairs","scope":"RUN",
+ "fields":{"action_id":"ARCHIVE","item_id":"ARCHIVE","run_id":"ARCHIVE","wear_id":"ARCHIVE","before_condition":"ARCHIVE","after_condition":"ARCHIVE","cost":"ARCHIVE"},
+ "reason":"Immutable repair/payment evidence remains attached to its source life; physical items retain repaired condition when later custody permits their use."
+}
 ] as const;
 
 export async function assertLifetimeFields(client:Pick<pg.PoolClient,'query'>){

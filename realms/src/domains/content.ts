@@ -1,3 +1,4 @@
+import { validateInventoryServices } from './inventory-services-content.js';
 import { validateInventoryContent } from './inventory-rules.js';
 import { validateSharedContent } from '../rules/content.js';
 import type { DisposableCache } from '../cache.js';
@@ -52,6 +53,7 @@ export function validateContent(input:unknown): asserts input is ContentPackage 
   const pkg=input as ContentPackage, entities=new Map(pkg.entities.map(e=>[e.id,e]));
   validateSharedContent(entities);
   validateInventoryContent(entities);
+  validateInventoryServices(entities);
   validateFeatContent(entities);
   validateEffectFamilies(entities);
   validateProficiencyContent(entities);
