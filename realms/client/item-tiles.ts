@@ -29,6 +29,7 @@ export function itemTileDetails(item:InventoryItem,grouped:boolean){
 export function itemStatuses(item:InventoryItem,grouped:boolean){
  if(grouped)return [{kind:'copies',label:'Grouped copies — expand to inspect individual statuses'},...(item.groupFavoriteCount?[{kind:'favorite',label:`${item.groupFavoriteCount} favorite copies`}]:[]),...(item.groupNewCount?[{kind:'new',label:`${item.groupNewCount} uninspected copies`}]:[])];
  const statuses:{kind:string;label:string}[]=[];
+ if(item.collectionProtected)statuses.push({kind:'collection',label:'Protected collection copy'});
  if(item.favorite)statuses.push({kind:'favorite',label:'Favorite'});
  if(item.isNew)statuses.push({kind:'new',label:'New · not yet inspected'});
  if(item.locked)statuses.push({kind:'locked',label:'Locked'});

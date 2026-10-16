@@ -1,3 +1,4 @@
+import { itemCondition } from './item-tiles.js';
 import { renderLoadoutManager } from './loadout-manager.js';
 import { renderEquipmentPreview } from './equipment-preview.js';
 import { inventoryGear } from './equipment-picker.js';
@@ -52,7 +53,7 @@ export function renderPaperdoll(snapshot:Snapshot,session:GameSession,disabled:b
  for(const position of positions){
   const {set,slot,itemId}=position,item=gear.find(g=>g.id===itemId),hand=slot==='MAIN_HAND'||slot==='OFF_HAND';
   let target:HTMLElement=body;
-  if(hand){let bank=weapons.querySelector<HTMLElement>(`[data-weapon-set="${set}"]`);if(!bank){bank=node('div','','paperdoll-weapons');bank.dataset.weaponSet=set;bank.append(node('h3',`Weapon set ${set}${plan.activeSet===set?' · Active':' · Prepared'}`));weapons.append(bank);}target=bank;}
+  if(hand){let bank=weapons.querySelector<HTMLElement>(`[data-weapon-set="${set}"]`);if(!bank){bank=node('div','','paperdoll-weapons');bank.dataset.weaponSet=set;bank.classList.toggle('active-set',plan.activeSet===set);bank.append(node('h3',`Weapon set ${set}${plan.activeSet===set?' · Active':' · Prepared'}`));weapons.append(bank);}target=bank;}
   const compatible=!!candidate?.equipment?.slots.includes(slot),twoHand=!item&&slot==='OFF_HAND'&&gear.find(g=>g.id===plan.slots.find(a=>a.set===set&&a.slot==='MAIN_HAND')?.itemId)?.hands===2;
   const control=button('',()=>inspect(set,slot,control));control.className=`paperdoll-slot ${hand?'hand-slot':'slot-'+slot.toLowerCase()}${item?' occupied':''}${compatible?' compatible':''}`;control.dataset.focus=`Gear ${set} ${slot}`;
   const name=item?.name??(itemId?'Item unavailable':twoHand?'Two-handed weapon':'Empty');control.setAttribute('aria-label',`${set==='WORN'?'Worn':`Set ${set}`} ${title(slot)}: ${name}${compatible?`, can equip ${candidate!.name}`:''}`);control.setAttribute('aria-controls','equipment-inspector');control.setAttribute('aria-expanded','false');control.addEventListener('click',()=>{panel.querySelectorAll('[aria-expanded]').forEach(n=>n.setAttribute('aria-expanded','false'));control.setAttribute('aria-expanded','true');});
@@ -64,7 +65,7 @@ export function renderPaperdoll(snapshot:Snapshot,session:GameSession,disabled:b
    if(picked?.equipment?.slots.includes(slot))inspect(set,slot,control,picked);else {inspector.replaceChildren(node('p','That item cannot be placed here. Expand grouped copies or choose eligible carried equipment.','help'));}
   });
   if(item)control.append(renderItemArt({...item,category:'EQUIPMENT',equipment:{slots:item.slots}}));
-  control.append(node('span',title(slot),'paperdoll-slot-label'),node('strong',name));if(item)control.append(node('small',`Lv ${item.minimumLevel}${item.maximumCondition!==null?` · ${item.condition}/${item.maximumCondition}`:''}`));target.append(control);
+  control.append(node('span',title(slot),'paperdoll-slot-label'),node('strong',name));if(item)control.append(node('small',`Lv ${item.minimumLevel}`));if(item&&item.condition!==null&&item.maximumCondition!==null){const condition=itemCondition({condition:item.condition,maximumCondition:item.maximumCondition},session.tileSettings)!,badge=node('span',condition.text+' · '+condition.label,'slot-condition '+condition.state);badge.title=condition.description;control.append(badge);}target.append(control);
  }
  panel.insertBefore(body,panel.children[3]??null);
  const swap=button(`Activate weapon set ${plan.activeSet==='A'?'B':'A'}`,()=>{panel.querySelectorAll('[aria-expanded]').forEach(n=>n.setAttribute('aria-expanded','false'));const next={...plan,activeSet:plan.activeSet==='A'?'B' as const:'A' as const};const binding=bindingConsequences(next,gear);inspector.replaceChildren(node('h3',`Activate weapon set ${next.activeSet}?`),node('p',binding.length?`Permanently binds to your account: ${binding.join(', ')}.`:'Your other weapons remain prepared.'),button('Cancel weapon switch',()=>{inspector.replaceChildren();swap.focus();}),button('Stage weapon switch',()=>session.stageEquipment(next),blocked));inspector.querySelector('button')?.focus();},blocked);swap.className='small';swap.dataset.focus='Switch weapon set';const pack=node('div','','equipment-return-zone');pack.setAttribute('role','group');pack.setAttribute('aria-label','Return equipped item to pack');pack.append(node('strong','Return to pack'),node('small','Drop equipped gear here to remove that assignment.'));

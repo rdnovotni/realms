@@ -1,3 +1,4 @@
+import { inventoryIntelligence } from './inventory-intelligence.js';
 import { displayPreferences,workspacePreferences } from './inventory-presentation.js';
 import { equipmentSlots } from './equipment-content.js';
 import { runFacts } from '../rules/facts.js';
@@ -77,7 +78,7 @@ export function inventoryView(pool:pg.Pool,accountId:string,q:InventoryQuery={})
    if(expressions.length){const facts=await runFacts({client,run,accountId}),denied=expressions.filter(e=>!prerequisite(e.expr as Prerequisite,facts).met).map(e=>e.entity_id);if(denied.length)terms.push(`"definitionId" <> ALL(${bind(denied)}::text[])`);}
   }
   const cte=`WITH owned AS (
-   SELECT coalesce(annotation.favorite,false) AS favorite,
+   SELECT coalesce(annotation.collection_protected,false) AS "collectionProtected",coalesce(annotation.favorite,false) AS favorite,
    incoming.operation_id::text AS "inspectionToken",
    coalesce(incoming.operation_no,0)>coalesce(annotation.seen_operation_no,0) AS "isNew",
    i.id,i.definition_id AS "definitionId",i.container_id AS "containerId",c.kind,s.run_id AS "runId",v.definition->>'name' AS name,v.definition->'public'->>'itemArt' AS artwork,v.definition->'public'->>'itemIcon' AS icon,i.quantity::text,i.binding,i.created_at,
@@ -96,10 +97,11 @@ export function inventoryView(pool:pg.Pool,accountId:string,q:InventoryQuery={})
    (i.release_id=(SELECT content_release_id FROM runs WHERE id=$2) AND i.binding<>'SYSTEM_UNTRADEABLE' AND s.run_id=$2 AND s.lifecycle='ACTIVE') AS eligible,
    proficiency_requirements_met($2,v.definition->'mechanics'->'proficiencyRequirements') AS "proficiencyMet",
    CASE WHEN d.knowledge_level='ADVANCED' THEN (SELECT jsonb_object_agg(stat,amount) FROM (SELECT m->>'stat' stat,sum((m->>'amount')::integer) amount FROM jsonb_array_elements(v.definition->'mechanics'->'combatModifiers'->'modifiers') m GROUP BY m->>'stat') stat_values) END AS "knownStats",
+ CASE WHEN d.knowledge_level='ADVANCED' THEN jsonb_build_object('resistances',v.definition->'mechanics'->'tacticalDamageTraits'->'resistances','immuneTags',v.definition->'mechanics'->'tacticalStatusTraits'->'immuneTags','durationReductionBps',v.definition->'mechanics'->'tacticalStatusTraits'->'durationReductionBps','capacity',v.definition->'mechanics'->'inventoryCapacity','guard',v.definition->'mechanics'->'tacticalKit'->'guard','heal',v.definition->'mechanics'->'tacticalKit'->'heal','minimumLevel',v.definition->'mechanics'->'tacticalKit'->'minimumNativeLevel','techniques',coalesce((SELECT jsonb_agg(jsonb_build_object('name',a->>'key','action',a->>'action','mana',a->'manaCost','minimumLevel',a->'minimumNativeLevel','effect',a->'effect'->>'kind','cooldown',a->'cooldownRounds')) FROM jsonb_array_elements(v.definition->'mechanics'->'tacticalTechniques'->'abilities') a),'[]'::jsonb)) END AS "knownEffects",
    i.storage_mode AS "storageMode",coalesce(l.locked,false) AS locked,
    EXISTS(SELECT 1 FROM equipment_slots slot WHERE slot.item_id=i.id) AS equipped,
    ARRAY(SELECT t.template_key FROM equipment_loadout_items p JOIN equipment_loadouts t ON t.id=p.loadout_id WHERE p.item_id=i.id ORDER BY t.template_key) AS loadouts,
-   (coalesce(l.locked,false) OR EXISTS(SELECT 1 FROM equipment_slots slot WHERE slot.item_id=i.id) OR EXISTS(SELECT 1 FROM equipment_loadout_items p WHERE p.item_id=i.id)) AS protected,
+   (coalesce(annotation.collection_protected,false) OR coalesce(l.locked,false) OR EXISTS(SELECT 1 FROM equipment_slots slot WHERE slot.item_id=i.id) OR EXISTS(SELECT 1 FROM equipment_loadout_items p WHERE p.item_id=i.id)) AS protected,
    (s.lifecycle='ACTIVE' AND (s.run_id=$2 OR (s.account_id=$1 AND $3='CASUAL'))) AS accessible,
    inventory_condition(i.id) AS condition,
    (v.definition->'mechanics'->'tacticalDurability'->>'maximum')::integer AS "maximumCondition"
@@ -123,7 +125,7 @@ export function inventoryView(pool:pg.Pool,accountId:string,q:InventoryQuery={})
   const total=Number((await client.query(cte+' SELECT count(*)::integer AS total FROM selected',parameters)).rows[0].total);
   const items=(await client.query(cte+` SELECT * FROM selected ORDER BY ${sortExpression} ${q.direction??'ASC'} NULLS LAST,id LIMIT ${inventoryPageSize} OFFSET ${q.offset??0}`,parameters)).rows.map(({representative,created_at,groupNewest,runId,...item})=>({...item,copies:Number(item.copies)}));
   const preferences=await inventoryPreferences(client,accountId);
-  return {workspacePreferences:await workspacePreferences(client,accountId),displayPreferences:(await displayPreferences(client,accountId)).value,revision:run.revision,runId:run.id,items,total,offset:q.offset??0,pageSize:inventoryPageSize,containers:containers.slice(0,200),hasMoreContainers:containers.length>200,carry:publicCarryLoad(await carryLoad(client,run.id)),preferences:preferences.value};
+  return {...await inventoryIntelligence(client,accountId),workspacePreferences:await workspacePreferences(client,accountId),displayPreferences:(await displayPreferences(client,accountId)).value,revision:run.revision,runId:run.id,items,total,offset:q.offset??0,pageSize:inventoryPageSize,containers:containers.slice(0,200),hasMoreContainers:containers.length>200,carry:publicCarryLoad(await carryLoad(client,run.id)),preferences:preferences.value};
  });
 }
 
@@ -152,9 +154,11 @@ export function inventoryHistory(pool:pg.Pool,accountId:string,itemId:string,off
    WHERE i.id=$1 AND c.kind IN('CARRIED','HOME','MATERIAL_VAULT','LEGACY') AND (s.account_id=$2 OR EXISTS(SELECT 1 FROM runs r JOIN characters ch ON ch.id=r.character_id WHERE r.id=s.run_id AND ch.account_id=$2))`,[itemId,accountId])).rowCount;
   if(!owned)throw new DomainError(404,'ITEM_NOT_FOUND');
   const cte=`WITH events AS (
-   SELECT 'quantity:'||o.operation_no::text id,q.kind||CASE WHEN q.from_item_id=$1 THEN '_OUT' WHEN q.kind IN('SPLIT','MERGE') THEN '_IN' ELSE '' END kind,q.quantity::text quantity,q.created_at at,NULL::text location
+   SELECT 'quantity:'||o.operation_no::text id,CASE WHEN q.kind='GRANT' AND EXISTS(SELECT 1 FROM craft_records cr WHERE cr.output_operation_id=q.id) THEN 'CRAFTED' ELSE q.kind END||CASE WHEN q.from_item_id=$1 THEN '_OUT' WHEN q.kind IN('SPLIT','MERGE') THEN '_IN' ELSE '' END kind,q.quantity::text quantity,q.created_at at,NULL::text location
     FROM inventory_quantity_operations q JOIN inventory_quantity_order o ON o.operation_id=q.id WHERE q.from_item_id=$1 OR q.to_item_id=$1
    UNION ALL SELECT 'move:'||m.id::text,'MOVE',NULL,m.created_at,c.kind FROM inventory_movements m JOIN inventory_containers c ON c.id=m.to_container_id WHERE m.item_id=$1
+   UNION ALL SELECT 'collection:'||a.action_id::text,CASE WHEN a.result->>'operation'='COLLECT' THEN 'COLLECTION_PROTECTED' ELSE 'COLLECTION_RELEASED' END,NULL,a.created_at,NULL FROM action_receipts a WHERE a.action_type='BULK_INVENTORY' AND a.result->>'operation' IN('COLLECT','UNCOLLECT') AND a.result->'changedItemIds' ? $1::text
+   UNION ALL SELECT 'wear:'||w.id::text,'CONDITION_LOSS',NULL,a.created_at,NULL FROM tactical_equipment_wear w JOIN tactical_failure_costs f ON f.instance_id=w.instance_id JOIN action_receipts a ON a.action_id=f.action_id WHERE w.item_id=$1
    UNION ALL SELECT 'repair:'||r.action_id::text,'REPAIR',NULL,a.created_at,NULL FROM inventory_repairs r JOIN action_receipts a ON a.action_id=r.action_id WHERE r.item_id=$1
    UNION ALL SELECT 'lock:'||l.id::text,CASE WHEN l.locked THEN 'LOCK' ELSE 'UNLOCK' END,NULL,l.created_at,NULL FROM inventory_lock_events l WHERE l.item_id=$1
   )`;

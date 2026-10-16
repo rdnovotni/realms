@@ -295,3 +295,20 @@ button:disabled{opacity:.7}
 .inventory-storage-section{margin:6px 0 12px}.inventory-storage-section>summary{padding:8px 0;cursor:pointer;font-weight:600}.inventory-storage-section>label{margin-top:10px;max-width:400px}
 
 .inventory-equipment-shortcut[hidden]{display:none}
+
+/* Inventory intelligence: readable status cues accompany every color. */
+.inventory-view-presets{display:flex;gap:.4rem;flex-wrap:wrap;margin-block:.75rem}
+.inventory-view-presets form{display:flex;gap:.35rem;flex-wrap:wrap;flex-basis:100%}
+.inventory-details>h4,.item-effects h4{margin:1.15rem 0 .45rem;border-bottom:1px solid var(--border,#514939);padding-bottom:.35rem}
+.inventory-details>.item-illustration,.inventory-details>svg{display:block;width:5rem;height:5rem;object-fit:contain;margin:.6rem auto}
+.inventory-details form{display:flex;gap:.4rem;flex-wrap:wrap;margin-block:.6rem}
+.inventory-details form input{width:7rem;min-width:0}
+.inventory-details dl{overflow-wrap:anywhere}
+.carry-meter{position:relative;overflow:visible}
+.carry-threshold{position:absolute;top:-3px;bottom:-3px;border-left:2px solid #56664c;pointer-events:none}
+.paperdoll-weapons.active-set{border:1px solid #c9a65d;background:linear-gradient(135deg,#ad873022,transparent);box-shadow:inset 0 2px #b59550}
+.paperdoll-weapons.active-set h3{color:#725616}
+.slot-condition{font-size:.67rem;border-radius:.25rem;padding:.1rem .25rem;border:1px solid currentColor}
+.slot-condition.healthy{color:#376345}.slot-condition.worn{color:#7d5100}.slot-condition.critical{color:#a12d2d}
+.comparison-increase .comparison-delta{color:#376345}.comparison-decrease .comparison-delta{color:#a12d2d}
+.inventory-comparison-dialog{overflow-wrap:anywhere}.inventory-comparison-dialog>input,.inventory-comparison-dialog>select{max-width:100%;margin-block:.4rem}
