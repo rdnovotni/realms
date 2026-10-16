@@ -1,4 +1,5 @@
-import { autoStorageDestination } from './inventory-browser.js';
+import { inventoryIntelligence,keepAllocation } from './inventory-intelligence.js';
+import { autoStorageDestination,personalStorage } from './inventory-browser.js';
 import { requireFeature } from '../rules/controls.js';
 import { randomUUID } from 'node:crypto';
 import type pg from 'pg';
@@ -47,6 +48,7 @@ async function lockItems(context:ActionContext,ids:string[]){
   return rows;
 }
 async function assertUnlocked(context:ActionContext,ids:string[]){
+  if((await context.client.query('SELECT 1 FROM inventory_item_annotations WHERE item_id=ANY($1::uuid[]) AND collection_protected LIMIT 1',[ids])).rowCount)throw new DomainError(409,'ITEM_COLLECTION_PROTECTED');
   if((await context.client.query('SELECT 1 FROM equipment_slots WHERE item_id=ANY($1::uuid[]) LIMIT 1',[ids])).rows.length)throw new DomainError(409,'ITEM_EQUIPPED');
   if((await context.client.query('SELECT 1 FROM inventory_item_locks WHERE item_id=ANY($1::uuid[]) AND locked LIMIT 1',[ids])).rows.length)throw new DomainError(409,'ITEM_LOCKED');
   if((await context.client.query('SELECT 1 FROM equipment_loadout_items WHERE item_id=ANY($1::uuid[]) LIMIT 1',[ids])).rows.length)throw new DomainError(409,'ITEM_LOADOUT_PROTECTED');
@@ -59,7 +61,7 @@ export type ItemGrant={containerId:string;definitionId:string;quantity:string;qu
 
 // Internal reward/crafting API. The calling domain must validate entitlement,
 // ingredients, Turn costs and outcomes before issuing its authoritative plan.
-export async function grantItem(context:ActionContext,key:string,input:ItemGrant,reason:string){
+export async function grantItem(context:ActionContext,key:string,input:ItemGrant,reason:string):Promise<{itemId:string;operationId:string}>{
   await requireFeature(context.client,'rewards.global',context.accountId);
   const grant=structuredClone(input);operation(key,reason);const amount=quantity(grant.quantity);
   if(!/^[a-z][a-z0-9_.-]{2,119}$/.test(grant.definitionId) || grant.sourceCode.trim().length<1 || grant.sourceCode.length>200 ||
@@ -77,11 +79,24 @@ export async function grantItem(context:ActionContext,key:string,input:ItemGrant
   if(content.spec.storageMode==='INSTANCE' && amount!==1n) throw new DomainError(400,'INSTANCE_QUANTITY_REQUIRED');
   const binding=grant.binding??'TRADEABLE';
   if(binding==='RUN_BOUND' && container.run_id!==context.run.id) throw new DomainError(409,'BINDING_RESTRICTED');
-  const destinationId=await autoStorageDestination(context,container,grant.definitionId,content.spec,amount,binding);
+  let destinationId:string,overflow:{amount:bigint;destination:string}|null=null;
+  const rule=grant.sourceCode!=='ROUTINE_CRAFT'&&container.kind==='CARRIED'&&binding!=='SYSTEM_UNTRADEABLE'?(await inventoryIntelligence(context.client,context.accountId)).automation.keep.find(r=>r.definitionId===grant.definitionId):undefined;
+  if(rule){
+    const held=BigInt((await context.client.query("SELECT coalesce(sum(i.quantity),0)::text n FROM inventory_items i JOIN inventory_containers b ON b.id=i.container_id JOIN state_scopes s ON s.id=b.scope_id WHERE s.run_id=$1 AND b.kind='CARRIED' AND i.definition_id=$2",[context.run.id,grant.definitionId])).rows[0].n);
+    const carried=keepAllocation(held,amount,rule.quantity),storage=carried<amount?await personalStorage(context,content.spec.category==='MATERIAL'?'MATERIAL_VAULT':'HOME'):container.id;
+    if(carried>0n&&carried<amount)overflow={amount:amount-carried,destination:storage};
+    if(carried>0n){destinationId=container.id;}else destinationId=storage;
+  }else if(grant.sourceCode==='ROUTINE_CRAFT')destinationId=container.id;else destinationId=await autoStorageDestination(context,container,grant.definitionId,content.spec,amount,binding);
   const id=randomUUID();
   await context.client.query(`INSERT INTO inventory_items(id,container_id,definition_id,release_id,definition_revision,storage_mode,quantity,quality,binding,bound_account_id,bound_run_id,source_code,metadata)
     VALUES($1,$2,$3,$4,$5,$6,0,$7,$8,$9,$10,$11,$12)`,[id,destinationId,grant.definitionId,context.run.content_release_id,content.revision,content.spec.storageMode,grant.quality??'1',binding,binding==='ACCOUNT_BOUND'?context.accountId:null,binding==='RUN_BOUND'?context.run.id:null,grant.sourceCode,metadata]);
   const operationId=await record(context,key,'GRANT',null,id,grant.quantity,reason);
+  if(overflow){
+    const child=randomUUID();await context.client.query(`INSERT INTO inventory_items(id,container_id,definition_id,definition_kind,release_id,definition_revision,storage_mode,quantity,quality,binding,bound_account_id,bound_run_id,source_code,metadata) SELECT $1,container_id,definition_id,definition_kind,release_id,definition_revision,storage_mode,0,quality,binding,bound_account_id,bound_run_id,source_code,metadata FROM inventory_items WHERE id=$2`,[child,id]);
+    await record(context,'route.'+checksum(key).slice(0,40),'SPLIT',id,child,overflow.amount.toString(),'AUTOMATIC_KEEP_N');
+    await context.client.query('UPDATE inventory_items SET container_id=$1 WHERE id=$2',[overflow.destination,child]);
+    await context.client.query('INSERT INTO inventory_movements(item_id,from_container_id,to_container_id,action_id,reason) VALUES($1,$2,$3,$4,$5)',[child,container.id,overflow.destination,context.actionId,'AUTOMATIC_KEEP_N']);
+  }
   return {itemId:id,operationId};
 }
 export async function consumeItem(context:ActionContext,key:string,itemId:string,amount:string,reason:string){

@@ -6,7 +6,7 @@ import { lockPersonalContainer } from './item-accounting.js';
 import { applyItemLock } from './item-locks.js';
 import { moveOwnedItem } from './inventory.js';
 import { personalStorage,requireInventoryIdle } from './inventory-browser.js';
-export const bulkOperations=['LOCK','FAVORITE','UNFAVORITE','MARK_INSPECTED','MOVE_HOME','MOVE_CARRIED','MOVE_MATERIAL_VAULT'] as const;
+export const bulkOperations=['COLLECT','UNCOLLECT','LOCK','FAVORITE','UNFAVORITE','MARK_INSPECTED','MOVE_HOME','MOVE_CARRIED','MOVE_MATERIAL_VAULT'] as const;
 export type BulkOperation=typeof bulkOperations[number];
 export type ItemSelection={itemId:string;inspectionToken?:string};
 export const defaultDisplayPreferences={healthyPercent:70,wornPercent:25,showSingleQuantity:true};
@@ -41,7 +41,8 @@ export function bulkInventory(pool:pg.Pool,accountId:string,envelope:Envelope,op
    for(const item of items)if(item.container_id!==destination){await moveOwnedItem(c,item.id,destination,false);changed++;}
   }else if(operation==='LOCK'){for(const item of items)if((await applyItemLock(c,item.id,true)).changed)changed++;}
   else for(const item of items){
-   const prior=(await c.client.query('SELECT favorite,seen_operation_no::text FROM inventory_item_annotations WHERE account_id=$1 AND item_id=$2 FOR UPDATE',[accountId,item.id])).rows[0];let favorite=prior?.favorite??false,seen=prior?.seen_operation_no??'0';
+   const prior=(await c.client.query('SELECT collection_protected,favorite,seen_operation_no::text FROM inventory_item_annotations WHERE account_id=$1 AND item_id=$2 FOR UPDATE',[accountId,item.id])).rows[0];let favorite=prior?.favorite??false,seen=prior?.seen_operation_no??'0';
+   if(operation==='COLLECT'||operation==='UNCOLLECT'){await c.client.query(`INSERT INTO inventory_item_annotations(account_id,item_id,collection_protected,last_action_id) VALUES($1,$2,$3,$4) ON CONFLICT(account_id,item_id) DO UPDATE SET collection_protected=EXCLUDED.collection_protected,last_action_id=EXCLUDED.last_action_id`,[accountId,item.id,operation==='COLLECT',c.actionId]);changed++;continue;}
    if(operation==='MARK_INSPECTED'){
     const token=selected.find(s=>s.itemId===item.id)!.inspectionToken;if(token===undefined)throw new DomainError(400,'INSPECTION_TOKEN_REQUIRED');
     const observed=(await c.client.query('SELECT o.operation_no::text n FROM inventory_quantity_operations q JOIN inventory_quantity_order o ON o.operation_id=q.id WHERE q.to_item_id=$1 AND q.id=$2',[item.id,token])).rows[0];
@@ -50,6 +51,6 @@ export function bulkInventory(pool:pg.Pool,accountId:string,envelope:Envelope,op
    if(favorite===(prior?.favorite??false)&&seen===(prior?.seen_operation_no??'0'))continue;
    await c.client.query(`INSERT INTO inventory_item_annotations(account_id,item_id,favorite,seen_operation_no,last_action_id) VALUES($1,$2,$3,$4,$5) ON CONFLICT(account_id,item_id) DO UPDATE SET favorite=EXCLUDED.favorite,seen_operation_no=EXCLUDED.seen_operation_no,last_action_id=EXCLUDED.last_action_id`,[accountId,item.id,favorite,seen,c.actionId]);changed++;
   }
-  return {operation,itemIds:ids,selected:ids.length,changed,revision:changed&&(operation==='LOCK'||operation.startsWith('MOVE_'))?await advanceRevision(c):c.run.revision};
+  return {operation,itemIds:ids,selected:ids.length,changed,revision:changed&&(operation==='COLLECT'||operation==='UNCOLLECT'||operation==='LOCK'||operation.startsWith('MOVE_'))?await advanceRevision(c):c.run.revision};
  });
 }

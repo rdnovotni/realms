@@ -88,12 +88,12 @@ physical-copy equipment-picker behavior.
 
 `POST /api/v1/inventory/bulk` accepts the Action envelope with
 `actionType=BULK_INVENTORY`, `operation` and `selections` (1–48 unique physical
-`itemId` UUIDs). Operations: `LOCK`, `FAVORITE`, `UNFAVORITE`, `MARK_INSPECTED`,
+`itemId` UUIDs). Operations: `COLLECT`, `UNCOLLECT`, `LOCK`, `FAVORITE`, `UNFAVORITE`, `MARK_INSPECTED`,
 `MOVE_HOME`, `MOVE_CARRIED`, `MOVE_MATERIAL_VAULT`. Inspection selections also carry
 the opaque `inspectionToken` from their inventory read. Tokens are item-bound,
 never future/global sequence numbers. All operations require GAME_WRITE and
 explicit MANUAL_UI/API intent. The response records item IDs, selected/changed
-counts and revision. Lock/move advances gameplay once if changed; annotations do
+counts and revision. Collection protection and lock/move advance gameplay once if changed; annotations do
 not. Any denial rolls back the complete batch. Replay uses the same envelope.
 
 `POST /api/v1/inventory/display-preferences` accepts
@@ -138,3 +138,19 @@ reward amounts, effect definitions or quantities. Encounter-active states reject
 these services. Tokens are content/state digests bound to the current run revision;
 receipt replay returns the original result after successful commitment.
 See [authoring, verification and operations](inventory-services.md).
+
+
+## Inventory intelligence (migration 036)
+
+`POST /api/v1/inventory/intelligence` uses the Action envelope with
+`actionType=SET_INVENTORY_INTELLIGENCE`, `value` containing `automation` and/or
+`views`. `automation` is `{keep:[{definitionId,quantity}]}` (max 100 distinct
+item definitions; integral quantity 0–1,000,000). `views` is up to 12 unique
+`{name,query}` entries, names 1–40 characters. Query fields are explicitly
+allowlisted filters and sorting, never container IDs, definition IDs, offsets,
+revisions or reward data. Automation changes advance gameplay revision; saved
+views are cosmetic. Both persist per account through registered KEEP contracts.
+Inventory reads return `automation`, `views`, physical `collectionProtected`
+and discovery-gated `knownEffects`. Bulk COLLECT/UNCOLLECT changes collection
+protection and advances gameplay once. Collection identities cannot be consumed,
+split or merged; equipping and personal storage moves remain allowed.

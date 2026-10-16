@@ -239,3 +239,54 @@ quotes. Use/Open appears on authored eligible items and through double-click and
 the context menu's existing inspector actions. These workflows and their precise
 supported authoring scope are documented in [inventory services](inventory-services.md).
 Migration 035 and refreshed runtime grants are required before deploying this UI.
+
+
+### Inventory intelligence and richer inspection (migration 036)
+
+Pack offers Equipment, Materials, Recently Acquired and Needs Repair views plus
+up to twelve account-persistent custom filter/sort views. Applying a view resets
+pagination and physical selection. Storage location is selected separately;
+old-life container IDs are never saved into a view.
+
+The inspector separates Overview, Properties, known Equipment effects, supported
+Actions, Comparison and player-visible History. Materials omit equipment-only
+sections. Automation remains collapsed until requested. Known capability and
+technique summaries require ADVANCED discovery; raw metadata, source codes,
+hidden prerequisites and hidden effect IDs are never returned. History includes
+quantity lineage, crafting grants, custody transfers, locks, repairs and wear.
+There is no implemented item-modification/affix journal yet, so inspection does
+not invent modification details or claim unknown provenance is absent.
+
+Compare searches paginated owned gear across personal storage for the chosen
+slot without changing Pack filters. Item properties compare the selected pair;
+character totals compare current equipment against the proposed candidate and
+are explicitly labelled accordingly. The authoritative preview still requires
+assessment of all active/proposed gear before returning numeric totals. Staging
+never equips automatically and retains normal binding safeguards.
+
+Keep-N rules reserve up to N units of each definition in current-life carried
+custody on future grants. Counts include equipped/prepared copies. Excess goes
+to current-life Material Vault (materials) or Home (others); partial stacks are
+split with a full grant, lineage operation and movement evidence, preserving
+quantity, quality, binding, release and provenance. Keep-N takes priority over
+existing material/overflow routing. Zero means route all future eligible grants.
+Existing possessions stay in place. System-untradeable and routine crafting
+outputs retain their domain-mandated custody; no automatic sale/destruction.
+
+Collection protection is separate from favorites and locks. Protect a chosen
+physical copy explicitly (bulk actions supported); consumption, use, crafting
+inputs, splitting and merging reject it server-side. Removing this protection
+requires explicit intent. Personal storage moves and equipping remain allowed.
+
+Paperdoll slots use the player's configured percentage thresholds for labelled
+condition badges; inactive sets remain prepared and the active set is framed.
+Capacity meters scale past 100%, label exact excess and show authored comfortable,
+burdened and encumbered boundaries for both weight and bulk. Unmeasured capacity
+stays explicit rather than appearing as a measured zero.
+
+Verification: `npm run typecheck`, `npm test`, and disposable-database
+`node --import tsx --test test/inventory-services.test.ts test/inventory-browser.test.ts test/crafting.test.ts`.
+Migration 036 must be rehearsed before deployment. Source rollback must retain
+collection-protection reads/enforcement and registered state contracts; an older
+binary can ignore collection protection and must not be used with this schema.
+No production migration or deployment is performed by this source change.

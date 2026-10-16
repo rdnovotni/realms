@@ -10,10 +10,13 @@ export async function clientEquipmentView(client:pg.PoolClient,runId:string,acco
  ), referenced AS MATERIALIZED (
   SELECT item_id FROM equipment_slots WHERE run_id=$1 UNION SELECT (slot->>'itemId')::uuid FROM equipment_loadouts saved JOIN runs owner_run ON owner_run.character_id=saved.character_id CROSS JOIN LATERAL jsonb_array_elements(saved.state->'plan'->'slots') slot WHERE owner_run.id=$1 AND saved.state IS NOT NULL
  ) SELECT i.id,v.definition->>'name' AS name,i.binding,v.definition->'public'->>'itemArt' AS artwork,v.definition->'public'->>'itemIcon' AS icon,
+ coalesce(v.definition->'public'->>'qualityLabel','Unassessed') AS "qualityLabel",
+ CASE WHEN EXISTS(SELECT 1 FROM discoveries known WHERE known.account_id=$2 AND known.entity_id=i.definition_id AND known.knowledge_level='ADVANCED') THEN i.quality::text END AS "numericQuality",
  equipment_eligible_slots(v.definition->'mechanics'->'equipment') AS slots,
  v.definition->'mechanics'->'inventory'->>'unitWeight' AS "unitWeight",
  v.definition->'mechanics'->'inventory'->>'unitBulk' AS "unitBulk",
  CASE WHEN EXISTS(SELECT 1 FROM discoveries known WHERE known.account_id=$2 AND known.entity_id=i.definition_id AND known.knowledge_level='ADVANCED') THEN (SELECT jsonb_object_agg(stat,amount) FROM (SELECT m->>'stat' stat,sum((m->>'amount')::integer) amount FROM jsonb_array_elements(v.definition->'mechanics'->'combatModifiers'->'modifiers') m GROUP BY m->>'stat') stat_values) END AS "knownStats",
+ CASE WHEN EXISTS(SELECT 1 FROM discoveries known WHERE known.account_id=$2 AND known.entity_id=i.definition_id AND known.knowledge_level='ADVANCED') THEN jsonb_build_object('resistances',v.definition->'mechanics'->'tacticalDamageTraits'->'resistances','immuneTags',v.definition->'mechanics'->'tacticalStatusTraits'->'immuneTags','durationReductionBps',v.definition->'mechanics'->'tacticalStatusTraits'->'durationReductionBps','capacity',v.definition->'mechanics'->'inventoryCapacity','guard',v.definition->'mechanics'->'tacticalKit'->'guard','heal',v.definition->'mechanics'->'tacticalKit'->'heal','minimumLevel',v.definition->'mechanics'->'tacticalKit'->'minimumNativeLevel','techniques',coalesce((SELECT jsonb_agg(jsonb_build_object('name',a->>'key','action',a->>'action','mana',a->'manaCost','minimumLevel',a->'minimumNativeLevel','effect',a->'effect'->>'kind','cooldown',a->'cooldownRounds')) FROM jsonb_array_elements(v.definition->'mechanics'->'tacticalTechniques'->'abilities') a),'[]'::jsonb)) END AS "knownEffects",
  (v.definition->'mechanics'->'equipment'->>'hands')::integer AS hands,
  (v.definition->'mechanics'->'equipment'->>'minimumLevel')::integer AS "minimumLevel",
  v.definition->'mechanics'->'equipment'->>'bindingPolicy' AS "bindingPolicy",

@@ -11,7 +11,7 @@ test('carry bands use exact inclusive boundaries and independent weight/bulk lim
  for(const [weight,state]of [[100n,'COMFORTABLE'],[101n,'BURDENED'],[125n,'BURDENED'],[126n,'ENCUMBERED'],[150n,'ENCUMBERED'],[151n,'OVERLOADED']] as const)assert.equal(encumbrance(r,weight,0n,100n,100n).state,state);
  assert.equal(encumbrance(r,0n,151n,100n,100n).state,'OVERLOADED');
  const huge=9223372036854775807n*1000000000n;assert.equal(encumbrance(r,huge,0n,huge,1n).state,'COMFORTABLE');assert.equal(encumbrance(r,huge+1n,0n,huge,1n).state,'BURDENED');
- assert.equal(encumbrance(r,0n,0n,1n,1n,1).state,'UNMEASURED');assert.equal(carryPercent(huge.toString(),'1'),100);assert.match(inventoryNumber(huge.toString()),/[0-9]/);
+ assert.equal(encumbrance(r,0n,0n,1n,1n,1).state,'UNMEASURED');assert.ok(carryPercent(huge.toString(),'1')>100);assert.match(inventoryNumber(huge.toString()),/[0-9]/);
 });
 test('publication refuses invented units, inverted bands and unowned capacity sources',()=>{
  assert.throws(()=>validateInventorySpec({version:'2',storageMode:'STACK',category:'MATERIAL',unitWeight:1,unitBulk:1,mundane:true}));
