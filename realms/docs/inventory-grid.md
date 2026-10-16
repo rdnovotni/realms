@@ -310,6 +310,8 @@ footers; full names remain in accessible labels and inspection. The disposable
 preview compass deliberately has a long name to exercise truncation.
 
 Contextual action icons supplement text in the inspector and context menu.
+The context menu excludes forms and hidden disclosure controls; item automation
+settings remain in their visible inspector form.
 Success feedback uses confirmed receipt counts, repair Gold costs, remaining
 quantities and owned item names. Ambiguous requests still retain their original
 retry envelope and never announce unconfirmed changes.
