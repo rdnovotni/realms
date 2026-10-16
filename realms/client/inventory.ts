@@ -52,7 +52,7 @@ export function renderInventory(main:HTMLElement,snapshot:Snapshot,session:GameS
  const workspace=node('div','','inventory-workspace');main.append(workspace);
  const overview=node('section','','inventory-overview '+(session.inventoryEquipmentOpen?'equipment-expanded':'equipment-collapsed'));overview.id='inventory-equipment';overview.setAttribute('aria-label','Equipment workspace');
  const load=page?.carry??snapshot.game.carry;
- const toggle=button(session.inventoryEquipmentOpen?'Equipment · Hide':'Equipment · Show',()=>session.setInventoryEquipmentOpen(!session.inventoryEquipmentOpen),false,'equipment-toggle');toggle.id='inventory-equipment-toggle';toggle.setAttribute('aria-expanded',String(session.inventoryEquipmentOpen));toggle.setAttribute('aria-controls','inventory-equipment-content');
+ const toggle=button(session.inventoryEquipmentOpen?'Equipment · Hide':'Equipment · Show',()=>session.setInventoryEquipmentOpen(!session.inventoryEquipmentOpen),false,'equipment-toggle');toggle.id='inventory-equipment-toggle';toggle.dataset.focus='Inventory equipment disclosure';toggle.setAttribute('aria-expanded',String(session.inventoryEquipmentOpen));toggle.setAttribute('aria-controls','inventory-equipment-content');
  const carrying=node('p',load?`Weight ${inventoryNumber(load.weight)} / ${inventoryNumber(load.weightCapacity)} · Bulk ${inventoryNumber(load.bulk)} / ${inventoryNumber(load.bulkCapacity)} · ${label(load.state)}`:'Carrying information is loading.','inventory-carry-summary');
  const content=node('div','','inventory-equipment-content');content.id='inventory-equipment-content';
  const carryDetails=node('details','','inventory-carry-details');carryDetails.append(node('summary','Carrying details'),renderCarry(load));

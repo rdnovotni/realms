@@ -31,7 +31,7 @@ export class GameSession {
  stageEquipment(plan:EquipmentPlan,gear:Gear[]=[]){
   const s=this.snapshot;if(!s||this.busy||this.needsRefresh)return;
   if(!this.equipmentDraft)this.equipmentDraft={runId:s.game.run.runId,revision:s.game.run.revision,plan:structuredClone(plan),gear:[]};
-  this.equipmentDraft.plan=structuredClone(plan);for(const item of gear)if(!this.equipmentDraft.gear.some(g=>g.id===item.id))this.equipmentDraft.gear.push(structuredClone(item));
+  this.equipmentDraft.plan=structuredClone(plan);for(const item of gear)if(!this.equipmentDraft.gear.some(g=>g.id===item.id))this.equipmentDraft.gear.push(structuredClone(item));else if(item.inspection)this.equipmentDraft.gear.find(g=>g.id===item.id)!.inspection=structuredClone(item.inspection);
   this.equipmentPreview=null;this.notify();void this.previewEquipment();
  }
  revertEquipment(){this.equipmentDraft=null;this.equipmentPreview=null;this.notify();void this.previewEquipment();}
@@ -106,6 +106,8 @@ export class GameSession {
  async inspectEquippedItem(itemId:string){
   const snapshot=this.snapshot,epoch=this.epoch,generation=++this.equippedInspectionGeneration;if(!snapshot)return false;
   const visible=this.inventory?.items.find(i=>i.id===itemId&&i.accessible);if(visible&&(!this.inventoryQuery.grouped||visible.copies===1)){this.selectInventory({...visible,copies:1});return true;}
+  const draft=this.equipmentDraft,cached=draft?.runId===snapshot.game.run.runId&&draft.revision===snapshot.game.run.revision?draft.gear.find(g=>g.id===itemId)?.inspection:undefined;
+  if(cached){this.selectInventory({...cached,copies:1});return true;}
   try{const page=await this.api.request<InventoryPage>('/api/v1/inventory?equipmentState=EQUIPPED&grouped=false&expectedRevision='+snapshot.game.run.revision);
    if(epoch!==this.epoch||generation!==this.equippedInspectionGeneration||this.snapshot?.game.run.runId!==page.runId||this.snapshot.game.run.revision!==page.revision)return false;
    const item=page.items.find(i=>i.id===itemId);if(!item)return false;
