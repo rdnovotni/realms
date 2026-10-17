@@ -145,3 +145,43 @@ total and affordability. Shared loadout cards show readiness, explain missing or
 stored gear, flag binding, search by name and provide Preview/Replace/Protection/
 Delete controls. Preview preserves the Apply/Revert draft flow.
 See [inventory service contracts and limitations](inventory-services.md).
+
+## Character Overview (CHAR-01)
+
+Character opens on Overview for a newly connected configured run. Its main content
+contains total committed level, discovered native class names/levels, current run
+mode/status, exact XP, pending level-ups, all seven current attributes, per-class
+limits where available, and a compact active equipment summary. It uses the generic
+label “Your character”; the current API does not supply a character name, biography,
+race or portrait. Essential information is repeated in the main sheet rather than
+relying on the sidebar hidden at narrow widths.
+
+Overview and Progression use reusable section navigation. Progression preserves the
+existing explicit class-level action; Abilities, Statistics and History are labeled
+as unavailable text rather than unfinished controls. Available Choices reports only
+pending class levels from readiness. Other choice categories await their own tickets;
+the absence of a connected projection is not presented as zero available choices.
+Unconfigured runs see starting class/preset selection first, without an equipment
+editor. Existing setup and level action envelopes and server legality checks remain
+unchanged.
+
+`GET /api/v1/progression` adds the read-only `xpProgress` projection: the cumulative
+threshold for `readiness.readyThroughLevel`, and the authored curve's maximum level.
+It uses the same pinned curve already selected by the progression read model.
+There are no new writes or migrations. Readiness retains its existing shape.
+The browser uses decimal strings/BigInt for total, remaining XP and interval ratios;
+only the bounded percentage becomes a Number. The next earnable level is after the
+highest XP-earned level, while the next allocation is after the committed level.
+At the cap, pending allocation remains visible. Missing curve information produces
+an unavailable state rather than invented progress or an assumed cap.
+
+Equipment uses the shared plan/gear cache, including retained drafts and their active
+weapon set. It shows known item art/names and honest unavailable fallbacks. Editing,
+comparison, binding confirmation and Apply/Revert remain exclusively in Pack, reached
+through Open Pack & equipment. Viewing the sheet submits no game actions.
+
+Verify with typecheck/build, client unit regressions and progression/client integration
+tests. In a disposable playtest, check setup first, configured Overview, Progression
+navigation with keyboard focus, and Pack navigation/draft preservation. Check 320px,
+375px and 768px for overflow, including long names and exact large XP values. Rollback
+is a source/build rollback; the additive read projection needs no data rollback.

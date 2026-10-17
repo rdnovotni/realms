@@ -15,8 +15,9 @@ export async function progressionView(pool:pg.Pool,accountId:string) {
       LEFT JOIN content_versions v ON v.entity_id=coalesce(plan.curve_id,b.state->'rules'->>'curveId') AND v.revision=coalesce(plan.curve_revision,(b.state->'rules'->>'curveRevision')::integer)
       WHERE c.account_id=$1 AND r.status IN('ACTIVE','AFTERCORE')`,[accountId])).rows[0];
     if(!row) throw new DomainError(404,'PROGRESSION_NOT_FOUND');
+    const curve=row.curve as ProgressionCurve|null,readiness=curve?progressionReadiness(curve,row.xp,row.level):null;
     return {runId:row.id as string,revision:row.revision as number,campaignState:row.status as string,
       xp:row.xp as string,level:row.level as number,curveId:row.curve_id as string|null,curveRevision:row.curve_revision as number|null,
-      build:row.build,readiness:row.curve ? progressionReadiness(row.curve as ProgressionCurve,row.xp,row.level) : null};
+      build:row.build,readiness,xpProgress:curve&&readiness?{earnedThreshold:curve.thresholds[readiness.readyThroughLevel-1]!,maximumLevel:curve.thresholds.length}:null};
   });
 }
