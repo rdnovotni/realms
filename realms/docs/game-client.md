@@ -293,3 +293,68 @@ discovery, active/read-only restrictions, pinned schedules and Ascension reset. 
 checks should include explicit cancellation, legal commits, refreshed summaries, reload,
 and 320/375/768px layouts. No production content, schema or write-domain changes; rollback
 is a source/build rollback and requires no data reversal.
+
+## Character Statistics and Ability Book (CHAR-04)
+
+Character navigation now exposes Overview, Progression, Abilities and Statistics.
+History remains labelled as unavailable. Both new sections are read-only, work in
+view-only sessions and refresh from the current owned run after reconnect or a saved
+action. Their optional read failures stay local; stale or crossed run/revision results
+are rejected, and logout/new runs discard old responses and browser selections.
+
+Statistics reuses `GET /api/v1/equipment/preview`, with no invented baseline formulas.
+Choose a discovered encounter rules context. The committed column describes today's
+active equipment under that context, not the live encounter snapshot or a universal
+character profile. A separate, explicit checkbox includes the shared Pack draft as a
+staged comparison; it cannot apply/revert equipment. Stale drafts are explained and
+cannot be previewed. Active encounters have an explicit notice about their frozen
+start snapshot, temporary effects and live resources.
+
+Supported totals include Health/Mana maxima, armor, accuracy, evasion, initiative,
+attack range of amounts, damage type/penetration, resistances/conditional defenses,
+status immunity/reductions, Guard/healing capabilities, carrying weight/bulk/capacity
+and penalties. Authorized calculation explanations expand separately for committed
+and staged values. Missing contexts or unassessed active gear show the server's
+explanation and unavailable values, never guessed zeroes. The existing preview gate
+suppresses BOTH sides and breakdowns when either active setup contains equipment
+below Advanced knowledge, including removal previews; subtraction cannot disclose
+its hidden modifiers. Carry information is taken only from the approved projection,
+not recovered from another endpoint when totals are suppressed.
+
+`GET /api/v1/character/abilities` is an authenticated, account-owned, no-store read
+model with run/revision metadata. It uses committed native class levels, selected
+feats/subclasses and worn/active equipment from the run's pinned release. Only owned
+sources assessed to Advanced knowledge are included: even the existence of a private
+capability is concealed before assessment. It reuses existing technique/healing/cleanse
+loaders and native gates, and whitelists supported public facts rather than returning
+raw definitions, checks, hidden effect IDs or execution payloads. Sources are bounded
+to 256 and entries to 256, with an explicit truncation marker. Duplicate equipped
+copies of a definition do not invent extra actions. Unowned discovered sources,
+inactive prepared sets, drafts, temporary battle grants and future native-level
+unlocks are excluded. Effect names/descriptions require discovery separately.
+
+The Ability Book has Active, Reactions, Utility and Passive filters, search, source
+filters and an inspection panel. It displays supported names, source attribution,
+action type, authored costs/cooldowns, effect summaries and availability restrictions.
+Unknown or encounter-defined costs/cooldowns remain explicitly unavailable; authored
+zero is distinct. A known capability does not promise a legal current battle action.
+Mastery is reserved text; no preparation, respec, spell content or combat execution
+changes are introduced.
+
+Disposable browser verification:
+
+```sh
+npm run build
+TEST_DATABASE_URL=postgres://rdnovotni@127.0.0.1:55439/realms_test node --import tsx scripts/character-book-preview.ts
+# Optional PLAYTEST_CHARACTER_STATE: assessed (default), unassessed, missing, empty
+```
+
+The preview binds only loopback port 3003, uses its own `realms_test` schema and the
+example account `wayfarer` / `A road worth wandering 47!`. Stop gracefully to remove
+its disposable schema. Test search/category/source inspection, keyboard navigation,
+committed versus staged statistics, Advanced suppression, missing contexts, reload,
+and 320/375/768px layouts. Run typecheck/build/unit tests plus `test/character-book.test.ts`,
+`test/equipment.test.ts` and `test/character-snapshots.test.ts` with the disposable test
+database. These cover multiclass attribution, active/prepared equipment, discovery,
+read-only and cross-account access, no hidden-stat disclosure and refresh guards.
+Rollback is source/build rollback only; there is no data migration or rules change.

@@ -3,7 +3,7 @@ import type { Advancement,AdvancementChoice,AdvancementClass,AdvancementScope,Su
 import { inventorySuccess } from './inventory-usability.js';
 import { defaultTileSettings,validTileSettings,type TileSettings } from './item-tiles.js';
 import { ApiClient,ApiError,errorMessage } from './api.js';
-import type { Config,GameView,Progression,BuildOptions,Tactical,Snapshot,Notice,AscensionPreview,InventoryPage,InventoryQuery,InventoryItem,InventoryHistory,EquipmentPlan,Gear,EquipmentPreview } from './types.js';
+import type { Config,GameView,Progression,BuildOptions,Tactical,Snapshot,Notice,AscensionPreview,InventoryPage,InventoryQuery,InventoryItem,InventoryHistory,EquipmentPlan,Gear,EquipmentPreview,AbilityBook,CharacterSection } from './types.js';
 const equipmentKey=(p:EquipmentPlan)=>JSON.stringify({activeSet:p.activeSet,slots:[...p.slots].sort((a,b)=>(a.set+a.slot).localeCompare(b.set+b.slot))});
 export class GameSession {
  private selectionPage='';
@@ -34,10 +34,10 @@ export class GameSession {
  stageEquipment(plan:EquipmentPlan,gear:Gear[]=[]){
   const s=this.snapshot;if(!s||this.busy||this.needsRefresh)return;
   if(!this.equipmentDraft)this.equipmentDraft={runId:s.game.run.runId,revision:s.game.run.revision,plan:structuredClone(plan),gear:[]};
-  this.equipmentDraft.plan=structuredClone(plan);for(const item of gear)if(!this.equipmentDraft.gear.some(g=>g.id===item.id))this.equipmentDraft.gear.push(structuredClone(item));else if(item.inspection)this.equipmentDraft.gear.find(g=>g.id===item.id)!.inspection=structuredClone(item.inspection);
+  this.clearCharacterStats();this.equipmentDraft.plan=structuredClone(plan);for(const item of gear)if(!this.equipmentDraft.gear.some(g=>g.id===item.id))this.equipmentDraft.gear.push(structuredClone(item));else if(item.inspection)this.equipmentDraft.gear.find(g=>g.id===item.id)!.inspection=structuredClone(item.inspection);
   this.equipmentPreview=null;this.notify();void this.previewEquipment();
  }
- revertEquipment(){this.equipmentDraft=null;this.equipmentPreview=null;this.notify();void this.previewEquipment();}
+ revertEquipment(){this.clearCharacterStats();this.equipmentDraft=null;this.equipmentPreview=null;this.notify();void this.previewEquipment();}
  async applyEquipment(){const d=this.equipmentDraft;if(!d||d.runId!==this.snapshot?.game.run.runId||d.revision!==this.snapshot.game.run.revision)return;await this.action('/api/v1/equipment','SET_EQUIPMENT',d.plan);}
  async previewEquipment(contextId=this.equipmentContext){
   const s=this.snapshot;if(!s)return;const epoch=this.epoch,generation=++this.previewGeneration,plan=structuredClone(this.equipmentState());this.equipmentContext=contextId;
@@ -84,9 +84,47 @@ export class GameSession {
   const path=choice.kind==='CLASS'?'level':choice.kind==='SUBCLASS'?'subclasses':'feats',type=choice.kind==='CLASS'?'LEVEL_UP':choice.kind==='SUBCLASS'?'CHOOSE_SUBCLASS':'CHOOSE_FEAT',body=choice.kind==='CLASS'?{classId:choice.id}:choice.kind==='SUBCLASS'?{subclassId:choice.id}:{featId:choice.id,milestone:choice.milestone};
   await this.action('/api/v1/progression/'+path,type,body);
  }
- private clearAdvancement(newRun=false){this.advancement=null;this.advancementBusy=false;this.advancementError=null;this.advancementNeedsRefresh=false;this.advancementGeneration++;if(newRun){this.attributeDraft=null;this.proficiencySearch='';this.proficiencyFamily='';this.proficiencyRank='';this.proficiencyEligible=false;this.advancementSearch='';this.advancementFilter='ALL';this.advancementFeatId=null;this.advancementMilestone=null;}}
- characterSection:'overview'|'progression'='overview';
- setCharacterSection(section:'overview'|'progression'){this.characterSection=section;this.notify();}
+ private clearAdvancement(newRun=false){this.clearCharacterReads(newRun);this.advancement=null;this.advancementBusy=false;this.advancementError=null;this.advancementNeedsRefresh=false;this.advancementGeneration++;if(newRun){this.attributeDraft=null;this.proficiencySearch='';this.proficiencyFamily='';this.proficiencyRank='';this.proficiencyEligible=false;this.advancementSearch='';this.advancementFilter='ALL';this.advancementFeatId=null;this.advancementMilestone=null;}}
+ characterStats:EquipmentPreview|null=null;
+ characterStatsBusy=false;
+ characterStatsError:string|null=null;
+ characterStatsContext:string|undefined;
+ characterStatsDraft=false;
+ characterStatsNeedsRefresh=false;
+ private characterStatsGeneration=0;
+ abilityBook:AbilityBook|null=null;
+ abilityBookBusy=false;
+ abilityBookError:string|null=null;
+ abilityBookNeedsRefresh=false;
+ abilitySearch='';
+ abilityCategory='ALL';
+ abilitySource='ALL';
+ abilitySelection:string|null=null;
+ private abilityGeneration=0;
+ setAbilityBrowser(patch:Partial<Pick<GameSession,'abilitySearch'|'abilityCategory'|'abilitySource'|'abilitySelection'>>){Object.assign(this,patch);this.notify();}
+ private clearCharacterStats(){this.characterStats=null;this.characterStatsBusy=false;this.characterStatsError=null;this.characterStatsNeedsRefresh=false;this.characterStatsGeneration++;}
+ private clearCharacterReads(newRun=false){this.clearCharacterStats();this.abilityBook=null;this.abilityBookBusy=false;this.abilityBookError=null;this.abilityBookNeedsRefresh=false;this.abilityGeneration++;if(newRun){this.characterStatsContext=undefined;this.characterStatsDraft=false;this.abilitySearch='';this.abilityCategory='ALL';this.abilitySource='ALL';this.abilitySelection=null;}}
+ async loadCharacterStats(context=this.characterStatsContext,includeDraft=this.characterStatsDraft){
+  const s=this.snapshot;if(!s)return;const epoch=this.epoch,generation=++this.characterStatsGeneration,runId=s.game.run.runId,revision=s.game.run.revision;
+  const draft=includeDraft?this.equipmentDraft:null,plan=draft&&draft.runId===runId&&draft.revision===revision?structuredClone(draft.plan):null,key=plan?equipmentKey(plan):null;
+  this.characterStatsContext=context;this.characterStatsDraft=includeDraft;this.characterStats=null;this.characterStatsBusy=true;this.characterStatsError=null;this.characterStatsNeedsRefresh=false;this.notify();
+  const q=new URLSearchParams({expectedRevision:String(revision)});if(context)q.set('contextId',context);if(plan)q.set('plan',JSON.stringify(plan));
+  try{const result=await this.api.request<EquipmentPreview>('/api/v1/equipment/preview?'+q);if(epoch!==this.epoch||generation!==this.characterStatsGeneration)return;
+   if(result.runId!==this.snapshot?.game.run.runId||result.revision!==this.snapshot.game.run.revision||result.runId!==runId||result.revision!==revision)throw new ApiError(409,'STALE_REVISION');
+   if(key&&(!this.equipmentDraft||equipmentKey(this.equipmentDraft.plan)!==key))return;
+   this.characterStats=result;
+  }catch(error){if(epoch===this.epoch&&generation===this.characterStatsGeneration){this.characterStatsError=errorMessage(error);if(error instanceof ApiError&&error.code==='STAT_CONTEXT_NOT_FOUND'){this.characterStatsContext=undefined;this.characterStatsError='This rules context is unavailable. Retry statistics to discover current contexts.';}this.characterStatsNeedsRefresh=error instanceof ApiError&&error.status===409;if(error instanceof ApiError&&error.status===401)this.handleError(error);}}
+  finally{if(epoch===this.epoch&&generation===this.characterStatsGeneration){this.characterStatsBusy=false;this.notify();}}
+ }
+ async loadAbilityBook(){
+  const s=this.snapshot;if(!s||this.abilityBookBusy)return;const epoch=this.epoch,generation=++this.abilityGeneration,runId=s.game.run.runId,revision=s.game.run.revision;this.abilityBookBusy=true;this.abilityBookError=null;this.abilityBookNeedsRefresh=false;this.notify();
+  try{const result=await this.api.request<AbilityBook>('/api/v1/character/abilities');if(epoch!==this.epoch||generation!==this.abilityGeneration)return;
+   if(result.runId!==runId||result.revision!==revision||this.snapshot?.game.run.runId!==runId||this.snapshot.game.run.revision!==revision)throw new ApiError(409,'STALE_REVISION');this.abilityBook=result;
+  }catch(error){if(epoch===this.epoch&&generation===this.abilityGeneration){this.abilityBook=null;this.abilityBookError=errorMessage(error);this.abilityBookNeedsRefresh=error instanceof ApiError&&error.status===409;if(error instanceof ApiError&&error.status===401)this.handleError(error);}}
+  finally{if(epoch===this.epoch&&generation===this.abilityGeneration){this.abilityBookBusy=false;this.notify();}}
+ }
+ characterSection:CharacterSection='overview';
+ setCharacterSection(section:CharacterSection){this.characterSection=section;this.notify();}
  inventoryFiltersOpen=false;
  inventorySearchDraft:string|null=null;
  inventoryAutomationOpen=false;
