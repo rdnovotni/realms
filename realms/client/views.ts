@@ -1,4 +1,4 @@
-import { renderPaperdoll } from './paperdoll.js';
+import { renderCharacter } from './character.js';
 import { renderInventory } from './inventory.js';
 import { renderLanding } from './landing.js';
 import type { GameSession } from './session.js';
@@ -28,7 +28,7 @@ export function render(root:HTMLElement,session:GameSession,screen:Screen,naviga
   const layout=el('div','',screen==='pack'||screen==='character'?'layout inventory-layout':'layout'),left=el('aside','','left-column'),character=section('The wayfarer');character.classList.add('character');character.prepend(el('div','✧','portrait'));add(character,el('small',snapshot.progression.build.mode==='CONFIGURED'?snapshot.progression.build.classes?.map(c=>`${snapshot.options.classes.find(option=>option.classId===c.classId)?.name??label(c.classId)} ${c.nativeLevel}`).join(' · ')??'Adventurer':'Choose your calling'),add(el('div','','stats'),stat('Level',String(snapshot.progression.level)),stat('Turns',String(snapshot.game.run.turns)),stat('XP',snapshot.progression.xp)),el('div','','rule'),el('p',snapshot.game.run.status==='AFTERCORE'?'Aftercore · A new chapter':'A life still being written','build-list muted'));left.append(character);
   const help=section('Your next step');add(help,el('p',snapshot.progression.build.mode!=='CONFIGURED'?'Choose a class and starting attributes to shape this life.':snapshot.game.activeEncounter?'Your encounter is saved. Continue from the current turn.':snapshot.progression.readiness?.pendingLevels?'You have earned a level. Choose how your character grows.':'Choose a known adventure. Each entry costs one Turn.','help'),button(snapshot.progression.build.mode!=='CONFIGURED'?'Create your build':'View character',()=>navigate('character'),false,'small'));left.append(help);
   const main=el('main');main.id='main';main.setAttribute('aria-busy',String(session.busy));
-  if(screen==='character')renderCharacter(main,snapshot,session,disabled);
+  if(screen==='character')renderCharacter(main,snapshot,session,disabled,()=>navigate('pack'));
   else if(screen==='pack')renderPack(main,snapshot,session,disabled);
   else if(screen==='combat'&&snapshot.battle)renderCombat(main,snapshot,disabled,onCommand,navigate);
   else renderAdventure(main,snapshot,session,disabled,navigate);
@@ -63,18 +63,6 @@ function renderAdventure(main:HTMLElement,s:Snapshot,session:GameSession,disable
  if(s.game.activeEncounter){main.append(add(el('section','','panel'),el('h3','Your adventure is already underway'),el('p',s.game.activeEncounter.kind==='TACTICAL'?'Return to your saved encounter before beginning another.':'This saved encounter uses controls that are not available in this client yet.'),s.game.activeEncounter.kind==='TACTICAL'?button('Resume encounter',()=>navigate('combat'),false,'primary'):null));return;}
  if(!s.game.adventures.length){main.append(el('p','No adventures have been discovered in this run yet. New content will appear here as you discover it.','empty'));return;}
  const cards=el('div','','cards');for(const adventure of s.game.adventures){const summary=typeof adventure.description.summary==='string'?adventure.description.summary:'A known encounter awaits. Prepare your character before setting out.';const carryBlocked=['OVERLOADED','UNMEASURED'].includes(s.game.carry?.state??'');const unavailable=carryBlocked||disabled||s.game.run.turns<adventure.turnCost||s.progression.build.mode!=='CONFIGURED';const card=add(el('article','','panel adventure'),el('span','⌁','crest'),el('h3',adventure.name),el('p',summary,'description'),el('div',`Entry: ${adventure.turnCost} Turn. ${failureSummary(adventure.failure)}`,'cost'),button(`Begin · ${adventure.turnCost} Turn`,()=>{navigate('combat');void session.action('/api/v1/tactical/start','START_TACTICAL',{definitionId:adventure.id});},unavailable,'primary'));if(unavailable)card.append(el('small',!s.game.canWrite?'This session is view only.':carryBlocked?'Manage your carrying load in Pack before entering.':s.progression.build.mode!=='CONFIGURED'?'Choose your starting build first.':s.game.run.turns<adventure.turnCost?'You need more Turns.':'Wait for the current action or refresh to reconnect.'));cards.append(card);}main.append(cards);if(s.game.hasMoreAdventures)main.append(el('p','Showing the first 100 discovered adventures.','help'));
-}
-function renderCharacter(main:HTMLElement,s:Snapshot,session:GameSession,disabled:boolean){
- add(main,heading('Shape your character.'),el('p','A class is a starting point. The choices ahead will make it yours.','muted'));
- main.append(renderPaperdoll(s,session,disabled));
- if(s.progression.build.mode!=='CONFIGURED'){
-  if(!s.options.classes.length){main.append(el('p','There are no discovered starting classes available for this run.','empty'));return;}
-  const cards=el('div','','cards');for(const c of s.options.classes){const card=add(el('article','','panel'),el('h2',c.name));for(const preset of s.options.rules.find(r=>r.rulesId===c.rulesId)?.presets??[]){add(card,el('h3',label(preset.key)),el('p',Object.entries(preset.attributes).map(([name,n])=>`${label(name)} ${n}`).join(' · '),'help'),button(`Choose ${c.name} · ${label(preset.key)}`,()=>void session.action('/api/v1/progression/start','START_BUILD',{classId:c.classId,presetKey:preset.key}),disabled,'primary'));}cards.append(card);}main.append(cards);
- }else{
-  const sheet=section('Attributes'),attributes=el('div','','attributes');for(const [name,n] of Object.entries(s.progression.build.attributes??{}))attributes.append(add(el('div','','attribute'),el('span',label(name)),el('strong',String(n))));add(sheet,attributes);main.append(sheet);
-  if(s.progression.readiness?.pendingLevels){const progression=section('An earned level');add(progression,el('p','Choose the class that grows with you. The server checks your earned level and class limits.'));for(const c of s.options.classes)add(progression,button(`Grow as ${c.name}`,()=>void session.action('/api/v1/progression/level','LEVEL_UP',{classId:c.classId}),disabled||!!s.game.activeEncounter,'small'));main.append(progression);}
-  else main.append(el('p','Your next level becomes available through earned experience.','empty'));
- }
 }
 function renderPack(main:HTMLElement,s:Snapshot,session:GameSession,disabled:boolean){renderInventory(main,s,session,disabled);}
 function renderCombat(main:HTMLElement,s:Snapshot,disabled:boolean,send:(c:Command)=>void,navigate:(s:Screen)=>void){

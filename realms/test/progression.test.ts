@@ -38,6 +38,7 @@ test('successful resolution awards its pinned budget once and marks pending leve
     assert.equal(wins.filter(r=>!r.replayed).length,1);
     const view=await progressionView(db.pool,f.account);
     assert.deepEqual(view.readiness,{xp:'250',level:1,readyThroughLevel:3,pendingLevels:2,nextThreshold:'300'});
+    assert.deepEqual(view.xpProgress,{earnedThreshold:'200',maximumLevel:25});
     assert.equal(view.campaignState,'ACTIVE');
     assert.equal((await db.pool.query('SELECT count(*)::int AS n FROM run_xp_awards')).rows[0].n,1);
     await assert.rejects(finish(db.pool,f.account,id,2),/ENCOUNTER_RESOLVED/);

@@ -288,3 +288,39 @@ test('pending search text survives background browse notifications without chang
  assert.equal(h.session.inventorySearchDraft,'pending');assert.equal(h.session.inventoryQuery.search,'applied');
  await h.session.logout();assert.equal(h.session.inventorySearchDraft,null);
 });
+
+// CHAR-01: presentation consumes exact authoritative projections, never XP thresholds invented in the browser.
+test('Character XP separates the next earned threshold from pending class allocation',async()=>{
+ const {characterXP}=await import('../client/character-model.js');
+ const p={level:1,xp:'250',build:{mode:'CONFIGURED'},readiness:{readyThroughLevel:3,pendingLevels:2,nextThreshold:'300'},xpProgress:{earnedThreshold:'200',maximumLevel:25}} as import('../client/types.js').Progression;
+ assert.deepEqual(characterXP(p),{earnedLevel:3,nextEarnableLevel:4,nextAllocationLevel:2,capped:false,remaining:'50',percent:50,maximumLevel:25});
+ assert.equal(characterXP({...p,xpProgress:null}).percent,null);
+});
+test('Character XP retains exact large decimal values and bounded fractional progress',async()=>{
+ const {characterXP,exactXP}=await import('../client/character-model.js');
+ const p={level:2,xp:'9007199254740993',build:{mode:'CONFIGURED'},readiness:{readyThroughLevel:2,pendingLevels:0,nextThreshold:'9007199254740995'},xpProgress:{earnedThreshold:'9007199254740991',maximumLevel:25}} as import('../client/types.js').Progression;
+ assert.equal(characterXP(p).percent,50);assert.equal(characterXP(p).remaining,'2');assert.equal(exactXP(p.xp),9007199254740993n.toLocaleString());
+ assert.equal(characterXP({...p,xp:'9223372036854775807',readiness:{readyThroughLevel:25,pendingLevels:23,nextThreshold:null}}).capped,true);
+});
+test('Character XP explicitly handles capped, pending-at-cap and unconfigured states',async()=>{
+ const {characterXP}=await import('../client/character-model.js');
+ const p={level:25,xp:'2400',build:{mode:'CONFIGURED'},readiness:{readyThroughLevel:25,pendingLevels:0,nextThreshold:null},xpProgress:{earnedThreshold:'2400',maximumLevel:25}} as import('../client/types.js').Progression;
+ assert.equal(characterXP(p).nextEarnableLevel,null);assert.equal(characterXP(p).nextAllocationLevel,null);assert.equal(characterXP(p).percent,null);
+ assert.equal(characterXP({...p,level:3,readiness:{...p.readiness!,pendingLevels:22}}).nextAllocationLevel,4);
+ assert.equal(characterXP({...p,readiness:null,xpProgress:null}).capped,false);
+});
+test('Character class summary shows both native levels and only discovered names and limits',async()=>{
+ const {characterClasses}=await import('../client/character-model.js');
+ const s={progression:{build:{classes:[{classId:'class.one',nativeLevel:4},{classId:'class.two',nativeLevel:2}]}},options:{classes:[{classId:'class.one',name:'Warden',maximumNativeLevel:20},{classId:'class.two',name:'Wayfarer',maximumNativeLevel:15}]}} as unknown as Snapshot;
+ assert.deepEqual(characterClasses(s).map(c=>[c.name,c.nativeLevel,c.maximumNativeLevel]),[['Warden',4,20],['Wayfarer',2,15]]);
+ s.options.classes=[];assert.equal(characterClasses(s)[0]!.name,'Class name unavailable');assert.equal(characterClasses(s)[0]!.maximumNativeLevel,null);
+});
+test('Character equipment summary follows the shared active draft without altering assignments',async()=>{
+ const {characterEquipment}=await import('../client/character-model.js');const s={game:{equipment:{activeSet:'A',slots:[]}}} as unknown as Snapshot;
+ const plan={activeSet:'B' as const,slots:[{set:'A' as const,slot:'MAIN_HAND',itemId:'old'},{set:'B' as const,slot:'MAIN_HAND',itemId:'new'},{set:'WORN' as const,slot:'HEAD',itemId:'helm'}]};const before=JSON.stringify(plan);
+ const result=characterEquipment(s,{equipmentState:()=>plan,equipmentGear:()=>[{id:'new',name:'Known blade'} as Gear]});
+ assert.equal(result.plan!.activeSet,'B');assert.deepEqual(result.items.map(i=>i.itemId),['new','helm']);assert.equal(result.items[0]!.gear!.name,'Known blade');assert.equal(result.items[1]!.gear,undefined);assert.equal(JSON.stringify(plan),before);
+});
+test('Character section choice survives ordinary redraws and resets on sign out',async()=>{
+ const h=harness();await connect(h);h.session.setCharacterSection('progression');assert.equal(h.session.characterSection,'progression');await h.session.logout();assert.equal(h.session.characterSection,'overview');
+});
