@@ -246,3 +246,50 @@ proficiencies, unavailable milestones, active instances, stale/concurrent reques
 replay, ownership, undiscovered content, read-only sessions, late reads and new runs.
 Rollback is a source/build rollback; the scoped projections are additive and no data
 migration requires reversal.
+
+## Attribute and proficiency advancement (CHAR-03)
+
+Character → Progression adds Attributes, Proficiencies and Upcoming Milestones.
+Overview shares the earned attribute/proficiency decision summary. The seven attribute
+cards show the server's current committed effective scores (starting build plus milestone
+allocations), applicable contract caps and earned opportunities. Equipment/temporary
+bonuses are not included in this progression projection. The editor starts with zero
+points allocated, previews each result, supports keyboard buttons and requires the exact
+authored budget. Disallowed attributes and capped increases are disabled. The server
+continues to validate capacity reserved for future milestones; a rejection explains why
+an allocation below today's caps can still fail. Draft points survive ordinary rerenders
+and same-revision refreshes, and are discarded on changed revisions or new runs.
+
+Proficiencies lists discovered skills authorized by applicable pinned contracts, including
+family, default attribute, current/max rank, eligibility and earned unused milestones.
+Search by name and filter by family, rank or eligible advancement. The established ladder
+is Untrained, Novice, Trained, Expert, Master, Legendary. Review shows exactly one rank
+increase and the selected milestone; the client never supplies a resulting rank.
+Both workflows reuse the shared confirmation dialog, action envelopes, receipts and
+revision/write-scope guards. Committed choices survive reload/reconnect; local uncommitted
+drafts are not permanent choices. Success refreshes all Character catalogs and Overview,
+retains Progression and reports the allocation or skill/rank/milestone. Active instances
+and view-only sessions retain inspection access but cannot submit.
+
+GET `/api/v1/progression/attributes` and `/proficiencies` add runId/revision/activeInstance
+stamps in scoped HTTP reads; internal default domain calls retain their previous shape.
+GET `/api/v1/progression/milestones` is an authenticated, account-owned, read-only public
+projection, sorted and bounded to 512 facts with an explicit truncation indicator. It uses
+only the active run's pinned release and applicable build contract; prior choices lock
+attribute/proficiency/feat policy. Feat/proficiency schedules require a discovered matching
+option; subclass facts require a discovered option and an owned native class. It exposes
+no raw mechanics, hidden IDs/names, speculative class rewards or universal milestone
+schedule. Completed, earned unused and upcoming facts remain separate. Alternative
+contracts/subclasses are alternatives, not cumulative grants. Earned does not imply that
+all eligibility restrictions are satisfied. Unavailable/undiscovered information stays
+unexposed. All six advancement reads must agree on run, revision and active-instance state.
+
+Verification: `npm run typecheck`, `npm run build`, `npm test`, and
+`node --import tsx --test --test-concurrency=1 test/growth.test.ts test/attributes.test.ts test/proficiencies.test.ts test/advancement.test.ts`
+with the disposable `TEST_DATABASE_URL`. The existing preview above includes test-only
+attribute schedules and multiple proficiency milestones. Test exact budgets, caps, future
+capacity rejection, Luck, rank sequence/caps, receipt replay, stale requests, ownership,
+discovery, active/read-only restrictions, pinned schedules and Ascension reset. Browser
+checks should include explicit cancellation, legal commits, refreshed summaries, reload,
+and 320/375/768px layouts. No production content, schema or write-domain changes; rollback
+is a source/build rollback and requires no data reversal.

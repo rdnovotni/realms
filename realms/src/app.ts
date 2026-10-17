@@ -17,6 +17,7 @@ import { recruitCompanion,companionsView } from './domains/tactical-companions.j
 import { startTacticalCombat,takeTacticalAction,tacticalView } from './domains/tactical-combat.js';
 import type { TacticalPlayerCommand } from './domains/tactical-combat.js';
 import { advanceProficiency,proficiencyView } from './domains/proficiencies.js';
+import { milestoneView } from './domains/milestones.js';
 import { allocateAttributes,attributeView } from './domains/attributes.js';
 import { attributes as attributeNames } from './domains/build-content.js';
 import type { AttributeAllocation } from './domains/attribute-content.js';
@@ -102,8 +103,9 @@ export function buildApp(pool: pg.Pool, auth:Authentication, logger = false, cac
       return equipmentPreview(pool,actor(request),Number(request.query.expectedRevision),plan,request.query.contextId);
     });
     protectedApp.get('/api/v1/client/state',async(request,reply)=>{reply.header('Cache-Control','no-store');return gameView(pool,actor(request),request.principal??undefined);});
-    protectedApp.get('/api/v1/progression/proficiencies',async request=>proficiencyView(pool,actor(request)));
-    protectedApp.get('/api/v1/progression/attributes',async request=>attributeView(pool,actor(request)));
+    protectedApp.get('/api/v1/progression/proficiencies',async request=>proficiencyView(pool,actor(request),true));
+    protectedApp.get('/api/v1/progression/milestones',async request=>milestoneView(pool,actor(request)));
+    protectedApp.get('/api/v1/progression/attributes',async request=>attributeView(pool,actor(request),true));
     protectedApp.get('/api/v1/progression/feats',async request=>featView(pool,actor(request),true));
     protectedApp.get('/api/v1/progression/subclasses',async request=>subclassView(pool,actor(request),true));
     protectedApp.get('/api/v1/progression',async request=>progressionView(pool,actor(request)));

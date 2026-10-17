@@ -32,3 +32,5 @@ Clients choose point distribution, never raw resulting scores or caps. Only conf
 Run locking handles competing requests; receipts make retries replayable. Allocation, scores, revision, receipt, audit and outbox commit or roll back together. Existing projections and class histories survive upgrade unchanged. Ascension retains old history and resets the new run to unconfigured starting values, including unknown Luck, until its fresh preset is chosen.
 
 This allocation checkpoint does not implement respec, challenge-path growth rules, species/quest bonuses or Mastery. Derived combat statistics are implemented by the later [character snapshot](character-mechanics.md) and tactical work. Those need independent authored contracts and histories; they cannot write around this journal.
+
+The Character Progression [allocation editor](game-client.md#attribute-and-proficiency-advancement-char-03) now exposes this authority with exact-budget previews and explicit confirmation. Scoped HTTP reads also identify their run/revision and explain the committed-score projection; the authenticated milestone timeline exposes bounded pinned schedule facts.
