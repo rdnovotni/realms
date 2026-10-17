@@ -46,6 +46,7 @@ export class GameSession {
   finally{if(epoch===this.epoch&&generation===this.previewGeneration){this.equipmentPreviewBusy=false;this.notify();}}
  }
  inventoryFiltersOpen=false;
+ inventoryAutomationOpen=false;
  inventoryLayout:'COMPACT'|'STANDARD'|'DETAILED'='STANDARD';
  inventoryEquipmentOpen=false;
  inventoryLoadoutsOpen=false;
@@ -102,7 +103,7 @@ export class GameSession {
    if(this.equipmentDraft&&(this.equipmentDraft.runId!==game.run.runId||game.equipment&&equipmentKey(this.equipmentDraft.plan)===equipmentKey(game.equipment)))this.equipmentDraft=null;
    this.equipmentPreview=null;this.previewGeneration++;this.equipmentPreviewBusy=false;if(this.inventoryWanted)await this.browseInventory(this.inventoryQuery);}
  }
- selectInventory(item:InventoryItem|null){this.equippedInspectionGeneration++;this.inventoryHistory=null;this.inventoryHistoryBusy=false;this.historyGeneration++;this.selectedInventoryItem=item?structuredClone(item):null;this.selectedInventoryGrouped=!!item&&!!this.inventoryQuery.grouped&&item.copies>1;this.selectedInventoryQuery=JSON.stringify(this.inventoryQuery);this.selectedInventoryRevision=this.snapshot?.game.run.revision??-1;this.notify();}
+ selectInventory(item:InventoryItem|null){if(item?.id!==this.selectedInventoryItem?.id)this.inventoryAutomationOpen=false;this.equippedInspectionGeneration++;this.inventoryHistory=null;this.inventoryHistoryBusy=false;this.historyGeneration++;this.selectedInventoryItem=item?structuredClone(item):null;this.selectedInventoryGrouped=!!item&&!!this.inventoryQuery.grouped&&item.copies>1;this.selectedInventoryQuery=JSON.stringify(this.inventoryQuery);this.selectedInventoryRevision=this.snapshot?.game.run.revision??-1;this.notify();}
  private equippedInspectionGeneration=0;
  async inspectEquippedItem(itemId:string){
   const snapshot=this.snapshot,epoch=this.epoch,generation=++this.equippedInspectionGeneration;if(!snapshot)return false;
