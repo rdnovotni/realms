@@ -399,3 +399,4 @@ button:disabled{opacity:.7}
 @media(max-width:600px){.attribute-cards{grid-template-columns:repeat(2,minmax(0,1fr))}.attribute-card{padding:.6rem;overflow-wrap:anywhere}.attribute-card h3{font-size:.9rem}.attribute-card .help{font-size:.8rem}.attribute-card .advancement-state{font-size:.75rem;padding:.3rem}}
 
 .growth-live-status{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
+.advancement-toolbar .proficiency-eligible{display:flex;align-items:center;align-self:end;gap:.5rem;min-height:44px}.proficiency-eligible input[type=checkbox]{width:auto;min-width:20px;margin:0}

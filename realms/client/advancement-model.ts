@@ -8,7 +8,7 @@ export function canChooseAdvancement(view:Advancement|null,choice:AdvancementCho
  if(choice.kind==='CLASS')return view.classes.some(c=>c.classId===choice.id&&c.eligibility==='AVAILABLE');
  if(choice.kind==='SUBCLASS')return view.subclasses.options.some(c=>c.subclassId===choice.id&&c.eligibility==='AVAILABLE');
  if(choice.kind==='ATTRIBUTE'){const rule=view.attributes.rules.find(r=>r.rulesId===choice.id),milestone=rule?.availableMilestones.find(m=>m.level===choice.milestone);return !!rule&&!rule.blockedByInstance&&!!milestone&&validAttributeAllocation(rule,milestone,view.attributes.attributes,choice.allocation??{});}
- if(choice.kind==='PROFICIENCY')return view.proficiencies.options.some(p=>p.skillId===choice.id&&p.rulesId===choice.rulesId&&p.eligibility==='ELIGIBLE'&&nextRank(p.rank)!==null&&choice.milestone!==undefined&&p.availableMilestones.includes(choice.milestone));
+ if(choice.kind==='PROFICIENCY')return view.proficiencies.options.some(p=>p.skillId===choice.id&&p.rulesId===choice.rulesId&&p.eligibility==='ELIGIBLE'&&proficiencyNextRank(p)!==null&&choice.milestone!==undefined&&p.availableMilestones.includes(choice.milestone));
  return view.feats.options.some(c=>c.featId===choice.id&&c.eligibility==='ELIGIBLE'&&choice.milestone!==undefined&&c.availableMilestones.includes(choice.milestone));
 }
 export function featEntries(catalog:FeatCatalog,search:string,filter:FeatFilter){
@@ -36,3 +36,5 @@ export function validAttributeAllocation(rule:AttributeRule,m:AttributeMilestone
 }
 export function proficiencyEntries(options:ProficiencyOption[],search:string,family:string,rank:string,eligible:boolean){return options.filter(p=>p.name.toLocaleLowerCase().includes(search.toLocaleLowerCase().trim())&&(!family||p.family===family)&&(!rank||p.rank===rank)&&(!eligible||p.eligibility==='ELIGIBLE'));}
 export function proficiencyStatus(p:ProficiencyOption){const cap=p.rank===p.maximumRank||nextRank(p.rank)===null;if(cap)return 'Maximum rank reached';if(!p.availableMilestones.length)return 'No earned milestone available';return p.eligibility==='ELIGIBLE'?'Available now':advancementReason(p.eligibility);}
+
+export function proficiencyNextRank(p:Pick<ProficiencyOption,'rank'|'maximumRank'>){const current=rankLadder.indexOf(p.rank),maximum=rankLadder.indexOf(p.maximumRank);return current<0||maximum<0||current>=maximum?null:nextRank(p.rank);}
