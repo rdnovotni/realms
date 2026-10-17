@@ -38,11 +38,13 @@ test('public page links support direct loads while unknown routes stay unavailab
  }finally{await app.close();}
 });
 function harness(authMode:'development'|'sessions'='development'){
+ let bookRead:((path:string)=>Promise<Response>)|null=null;
  let advancementRead:((path:string)=>Promise<Response>)|null=null;
  let inventoryRead:(path:string)=>Promise<Response>=async()=>json({revision,runId,items:[],total:0,offset:0,pageSize:48,containers:[],hasMoreContainers:false,preferences:{autoStoreMaterials:false,autoOverflow:false}});
  let revision=0,canWrite=true,runId='run',status='ACTIVE',post:(path:string,init:RequestInit)=>Promise<Response>=async(path)=>json(path.endsWith('/login')?{token:'private-token'}:{}),readsFail=false;
  const calls:{path:string;init:RequestInit}[]=[];
  const fetcher:Fetcher=async(path,init={})=>{calls.push({path,init});if(init.method==='POST')return post(path,init);
+  if(bookRead&&(path.startsWith('/api/v1/character/')||path.startsWith('/api/v1/equipment/preview')))return bookRead(path);
   if(advancementRead&&path.startsWith('/api/v1/progression/'))return advancementRead(path);
   if(path.startsWith('/api/v1/inventory?'))return inventoryRead(path);
   if(path.endsWith('/config'))return json({protocolVersion:1,authMode});
@@ -54,7 +56,7 @@ function harness(authMode:'development'|'sessions'='development'){
   throw Error(`Unexpected request ${path}`);
  };
  const session=new GameSession(new ApiClient(fetcher),()=> '11111111-1111-4111-8111-111111111111');
- return {session,calls,setAdvancementRead:(read:(path:string)=>Promise<Response>)=>{advancementRead=read;},setInventoryRead:(read:(path:string)=>Promise<Response>)=>{inventoryRead=read;},setStatus:(s:string)=>{status=s;},setRun:(r:string)=>{runId=r;},setRevision:(n:number)=>{revision=n;},setWrite:(value:boolean)=>{canWrite=value;},setPost:(fn:typeof post)=>{post=fn;},setReadFailure:(value:boolean)=>{readsFail=value;}};
+ return {session,calls,setBookRead:(read:(path:string)=>Promise<Response>)=>{bookRead=read;},setAdvancementRead:(read:(path:string)=>Promise<Response>)=>{advancementRead=read;},setInventoryRead:(read:(path:string)=>Promise<Response>)=>{inventoryRead=read;},setStatus:(s:string)=>{status=s;},setRun:(r:string)=>{runId=r;},setRevision:(n:number)=>{revision=n;},setWrite:(value:boolean)=>{canWrite=value;},setPost:(fn:typeof post)=>{post=fn;},setReadFailure:(value:boolean)=>{readsFail=value;}};
 }
 async function connect(h:ReturnType<typeof harness>){await h.session.initialize();await h.session.connect({token:'private-token'});assert.ok(h.session.snapshot);}
 test('transport confines credentials to same-origin headers and normalizes malformed and unreachable responses',async()=>{
@@ -392,4 +394,23 @@ test('attribute and proficiency session actions keep exact envelopes, refresh ch
 });
 test('growth drafts survive rerenders but clear on run transitions; capacity failures explain reserved future points',async()=>{
  const {errorMessage}=await import('../client/api.js');assert.match(errorMessage(new ApiError(409,'ATTRIBUTE_CAPACITY_RESERVED')),/future authored milestones/);const h=harness();await connect(h);let v=advancementData();h.setAdvancementRead(async path=>advancementRead(v,path));await h.session.loadAdvancement();h.session.setAttributeDraft({runId:'run',revision:0,rulesId:'rules.attributes',milestone:2,allocation:{luck:1}});h.session.setProficiencyBrowser({proficiencySearch:'Lucky',proficiencyFamily:'FORTUNE'});h.session.setCharacterSection('progression');assert.deepEqual(h.session.attributeDraft?.allocation,{luck:1});await h.session.refresh();assert.deepEqual(h.session.attributeDraft?.allocation,{luck:1});h.setRun('new-run');v=advancementData(0,'new-run');await h.session.refresh();assert.equal(h.session.attributeDraft,null);assert.equal(h.session.proficiencySearch,'');assert.equal(h.session.proficiencyFamily,'');
+});
+
+test('Character display distinguishes unavailable from authored zero and filters only authorized Ability Book entries',async()=>{
+ const {knownNumber,knownPercent,carryingValue,abilityEntries}=await import('../client/character-book-model.js');assert.equal(knownNumber(undefined),'Unavailable');assert.equal(knownNumber(null),'Unavailable');assert.equal(knownNumber(0),'0');assert.equal(knownPercent(undefined),'Unavailable');assert.equal(knownPercent(0),'0%');assert.match(carryingValue(undefined,'weight'),/Unavailable/);assert.match(carryingValue({enabled:true,unmeasuredItems:1,weight:'0'} as import('../client/types.js').CarryView,'weight'),/unmeasured/);assert.equal(carryingValue({enabled:true,unmeasuredItems:0,weight:'0'} as import('../client/types.js').CarryView,'weight'),'0');
+ const entry:import('../client/types.js').AbilityEntry={id:'known',name:'Warden · Riposte',category:'REACTION',source:{name:'Warden',kind:'CLASS',nativeLevel:1},action:'REACTION',costs:[{name:'Mana',amount:1,clock:null}],cooldownRounds:2,effects:['Physical damage'],restrictions:['Encounter rules apply'],duration:'OWNED'};assert.equal(abilityEntries([entry],'riposte','REACTION','CLASS').length,1);assert.equal(abilityEntries([entry],'physical','ALL','ALL').length,1);assert.equal(abilityEntries([entry],'','UTILITY','ALL').length,0);assert.equal(abilityEntries([entry],'','ALL','EQUIPMENT').length,0);
+});
+test('Character statistics default to committed gear and share drafts only when explicitly requested',async()=>{
+ const h=harness();await connect(h);h.session.snapshot!.game.canWrite=false;h.session.equipmentDraft={runId:'run',revision:0,plan:{activeSet:'B',slots:[]},gear:[]};h.setBookRead(async()=>json({runId:'run',revision:0,contexts:[],current:null,preview:null,reason:'No context'}));await h.session.loadCharacterStats();assert.equal(new URL(h.calls.at(-1)!.path,'http://test').searchParams.has('plan'),false);await h.session.loadCharacterStats('encounter.known',true);assert.deepEqual(JSON.parse(new URL(h.calls.at(-1)!.path,'http://test').searchParams.get('plan')!),{activeSet:'B',slots:[]});assert.equal(h.calls.filter(c=>c.init.method==='POST').length,0);assert.equal(h.session.equipmentDraft.plan.activeSet,'B');assert.equal(h.session.characterStats?.reason,'No context');
+});
+test('Character read models reject crossed scope, forget late logout responses, and remain optional to core game reads',async()=>{
+ const h=harness();await connect(h);h.setBookRead(async()=>json({runId:'other',revision:0,entries:[]}));await h.session.loadAbilityBook();assert.equal(h.session.abilityBook,null);assert.equal(h.session.abilityBookNeedsRefresh,true);assert.equal(h.session.needsRefresh,false);assert.ok(h.session.snapshot);let finish!:(r:Response)=>void;h.setBookRead(async()=>new Promise<Response>(resolve=>finish=resolve));const pending=h.session.loadAbilityBook();await h.session.logout();finish(json({runId:'run',revision:0,entries:[]}));await pending;assert.equal(h.session.abilityBook,null);assert.equal(h.session.abilityBookBusy,false);
+ const next=harness();await connect(next);next.setBookRead(async()=>json({error:'TECHNICAL_FAILURE'},503));await next.session.loadCharacterStats();assert.ok(next.session.characterStatsError);assert.equal(next.session.needsRefresh,false);assert.ok(next.session.snapshot);
+});
+test('Character sections and committed reads refresh on reconnect; new runs clear filters and context',async()=>{
+ const h=harness();await connect(h);h.setBookRead(async path=>json(path.includes('/abilities')?{runId:'run',revision:0,activeInstance:false,activeSet:'A',entries:[],truncated:false,notes:[]}:{runId:'run',revision:0,contexts:[],current:null,preview:null}));h.session.setCharacterSection('abilities');await h.session.loadAbilityBook();assert.ok(h.session.abilityBook);h.session.setAbilityBrowser({abilitySearch:'Riposte',abilityCategory:'REACTION',abilitySelection:'known'});await h.session.refresh();assert.equal(h.session.characterSection,'abilities');assert.equal(h.session.abilityBook,null);await h.session.loadAbilityBook();assert.ok(h.session.abilityBook);h.session.characterStatsContext='encounter.old';h.setRun('new-run');await h.session.refresh();assert.equal(h.session.characterSection,'overview');assert.equal(h.session.abilityBook,null);assert.equal(h.session.abilitySearch,'');assert.equal(h.session.abilitySelection,null);assert.equal(h.session.characterStatsContext,undefined);
+});
+
+test('a vanished Character statistics context can be retried against the available catalog',async()=>{
+ const h=harness();await connect(h);let fail=true;h.setBookRead(async()=>fail?json({error:'STAT_CONTEXT_NOT_FOUND'},404):json({runId:'run',revision:0,contexts:[],current:null,preview:null,reason:'No context'}));await h.session.loadCharacterStats('encounter.old');assert.equal(h.session.characterStatsContext,undefined);assert.match(h.session.characterStatsError!,/Retry statistics/);fail=false;await h.session.loadCharacterStats();assert.equal(new URL(h.calls.at(-1)!.path,'http://test').searchParams.has('contextId'),false);assert.equal(h.session.characterStats!.reason,'No context');
 });

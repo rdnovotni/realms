@@ -48,3 +48,7 @@ export type ProficiencyCatalog=AdvancementScope&{selected:{skillId:string;name:s
 export type MilestoneFact={category:'ATTRIBUTE'|'PROFICIENCY'|'FEAT'|'SUBCLASS';contractId:string;contractRevision:number;level:number;basis:'CHARACTER'|'NATIVE_CLASS';name:string|null;state:'COMPLETED'|'EARNED'|'UPCOMING';details:{points?:number;allowedAttributes?:AttributeName[];className?:string;nativeLevel?:number;selected?:boolean}|null};
 export type MilestoneCatalog=AdvancementScope&{milestones:MilestoneFact[];truncated:boolean};
 export type AttributeDraft={runId:string;revision:number;rulesId:string;milestone:number;allocation:Partial<Record<AttributeName,number>>};
+
+export type AbilityEntry={id:string;name:string;category:'ACTIVE'|'REACTION'|'UTILITY'|'PASSIVE';source:{name:string;kind:string;nativeLevel:number};action:string|null;costs:{name:string;amount:number;clock:string|null}[]|null;cooldownRounds:number|null;effects:string[];restrictions:string[];duration:'OWNED'};
+export type AbilityBook=AdvancementScope&{activeSet:string;entries:AbilityEntry[];truncated:boolean;notes:string[]};
+export type CharacterSection='overview'|'progression'|'statistics'|'abilities';
