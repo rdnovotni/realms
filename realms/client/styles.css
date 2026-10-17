@@ -385,3 +385,17 @@ button:disabled{opacity:.7}
 @media(max-width:650px){.advancement-section{padding:18px}.advancement-feat-workspace{grid-template-columns:minmax(0,1fr)}.advancement-feat-list{max-height:40dvh}.advancement-feat-detail{position:static}.advancement-confirmation{padding:18px}.advancement-toolbar{gap:8px}}
 
 .advancement-jumps{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0}.advancement-jumps a{padding:8px 12px;border:1px solid var(--line);border-radius:5px;color:var(--accent);background:var(--paper);font-size:.82rem}.advancement-section{scroll-margin-top:16px}
+
+/* Attribute and proficiency advancement keep controls readable at narrow widths. */
+.attribute-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,145px),1fr));gap:.65rem;margin:1rem 0}
+.attribute-card{padding:.8rem;border:1px solid var(--line);border-radius:8px;background:rgba(255,250,234,.5)}
+.attribute-card h3{margin:0;font-size:1rem}.attribute-score{font-size:1.9rem;line-height:1.1;margin:.5rem 0;color:var(--accent)}
+.attribute-editor{border-top:1px solid var(--line);padding-top:1rem}.attribute-budget{font-weight:700}
+.attribute-allocation-row{display:grid;grid-template-columns:minmax(100px,1fr) minmax(120px,1fr) auto;align-items:center;gap:.5rem;padding:.65rem 0;border-bottom:1px solid var(--line)}
+.attribute-allocation-row small{grid-column:1/3}.attribute-stepper{display:flex;align-items:center;gap:.5rem;grid-column:3;grid-row:1/3;flex-wrap:wrap}.attribute-stepper button{min-height:44px;font-size:.85rem;padding:.4rem .6rem}.attribute-stepper output{font-variant-numeric:tabular-nums}
+.rank-ladder{line-height:1.8;font-weight:600}.milestone-list{padding-left:1.2rem}.milestone-list li{margin:.55rem 0;overflow-wrap:anywhere}
+.advancement-section details{margin:1rem 0}.advancement-section summary{cursor:pointer;padding:.6rem 0;font-weight:600}.attribute-editor select,.advancement-toolbar select{max-width:100%}
+@media(max-width:600px){.attribute-allocation-row{grid-template-columns:1fr 1fr}.attribute-stepper{grid-column:1/-1;grid-row:auto}.attribute-allocation-row small{grid-column:1/-1}.attribute-editor>button{margin:.4rem 0;width:100%}}
+@media(max-width:600px){.attribute-cards{grid-template-columns:repeat(2,minmax(0,1fr))}.attribute-card{padding:.6rem;overflow-wrap:anywhere}.attribute-card h3{font-size:.9rem}.attribute-card .help{font-size:.8rem}.attribute-card .advancement-state{font-size:.75rem;padding:.3rem}}
+
+.growth-live-status{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}

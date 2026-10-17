@@ -1,5 +1,5 @@
 import { canChooseAdvancement,advancementSuccess } from './advancement-model.js';
-import type { Advancement,AdvancementChoice,AdvancementClass,AdvancementScope,SubclassCatalog,FeatCatalog,FeatFilter } from './types.js';
+import type { Advancement,AdvancementChoice,AdvancementClass,AdvancementScope,SubclassCatalog,FeatCatalog,FeatFilter,AttributeCatalog,ProficiencyCatalog,MilestoneCatalog,AttributeDraft } from './types.js';
 import { inventorySuccess } from './inventory-usability.js';
 import { defaultTileSettings,validTileSettings,type TileSettings } from './item-tiles.js';
 import { ApiClient,ApiError,errorMessage } from './api.js';
@@ -55,6 +55,13 @@ export class GameSession {
  advancementFilter:FeatFilter='ALL';
  advancementFeatId:string|null=null;
  advancementMilestone:number|null=null;
+ attributeDraft:AttributeDraft|null=null;
+ proficiencySearch='';
+ proficiencyFamily='';
+ proficiencyRank='';
+ proficiencyEligible=false;
+ setAttributeDraft(draft:AttributeDraft|null){this.attributeDraft=draft;this.notify();}
+ setProficiencyBrowser(patch:Partial<Pick<GameSession,'proficiencySearch'|'proficiencyFamily'|'proficiencyRank'|'proficiencyEligible'>>){Object.assign(this,patch);this.notify();}
  private advancementWanted=false;
  private advancementGeneration=0;
  setAdvancementBrowser(patch:Partial<Pick<GameSession,'advancementSearch'|'advancementFilter'|'advancementFeatId'|'advancementMilestone'>>){Object.assign(this,patch);this.notify();}
@@ -62,19 +69,22 @@ export class GameSession {
   const snapshot=this.snapshot;if(!snapshot||this.advancementBusy)return;
   this.advancementWanted=true;this.advancementBusy=true;this.advancementError=null;this.advancementNeedsRefresh=false;const generation=++this.advancementGeneration,epoch=this.epoch,runId=snapshot.game.run.runId,revision=snapshot.game.run.revision;this.notify();
   try {
-   const [options,subclasses,feats]=await Promise.all([this.api.request<BuildOptions&AdvancementScope&{classes:AdvancementClass[]}>('/api/v1/progression/options?advancement=true'),this.api.request<SubclassCatalog>('/api/v1/progression/subclasses'),this.api.request<FeatCatalog>('/api/v1/progression/feats')]);
+   const [options,subclasses,feats,attributes,proficiencies,milestones]=await Promise.all([this.api.request<BuildOptions&AdvancementScope&{classes:AdvancementClass[]}>('/api/v1/progression/options?advancement=true'),this.api.request<SubclassCatalog>('/api/v1/progression/subclasses'),this.api.request<FeatCatalog>('/api/v1/progression/feats'),this.api.request<AttributeCatalog>('/api/v1/progression/attributes'),this.api.request<ProficiencyCatalog>('/api/v1/progression/proficiencies'),this.api.request<MilestoneCatalog>('/api/v1/progression/milestones')]);
    if(epoch!==this.epoch||generation!==this.advancementGeneration||this.snapshot?.game.run.runId!==runId||this.snapshot.game.run.revision!==revision)return;
-   if([options,subclasses,feats].some(v=>v.runId!==runId||v.revision!==revision)||options.activeInstance!==subclasses.activeInstance||options.activeInstance!==feats.activeInstance)throw new ApiError(409,'STALE_REVISION');
-   this.advancement={runId,revision,activeInstance:options.activeInstance,classes:options.classes,subclasses,feats};
+   if([options,subclasses,feats,attributes,proficiencies,milestones].some(v=>v.runId!==runId||v.revision!==revision||v.activeInstance!==options.activeInstance))throw new ApiError(409,'STALE_REVISION');
+   this.advancement={runId,revision,activeInstance:options.activeInstance,classes:options.classes,subclasses,feats,attributes,proficiencies,milestones};
+   if(this.attributeDraft&&(this.attributeDraft.runId!==runId||this.attributeDraft.revision!==revision))this.attributeDraft=null;
   }catch(error){if(epoch===this.epoch&&generation===this.advancementGeneration){this.advancement=null;this.advancementError=errorMessage(error);this.advancementNeedsRefresh=error instanceof ApiError&&error.status===409;if(error instanceof ApiError&&error.status===401)this.handleError(error);}}
   finally{if(epoch===this.epoch&&generation===this.advancementGeneration){this.advancementBusy=false;this.notify();}}
  }
  async chooseAdvancement(choice:AdvancementChoice){
   if(this.busy||this.pending||this.needsRefresh||!this.snapshot?.game.canWrite||this.advancementBusy||choice.runId!==this.snapshot.game.run.runId||choice.revision!==this.snapshot.game.run.revision||!canChooseAdvancement(this.advancement,choice))return;
+  if(choice.kind==='ATTRIBUTE'){await this.action('/api/v1/progression/attributes','ALLOCATE_ATTRIBUTES',{rulesId:choice.id,milestone:choice.milestone,allocation:choice.allocation});return;}
+  if(choice.kind==='PROFICIENCY'){await this.action('/api/v1/progression/proficiencies','ADVANCE_PROFICIENCY',{rulesId:choice.rulesId,skillId:choice.id,milestone:choice.milestone});return;}
   const path=choice.kind==='CLASS'?'level':choice.kind==='SUBCLASS'?'subclasses':'feats',type=choice.kind==='CLASS'?'LEVEL_UP':choice.kind==='SUBCLASS'?'CHOOSE_SUBCLASS':'CHOOSE_FEAT',body=choice.kind==='CLASS'?{classId:choice.id}:choice.kind==='SUBCLASS'?{subclassId:choice.id}:{featId:choice.id,milestone:choice.milestone};
   await this.action('/api/v1/progression/'+path,type,body);
  }
- private clearAdvancement(newRun=false){this.advancement=null;this.advancementBusy=false;this.advancementError=null;this.advancementNeedsRefresh=false;this.advancementGeneration++;if(newRun){this.advancementSearch='';this.advancementFilter='ALL';this.advancementFeatId=null;this.advancementMilestone=null;}}
+ private clearAdvancement(newRun=false){this.advancement=null;this.advancementBusy=false;this.advancementError=null;this.advancementNeedsRefresh=false;this.advancementGeneration++;if(newRun){this.attributeDraft=null;this.proficiencySearch='';this.proficiencyFamily='';this.proficiencyRank='';this.proficiencyEligible=false;this.advancementSearch='';this.advancementFilter='ALL';this.advancementFeatId=null;this.advancementMilestone=null;}}
  characterSection:'overview'|'progression'='overview';
  setCharacterSection(section:'overview'|'progression'){this.characterSection=section;this.notify();}
  inventoryFiltersOpen=false;
@@ -207,7 +217,7 @@ export class GameSession {
  async retry(){if(!this.busy&&this.pending)await this.submit();}
  private async submit(){
   const pending=this.pending;if(!pending)return;const epoch=this.epoch;this.busy=true;this.notify();
-  try{const owned=[...(this.inventory?.items??[]),...(this.selectedInventoryItem?[this.selectedInventoryItem]:[])];const result=await this.api.request<Record<string,unknown>>(pending.path,pending.body);if(epoch!==this.epoch)return;this.pending=null;this.notice={text:advancementSuccess(String(pending.body.actionType),pending.body,result??{},this.advancement)??inventorySuccess(String(pending.body.actionType),pending.body,result??{},owned),kind:'success'};await this.load(epoch,['LEVEL_UP','CHOOSE_SUBCLASS','CHOOSE_FEAT'].includes(String(pending.body.actionType)));}
+  try{const owned=[...(this.inventory?.items??[]),...(this.selectedInventoryItem?[this.selectedInventoryItem]:[])];const result=await this.api.request<Record<string,unknown>>(pending.path,pending.body);if(epoch!==this.epoch)return;this.pending=null;this.notice={text:advancementSuccess(String(pending.body.actionType),pending.body,result??{},this.advancement)??inventorySuccess(String(pending.body.actionType),pending.body,result??{},owned),kind:'success'};await this.load(epoch,['LEVEL_UP','CHOOSE_SUBCLASS','CHOOSE_FEAT','ALLOCATE_ATTRIBUTES','ADVANCE_PROFICIENCY'].includes(String(pending.body.actionType)));}
   catch(error){if(epoch!==this.epoch)return;if(!this.pending){this.needsRefresh=true;this.notice={text:'Your action was saved, but the latest view could not be loaded. Refresh to reconnect.',kind:'error'};return;}if(!(error instanceof ApiError)||!error.ambiguous)this.pending=null;this.handleError(error);if(error instanceof ApiError&&error.ambiguous&&this.pending)this.notice.text+=' The action may have completed. Retry the same action to confirm.';if(error instanceof ApiError&&error.status===409){try{await this.load(epoch);}catch{/* Keep the stale snapshot disabled until an explicit refresh succeeds. */this.snapshot=null;}}}
   finally{if(epoch===this.epoch){this.busy=false;this.notify();}}
  }

@@ -1,3 +1,4 @@
+import { advancementScope,advancementStamp } from './advancement-view.js';
 import type pg from 'pg';
 import { executeAction,advanceRevision,type Envelope } from '../foundation/action.js';
 import { transaction } from '../foundation/transaction.js';
@@ -21,9 +22,10 @@ export function advanceProficiency(pool:pg.Pool,accountId:string,envelope:Envelo
     return {skillId,skillRevision:row.skill_revision as number,rank:proficiencyRanks[row.after_rank as number]!,choiceNumber:row.choice_no as number,milestone,revision:await advanceRevision(c)};
   });
 }
-export async function proficiencyView(pool:pg.Pool,accountId:string){
+export async function proficiencyView(pool:pg.Pool,accountId:string,scoped=false){
   return transaction(pool,async client=>{
     await client.query('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY');
+    const scope=scoped?await advancementScope(client,accountId):null;
     const selected=(await client.query(`SELECT p.skill_id AS "skillId",p.skill_revision AS "skillRevision",p.rank,v.definition->>'name' AS name,
       v.definition->'mechanics'->'skill'->>'family' AS family,v.definition->'mechanics'->'skill'->>'defaultAttribute' AS "defaultAttribute"
       FROM run_skill_ranks p JOIN runs r ON r.id=p.run_id JOIN characters c ON c.id=r.character_id
@@ -34,7 +36,7 @@ export async function proficiencyView(pool:pg.Pool,accountId:string){
       sv.definition->'mechanics'->'skill'->>'family' AS family,sv.definition->'mechanics'->'skill'->>'defaultAttribute' AS "defaultAttribute",
       coalesce(p.rank,0) AS rank,(sv.definition->'mechanics'->'skill'->>'maximumRank')::integer AS "maximumRank",
       ARRAY(SELECT m::integer FROM jsonb_array_elements_text(rv.definition->'mechanics'->'proficiencyRules'->'milestones') m
-        WHERE m::integer<=(b.state->>'level')::integer AND NOT EXISTS(SELECT 1 FROM run_proficiency_choices prior WHERE prior.run_id=r.id AND prior.milestone=m::integer)) AS "availableMilestones",
+        WHERE m::integer<=(b.state->>'level')::integer AND NOT EXISTS(SELECT 1 FROM run_proficiency_choices prior WHERE prior.run_id=r.id AND prior.milestone=m::integer) ORDER BY m::integer) AS "availableMilestones",
       EXISTS(SELECT 1 FROM instance_participants ip JOIN instances i ON i.id=ip.instance_id WHERE ip.run_id=r.id AND i.lifecycle='ACTIVE') AS "blockedByInstance"
       FROM runs r JOIN characters c ON c.id=r.character_id JOIN run_builds b ON b.run_id=r.id
       JOIN release_entries e ON e.release_id=r.content_release_id JOIN content_versions rv ON rv.entity_id=e.entity_id AND rv.revision=e.revision
@@ -46,6 +48,6 @@ export async function proficiencyView(pool:pg.Pool,accountId:string){
       WHERE c.account_id=$1 AND r.status IN('ACTIVE','AFTERCORE') AND r.mode IN('STANDARD','CASUAL') AND b.state->>'mode'='CONFIGURED'
         AND rv.definition->'mechanics'->'proficiencyRules'->>'buildRulesId'=b.state->'rules'->>'id'
         AND NOT EXISTS(SELECT 1 FROM run_proficiency_choices prior WHERE prior.run_id=r.id AND prior.rules_id<>e.entity_id) ORDER BY e.entity_id,se.entity_id`,[accountId])).rows;
-    return {selected:selected.map(p=>({...p,rank:proficiencyRanks[p.rank as number]})),choices:choices.map(p=>({...p,beforeRank:proficiencyRanks[p.beforeRank as number],afterRank:proficiencyRanks[p.afterRank as number]})),options:options.map(p=>({...p,rank:proficiencyRanks[p.rank as number],maximumRank:proficiencyRanks[p.maximumRank as number],eligibility:p.blockedByInstance?'ACTIVE_INSTANCE':p.rank>=p.maximumRank?'RANK_CAP_REACHED':p.availableMilestones.length===0?'NO_EARNED_MILESTONE':'ELIGIBLE'}))};
+    return {...(scope?advancementStamp(scope):{}),selected:selected.map(p=>({...p,rank:proficiencyRanks[p.rank as number]})),choices:choices.map(p=>({...p,beforeRank:proficiencyRanks[p.beforeRank as number],afterRank:proficiencyRanks[p.afterRank as number]})),options:options.map(p=>({...p,rank:proficiencyRanks[p.rank as number],maximumRank:proficiencyRanks[p.maximumRank as number],eligibility:p.blockedByInstance?'ACTIVE_INSTANCE':p.rank>=p.maximumRank?'RANK_CAP_REACHED':p.availableMilestones.length===0?'NO_EARNED_MILESTONE':'ELIGIBLE'}))};
   });
 }

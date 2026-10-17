@@ -1,3 +1,4 @@
+import { advancementScope,advancementStamp } from './advancement-view.js';
 import type pg from 'pg';
 import { executeAction,advanceRevision,type Envelope } from '../foundation/action.js';
 import { transaction } from '../foundation/transaction.js';
@@ -22,13 +23,14 @@ export function allocateAttributes(pool:pg.Pool,accountId:string,envelope:Envelo
     return {attributes:row.after_attributes,choiceNumber:row.choice_no as number,revision:await advanceRevision(c)};
   });
 }
-export async function attributeView(pool:pg.Pool,accountId:string) {
+export async function attributeView(pool:pg.Pool,accountId:string,scoped=false) {
   return transaction(pool,async client=>{
     await client.query('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY');
+    const scope=scoped?await advancementScope(client,accountId):null;
     const current=(await client.query(`SELECT p.run_id,attribute_projection(p.run_id) AS attributes FROM run_progression p JOIN runs r ON r.id=p.run_id JOIN characters c ON c.id=r.character_id WHERE c.account_id=$1 AND r.status IN('ACTIVE','AFTERCORE')`,[accountId])).rows[0];
     if(!current)throw new DomainError(404,'PROGRESSION_NOT_FOUND');
     const choices=(await client.query('SELECT milestone,allocation,rules_id AS "rulesId",rules_revision AS "rulesRevision" FROM run_attribute_choices WHERE run_id=$1 ORDER BY choice_no',[current.run_id])).rows;
-    const rules=(await client.query(`SELECT e.entity_id AS "rulesId",e.revision AS "rulesRevision",v.definition->'mechanics'->'attributeRules'->'maximumScores' AS "maximumScores",
+    const rules=(await client.query(`SELECT e.entity_id AS "rulesId",e.revision AS "rulesRevision",v.definition->'mechanics'->'attributeRules'->'maximumScores' AS "maximumScores",v.definition->>'name' AS name,
       coalesce((SELECT jsonb_agg(m ORDER BY (m->>'level')::integer) FROM jsonb_array_elements(v.definition->'mechanics'->'attributeRules'->'milestones') m
         WHERE (m->>'level')::integer<=p.level AND NOT EXISTS(SELECT 1 FROM run_attribute_choices chosen WHERE chosen.run_id=r.id AND chosen.milestone=(m->>'level')::integer)),'[]'::jsonb) AS "availableMilestones",
       EXISTS(SELECT 1 FROM instance_participants ip JOIN instances i ON i.id=ip.instance_id WHERE ip.run_id=r.id AND i.lifecycle='ACTIVE') AS "blockedByInstance"
@@ -37,6 +39,7 @@ export async function attributeView(pool:pg.Pool,accountId:string) {
       WHERE r.id=$1 AND r.mode IN('STANDARD','CASUAL') AND b.state->>'mode'='CONFIGURED'
         AND v.definition->'mechanics'->'attributeRules'->>'buildRulesId'=b.state->'rules'->>'id'
         AND NOT EXISTS(SELECT 1 FROM run_attribute_choices prior WHERE prior.run_id=r.id AND prior.rules_id<>e.entity_id) ORDER BY e.entity_id`,[current.run_id])).rows;
-    return {attributes:current.attributes,choices,rules};
+    if(!scoped)for(const rule of rules)delete rule.name;
+    return {...(scope?{...advancementStamp(scope),explanation:'Starting build scores plus committed attribute milestone allocations. Equipment and temporary effects are not included.'}:{}),attributes:current.attributes,choices,rules};
   });
 }
