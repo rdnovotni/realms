@@ -360,3 +360,7 @@ test('new runs discard advancement browser state and old catalogs while preservi
  const h=harness();await connect(h);let current=advancementData();h.setAdvancementRead(async path=>advancementRead(current,path));await h.session.loadAdvancement();h.session.setCharacterSection('progression');h.session.setAdvancementBrowser({advancementSearch:'old feat',advancementFeatId:'feat.known',advancementMilestone:2});h.setRun('next-run');current=advancementData(0,'next-run');await h.session.refresh();
  assert.equal(h.session.characterSection,'overview');assert.equal(h.session.advancementSearch,'');assert.equal(h.session.advancementFeatId,null);assert.equal(h.session.advancementMilestone,null);assert.equal(h.session.advancement!.runId,'next-run');
 });
+
+test('subclass alternatives explain a committed class decision without claiming the alternative was selected',async()=>{
+ const {subclassStatus}=await import('../client/advancement-model.js');assert.equal(subclassStatus({subclassId:'sub.chosen',eligibility:'ALREADY_CHOSEN'},'sub.chosen'),'Already selected');assert.equal(subclassStatus({subclassId:'sub.other',eligibility:'ALREADY_CHOSEN'},'sub.chosen'),'This class already has a committed subclass');
+});
