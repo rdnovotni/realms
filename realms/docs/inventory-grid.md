@@ -290,3 +290,43 @@ Migration 036 must be rehearsed before deployment. Source rollback must retain
 collection-protection reads/enforcement and registered state contracts; an older
 binary can ignore collection protection and must not be used with this schema.
 No production migration or deployment is performed by this source change.
+
+
+### Inventory usability polish
+
+Layout and tile settings remain account-persistent. Saved filter/sort views now
+also support semantic current-life locations (`CARRIED`, `HOME`, `MATERIAL_VAULT`)
+and `DURABILITY` sorting. No database migration is needed beyond the existing
+036 schema. Search and primary storage navigation stay visible; filters, sorting
+and saved-view management share one collapsible panel. Archived and account
+containers remain in More storage locations and retain their existing access
+rules. Merely opening an empty Home/Vault does not create a container or change
+any game state.
+
+Durability sorting uses exact condition / maximum ratios; non-durable items sort
+last in both directions, and groups sort by the worst physical copy's ratio.
+Two-line item names and three-line detailed descriptions preserve aligned card
+footers; full names remain in accessible labels and inspection. The disposable
+preview compass deliberately has a long name to exercise truncation.
+
+Contextual action icons supplement text in the inspector and context menu.
+The context menu excludes forms and hidden disclosure controls; item automation
+settings remain in their visible inspector form.
+Success feedback uses confirmed receipt counts, repair Gold costs, remaining
+quantities and owned item names. Ambiguous requests still retain their original
+retry envelope and never announce unconfirmed changes.
+
+Equipment hover/keyboard-focus tooltips show a compact comparison of permitted
+item facts against compatible active equipment. Grouped copies only prompt
+individual inspection. No hidden modifiers, authoritative character totals,
+network requests or item actions are introduced by hovering. Escape, scrolling,
+resize, focus departure and item removal dismiss the tooltip; tooltip content
+can itself be hovered. Touch keeps the existing tap/context-menu alternatives.
+
+The UI displays the design bible's Common, Uncommon, Rare, Exceptional, Legendary
+and Mythic tiers, plus the separate Ultra-ultra rare category. Existing persisted
+`VERY_RARE` is displayed as Exceptional; published item definitions and database
+codes are unchanged. Rarity describes scarcity, independently of quality/power.
+
+Verify with `npm run typecheck`, `npm test`, and disposable-database
+`node --import tsx --test test/inventory-browser.test.ts test/inventory-services.test.ts`.

@@ -154,3 +154,14 @@ Inventory reads return `automation`, `views`, physical `collectionProtected`
 and discovery-gated `knownEffects`. Bulk COLLECT/UNCOLLECT changes collection
 protection and advances gameplay once. Collection identities cannot be consumed,
 split or merged; equipping and personal storage moves remain allowed.
+
+
+### Inventory view refinements
+
+`GET /api/v1/inventory` also accepts `sort=DURABILITY` (exact condition percentage,
+nulls last, worst-copy ratio for groups) and
+`location=CARRIED|HOME|MATERIAL_VAULT`. A semantic location selects only the active
+run's personal storage and cannot be combined with `container`. Empty locations
+are read-only and do not create storage. Existing explicit container/archived
+custody checks remain unchanged. These semantic locations and durability sort
+are allowed in saved view queries; raw container UUIDs remain excluded.

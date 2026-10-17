@@ -1,3 +1,4 @@
+import { inventorySuccess } from './inventory-usability.js';
 import { defaultTileSettings,validTileSettings,type TileSettings } from './item-tiles.js';
 import { ApiClient,ApiError,errorMessage } from './api.js';
 import type { Config,GameView,Progression,BuildOptions,Tactical,Snapshot,Notice,AscensionPreview,InventoryPage,InventoryQuery,InventoryItem,InventoryHistory,EquipmentPlan,Gear,EquipmentPreview } from './types.js';
@@ -172,7 +173,7 @@ export class GameSession {
  async retry(){if(!this.busy&&this.pending)await this.submit();}
  private async submit(){
   const pending=this.pending;if(!pending)return;const epoch=this.epoch;this.busy=true;this.notify();
-  try{await this.api.request(pending.path,pending.body);if(epoch!==this.epoch)return;this.pending=null;this.notice={text:'Action saved.',kind:'success'};await this.load(epoch);}
+  try{const owned=[...(this.inventory?.items??[]),...(this.selectedInventoryItem?[this.selectedInventoryItem]:[])];const result=await this.api.request<Record<string,unknown>>(pending.path,pending.body);if(epoch!==this.epoch)return;this.pending=null;this.notice={text:inventorySuccess(String(pending.body.actionType),pending.body,result??{},owned),kind:'success'};await this.load(epoch);}
   catch(error){if(epoch!==this.epoch)return;if(!this.pending){this.needsRefresh=true;this.notice={text:'Your action was saved, but the latest view could not be loaded. Refresh to reconnect.',kind:'error'};return;}if(!(error instanceof ApiError)||!error.ambiguous)this.pending=null;this.handleError(error);if(error instanceof ApiError&&error.ambiguous&&this.pending)this.notice.text+=' The action may have completed. Retry the same action to confirm.';if(error instanceof ApiError&&error.status===409){try{await this.load(epoch);}catch{/* Keep the stale snapshot disabled until an explicit refresh succeeds. */this.snapshot=null;}}}
   finally{if(epoch===this.epoch){this.busy=false;this.notify();}}
  }
