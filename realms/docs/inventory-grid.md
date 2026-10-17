@@ -330,3 +330,29 @@ codes are unchanged. Rarity describes scarcity, independently of quality/power.
 
 Verify with `npm run typecheck`, `npm test`, and disposable-database
 `node --import tsx --test test/inventory-browser.test.ts test/inventory-services.test.ts`.
+
+### Unified Pack follow-up fixes
+
+Filter reset retains the currently selected storage location, including an explicit
+owned container. Pending search text is sent with the next browse operation;
+a delayed search from a detached screen cannot reopen or replace the current view.
+Later pages offer a direct First page action, and empty pages display 0–0 rather
+than a reversed item range.
+
+Inspector equipment positions, active-set labels, comparisons and unequip actions
+use the shared editing draft. Newly staged equipment can be removed before Apply;
+removing an assignment immediately removes the inspector's unequip action.
+Keep-N requires a whole quantity; clearing the input does not silently save zero.
+Its disclosure remains open through same-item refreshes and closes when selecting
+a different item.
+Zero or unavailable carrying capacity is explained without a misleading utilization
+meter. Item context menus close when their source inspection is replaced, and
+removed tiles cannot reopen a delayed menu.
+
+The Pack places layout beside its heading on wider screens, compacts bulk controls,
+and gives the active weapon set padded borders. Narrow screens retain tap-based
+storage actions while hiding mouse-oriented storage drop targets. Focus outlines,
+long inspector names, and wrapping pagination remain readable.
+
+No schema, authored content, reward rules or production services change. Rollback
+is a client source/build rollback; there is no data migration to reverse.

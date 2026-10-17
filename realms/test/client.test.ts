@@ -264,3 +264,27 @@ test('saved views reject inherited keys and non-string filters',async()=>{const 
 test('inventory rarity terms match the design bible without rewriting persisted codes',async()=>{const {rarityTitle}=await import('../client/inventory-usability.js');assert.equal(rarityTitle('VERY_RARE'),'Exceptional');assert.equal(rarityTitle('MYTHIC'),'Mythic');assert.equal(rarityTitle('ULTRA_ULTRA_RARE'),'Ultra-ultra rare');assert.equal(rarityTitle('PRIVATE_MARKER'),'Unknown');assert.equal(rarityTitle('constructor'),'Unknown');});
 test('inventory success feedback describes confirmed changes, costs and no-ops',async()=>{const {inventorySuccess}=await import('../client/inventory-usability.js');const items=[{id:'vial',name:'Road tonic'}];assert.equal(inventorySuccess('SPLIT_STACK',{quantity:'9223372036854775806'},{},items),'Split 9223372036854775806 units into a separate stack.');assert.equal(inventorySuccess('USE_ITEM',{itemId:'vial'},{kind:'USE',remaining:'4'},items),'Used Road tonic; 4 remaining.');assert.equal(inventorySuccess('REPAIR_ITEMS',{}, {items:[{},{}],total:'70'},items),'Repaired 2 items for 70 Gold.');assert.match(inventorySuccess('BULK_INVENTORY',{operation:'COLLECT'},{changed:0},items),/^No items changed/);assert.equal(inventorySuccess('MOVE_INVENTORY',{itemId:'vial',kind:'HOME'},{},items),'Moved Road tonic to home storage.');assert.match(inventorySuccess('SET_INVENTORY_WORKSPACE',{layout:'COMPACT'},{},items),/Compact.*saved to your account/);});
 test('compact comparison preserves unknown facts and never compares a grouped representative',async()=>{const {quickComparison}=await import('../client/inventory-usability.js');const item={id:'candidate',name:'Very long candidate name',definitionId:'item.candidate',multipleLocations:false,groupWeight:'2',groupBulk:'1',groupQuantity:'1',category:'EQUIPMENT',rarity:'COMMON',description:'',family:'Equipment',qualityLabel:'Known',numericQuality:'1',totalWeight:'2',totalBulk:'1',equipped:false,protected:false,containerId:'carried',storageMode:'INSTANCE',accessible:true,kind:'CARRIED',quantity:'1',binding:'TRADEABLE',equipment:{version:2,slots:['HEAD'],hands:0,minimumLevel:1,bindingPolicy:'PRESERVE'},eligible:true,proficiencyMet:true,locked:false,loadouts:[],knownStats:{armor:4},unitWeight:'2',unitBulk:'1',condition:87,maximumCondition:100,copies:1} as import('../client/types.js').InventoryItem;const current={id:'current',name:'Current helm',binding:'TRADEABLE',slots:['HEAD'],hands:0,minimumLevel:1,bindingPolicy:'PRESERVE',eligible:true,proficiencyMet:true,manualLocked:false,protectedLoadouts:[],knownStats:null,condition:180,maximumCondition:250,unitWeight:null};const plan={activeSet:'A' as const,slots:[{set:'WORN' as const,slot:'HEAD',itemId:'current'}]};const comparison=quickComparison(item,plan,[current],false)!;assert.match(comparison.title,/Current helm/);assert.equal(quickComparison({...item,equipment:null},plan,[current],true),null);assert.ok(comparison.lines.includes('armor: Unknown → 4'));assert.ok(comparison.lines.includes('Condition %: 72 → 87'));assert.deepEqual(quickComparison({...item,copies:2},plan,[current],true)!.lines,['Expand matching copies to compare individual equipment.']);});
+
+test('detached inventory tiles cannot reopen a stale context menu',async()=>{
+ const {attachItemContextMenu}=await import('../client/item-context-menu.js');
+ const tile=Object.assign(new EventTarget(),{isConnected:false});let opened=0;
+ attachItemContextMenu(tile as unknown as HTMLButtonElement,()=>opened++);
+ const event=new Event('contextmenu',{cancelable:true});tile.dispatchEvent(event);
+ assert.equal(opened,0);assert.equal(event.defaultPrevented,true);
+});
+
+test('automation disclosure survives same-item refreshes and closes for a different item',()=>{
+ const session=new GameSession(),first={id:'first',copies:1} as any,second={id:'second',copies:1} as any;
+ session.selectInventory(first);session.inventoryAutomationOpen=true;
+ session.selectInventory({...first});assert.equal(session.inventoryAutomationOpen,true);
+ session.selectInventory(second);assert.equal(session.inventoryAutomationOpen,false);
+ session.inventoryAutomationOpen=true;session.selectInventory(null);assert.equal(session.inventoryAutomationOpen,false);
+});
+
+test('pending search text survives background browse notifications without changing applied filters and clears on logout',async()=>{
+ const h=harness();await connect(h);h.setInventoryRead(async()=>json({revision:0,runId:'run',items:[]}));
+ await h.session.browseInventory({search:'applied'});h.session.inventorySearchDraft='pending';
+ await h.session.browseInventory(h.session.inventoryQuery);
+ assert.equal(h.session.inventorySearchDraft,'pending');assert.equal(h.session.inventoryQuery.search,'applied');
+ await h.session.logout();assert.equal(h.session.inventorySearchDraft,null);
+});

@@ -46,6 +46,8 @@ export class GameSession {
   finally{if(epoch===this.epoch&&generation===this.previewGeneration){this.equipmentPreviewBusy=false;this.notify();}}
  }
  inventoryFiltersOpen=false;
+ inventorySearchDraft:string|null=null;
+ inventoryAutomationOpen=false;
  inventoryLayout:'COMPACT'|'STANDARD'|'DETAILED'='STANDARD';
  inventoryEquipmentOpen=false;
  inventoryLoadoutsOpen=false;
@@ -98,11 +100,11 @@ export class GameSession {
   // These independent projections may cross another window's action. Refuse a
   // mixed revision and let the player explicitly refresh, never write from it.
   if(progression.revision!==game.run.revision||(battle&&battle.revision!==game.run.revision))throw new ApiError(409,'STALE_REVISION');
-  if(epoch===this.epoch){if(this.snapshot?.game.run.runId!==game.run.runId)this.equipmentContext=undefined;this.equipmentPreviewError=null;this.snapshot={game,progression,options,battle};this.needsRefresh=false;
+  if(epoch===this.epoch){if(this.snapshot?.game.run.runId!==game.run.runId){this.equipmentContext=undefined;this.inventorySearchDraft=null;}this.equipmentPreviewError=null;this.snapshot={game,progression,options,battle};this.needsRefresh=false;
    if(this.equipmentDraft&&(this.equipmentDraft.runId!==game.run.runId||game.equipment&&equipmentKey(this.equipmentDraft.plan)===equipmentKey(game.equipment)))this.equipmentDraft=null;
    this.equipmentPreview=null;this.previewGeneration++;this.equipmentPreviewBusy=false;if(this.inventoryWanted)await this.browseInventory(this.inventoryQuery);}
  }
- selectInventory(item:InventoryItem|null){this.equippedInspectionGeneration++;this.inventoryHistory=null;this.inventoryHistoryBusy=false;this.historyGeneration++;this.selectedInventoryItem=item?structuredClone(item):null;this.selectedInventoryGrouped=!!item&&!!this.inventoryQuery.grouped&&item.copies>1;this.selectedInventoryQuery=JSON.stringify(this.inventoryQuery);this.selectedInventoryRevision=this.snapshot?.game.run.revision??-1;this.notify();}
+ selectInventory(item:InventoryItem|null){if(item?.id!==this.selectedInventoryItem?.id)this.inventoryAutomationOpen=false;this.equippedInspectionGeneration++;this.inventoryHistory=null;this.inventoryHistoryBusy=false;this.historyGeneration++;this.selectedInventoryItem=item?structuredClone(item):null;this.selectedInventoryGrouped=!!item&&!!this.inventoryQuery.grouped&&item.copies>1;this.selectedInventoryQuery=JSON.stringify(this.inventoryQuery);this.selectedInventoryRevision=this.snapshot?.game.run.revision??-1;this.notify();}
  private equippedInspectionGeneration=0;
  async inspectEquippedItem(itemId:string){
   const snapshot=this.snapshot,epoch=this.epoch,generation=++this.equippedInspectionGeneration;if(!snapshot)return false;
@@ -184,6 +186,6 @@ export class GameSession {
   try{if(this.config?.authMode==='sessions')await this.api.request('/api/v1/auth/logout',{});}
   catch{confirmed=false;}
   // Forget local account data even if revocation succeeded but its reply was lost.
-  ++this.epoch;this.inventorySelection.clear();this.inventorySelectionAnchor=null;this.inventoryLayout='STANDARD';this.inventoryEquipmentOpen=false;this.inventoryLoadoutsOpen=false;this.inventoryStatsOpen=false;this.tileSettings={...defaultTileSettings};this.equipmentDraft=null;this.equipmentPreview=null;this.equipmentContext=undefined;this.previewGeneration++;this.equipmentPreviewBusy=false;this.api.setToken('');this.snapshot=null;this.ascension=null;this.pending=null;this.inventory=null;this.selectedInventoryItem=null;this.selectedInventoryGrouped=false;this.inventoryHistory=null;this.inventoryWanted=false;this.inventoryBusy=false;this.inventoryHistoryBusy=false;this.inventoryError=null;this.inventoryGeneration++;this.historyGeneration++;this.inventoryQuery={sort:'NAME',direction:'ASC',grouped:true,offset:0};this.needsRefresh=false;this.busy=false;this.notice={text:confirmed?'Signed out. Your game is saved; sign in to resume.':'Signed out on this device. Server session revocation could not be confirmed.',kind:'info'};this.notify();
+  ++this.epoch;this.inventorySelection.clear();this.inventorySelectionAnchor=null;this.inventoryLayout='STANDARD';this.inventoryEquipmentOpen=false;this.inventoryLoadoutsOpen=false;this.inventoryStatsOpen=false;this.tileSettings={...defaultTileSettings};this.equipmentDraft=null;this.equipmentPreview=null;this.equipmentContext=undefined;this.previewGeneration++;this.equipmentPreviewBusy=false;this.api.setToken('');this.snapshot=null;this.ascension=null;this.pending=null;this.inventory=null;this.selectedInventoryItem=null;this.selectedInventoryGrouped=false;this.inventoryHistory=null;this.inventoryWanted=false;this.inventoryBusy=false;this.inventoryHistoryBusy=false;this.inventoryError=null;this.inventoryGeneration++;this.historyGeneration++;this.inventoryQuery={sort:'NAME',direction:'ASC',grouped:true,offset:0};this.inventorySearchDraft=null;this.needsRefresh=false;this.busy=false;this.notice={text:confirmed?'Signed out. Your game is saved; sign in to resume.':'Signed out on this device. Server session revocation could not be confirmed.',kind:'info'};this.notify();
  }
 }
