@@ -48,140 +48,105 @@ Log in uses the existing session API (or private development key). A newly conne
 
 Public account signup, email-based password recovery, and newsletter delivery are not implemented by this screen. Their panels state that explicitly and do not collect credentials or email addresses for nonexistent services. Account enrollment remains an administrator operation. The newsletter section can be replaced with a real subscription form when an approved delivery service and consent/unsubscribe flow exist. Announcements and changelog summaries are authored in `client/landing.ts`; update them alongside game releases. They describe the development build and do not imply scheduled releases, player counts, or service uptime.
 
-- `client/types.ts`: version-one public read contracts. Browser compilation has DOM libraries and excludes Node types/server modules.
-- `client/api.ts`: same-origin JSON transport, in-memory bearer token, no credential persistence, bounded request timeout and explicit errors.
-- `client/session.ts`: saved-state loading, revision agreement, one pending action, exact-envelope retry after an uncertain response, stale-state resync, explicit session revocation on sign-out. A confirmed action followed by a failed read requires refresh and cannot be resubmitted.
-- `client/equipment.ts`: equipment drafts, binding acknowledgement and saved-template controls, all submitted through the central session.
-- `client/views.ts` and `client/app.ts`: semantic, text-safe DOM, navigation and structured intents. All server-provided text is inserted with `textContent`, never HTML. UI target/range/resource hints support clicks; the server decides legality.
-- `client/landing.ts`: public main screen, account-access navigation, and authored development updates.
-- `src/domains/game-view.ts`: authenticated bounded bootstrap: owned current run, effective write permission, saved encounter identity, latest solo tactical outcome, discovered solo adventures and carried item names/counts. Uses account/run read locks in action-compatible order. Adventure and compact inventory lists return their first 100 entries with an overflow indicator. Equipment uses a quick list plus equipped/saved references and a separate paged search. Mechanics, loot tables, unrevealed definitions, seeds and other accounts are excluded.
-- `src/client-assets.ts`: explicit asset allowlist, same-origin Content Security Policy, no caching of the shell/config, no credential-bearing templates or arbitrary file paths. Assets are plain browser ES modules compiled by TypeScript; no framework/bundler or external fonts are required.
+- `client/types.ts`: version-one public read contracts. Browser compilation has DOM libraries and excludes…8822 tokens truncated…ipal:request.principal}:{})},request.body.itemIds,request.body.token));
+    protectedApp.get<{Querystring:{expectedRevision:string;itemId:string}}>('/api/v1/inventory/use-preview',{schema:{querystring:{type:'object',additionalProperties:false,required:['expectedRevision','itemId'],properties:{expectedRevision:{type:'string',pattern:'^[0-9]{1,10}$'},itemId:{type:'string',format:'uuid'}}}}},async request=>itemUsePreview(pool,actor(request),Number(request.query.expectedRevision),request.query.itemId));
+    protectedApp.post<{Body:Envelope & {itemId:string;token:string;allowFavorite:boolean}}>('/api/v1/inventory/use',{schema:{body:{type:'object',additionalProperties:false,required:['requestId','actionType','expectedRevision','itemId','token','allowFavorite'],properties:{...envelopeProperties,actionType:{const:'USE_ITEM'},itemId:{type:'string',format:'uuid'},token:{type:'string',pattern:'^[0-9a-f]{64}$'},allowFavorite:{type:'boolean'}}}}},async request=>useInventoryItem(pool,actor(request),{...request.body,...(request.principal?{principal:request.principal}:{})},request.body.itemId,request.body.token,request.body.allowFavorite));
+    protectedApp.post<{Body:Envelope & {value:{automation?:import('./domains/inventory-intelligence.js').Automation;views?:unknown}}}>('/api/v1/inventory/intelligence',{schema:{body:{type:'object',additionalProperties:false,required:['requestId','actionType','expectedRevision','value'],properties:{...envelopeProperties,actionType:{const:'SET_INVENTORY_INTELLIGENCE'},value:{type:'object',additionalProperties:false,properties:{automation:{type:'object'},views:{type:'array',maxItems:12}}}}}}},async request=>setInventoryIntelligence(pool,actor(request),{...request.body,...(request.principal?{principal:request.principal}:{})},request.body.value));
+    protectedApp.post<{Body:Envelope & {layout:string}}>('/api/v1/inventory/workspace',{schema:{body:{type:'object',additionalProperties:false,required:['requestId','actionType','expectedRevision','layout'],properties:{...envelopeProperties,actionType:{const:'SET_INVENTORY_WORKSPACE'},layout:{type:'string',enum:['COMPACT','STANDARD','DETAILED']}}}}},async request=>setWorkspacePreferences(pool,actor(request),{...request.body,...(request.principal?{principal:request.principal}:{})},request.body.layout));
+    protectedApp.post<{Body:Envelope & {operation:BulkOperation;selections:{itemId:string;inspectionToken?:string}[]}}>('/api/v1/inventory/bulk',{schema:{body:{type:'object',additionalProperties:false,required:['requestId','actionType','expectedRevision','operation','selections'],properties:{...envelopeProperties,actionType:{const:'BULK_INVENTORY'},operation:{type:'string',enum:bulkOperations},selections:{type:'array',minItems:1,maxItems:48,items:{type:'object',additionalProperties:false,required:['itemId'],properties:{itemId:{type:'string',format:'uuid'},inspectionToken:{type:'string',format:'uuid'}}}}}}}},async request=>bulkInventory(pool,actor(request),{...request.body,...(request.principal?{principal:request.principal}:{})},request.body.operation,request.body.selections));
+    protectedApp.post<{Body:Envelope & {preferences:{healthyPercent:number;wornPercent:number;showSingleQuantity:boolean}}}>('/api/v1/inventory/display-preferences',{schema:{body:{type:'object',additionalProperties:false,required:['requestId','actionType','expectedRevision','preferences'],properties:{...envelopeProperties,actionType:{const:'SET_TILE_PREFERENCES'},preferences:{type:'object',additionalProperties:false,required:['healthyPercent','wornPercent','showSingleQuantity'],properties:{healthyPercent:{type:'integer',minimum:2,maximum:100},wornPercent:{type:'integer',minimum:1,maximum:99},showSingleQuantity:{type:'boolean'}}}}}}},async request=>setDisplayPreferences(pool,actor(request),{...request.body,...(request.principal?{principal:request.principal}:{})},request.body.preferences));
+    protectedApp.post<{Body:Envelope & {itemId:string;destinationId?:string;kind?:'CARRIED'|'HOME'|'MATERIAL_VAULT'}}>('/api/v1/inventory/move',{schema:{body:{type:'object',additionalProperties:false,required:['requestId','actionType','expectedRevision','itemId'],oneOf:[{required:['destinationId']},{required:['kind']}],properties:{...envelopeProperties,actionType:{const:'MOVE_INVENTORY'},itemId:{type:'string',format:'uuid'},destinationId:{type:'string',format:'uuid'},kind:{type:'string',enum:['CARRIED','HOME','MATERIAL_VAULT']}}}}},async request=>{
+      const envelope={...request.body,...(request.principal?{principal:request.principal}:{})};
+      return request.body.kind?moveToPersonalStorage(pool,actor(request),envelope,request.body.itemId,request.body.kind):moveItem(pool,actor(request),envelope,request.body.itemId,request.body.destinationId!);
+    });
+    protectedApp.post<{Body:Envelope & {itemId:string;quantity:string}}>('/api/v1/inventory/split',{schema:{body:{type:'object',additionalProperties:false,required:['requestId','actionType','expectedRevision','itemId','quantity'],properties:{...envelopeProperties,actionType:{const:'SPLIT_STACK'},itemId:{type:'string',format:'uuid'},quantity:{type:'string',pattern:'^[1-9][0-9]{0,18}$'}}}}},async request=>splitStack(pool,actor(request),{...request.body,...(request.principal?{principal:request.principal}:{})},request.body.itemId,request.body.quantity));
+    protectedApp.post<{Body:Envelope & {sourceId:string;targetId:string}}>('/api/v1/inventory/merge',{schema:{body:{type:'object',additionalProperties:false,required:['requestId','actionType','expectedRevision','sourceId','targetId'],properties:{...envelopeProperties,actionType:{const:'MERGE_STACKS'},sourceId:{type:'string',format:'uuid'},targetId:{type:'string',format:'uuid'}}}}},async request=>mergeStacks(pool,actor(request),{...request.body,...(request.principal?{principal:request.principal}:{})},request.body.sourceId,request.body.targetId));
+    protectedApp.post<{Body:Envelope & {preferences:{autoStoreMaterials:boolean;autoOverflow:boolean}}}>('/api/v1/inventory/preferences',{schema:{body:{type:'object',additionalProperties:false,required:['requestId','actionType','expectedRevision','preferences'],properties:{...envelopeProperties,actionType:{const:'SET_INVENTORY_PREFERENCES'},preferences:{type:'object',additionalProperties:false,required:['autoStoreMaterials','autoOverflow'],properties:{autoStoreMaterials:{type:'boolean'},autoOverflow:{type:'boolean'}}}}}}},async request=>setInventoryPreferences(pool,actor(request),{...request.body,...(request.principal?{principal:request.principal}:{})},request.body.preferences));
 
-The game server retains the existing authenticated, versioned action protocol. The client submits a chosen class/preset or a tactical intent, with a request ID and expected revisions. It never fabricates an XP award, inventory operation, die roll or outcome. Browsing is free. Adventure cards disclose entry/recovery costs before commitment. Technical failure remains separate from gameplay defeat. A view-only session receives the same permitted information with play controls disabled, and server authorization still rejects writes.
-
-## Next playable slices
-
-This is the client/framework foundation, not the complete client or world. Next work should extend real vertical slices: encounter presentation/name metadata and richer narration, feat/subclass choices, quest/world exploration, party recruitment/shared human controls, accessibility preferences and saved layouts. Parser interpretation and automation must use the same intents with explicit authorization. Production signup/enrollment, secure persistent session transport, catalogs/balance, pagination/search, offline handling and operational release gates remain separate work. An existing shared/basic encounter is shown as unsupported and blocks starting another encounter; this client does not silently abandon it.
-
-No external assets or dependencies are added. Automated tests cover action uncertainty/retry, stale resync, view-only writes, credential transport, bootstrap secrecy/ownership and the actual starting-build → encounter → reconnect → rewards/recovery → earned-level flow. Desktop/mobile browser checks verify the live client separately, including a reload mid-fight, actual healing, victory rewards and earned progression.
-
-The Pack's equipment paperdoll shows all worn slots and both prepared weapon
-sets above inventory browsing. Select an individual carried equipment item to
-highlight compatible positions; equipment changes and set activation use explicit
-confirmations and the existing revision-checked equipment intents. Item-grid
-weight glyphs show unit weight for instances and totals for stacks/groups, with
-unknown measurements marked `—`. Durability uses exact fractions and configurable
-percentage color thresholds; the footer stays anchored across wrapping names.
-See [inventory grid](inventory-grid.md) for interaction and accessibility details.
-
-
-Equipment search uses `equipmentSlot` on the inventory read endpoint, returns at
-most 48 physical instances per page, and checks current run/revision, ownership,
-carried custody, slot eligibility, level, proficiency and shared prerequisites.
-The picker does not change the Pack query or selected item. Searches ignore stale
-responses, close on game refresh/sign-out, trap focus in a native dialog, and
-restore the opener on close/Escape. Touch users can use the same search and
-confirmation buttons instead of dragging. Drafts remain in memory on refresh, with stale revision protection.
-
-The new `client/equipment-picker.ts`, `client/equipment-drag.ts` and
-`client/item-art.ts` modules supply shared search, owned-assignment drag parsing,
-and a safe artwork hierarchy. Illustrations in `client/art/items/` are original
-repository-native vectors served only from an explicit same-origin allowlist.
-Authored public `itemArt` keys take priority over public `itemIcon`, then specific
-public item/slot identity and a category/unknown fallback; arbitrary URLs and paths
-are never loaded. Reviewed local authored raster paths are also supported as described in `client/art/items/README.md`; missing artwork falls back through known icons and contextual illustrations to the neutral glyph.
-
-### Equipment preparation and contextual statistics
-
-The Character and Pack paperdolls share a session-owned equipment draft. Slot
-choices, weapon switches, unequips and saved-loadout previews stage the complete
-plan. The draft survives screen changes, inventory browsing and rerenders. Apply
-uses the existing revision-checked equipment command and explicit permanent
-binding consent; Revert discards preparation. A refreshed game revision keeps the
-draft visible but prevents Apply until it is reverted. Successful matching commits
-clear it. Logout, reconnect and a different run discard it. Drafts are deliberately
-in memory, never stored across account sessions or browser reloads.
-
-Statistics use a discovered encounter as a rules context, because profiles and
-damage vocabularies are encounter authored. The read-only preview reuses equipment
-legality, character scaling, native-level modifiers, encumbrance and typed-damage
-calculation. It displays current/after armor, accuracy, evasion, initiative, health,
-mana, damage range, resistance percentages, conditional resistances, penetration,
-guard/heal availability and carrying capacities. Only worn and active-set gear
-contributes. Prepared weapons remain visible without contributing. Equipping never
-reduces carried weight. Temporary battle effects and target/roll outcomes are not
-predicted. Numerical totals and comparisons are concealed until every item in
-both the currently active and proposed active setups has ADVANCED knowledge,
-including removal previews, so subtraction cannot reveal hidden modifiers. The context is labelled and a missing discovered context is explicit.
-
-The paperdoll includes a saved-loadout preview selector and a control to save the
-committed setup. Apply the draft before saving it as a template. Existing template
-replacement, protection and deletion controls are shared between the paperdoll and advanced planner.
-
-Inventory offers server-side Equipped/Unequipped/Usable, slot and condition
-filters. Needs Repair means actual condition below its authored maximum; Broken
-means zero, and Full means equal to maximum. Items without durability never match
-condition filters. Usable means eligible carried equipment whose level,
-proficiency and shared prerequisite requirements are met; it does not mean a
-consumable has an implemented use action. Filters apply before grouping/counts.
-Right click, Shift+F10/context-menu key, or a stationary 550ms touch press opens
-item actions. Movement cancels touch activation. These actions reuse the inspector
-and its confirmations; the inspector remains the accessible fallback.
-
-
-Inventory P3 adds page-bounded physical multiselection and atomic bulk-safe
-operations, persistent account favorites/uninspected acquisition markers and tile
-preferences. Double-click reuses equipment preparation or opens groups/details;
-authored consumables and parcels now open confirmed server-backed Use/Open actions.
-See [inventory interaction details](inventory-grid.md). Migration 035 is required;
-source merge does not imply live migration/deployment.
-
-
-The current inventory workspace offers Compact/Standard/Detailed account-saved
-viewing modes, nearby equipment on wide displays and a collapsible equipment section above inventory on
-narrow displays. Comparison uses a dedicated two-column dialog and server-derived
-character totals. Repair quotes show condition before/after, per-item Gold cost,
-total and affordability. Shared loadout cards show readiness, explain missing or
-stored gear, flag binding, search by name and provide Preview/Replace/Protection/
-Delete controls. Preview preserves the Apply/Revert draft flow.
-See [inventory service contracts and limitations](inventory-services.md).
-
-## Character Overview (CHAR-01)
-
-Character opens on Overview for a newly connected configured run. Its main content
-contains total committed level, discovered native class names/levels, current run
-mode/status, exact XP, pending level-ups, all seven current attributes, per-class
-limits where available, and a compact active equipment summary. It uses the generic
-label “Your character”; the current API does not supply a character name, biography,
-race or portrait. Essential information is repeated in the main sheet rather than
-relying on the sidebar hidden at narrow widths.
-
-Overview and Progression use reusable section navigation. Progression preserves the
-existing explicit class-level action; Abilities, Statistics and History are labeled
-as unavailable text rather than unfinished controls. Available Choices reports only
-pending class levels from readiness. Other choice categories await their own tickets;
-the absence of a connected projection is not presented as zero available choices.
-Unconfigured runs see starting class/preset selection first, without an equipment
-editor. Existing setup and level action envelopes and server legality checks remain
-unchanged.
-
-`GET /api/v1/progression` adds the read-only `xpProgress` projection: the cumulative
-threshold for `readiness.readyThroughLevel`, and the authored curve's maximum level.
-It uses the same pinned curve already selected by the progression read model.
-There are no new writes or migrations. Readiness retains its existing shape.
-The browser uses decimal strings/BigInt for total, remaining XP and interval ratios;
-only the bounded percentage becomes a Number. The next earnable level is after the
-highest XP-earned level, while the next allocation is after the committed level.
-At the cap, pending allocation remains visible. Missing curve information produces
-an unavailable state rather than invented progress or an assumed cap.
-
-Equipment uses the shared plan/gear cache, including retained drafts and their active
-weapon set. It shows known item art/names and honest unavailable fallbacks. Editing,
-comparison, binding confirmation and Apply/Revert remain exclusively in Pack, reached
-through Open Pack & equipment. Viewing the sheet submits no game actions.
-
-Verify with typecheck/build, client unit regressions and progression/client integration
-tests. In a disposable playtest, check setup first, configured Overview, Progression
-navigation with keyboard focus, and Pack navigation/draft preservation. Check 320px,
-375px and 768px for overflow, including long names and exact large XP values. Rollback
-is a source/build rollback; the additive read projection needs no data rollback.
+    protectedApp.get('/api/v1/companions',async request=>companionsView(pool,actor(request)));
+    protectedApp.post<{Body:Envelope & {companionId:string}}>('/api/v1/companions/recruit',{schema:{body:{type:'object',additionalProperties:false,required:['requestId','actionType','expectedRevision','companionId'],properties:{...envelopeProperties,actionType:{const:'RECRUIT_COMPANION'},companionId:classIdField}}}},async request=>recruitCompanion(pool,actor(request),{...request.body,...(request.principal?{principal:request.principal}:{})},request.body.companionId));
+    protectedApp.post<{Body:Envelope & {rulesId:string;skillId:string;milestone:number}}>('/api/v1/progression/proficiencies',{schema:{body:{type:'object',additionalProperties:false,required:['requestId','actionType','expectedRevision','rulesId','skillId','milestone'],properties:{...envelopeProperties,actionType:{type:'string',const:'ADVANCE_PROFICIENCY'},rulesId:classIdField,skillId:classIdField,milestone:{type:'integer',minimum:1,maximum:999}}}}},async request=>advanceProficiency(pool,actor(request),{...request.body,...(request.principal?{principal:request.principal}:{})},request.body.rulesId,request.body.skillId,request.body.milestone));
+    protectedApp.post<{Body:Envelope & {rulesId:string;milestone:number;allocation:AttributeAllocation}}>('/api/v1/progression/attributes',{schema:{body:{type:'object',additionalProperties:false,required:['requestId','actionType','expectedRevision','rulesId','milestone','allocation'],properties:{...envelopeProperties,actionType:{type:'string',const:'ALLOCATE_ATTRIBUTES'},rulesId:classIdField,milestone:{type:'integer',minimum:1,maximum:999},allocation:{type:'object',additionalProperties:false,minProperties:1,properties:Object.fromEntries(attributeNames.map(a=>[a,{type:'integer',minimum:1,maximum:30}]))}}}}},async request=>allocateAttributes(pool,actor(request),{...request.body,...(request.principal?{principal:request.principal}:{})},request.body.rulesId,request.body.milestone,request.body.allocation));
+    protectedApp.post<{Body:Envelope & {featId:string;milestone:number}}>('/api/v1/progression/feats',{schema:{body:{type:'object',additionalProperties:false,required:['requestId','actionType','expectedRevision','featId','milestone'],properties:{...envelopeProperties,actionType:{type:'string',const:'CHOOSE_FEAT'},featId:classIdField,milestone:{type:'integer',minimum:1,maximum:999}}}}},async request=>chooseFeat(pool,actor(request),{...request.body,...(request.principal?{principal:request.principal}:{})},request.body.featId,request.body.milestone));
+    protectedApp.post<{Body:Envelope & {subclassId:string}}>('/api/v1/progression/subclasses',{schema:{body:{type:'object',additionalProperties:false,required:['requestId','actionType','expectedRevision','subclassId'],properties:{...envelopeProperties,actionType:{type:'string',const:'CHOOSE_SUBCLASS'},subclassId:classIdField}}}},async request=>chooseSubclass(pool,actor(request),{...request.body,...(request.principal?{principal:request.principal}:{})},request.body.subclassId));
+    protectedApp.post<{Body:Envelope & {classId:string;presetKey:string}}>('/api/v1/progression/start',{schema:{body:{type:'object',additionalProperties:false,required:['requestId','actionType','expectedRevision','classId','presetKey'],properties:{...envelopeProperties,actionType:{type:'string',const:'START_BUILD'},classId:classIdField,presetKey:{type:'string',pattern:'^[a-z][a-z0-9_-]{0,39}$'}}}}},async request=>startBuild(pool,actor(request),{...request.body,...(request.principal?{principal:request.principal}:{})},request.body.classId,request.body.presetKey));
+    protectedApp.post<{Body:Envelope & {classId:string}}>('/api/v1/progression/level',{schema:{body:{type:'object',additionalProperties:false,required:['requestId','actionType','expectedRevision','classId'],properties:{...envelopeProperties,actionType:{type:'string',const:'LEVEL_UP'},classId:classIdField}}}},async request=>levelUp(pool,actor(request),{...request.body,...(request.principal?{principal:request.principal}:{})},request.body.classId));
+    const tacticalId={type:'string',pattern:'^[a-z][a-z0-9_.-]{0,63}$'};
+    const tacticalCommand={anyOf:[
+      {type:'object',additionalProperties:false,required:['actorId','kind'],properties:{actorId:tacticalId,kind:{type:'string',enum:['END','GUARD','RETREAT','CONTINUE','DROP_CONCENTRATION','SURRENDER']}}},
+      {type:'object',additionalProperties:false,required:['actorId','kind','zone'],properties:{actorId:tacticalId,kind:{type:'string',const:'MOVE'},zone:tacticalId}},
+      {type:'object',additionalProperties:false,required:['actorId','kind','targetId'],properties:{actorId:tacticalId,kind:{type:'string',enum:['ATTACK','HEAL']},targetId:tacticalId}},
+      {type:'object',additionalProperties:false,required:['actorId','kind','targetId','abilityId'],properties:{actorId:tacticalId,kind:{type:'string',enum:['USE_ABILITY','USE_HEALING_ABILITY']},targetId:tacticalId,abilityId:classIdField}},
+      {type:'object',additionalProperties:false,required:['actorId','kind','targetId','abilityId'],properties:{actorId:tacticalId,kind:{type:'string',const:'TECHNIQUE'},targetId:tacticalId,abilityId:{type:'string',pattern:'^[a-z][a-z0-9_.-]{2,160}$'}}},
+      {type:'object',additionalProperties:false,required:['actorId','kind','targetId','abilityId','effectId'],properties:{actorId:tacticalId,kind:{type:'string',const:'CLEANSE'},targetId:tacticalId,abilityId:classIdField,effectId:classIdField}}
+    ]};
+    protectedApp.post<{Body:Envelope & {definitionId:string}}>('/api/v1/tactical/shared/create',{schema:{body:{type:'object',additionalProperties:false,required:['requestId','actionType','expectedRevision','definitionId'],properties:{...envelopeProperties,actionType:{const:'CREATE_SHARED_TACTICAL'},definitionId:classIdField}}}},async request=>createSharedTactical(pool,actor(request),{...request.body,...(request.principal?{principal:request.principal}:{})},request.body.definitionId));
+    for(const [operation,actionType,handler] of [['join','JOIN_SHARED_TACTICAL',joinSharedTactical],['start','START_SHARED_TACTICAL',startSharedTactical],['claim','CLAIM_SHARED_TACTICAL',claimSharedTactical],['cancel','CANCEL_SHARED_TACTICAL',cancelSharedTactical]] as const)protectedApp.post<{Body:Envelope & {sessionId:string}}>(`/api/v1/tactical/shared/${operation}`,{schema:{body:{type:'object',additionalProperties:false,required:['requestId','actionType','expectedRevision','sessionId'],properties:{...envelopeProperties,actionType:{const:actionType},sessionId:{type:'string',format:'uuid'}}}}},async request=>handler(pool,actor(request),{...request.body,...(request.principal?{principal:request.principal}:{})},request.body.sessionId));
+    protectedApp.post<{Body:Envelope & {sessionId:string;expectedSharedRevision:number;command:TacticalPlayerCommand}}>('/api/v1/tactical/shared/actions',{schema:{body:{type:'object',additionalProperties:false,required:['requestId','actionType','expectedRevision','sessionId','expectedSharedRevision','command'],properties:{...envelopeProperties,actionType:{const:'SHARED_TACTICAL_ACTION'},sessionId:{type:'string',format:'uuid'},expectedSharedRevision:{type:'integer',minimum:0,maximum:100000},command:tacticalCommand}}}},async request=>takeSharedTacticalAction(pool,actor(request),{...request.body,...(request.principal?{principal:request.principal}:{})},request.body.sessionId,request.body.expectedSharedRevision,request.body.command));
+    protectedApp.get<{Params:{id:string}}>('/api/v1/tactical/shared/:id/invitation',{schema:{params:{type:'object',additionalProperties:false,required:['id'],properties:{id:{type:'string',format:'uuid'}}}}},async request=>sharedInvitationView(pool,actor(request),request.params.id));
+    protectedApp.get<{Params:{id:string}}>('/api/v1/tactical/shared/:id',{schema:{params:{type:'object',additionalProperties:false,required:['id'],properties:{id:{type:'string',format:'uuid'}}}}},async request=>sharedTacticalView(pool,actor(request),request.params.id));
+    protectedApp.post<{Body:Envelope & {definitionId:string}}>('/api/v1/tactical/start',{schema:{body:{type:'object',additionalProperties:false,required:['requestId','actionType','expectedRevision','definitionId'],properties:{...envelopeProperties,actionType:{type:'string',const:'START_TACTICAL'},definitionId:classIdField}}}},async request=>startTacticalCombat(pool,actor(request),{...request.body,...(request.principal?{principal:request.principal}:{})},request.body.definitionId));
+    protectedApp.post<{Body:Envelope & {instanceId:string;expectedEncounterRevision:number;expectedTacticalRevision:number;command:TacticalPlayerCommand}}>('/api/v1/tactical/actions',{schema:{body:{type:'object',additionalProperties:false,required:['requestId','actionType','expectedRevision','instanceId','expectedEncounterRevision','expectedTacticalRevision','command'],properties:{...envelopeProperties,actionType:{type:'string',const:'TACTICAL_ACTION'},instanceId:{type:'string',format:'uuid'},expectedEncounterRevision:{type:'integer',minimum:1,maximum:100000},expectedTacticalRevision:{type:'integer',minimum:0,maximum:100000},command:tacticalCommand}}}},async request=>takeTacticalAction(pool,actor(request),{...request.body,...(request.principal?{principal:request.principal}:{})},request.body.instanceId,request.body.expectedEncounterRevision,request.body.expectedTacticalRevision,request.body.command));
+    protectedApp.get<{Params:{id:string}}>('/api/v1/tactical/:id',{schema:{params:{type:'object',additionalProperties:false,required:['id'],properties:{id:{type:'string',format:'uuid'}}}}},async request=>tacticalView(pool,actor(request),request.params.id));
+    protectedApp.post<{Body:Envelope & {definitionId:string}}>('/api/v1/combat/start',{schema:{body:{type:'object',additionalProperties:false,required:['requestId','actionType','expectedRevision','definitionId'],properties:{...envelopeProperties,actionType:{type:'string',const:'START_COMBAT'},definitionId:{type:'string',pattern:'^[a-z][a-z0-9_.-]{2,119}$'}}}}},async request=>startCombat(pool,actor(request),{...request.body,...(request.principal?{principal:request.principal}:{})},request.body.definitionId));
+    protectedApp.post<{Body:Envelope & {instanceId:string;expectedRound:number;intent:CombatIntent}}>('/api/v1/combat/actions',{schema:{body:{type:'object',additionalProperties:false,required:['requestId','actionType','expectedRevision','instanceId','expectedRound','intent'],properties:{...envelopeProperties,actionType:{type:'string',const:'COMBAT_ACTION'},instanceId:{type:'string',format:'uuid'},expectedRound:{type:'integer',minimum:0,maximum:1000},intent:{type:'string',enum:['ATTACK','GUARD','RETREAT']}}}}},async request=>takeCombatAction(pool,actor(request),{...request.body,...(request.principal?{principal:request.principal}:{})},request.body.instanceId,request.body.expectedRound,request.body.intent));
+    protectedApp.get<{Params:{id:string}}>('/api/v1/combat/:id',{schema:{params:{type:'object',additionalProperties:false,required:['id'],properties:{id:{type:'string',format:'uuid'}}}}},async request=>combatView(pool,actor(request),request.params.id));
+    protectedApp.get<{Params:{id:string}}>('/api/v1/crafting/recipes/:id',{schema:{params:{type:'object',additionalProperties:false,required:['id'],properties:{id:{type:'string',pattern:'^[a-z][a-z0-9_.-]{2,119}$'}}}}},async request=>routineRecipeView(pool,actor(request),request.params.id));
+    protectedApp.post<{Body:Envelope & {recipeId:string;batches:number;itemIds:string[]}}>('/api/v1/crafting/routine',{schema:{body:{type:'object',additionalProperties:false,required:['requestId','actionType','expectedRevision','recipeId','batches','itemIds'],properties:{...envelopeProperties,actionType:{type:'string',const:'CRAFT_ROUTINE'},recipeId:{type:'string',pattern:'^[a-z][a-z0-9_.-]{2,119}$'},batches:{type:'integer',minimum:1,maximum:100},itemIds:{type:'array',minItems:1,maxItems:16,uniqueItems:true,items:{type:'string',format:'uuid'}}}}}},async request=>craftRoutine(pool,actor(request),{...request.body,...(request.principal?{principal:request.principal}:{})},request.body.recipeId,request.body.batches,request.body.itemIds));
+    protectedApp.get<{Params:{id:string}}>('/api/v1/inventory/:id/binding',{schema:{params:{type:'object',additionalProperties:false,required:['id'],properties:{id:{type:'string',format:'uuid'}}}}},async request=>itemBindingView(pool,actor(request),request.params.id));
+    protectedApp.get<{Params:{id:string}}>('/api/v1/inventory/:id/lock',{schema:{params:{type:'object',additionalProperties:false,required:['id'],properties:{id:{type:'string',format:'uuid'}}}}},async request=>itemLockView(pool,actor(request),request.params.id));
+    protectedApp.post<{Body:Envelope & {itemId:string;locked:boolean}}>('/api/v1/inventory/lock',{schema:{body:{type:'object',additionalProperties:false,required:['requestId','actionType','expectedRevision','itemId','locked'],properties:{...envelopeProperties,actionType:{type:'string',const:'SET_ITEM_LOCK'},itemId:{type:'string',format:'uuid'},locked:{type:'boolean'}}}}},async request=>setItemLock(pool,actor(request),{...request.body,...(request.principal?{principal:request.principal}:{})},request.body.itemId,request.body.locked));
+    protectedApp.get('/api/v1/equipment/loadouts',async request=>loadoutsView(pool,actor(request)));
+    protectedApp.post<{Body:Envelope & {key:string;name:string}}>('/api/v1/equipment/loadouts/save',{schema:{body:{type:'object',additionalProperties:false,required:['requestId','actionType','expectedRevision','key','name'],properties:{...envelopeProperties,actionType:{type:'string',const:'SAVE_LOADOUT'},key:{type:'string',pattern:'^[a-z][a-z0-9_-]{0,39}$'},name:{type:'string',minLength:1,maxLength:80}}}}},async request=>saveLoadout(pool,actor(request),{...request.body,...(request.principal?{principal:request.principal}:{})},request.body.key,request.body.name));
+    const loadoutParams={type:'object',additionalProperties:false,required:['key'],properties:{key:{type:'string',pattern:'^[a-z][a-z0-9_-]{0,39}$'}}};
+    protectedApp.post<{Params:{key:string};Body:Envelope & {protectItems:boolean}}>('/api/v1/equipment/loadouts/:key/protection',{schema:{params:loadoutParams,body:{type:'object',additionalProperties:false,required:['requestId','actionType','expectedRevision','protectItems'],properties:{...envelopeProperties,actionType:{type:'string',const:'SET_LOADOUT_PROTECTION'},protectItems:{type:'boolean'}}}}},async request=>setLoadoutProtection(pool,actor(request),{...request.body,...(request.principal?{principal:request.principal}:{})},request.params.key,request.body.protectItems));
+    protectedApp.post<{Params:{key:string};Body:Envelope}>('/api/v1/equipment/loadouts/:key/delete',{schema:{params:loadoutParams,body:{type:'object',additionalProperties:false,required:['requestId','actionType','expectedRevision'],properties:{...envelopeProperties,actionType:{type:'string',const:'DELETE_LOADOUT'}}}}},async request=>deleteLoadout(pool,actor(request),{...request.body,...(request.principal?{principal:request.principal}:{})},request.params.key));
+    protectedApp.post<{Params:{key:string};Body:Envelope}>('/api/v1/equipment/loadouts/:key/apply',{schema:{params:loadoutParams,body:{type:'object',additionalProperties:false,required:['requestId','actionType','expectedRevision'],properties:{...envelopeProperties,actionType:{type:'string',const:'SET_EQUIPMENT'}}}}},async request=>applyLoadout(pool,actor(request),{...request.body,...(request.principal?{principal:request.principal}:{})},request.params.key));
+    protectedApp.get<{Params:{id:string}}>('/api/v1/inventory/:id/protection',{schema:{params:{type:'object',additionalProperties:false,required:['id'],properties:{id:{type:'string',format:'uuid'}}}}},async request=>itemProtectionView(pool,actor(request),request.params.id));
+    protectedApp.get('/api/v1/equipment',async request=>equipmentView(pool,actor(request)));
+    protectedApp.post<{Body:Envelope & EquipmentPlan}>('/api/v1/equipment',{schema:{body:{type:'object',additionalProperties:false,required:['requestId','actionType','expectedRevision','activeSet','slots'],properties:{...envelopeProperties,actionType:{type:'string',const:'SET_EQUIPMENT'},activeSet:{type:'string',enum:['A','B']},slots:{type:'array',maxItems:16,items:{type:'object',additionalProperties:false,required:['set','slot','itemId'],properties:{set:{type:'string',enum:['WORN','A','B']},slot:{type:'string',enum:equipmentSlots},itemId:{type:'string',format:'uuid'}}}}}}}},async request=>setEquipment(pool,actor(request),{...request.body,...(request.principal?{principal:request.principal}:{})},{activeSet:request.body.activeSet,slots:request.body.slots}));
+    protectedApp.get<{Params:{entityId:string}}>('/api/v1/rules/:entityId',{schema:{params:{type:'object',additionalProperties:false,required:['entityId'],properties:{entityId:{type:'string',pattern:'^[a-z][a-z0-9_.-]{2,119}$'}}}}},async request=>ruleActionPreview(pool,actor(request),request.params.entityId));
+    for(const [path,actionType,handler] of [['combat','RESOLVE_RULE_COMBAT',resolveRuleCombat],['interaction','RESOLVE_RULE_INTERACTION',resolveRuleInteraction]] as const){
+      protectedApp.post<{Body:Envelope & {entityId:string}}>(`/api/v1/rules/${path}`,{schema:{body:{type:'object',additionalProperties:false,required:['requestId','actionType','expectedRevision','entityId'],properties:{...envelopeProperties,actionType:{const:actionType},entityId:{type:'string',pattern:'^[a-z][a-z0-9_.-]{2,119}$'}}}}},async request=>handler(pool,actor(request),{...request.body,...(request.principal?{principal:request.principal}:{})},request.body.entityId));
+    }
+    protectedApp.get<{Querystring:{nextReleaseId?:string}}>('/api/v1/ascend/preview',{schema:{querystring:{type:'object',additionalProperties:false,properties:{nextReleaseId:{type:'string',format:'uuid'}}}}},async request=>ascensionPreview(pool,actor(request),request.query.nextReleaseId));
+    protectedApp.post<{Body:Envelope & {previewToken?:string;nextReleaseId?:string}}>('/api/v1/ascend',{schema:{body:{type:'object',additionalProperties:false,required:['requestId','actionType','expectedRevision'],properties:{...envelopeProperties,actionType:{type:'string',const:'ASCEND'},previewToken:{type:'string',pattern:'^[0-9a-f]{64}$'},nextReleaseId:{type:'string',format:'uuid'}}}}},async request=>confirmAscension(pool,actor(request),{...request.body,...(request.principal?{principal:request.principal}:{})},request.body.previewToken,request.body.nextReleaseId));
+    protectedApp.get<{Params:{id:string}}>('/api/v1/instances/:id', {schema:{params:{type:'object',required:['id'],properties:{id:{type:'string',format:'uuid'}}}}}, async request=>getInstanceView(pool,actor(request),request.params.id));
+    protectedApp.get<{Params:{release:string;entity:string}}>('/api/v1/content/:release/:entity',{schema:{params:{type:'object',required:['release','entity'],properties:{release:{type:'string',format:'uuid'},entity:{type:'string',pattern:'^[a-z][a-z0-9_.-]{2,119}$'}}}}},async request=>contentView(pool,actor(request),request.params.release,request.params.entity,cache));
+    protectedApp.get('/api/v1/state', async (request, reply) => {
+      const result = await pool.query('SELECT r.id AS "runId",r.turns,r.revision,r.rules_version AS "rulesVersion" FROM runs r JOIN characters c ON c.id=r.character_id WHERE c.account_id=$1 AND r.status IN(\'ACTIVE\',\'AFTERCORE\')', [actor(request)]);
+      if (!result.rows.length) return reply.code(404).send({ error: 'NO_ACTIVE_RUN' });
+      return result.rows[0];
+    });
+    protectedApp.post<{ Body: SpendTurns }>('/api/v1/actions', {
+      schema: { body: {
+        type: 'object', additionalProperties: false,
+        required: ['requestId', 'actionType', 'amount', 'expectedRevision'],
+        properties: {
+          requestId: { type: 'string', format: 'uuid' },
+          actionType: { type: 'string', const: 'SPEND_TURNS' },
+          amount: { type: 'integer', minimum: 1, maximum: 10 },
+          expectedRevision: { type: 'integer', minimum: 0, maximum: 2147483646 }
+        }
+      } }
+    }, async request => spendTurns(pool, actor(request), {...request.body,...(request.principal?{principal:request.principal}:{})}));
+    if(auth.mode==='sessions'){
+      protectedApp.get('/api/v1/auth/sessions',async request=>({sessions:await listSessions(pool,session(request))}));
+      protectedApp.post('/api/v1/auth/logout',async request=>revokeSession(pool,session(request),session(request).sessionId));
+      protectedApp.post('/api/v1/auth/logout-all',async request=>revokeAllSessions(pool,session(request)));
+      protectedApp.delete<{Params:{id:string}}>('/api/v1/auth/sessions/:id',{schema:{params:{type:'object',required:['id'],properties:{id:{type:'string',format:'uuid'}}}}},async request=>revokeSession(pool,session(request),request.params.id));
+      protectedApp.post<{Body:{currentPassword:string;newPassword:string}}>('/api/v1/auth/password',{schema:{body:{type:'object',additionalProperties:false,required:['currentPassword','newPassword'],properties:{currentPassword:passwordField,newPassword:passwordField}}}},async request=>{
+        const principal=session(request),client=await pool.connect();try{await authorizeSession(client,principal,'ACCOUNT_MANAGE');}finally{client.release();}
+        await throttleAuth(pool,auth.throttleKey,ingressPeer(request.ip,request.headers,ingressKey),'password:'+principal.accountId);
+        return changePassword(pool,principal,request.body.currentPassword,request.body.newPassword);
+      });
+    }
+  });
+  app.setErrorHandler((error, request, reply) => {
+    if (error instanceof ActionError) return reply.code(error.statusCode).send({ error: error.code, traceId: request.id });
+    if (typeof error === 'object' && error !== null && 'validation' in error) return reply.code(400).send({ error: 'INVALID_ACTION', traceId: request.id });
+    request.log.error({ traceId: request.id }, 'Request failed');
+    return reply.code(503).send({ error: 'TECHNICAL_FAILURE', traceId: request.id });
+  });
+  return app;
+}

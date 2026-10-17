@@ -1,3 +1,6 @@
+import { advancementScope,advancementStamp } from './advancement-view.js';
+import { transaction } from '../foundation/transaction.js';
+import { progressionReadiness,type ProgressionCurve } from './progression-rules.js';
 import { requireEntityPrerequisite } from '../rules/requirements.js';
 import type pg from 'pg';
 import { executeAction,advanceRevision,type Envelope } from '../foundation/action.js';
@@ -46,7 +49,51 @@ export function startBuild(pool:pg.Pool,accountId:string,envelope:Envelope,class
 export function levelUp(pool:pg.Pool,accountId:string,envelope:Envelope,classId:string) {
   explicit(envelope,'LEVEL_UP',classId);return record(pool,accountId,envelope,classId,null);
 }
-export async function buildOptions(pool:pg.Pool,accountId:string) {
+export async function buildOptions(pool:pg.Pool,accountId:string,advancement=false) {
+  if(!advancement)return readBuildOptions(pool,accountId);
+  return transaction(pool,async client=>{
+    await client.query('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY');
+    const run=await advancementScope(client,accountId),base=await readBuildOptions(client,accountId);
+    const classes=[];
+    for(const option of base.classes){
+      const nativeLevel=(run.build?.classes??[]).find((c:{classId:string;nativeLevel:number})=>c.classId===option.classId)?.nativeLevel??0;
+      let eligibility='AVAILABLE';
+      if(run.build?.mode!=='CONFIGURED')eligibility='BUILD_NOT_CONFIGURED';
+      else {
+        // Call the exact immutable transition function used by guard_build_event.
+        const pinned=(await client.query(`SELECT v.definition->'mechanics'->'classProgression' AS native,rv.definition->'mechanics'->'buildRules' AS rules,
+          cv.definition->'mechanics'->'xpCurve' AS curve,jsonb_build_object('id',re.entity_id,'revision',re.revision,'curveId',ce.entity_id,'curveRevision',ce.revision,'releaseId',e.release_id::text) AS ref
+          FROM release_entries e JOIN content_versions v ON v.entity_id=e.entity_id AND v.revision=e.revision
+          JOIN release_entries re ON re.release_id=e.release_id AND re.entity_id=v.definition->'mechanics'->'classProgression'->>'rulesId'
+          JOIN content_versions rv ON rv.entity_id=re.entity_id AND rv.revision=re.revision
+          JOIN release_entries ce ON ce.release_id=e.release_id AND ce.entity_id=rv.definition->'mechanics'->'buildRules'->>'curveId'
+          JOIN content_versions cv ON cv.entity_id=ce.entity_id AND cv.revision=ce.revision
+          WHERE e.release_id=$1 AND e.entity_id=$2`,[run.content_release_id,option.classId])).rows[0];
+        if(!pinned)eligibility='BUILD_CURVE_MISMATCH';
+        else {
+          await client.query('SAVEPOINT class_preview');
+          try {
+            await requireEntityPrerequisite({client,run,accountId},option.classId);
+            await client.query("SELECT next_build_state($1::jsonb,'LEVEL_UP',$2,NULL,$3::jsonb,$4::jsonb,$5::jsonb)",[run.build,option.classId,pinned.native,pinned.rules,pinned.ref]);
+            const mismatch=(await client.query('SELECT 1 FROM encounter_xp_plans WHERE run_id=$1 AND (curve_id<>$2 OR curve_revision<>$3) LIMIT 1',[run.id,pinned.ref.curveId,pinned.ref.curveRevision])).rows.length;
+            if(mismatch)eligibility='BUILD_CURVE_MISMATCH';
+            else if(progressionReadiness(pinned.curve as ProgressionCurve,run.xp,run.level).pendingLevels===0)eligibility='LEVEL_NOT_READY';
+            else if(run.active_instance)eligibility='ACTIVE_INSTANCE';
+          }catch(error){
+            await client.query('ROLLBACK TO SAVEPOINT class_preview');
+            const e=error as {code?:string;message?:string},codes:Record<string,string>={'Normal class limit reached':'CLASS_LIMIT','Authored native class level limit reached':'NATIVE_CLASS_LEVEL_LIMIT','Level choice requires the current configured build rules':'BUILD_RULES_MISMATCH'};
+            if(e.code==='PREREQUISITE_NOT_MET')eligibility='PREREQUISITES_NOT_MET';
+            else if(e.code==='P0001'&&codes[e.message??''])eligibility=codes[e.message!]!;
+            else throw error;
+          }finally{await client.query('RELEASE SAVEPOINT class_preview');}
+        }
+      }
+      classes.push({...option,nativeLevel,nextNativeLevel:nativeLevel+1,eligibility});
+    }
+    return {...base,classes,...advancementStamp(run)};
+  });
+}
+async function readBuildOptions(pool:pg.Pool|pg.PoolClient,accountId:string) {
   const rows=(await pool.query(`SELECT e.entity_id,e.revision,v.definition->>'name' AS name,v.definition->'mechanics'->'classProgression' AS spec,
     rules.entity_id AS rules_id,rules.revision AS rules_revision,rv.definition->'mechanics'->'buildRules' AS rules
     FROM runs r JOIN characters c ON c.id=r.character_id JOIN run_builds b ON b.run_id=r.id JOIN run_progression p ON p.run_id=r.id
@@ -59,7 +106,7 @@ export async function buildOptions(pool:pg.Pool,accountId:string) {
     WHERE c.account_id=$1 AND r.status IN('ACTIVE','AFTERCORE') AND r.mode IN('STANDARD','CASUAL')
       AND ((b.state->>'mode'='UNCONFIGURED' AND p.xp=0 AND NOT EXISTS(SELECT 1 FROM encounter_records WHERE run_id=r.id))
         OR (b.state->>'mode'='CONFIGURED' AND b.state->'rules'->>'id'=rules.entity_id)) ORDER BY e.entity_id`,[accountId])).rows;
-  const classes: {classId:string;revision:number;name:string;rulesId:string;maximumNativeLevel:number}[]=[],rules=new Map<string,{rulesId:string;revision:number;curveId:string;presets:BuildRules['presets']}>();
+  const classes: {classId:string;revision:number;name:string;rulesId:string;maximumNativeLevel:number;nativeLevel?:number;nextNativeLevel?:number;eligibility?:string}[]=[],rules=new Map<string,{rulesId:string;revision:number;curveId:string;presets:BuildRules['presets']}>();
   for(const row of rows) {
     validateNativeClass(row.spec);validateBuildRules(row.rules);
     classes.push({classId:row.entity_id,revision:row.revision,name:row.name,rulesId:row.rules_id,maximumNativeLevel:row.spec.maximumNativeLevel});

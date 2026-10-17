@@ -1,3 +1,4 @@
+import { advancementScope,advancementStamp } from './advancement-view.js';
 import { Ajv } from 'ajv';
 import type pg from 'pg';
 import type { ContentEntity } from './content.js';
@@ -34,15 +35,18 @@ export function chooseSubclass(pool:pg.Pool,accountId:string,envelope:Envelope,s
     return {classId:row.class_id as string,subclassId:row.subclass_id as string,subclassRevision:row.subclass_revision as number,nativeLevelAtChoice:row.native_level_at_choice as number,revision:await advanceRevision(c)};
   });
 }
-export async function subclassView(pool:pg.Pool,accountId:string) {
+export async function subclassView(pool:pg.Pool,accountId:string,scoped=false) {
   return transaction(pool,async client=>{
   await client.query('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY');
+  const scope=scoped?await advancementScope(client,accountId):null;
   const selected=(await client.query(`SELECT s.class_id AS "classId",s.subclass_id AS "subclassId",s.subclass_revision AS "subclassRevision",v.definition->>'name' AS name
     FROM run_subclasses s JOIN runs r ON r.id=s.run_id JOIN characters c ON c.id=r.character_id
     JOIN content_versions v ON v.entity_id=s.subclass_id AND v.revision=s.subclass_revision
     WHERE c.account_id=$1 AND r.status IN('ACTIVE','AFTERCORE') ORDER BY s.class_id`,[accountId])).rows;
   const options=(await client.query(`SELECT e.entity_id AS "subclassId",e.revision AS "subclassRevision",v.definition->>'name' AS name,
     v.definition->'mechanics'->'subclass'->>'classId' AS "classId",coalesce(l.native_level,0) AS "nativeLevel",
+    (v.definition->'mechanics'->'subclass'->>'unlockNativeLevel')::integer AS "unlockNativeLevel",
+    v.definition->'public'->'description' AS description,v.definition->'public'->'effects' AS effects,
     CASE WHEN s.class_id IS NOT NULL THEN 'ALREADY_CHOSEN' WHEN coalesce(l.native_level,0)<5 THEN 'NATIVE_LEVEL_REQUIRED'
       WHEN EXISTS(SELECT 1 FROM instance_participants ip JOIN instances i ON i.id=ip.instance_id WHERE ip.run_id=r.id AND i.lifecycle='ACTIVE') THEN 'ACTIVE_INSTANCE' ELSE 'AVAILABLE' END AS eligibility
     FROM runs r JOIN characters c ON c.id=r.character_id JOIN run_builds b ON b.run_id=r.id
@@ -52,6 +56,6 @@ export async function subclassView(pool:pg.Pool,accountId:string) {
     LEFT JOIN run_subclasses s ON s.run_id=r.id AND s.class_id=v.definition->'mechanics'->'subclass'->>'classId'
     WHERE c.account_id=$1 AND r.status IN('ACTIVE','AFTERCORE') AND r.mode IN('STANDARD','CASUAL') AND b.state->>'mode'='CONFIGURED'
       AND v.definition->'mechanics' ? 'subclass' ORDER BY e.entity_id`,[accountId])).rows;
-  return {selected,options};
+  return {...(scope?advancementStamp(scope):{}),selected,options};
   });
 }
