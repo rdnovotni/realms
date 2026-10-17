@@ -18,8 +18,8 @@ export function advancementPackage(){
  {id:'rules.skills',kind:'TUNING',revision:1,schemaVersion:1,definition:{name:'Fixture proficiency schedule',dependencies:['rules.build','skill.fixture'],public:{},mechanics:{proficiencyRules:{version:1,ruleset:'PROFICIENCY_CHOICES_V1',buildRulesId:'rules.build',skillIds:['skill.fixture'],milestones:[1,2,3,6,8]}}}});
  for(const [id,name,classes,prior,trained] of [['feat.root','Steady footing',[],[],false],['feat.other','Keen observer',[],[],false],['feat.child','Veteran footing',[{classId:'class.one',nativeLevel:5}],['feat.root'],false],['feat.trained','Practiced technique',[],[],true],['feat.hidden','Hidden feat',[],[],false]] as [string,string,{classId:string;nativeLevel:number}[],string[],boolean][])p.entities.push({id,kind:'ABILITY',revision:1,schemaVersion:1,definition:{name,dependencies:['rules.feats',...classes.map(c=>c.classId),...prior,...(trained?['skill.fixture']:[])],public:{description:'A known feat for explicit advancement choices.'},mechanics:{feat:{version:1,rulesId:'rules.feats',access:'DISCOVERED',antiTaxReview:'PASS',prerequisites:{classes,feats:prior}},...(trained?{proficiencyRequirements:{version:1,skills:[{skillId:'skill.fixture',minimumRank:2}]}}:{})}}});return p;
 }
-export async function advancementFixture(pool:pg.Pool,startClass='class.one'){
- const p=advancementPackage(),release=await publishContent(pool,p),f=await actor(pool,release,20);
+export async function advancementFixture(pool:pg.Pool,startClass='class.one',p=advancementPackage()){
+ const release=await publishContent(pool,p),f=await actor(pool,release,20);
  for(const e of p.entities.filter(e=>!e.id.endsWith('.hidden')))await pool.query("INSERT INTO discoveries(account_id,entity_id,knowledge_level) VALUES($1,$2,'DISCOVERED')",[f.account,e.id]);
  const revision=async()=>Number((await pool.query('SELECT revision FROM runs WHERE id=$1',[f.run])).rows[0].revision);
  await startBuild(pool,f.account,advancementEnvelope(0,'START_BUILD'),startClass,'balanced');

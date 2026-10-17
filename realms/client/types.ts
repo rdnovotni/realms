@@ -51,4 +51,7 @@ export type AttributeDraft={runId:string;revision:number;rulesId:string;mileston
 
 export type AbilityEntry={id:string;name:string;category:'ACTIVE'|'REACTION'|'UTILITY'|'PASSIVE';source:{name:string;kind:string;nativeLevel:number};action:string|null;costs:{name:string;amount:number;clock:string|null}[]|null;cooldownRounds:number|null;effects:string[];restrictions:string[];duration:'OWNED'};
 export type AbilityBook=AdvancementScope&{activeSet:string;entries:AbilityEntry[];truncated:boolean;notes:string[]};
-export type CharacterSection='overview'|'progression'|'statistics'|'abilities';
+export type CharacterSection='overview'|'progression'|'statistics'|'abilities'|'history';
+
+export type AdvancementHistoryEntry={id:string;category:'START_BUILD'|'LEVEL_UP'|'SUBCLASS'|'FEAT'|'ATTRIBUTE'|'PROFICIENCY';name:string;level:number|null;milestone:number|null;recordedAt:string|null;changes:{name:string;before:string|number|null;after:string|number|null}[]};
+export type AdvancementHistory=AdvancementScope&{entries:AdvancementHistoryEntry[];total:number;offset:number;pageSize:number;hasMore:boolean};

@@ -1,9 +1,10 @@
+import { readCharacterView,saveCharacterView,clearCharacterView } from './character-preferences.js';
 import { canChooseAdvancement,advancementSuccess } from './advancement-model.js';
 import type { Advancement,AdvancementChoice,AdvancementClass,AdvancementScope,SubclassCatalog,FeatCatalog,FeatFilter,AttributeCatalog,ProficiencyCatalog,MilestoneCatalog,AttributeDraft } from './types.js';
 import { inventorySuccess } from './inventory-usability.js';
 import { defaultTileSettings,validTileSettings,type TileSettings } from './item-tiles.js';
 import { ApiClient,ApiError,errorMessage } from './api.js';
-import type { Config,GameView,Progression,BuildOptions,Tactical,Snapshot,Notice,AscensionPreview,InventoryPage,InventoryQuery,InventoryItem,InventoryHistory,EquipmentPlan,Gear,EquipmentPreview,AbilityBook,CharacterSection } from './types.js';
+import type { Config,GameView,Progression,BuildOptions,Tactical,Snapshot,Notice,AscensionPreview,InventoryPage,InventoryQuery,InventoryItem,InventoryHistory,EquipmentPlan,Gear,EquipmentPreview,AbilityBook,CharacterSection,AdvancementHistory } from './types.js';
 const equipmentKey=(p:EquipmentPlan)=>JSON.stringify({activeSet:p.activeSet,slots:[...p.slots].sort((a,b)=>(a.set+a.slot).localeCompare(b.set+b.slot))});
 export class GameSession {
  private selectionPage='';
@@ -103,7 +104,7 @@ export class GameSession {
  private abilityGeneration=0;
  setAbilityBrowser(patch:Partial<Pick<GameSession,'abilitySearch'|'abilityCategory'|'abilitySource'|'abilitySelection'>>){Object.assign(this,patch);this.notify();}
  private clearCharacterStats(){this.characterStats=null;this.characterStatsBusy=false;this.characterStatsError=null;this.characterStatsNeedsRefresh=false;this.characterStatsGeneration++;}
- private clearCharacterReads(newRun=false){this.clearCharacterStats();this.abilityBook=null;this.abilityBookBusy=false;this.abilityBookError=null;this.abilityBookNeedsRefresh=false;this.abilityGeneration++;if(newRun){this.characterStatsContext=undefined;this.characterStatsDraft=false;this.abilitySearch='';this.abilityCategory='ALL';this.abilitySource='ALL';this.abilitySelection=null;}}
+ private clearCharacterReads(newRun=false){this.characterHistory=null;this.characterHistoryBusy=false;this.characterHistoryError=null;this.characterHistoryNeedsRefresh=false;this.characterHistoryGeneration++;if(newRun)this.characterHistoryOffset=0;this.clearCharacterStats();this.abilityBook=null;this.abilityBookBusy=false;this.abilityBookError=null;this.abilityBookNeedsRefresh=false;this.abilityGeneration++;if(newRun){this.characterStatsContext=undefined;this.characterStatsDraft=false;this.abilitySearch='';this.abilityCategory='ALL';this.abilitySource='ALL';this.abilitySelection=null;}}
  async loadCharacterStats(context=this.characterStatsContext,includeDraft=this.characterStatsDraft){
   const s=this.snapshot;if(!s)return;const epoch=this.epoch,generation=++this.characterStatsGeneration,runId=s.game.run.runId,revision=s.game.run.revision;
   const draft=includeDraft?this.equipmentDraft:null,plan=draft&&draft.runId===runId&&draft.revision===revision?structuredClone(draft.plan):null,key=plan?equipmentKey(plan):null;
@@ -123,8 +124,25 @@ export class GameSession {
   }catch(error){if(epoch===this.epoch&&generation===this.abilityGeneration){this.abilityBook=null;this.abilityBookError=errorMessage(error);this.abilityBookNeedsRefresh=error instanceof ApiError&&error.status===409;if(error instanceof ApiError&&error.status===401)this.handleError(error);}}
   finally{if(epoch===this.epoch&&generation===this.abilityGeneration){this.abilityBookBusy=false;this.notify();}}
  }
+ characterHistory:AdvancementHistory|null=null;
+ characterHistoryBusy=false;
+ characterHistoryError:string|null=null;
+ characterHistoryNeedsRefresh=false;
+ characterHistoryOffset=0;
+ private characterHistoryGeneration=0;
+ async loadCharacterHistory(offset=this.characterHistoryOffset){
+  const s=this.snapshot;if(!s||this.characterHistoryBusy||!Number.isInteger(offset)||offset<0||offset>10000)return;
+  const epoch=this.epoch,generation=++this.characterHistoryGeneration,runId=s.game.run.runId,revision=s.game.run.revision;
+  this.characterHistory=null;this.characterHistoryBusy=true;this.characterHistoryError=null;this.characterHistoryNeedsRefresh=false;this.characterHistoryOffset=offset;saveCharacterView(runId,this.characterSection,offset);this.notify();
+  try{const result=await this.api.request<AdvancementHistory>('/api/v1/character/history?'+new URLSearchParams({expectedRevision:String(revision),offset:String(offset)}));
+   if(epoch!==this.epoch||generation!==this.characterHistoryGeneration)return;
+   if(result.runId!==runId||result.revision!==revision||this.snapshot?.game.run.runId!==runId||this.snapshot.game.run.revision!==revision)throw new ApiError(409,'STALE_REVISION');
+   this.characterHistory=result;
+  }catch(error){if(epoch===this.epoch&&generation===this.characterHistoryGeneration){this.characterHistoryError=errorMessage(error);this.characterHistoryNeedsRefresh=error instanceof ApiError&&error.status===409;if(error instanceof ApiError&&error.status===401)this.handleError(error);}}
+  finally{if(epoch===this.epoch&&generation===this.characterHistoryGeneration){this.characterHistoryBusy=false;this.notify();}}
+ }
  characterSection:CharacterSection='overview';
- setCharacterSection(section:CharacterSection){this.characterSection=section;this.notify();}
+ setCharacterSection(section:CharacterSection){this.characterSection=section;if(this.snapshot)saveCharacterView(this.snapshot.game.run.runId,section,this.characterHistoryOffset);this.notify();}
  inventoryFiltersOpen=false;
  inventorySearchDraft:string|null=null;
  inventoryAutomationOpen=false;
@@ -180,7 +198,7 @@ export class GameSession {
   // These independent projections may cross another window's action. Refuse a
   // mixed revision and let the player explicitly refresh, never write from it.
   if(progression.revision!==game.run.revision||(options.revision!==undefined&&options.revision!==game.run.revision)||(options.runId!==undefined&&options.runId!==game.run.runId)||(battle&&battle.revision!==game.run.revision))throw new ApiError(409,'STALE_REVISION');
-  if(epoch===this.epoch){if(this.snapshot?.game.run.runId!==game.run.runId){this.equipmentContext=undefined;this.inventorySearchDraft=null;this.characterSection='overview';this.clearAdvancement(true);}this.equipmentPreviewError=null;this.snapshot={game,progression,options,battle};this.needsRefresh=false;
+  if(epoch===this.epoch){if(this.snapshot?.game.run.runId!==game.run.runId){const remembered=!this.snapshot?readCharacterView(game.run.runId):null;this.equipmentContext=undefined;this.inventorySearchDraft=null;this.clearAdvancement(true);this.characterSection=remembered?.section??'overview';this.characterHistoryOffset=remembered?.offset??0;}this.equipmentPreviewError=null;this.snapshot={game,progression,options,battle};saveCharacterView(game.run.runId,this.characterSection,this.characterHistoryOffset);this.needsRefresh=false;
    if(this.equipmentDraft&&(this.equipmentDraft.runId!==game.run.runId||game.equipment&&equipmentKey(this.equipmentDraft.plan)===equipmentKey(game.equipment)))this.equipmentDraft=null;
    this.equipmentPreview=null;this.previewGeneration++;this.equipmentPreviewBusy=false;if(this.inventoryWanted)await this.browseInventory(this.inventoryQuery);if(refreshAdvancement&&this.advancementWanted&&this.snapshot?.progression.build.mode==='CONFIGURED')await this.loadAdvancement();}
  }
@@ -259,8 +277,8 @@ export class GameSession {
   catch(error){if(epoch!==this.epoch)return;if(!this.pending){this.needsRefresh=true;this.notice={text:'Your action was saved, but the latest view could not be loaded. Refresh to reconnect.',kind:'error'};return;}if(!(error instanceof ApiError)||!error.ambiguous)this.pending=null;this.handleError(error);if(error instanceof ApiError&&error.ambiguous&&this.pending)this.notice.text+=' The action may have completed. Retry the same action to confirm.';if(error instanceof ApiError&&error.status===409){try{await this.load(epoch);}catch{/* Keep the stale snapshot disabled until an explicit refresh succeeds. */this.snapshot=null;}}}
   finally{if(epoch===this.epoch){this.busy=false;this.notify();}}
  }
- private handleError(error:unknown){this.notice={text:errorMessage(error),kind:'error'};if(error instanceof ApiError&&error.status===401){this.inventorySelection.clear();this.inventorySelectionAnchor=null;this.inventoryLayout='STANDARD';this.inventoryEquipmentOpen=false;this.inventoryLoadoutsOpen=false;this.inventoryStatsOpen=false;this.tileSettings={...defaultTileSettings};this.equipmentDraft=null;this.equipmentPreview=null;this.equipmentContext=undefined;this.previewGeneration++;this.equipmentPreviewBusy=false;this.clearAdvancement(true);this.advancementWanted=false;this.api.setToken('');this.snapshot=null;this.pending=null;this.inventory=null;this.inventoryHistory=null;this.historyGeneration++;this.inventoryHistoryBusy=false;this.selectedInventoryItem=null;this.selectedInventoryGrouped=false;this.inventoryWanted=false;this.inventoryBusy=false;this.inventoryGeneration++;}}
- async logout(){
+ private handleError(error:unknown){this.notice={text:errorMessage(error),kind:'error'};if(error instanceof ApiError&&error.status===401){clearCharacterView();this.inventorySelection.clear();this.inventorySelectionAnchor=null;this.inventoryLayout='STANDARD';this.inventoryEquipmentOpen=false;this.inventoryLoadoutsOpen=false;this.inventoryStatsOpen=false;this.tileSettings={...defaultTileSettings};this.equipmentDraft=null;this.equipmentPreview=null;this.equipmentContext=undefined;this.previewGeneration++;this.equipmentPreviewBusy=false;this.clearAdvancement(true);this.advancementWanted=false;this.api.setToken('');this.snapshot=null;this.pending=null;this.inventory=null;this.inventoryHistory=null;this.historyGeneration++;this.inventoryHistoryBusy=false;this.selectedInventoryItem=null;this.selectedInventoryGrouped=false;this.inventoryWanted=false;this.inventoryBusy=false;this.inventoryGeneration++;}}
+ async logout(){clearCharacterView();
   if(this.busy||this.pending)return;this.busy=true;this.notify();
   let confirmed=true;
   try{if(this.config?.authMode==='sessions')await this.api.request('/api/v1/auth/logout',{});}
