@@ -280,3 +280,11 @@ test('automation disclosure survives same-item refreshes and closes for a differ
  session.selectInventory(second);assert.equal(session.inventoryAutomationOpen,false);
  session.inventoryAutomationOpen=true;session.selectInventory(null);assert.equal(session.inventoryAutomationOpen,false);
 });
+
+test('pending search text survives background browse notifications without changing applied filters and clears on logout',async()=>{
+ const h=harness();await connect(h);h.setInventoryRead(async()=>json({revision:0,runId:'run',items:[]}));
+ await h.session.browseInventory({search:'applied'});h.session.inventorySearchDraft='pending';
+ await h.session.browseInventory(h.session.inventoryQuery);
+ assert.equal(h.session.inventorySearchDraft,'pending');assert.equal(h.session.inventoryQuery.search,'applied');
+ await h.session.logout();assert.equal(h.session.inventorySearchDraft,null);
+});
