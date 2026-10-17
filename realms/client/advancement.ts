@@ -23,7 +23,7 @@ export function availableDecisions(view:Advancement){
 export function renderDecisionSummary(session:GameSession,review?:()=>void){
  const panel=section('Available Decisions');panel.classList.add('sheet-choices');ensureAdvancement(session);const view=session.advancement;
  if(session.advancementBusy)panel.append(node('p','Refreshing available decisions…','help'));
- if(session.advancementError){panel.append(node('p',session.advancementError,'notice error'),button('Retry advancement reads',()=>void session.loadAdvancement(),session.advancementBusy||session.busy||session.needsRefresh));return panel;}
+ if(session.advancementError){panel.append(node('p',session.advancementError,'notice error'),button(session.advancementNeedsRefresh?'Refresh advancement state':'Retry advancement reads',()=>{if(session.advancementNeedsRefresh)void session.refresh();else void session.loadAdvancement();},session.advancementBusy||session.busy||session.needsRefresh));return panel;}
  if(!view){panel.append(node('p','Loading authoritative advancement choices…','help'));return panel;}
  const {now,blocked}=availableDecisions(view),pending=session.snapshot?.progression.readiness?.pendingLevels??0;
  panel.append(node('p',`${pending} earned class allocation${pending===1?'':'s'} pending`,'sheet-choice-count'));

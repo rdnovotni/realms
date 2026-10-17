@@ -203,15 +203,20 @@ selection read models. No unknown catalog entities or raw mechanics are exposed.
 All three actions require review and explicit confirmation. They use the existing
 GameSession request ID, revision, write-scope and ambiguous-response replay handling.
 A dialog closes if its source view changes; the session revalidates the choice and
-scope before constructing an action. No double-click or selection event commits a
+scope before constructing an action. Optional catalog failures stay in the advancement
+panel and preserve already-confirmed action feedback and unrelated controls; only
+authentication failures affect the global session. No double-click or selection event commits a
 choice. Successful actions refresh core progression and all decision catalogs, retain
 the Progression section, and report the chosen name/native level/milestone. New runs,
 logout and expired sessions forget old catalogs and browser selections.
 
-The existing GET options/subclasses/feats endpoints now include runId, revision and
-activeInstance. Each scoped projection runs in a repeatable-read, read-only transaction.
+The existing GET subclasses/feats endpoints, and options with the explicit
+`?advancement=true` query, include runId, revision and activeInstance. Ordinary options
+reads retain the lightweight starting-class catalog and do not run class previews.
+Unrelated actions invalidate old catalogs without eagerly running advancement reads;
+returning to Character loads them on demand. Advancement commits refresh them immediately. Each scoped projection runs in a repeatable-read, read-only transaction.
 The client accepts the catalogs only when their run/revision match the saved snapshot
-and one another. Crossed revisions fail closed until Refresh. Empty catalogs and read
+and one another. Crossed catalog revisions disable only advancement choices until Refresh. Empty catalogs and read
 failures have explicit states; no class/feat schedules are guessed in the browser.
 
 The options projection reuses the same immutable SQL `next_build_state` function and

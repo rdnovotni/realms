@@ -107,7 +107,7 @@ export function buildApp(pool: pg.Pool, auth:Authentication, logger = false, cac
     protectedApp.get('/api/v1/progression/feats',async request=>featView(pool,actor(request),true));
     protectedApp.get('/api/v1/progression/subclasses',async request=>subclassView(pool,actor(request),true));
     protectedApp.get('/api/v1/progression',async request=>progressionView(pool,actor(request)));
-    protectedApp.get('/api/v1/progression/options',async request=>buildOptions(pool,actor(request),true));
+    protectedApp.get<{Querystring:{advancement?:string}}>('/api/v1/progression/options',{schema:{querystring:{type:'object',additionalProperties:false,properties:{advancement:{type:'string',enum:['true']}}}}},async request=>buildOptions(pool,actor(request),request.query.advancement==='true'));
     const envelopeProperties={requestId:{type:'string',format:'uuid'},expectedRevision:{type:'integer',minimum:0,maximum:2147483646}};
     const classIdField={type:'string',pattern:'^[a-z][a-z0-9_.-]{2,119}$'};
     protectedApp.get<{Querystring:Record<string,string>}>('/api/v1/inventory',{schema:{querystring:{type:'object',additionalProperties:false,properties:{
