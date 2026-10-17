@@ -17,6 +17,7 @@ import { recruitCompanion,companionsView } from './domains/tactical-companions.j
 import { startTacticalCombat,takeTacticalAction,tacticalView } from './domains/tactical-combat.js';
 import type { TacticalPlayerCommand } from './domains/tactical-combat.js';
 import { advanceProficiency,proficiencyView } from './domains/proficiencies.js';
+import { advancementHistory } from './domains/advancement-history.js';
 import { abilityBook } from './domains/ability-book.js';
 import { milestoneView } from './domains/milestones.js';
 import { allocateAttributes,attributeView } from './domains/attributes.js';
@@ -105,6 +106,7 @@ export function buildApp(pool: pg.Pool, auth:Authentication, logger = false, cac
     });
     protectedApp.get('/api/v1/client/state',async(request,reply)=>{reply.header('Cache-Control','no-store');return gameView(pool,actor(request),request.principal??undefined);});
     protectedApp.get('/api/v1/progression/proficiencies',async request=>proficiencyView(pool,actor(request),true));
+    protectedApp.get<{Querystring:{expectedRevision:string;offset?:string}}>('/api/v1/character/history',{schema:{querystring:{type:'object',additionalProperties:false,required:['expectedRevision'],properties:{expectedRevision:{type:'string',pattern:'^[0-9]{1,10}$'},offset:{type:'string',pattern:'^[0-9]{1,5}$'}}}}},async request=>advancementHistory(pool,actor(request),Number(request.query.expectedRevision),Number(request.query.offset??0)));
     protectedApp.get('/api/v1/character/abilities',async request=>abilityBook(pool,actor(request)));
     protectedApp.get('/api/v1/progression/milestones',async request=>milestoneView(pool,actor(request)));
     protectedApp.get('/api/v1/progression/attributes',async request=>attributeView(pool,actor(request),true));

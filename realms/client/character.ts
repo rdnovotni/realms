@@ -1,3 +1,6 @@
+import { renderCharacterHistory } from './character-history.js';
+import { pendingCharacterChoices } from './character-history-model.js';
+import { ensureAdvancement } from './advancement.js';
 import { renderStatistics,renderAbilityBook } from './character-book.js';
 import type { CharacterSection } from './types.js';
 import { renderAdvancement,renderDecisionSummary } from './advancement.js';
@@ -27,16 +30,20 @@ function equipmentSummary(s:Snapshot,session:GameSession,openPack:()=>void){
 }
 export function renderCharacter(main:HTMLElement,s:Snapshot,session:GameSession,disabled:boolean,openPack:()=>void){
  main.classList.add('character-sheet');const configured=s.progression.build.mode==='CONFIGURED',title=node('h1',configured?'Your character':'Choose your starting build');title.tabIndex=-1;main.append(title);
- if(!configured){main.append(startingBuild(s,session,disabled));return;}
+ if(!configured){main.append(node('p','This life has no starting build yet. Your first confirmed choice will begin its advancement history.','sheet-note'),startingBuild(s,session,disabled));if(!s.game.canWrite)main.append(node('p','This session is view only. Sign in with play access to choose a starting build.','notice'));return;}
+ ensureAdvancement(session);const indicator=pendingCharacterChoices(s,session.advancement);
  const select=(key:CharacterSection)=>{session.setCharacterSection(key);document.getElementById('character-section-title')?.focus({preventScroll:true});document.getElementById('character-section')?.scrollIntoView({block:'nearest'});};
- main.append(sectionNavigation('Character sections',[{key:'overview',title:'Overview',available:true},{key:'progression',title:'Progression',available:true},{key:'abilities',title:'Abilities',available:true},{key:'statistics',title:'Statistics',available:true},{key:'history',title:'History',available:false}],session.characterSection,key=>{if(key!=='history')select(key);},'character-section'));
- const panel=node('div','','sheet-section');panel.id='character-section';const sectionTitle=node('h2',session.characterSection==='overview'?'Character overview':session.characterSection==='progression'?'Character progression':session.characterSection==='statistics'?'Character statistics':'Character abilities','sheet-section-title');sectionTitle.id='character-section-title';sectionTitle.tabIndex=-1;panel.setAttribute('aria-labelledby',sectionTitle.id);panel.append(sectionTitle);main.append(panel);
+ main.append(sectionNavigation('Character sections',[{key:'overview',title:'Overview',available:true},{key:'progression',title:'Progression',available:true,indicator},{key:'abilities',title:'Abilities',available:true},{key:'statistics',title:'Statistics',available:true},{key:'history',title:'History',available:true}],session.characterSection,key=>select(key),'character-section'));
+ const panel=node('div','','sheet-section');panel.id='character-section';const sectionTitle=node('h2',session.characterSection==='overview'?'Character overview':session.characterSection==='progression'?'Character progression':session.characterSection==='statistics'?'Character statistics':session.characterSection==='history'?'Character history':'Character abilities','sheet-section-title');sectionTitle.id='character-section-title';sectionTitle.tabIndex=-1;panel.setAttribute('aria-labelledby',sectionTitle.id);panel.append(sectionTitle);main.append(panel);
  const p=s.progression,xp=characterXP(p),classes=characterClasses(s);
  const header=node('section','','sheet-identity panel');header.setAttribute('aria-label','Character identity and experience');const badge=node('div','','sheet-level');badge.append(node('span','Total level'),node('strong',String(p.level)));const identity=node('div','','sheet-identity-body');identity.append(node('p',classes.map(c=>`${c.name} ${c.nativeLevel}`).join(' · ')||'Class information unavailable','sheet-class-line'),node('p',`${characterLabel(s.game.run.mode)} · ${characterLabel(s.game.run.status)}`,'sheet-run-status'));
  const facts=node('dl','','sheet-facts');facts.append(fact('Total XP',exactXP(p.xp)),fact('Pending level-ups',p.readiness?String(p.readiness.pendingLevels):'Unavailable'));identity.append(facts);
  if(xp.capped)identity.append(node('p',p.level===xp.maximumLevel?'Maximum level reached':`All authored XP levels earned${xp.maximumLevel?' · level '+xp.maximumLevel:''}. Allocate pending levels to complete your build.`,'sheet-cap'));
  else if(xp.nextEarnableLevel!==null&&p.readiness?.nextThreshold){identity.append(node('p',`Toward level ${xp.nextEarnableLevel} · ${exactXP(p.readiness.nextThreshold)} total XP required`,'sheet-xp-title'));if(xp.percent!==null){const meter=node('div','','sheet-xp-meter');meter.setAttribute('role','progressbar');meter.setAttribute('aria-label',`XP toward earnable level ${xp.nextEarnableLevel}`);meter.setAttribute('aria-valuemin','0');meter.setAttribute('aria-valuemax','100');meter.setAttribute('aria-valuenow',String(xp.percent));meter.setAttribute('aria-valuetext',`${exactXP(p.xp)} total XP; ${xp.remaining?exactXP(xp.remaining):'unknown'} XP remaining`);const fill=node('span');fill.style.width=xp.percent+'%';meter.append(fill);identity.append(meter);}if(xp.remaining)identity.append(node('p',`${exactXP(xp.remaining)} XP to the next earnable level`,'help'));}
  else identity.append(node('p','Next-level XP progress is unavailable.','help'));header.append(badge,identity);panel.append(header);
+ if(!s.game.canWrite)panel.append(node('p','View-only session: you can inspect your character and history, but cannot commit changes.','notice'));
+ if(s.game.activeEncounter)panel.append(node('p','An encounter is active. Character inspection remains available; advancement choices wait until the instance ends.','sheet-note'));
+ if(session.characterSection==='history'){renderCharacterHistory(panel,session);return;}
  if(session.characterSection==='statistics'){renderStatistics(panel,session,openPack);return;}
  if(session.characterSection==='abilities'){renderAbilityBook(panel,session);return;}
  if(session.characterSection==='progression'){renderAdvancement(panel,s,session,disabled);return;}
