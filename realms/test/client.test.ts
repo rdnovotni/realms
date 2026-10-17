@@ -38,10 +38,12 @@ test('public page links support direct loads while unknown routes stay unavailab
  }finally{await app.close();}
 });
 function harness(authMode:'development'|'sessions'='development'){
+ let advancementRead:((path:string)=>Promise<Response>)|null=null;
  let inventoryRead:(path:string)=>Promise<Response>=async()=>json({revision,runId,items:[],total:0,offset:0,pageSize:48,containers:[],hasMoreContainers:false,preferences:{autoStoreMaterials:false,autoOverflow:false}});
  let revision=0,canWrite=true,runId='run',status='ACTIVE',post:(path:string,init:RequestInit)=>Promise<Response>=async(path)=>json(path.endsWith('/login')?{token:'private-token'}:{}),readsFail=false;
  const calls:{path:string;init:RequestInit}[]=[];
  const fetcher:Fetcher=async(path,init={})=>{calls.push({path,init});if(init.method==='POST')return post(path,init);
+  if(advancementRead&&path.startsWith('/api/v1/progression/'))return advancementRead(path);
   if(path.startsWith('/api/v1/inventory?'))return inventoryRead(path);
   if(path.endsWith('/config'))return json({protocolVersion:1,authMode});
   if(readsFail)return json({error:'TECHNICAL_FAILURE'},503);
@@ -52,7 +54,7 @@ function harness(authMode:'development'|'sessions'='development'){
   throw Error(`Unexpected request ${path}`);
  };
  const session=new GameSession(new ApiClient(fetcher),()=> '11111111-1111-4111-8111-111111111111');
- return {session,calls,setInventoryRead:(read:(path:string)=>Promise<Response>)=>{inventoryRead=read;},setStatus:(s:string)=>{status=s;},setRun:(r:string)=>{runId=r;},setRevision:(n:number)=>{revision=n;},setWrite:(value:boolean)=>{canWrite=value;},setPost:(fn:typeof post)=>{post=fn;},setReadFailure:(value:boolean)=>{readsFail=value;}};
+ return {session,calls,setAdvancementRead:(read:(path:string)=>Promise<Response>)=>{advancementRead=read;},setInventoryRead:(read:(path:string)=>Promise<Response>)=>{inventoryRead=read;},setStatus:(s:string)=>{status=s;},setRun:(r:string)=>{runId=r;},setRevision:(n:number)=>{revision=n;},setWrite:(value:boolean)=>{canWrite=value;},setPost:(fn:typeof post)=>{post=fn;},setReadFailure:(value:boolean)=>{readsFail=value;}};
 }
 async function connect(h:ReturnType<typeof harness>){await h.session.initialize();await h.session.connect({token:'private-token'});assert.ok(h.session.snapshot);}
 test('transport confines credentials to same-origin headers and normalizes malformed and unreachable responses',async()=>{
@@ -323,4 +325,54 @@ test('Character equipment summary follows the shared active draft without alteri
 });
 test('Character section choice survives ordinary redraws and resets on sign out',async()=>{
  const h=harness();await connect(h);h.session.setCharacterSection('progression');assert.equal(h.session.characterSection,'progression');await h.session.logout();assert.equal(h.session.characterSection,'overview');
+});
+
+function advancementData(revision=0,runId='run'):import('../client/types.js').Advancement{
+ const scope={revision,runId,activeInstance:false};return {...scope,classes:[{classId:'class.known',name:'Known class',rulesId:'rules.known',nativeLevel:4,nextNativeLevel:5,maximumNativeLevel:20,eligibility:'AVAILABLE'}],subclasses:{...scope,selected:[],options:[{subclassId:'sub.known',classId:'class.known',name:'Known subclass',nativeLevel:5,unlockNativeLevel:5,eligibility:'AVAILABLE'}]},feats:{...scope,selected:[],options:[{featId:'feat.known',name:'Known feat',rulesId:'rules.feats',availableMilestones:[2,4],eligibility:'ELIGIBLE'}]}};
+}
+const advancementRead=(view:import('../client/types.js').Advancement,path:string)=>json(path.includes('/options')?{runId:view.runId,revision:view.revision,activeInstance:view.activeInstance,classes:view.classes,rules:[]}:path.endsWith('/subclasses')?view.subclasses:view.feats);
+test('advancement eligibility requires an exact earned feat milestone and current run, not eligibility alone',async()=>{
+ const {canChooseAdvancement,featStatus,advancementReason}=await import('../client/advancement-model.js');const v=advancementData(),choice={kind:'FEAT' as const,id:'feat.known',runId:'run',revision:0,milestone:2};
+ assert.equal(canChooseAdvancement(v,choice),true);for(const patch of [{milestone:3},{milestone:undefined},{runId:'other'},{revision:1},{id:'feat.unknown'}])assert.equal(canChooseAdvancement(v,{...choice,...patch}),false);
+ v.feats.options[0]!.availableMilestones=[];assert.equal(canChooseAdvancement(v,choice),false);assert.match(featStatus(v.feats.options[0]!),/no earned milestone/);assert.match(featStatus({...v.feats.options[0]!,eligibility:'ACTIVE_INSTANCE'}),/no earned milestone/);assert.match(advancementReason('PROFICIENCY_NOT_MET'),/Proficiency requirements/);
+ v.activeInstance=true;assert.equal(canChooseAdvancement(v,{...choice,kind:'SUBCLASS',id:'sub.known'}),false);
+});
+test('feat filters retain committed selections and distinguish eligible from actionable milestones',async()=>{
+ const {featEntries}=await import('../client/advancement-model.js');const v=advancementData();v.feats.selected=[{featId:'feat.old',name:'Committed feat',milestone:1}];v.feats.options.push({featId:'feat.locked',name:'Restricted feat',rulesId:'rules.feats',availableMilestones:[2],eligibility:'PREREQUISITES_NOT_MET'});v.feats.options[0]!.availableMilestones=[];
+ assert.deepEqual(featEntries(v.feats,'','SELECTED').map(f=>f.featId),['feat.old']);assert.deepEqual(featEntries(v.feats,'','ELIGIBLE').map(f=>f.featId),['feat.known']);assert.equal(featEntries(v.feats,'','UNAVAILABLE').length,2);assert.equal(featEntries(v.feats,'restricted','ALL').length,1);assert.deepEqual(featEntries({...v.feats,selected:[],options:[]},'','ALL'),[]);
+});
+test('advancement decisions refresh after commit, retain Progression and respect read-only sessions',async()=>{
+ const h=harness();await connect(h);let view=advancementData();h.setAdvancementRead(async path=>advancementRead(view,path));await h.session.loadAdvancement();h.session.setCharacterSection('progression');
+ const choice={kind:'FEAT' as const,id:'feat.known',runId:'run',revision:0,milestone:2};h.session.snapshot!.game.canWrite=false;await h.session.chooseAdvancement(choice);assert.equal(h.calls.filter(c=>c.init.method==='POST').length,0);h.session.snapshot!.game.canWrite=true;
+ h.setPost(async()=>{view=advancementData(1);view.feats.selected=[{featId:'feat.known',name:'Known feat',milestone:2}];view.feats.options[0]!.eligibility='ALREADY_CHOSEN';h.setRevision(1);return json({milestone:2});});
+ await h.session.chooseAdvancement(choice);assert.equal(h.session.characterSection,'progression');assert.equal(h.session.advancement!.revision,1);assert.equal(h.session.advancement!.feats.selected.length,1);assert.equal(h.session.notice.text,'Selected feat Known feat at milestone 2.');await h.session.chooseAdvancement(choice);assert.equal(h.calls.filter(c=>c.init.method==='POST').length,1);
+});
+test('advancement rejects crossed read revisions and forgets late catalog data after logout',async()=>{
+ const h=harness();await connect(h);h.setAdvancementRead(async path=>advancementRead(advancementData(path.endsWith('/feats')?1:0),path));await h.session.loadAdvancement();assert.equal(h.session.advancement,null);assert.equal(h.session.needsRefresh,false);assert.equal(h.session.advancementNeedsRefresh,true);
+ const next=harness();await connect(next);let finish!:(r:Response)=>void;next.setAdvancementRead(async path=>path.endsWith('/feats')?new Promise<Response>(resolve=>finish=resolve):advancementRead(advancementData(),path));const read=next.session.loadAdvancement();await next.session.logout();finish(json(advancementData().feats));await read;assert.equal(next.session.advancement,null);assert.equal(next.session.advancementBusy,false);
+});
+test('ambiguous advancement submissions retry the identical action rather than submitting twice',async()=>{
+ const h=harness();await connect(h);let v=advancementData(),posts=0;h.setAdvancementRead(async path=>advancementRead(v,path));await h.session.loadAdvancement();h.setPost(async()=>{posts++;h.setRevision(1);v=advancementData(1);if(posts===1)throw Error('response lost');return json({milestone:2,replayed:true});});
+ const choice={kind:'FEAT' as const,id:'feat.known',runId:'run',revision:0,milestone:2};await h.session.chooseAdvancement(choice);assert.ok(h.session.pending);await h.session.chooseAdvancement(choice);assert.equal(posts,1);await h.session.retry();const actions=h.calls.filter(c=>c.init.method==='POST');assert.equal(posts,2);assert.equal(actions[0]!.init.body,actions[1]!.init.body);assert.equal(h.session.pending,null);assert.equal(h.session.advancement!.revision,1);
+});
+
+test('new runs discard advancement browser state and old catalogs while preserving owned scope',async()=>{
+ const h=harness();await connect(h);let current=advancementData();h.setAdvancementRead(async path=>advancementRead(current,path));await h.session.loadAdvancement();h.session.setCharacterSection('progression');h.session.setAdvancementBrowser({advancementSearch:'old feat',advancementFeatId:'feat.known',advancementMilestone:2});h.setRun('next-run');current=advancementData(0,'next-run');await h.session.refresh();
+ assert.equal(h.session.characterSection,'overview');assert.equal(h.session.advancementSearch,'');assert.equal(h.session.advancementFeatId,null);assert.equal(h.session.advancementMilestone,null);assert.equal(h.session.advancement!.runId,'next-run');
+});
+
+test('subclass alternatives explain a committed class decision without claiming the alternative was selected',async()=>{
+ const {subclassStatus}=await import('../client/advancement-model.js');assert.equal(subclassStatus({subclassId:'sub.chosen',eligibility:'ALREADY_CHOSEN'},'sub.chosen'),'Already selected');assert.equal(subclassStatus({subclassId:'sub.other',eligibility:'ALREADY_CHOSEN'},'sub.chosen'),'This class already has a committed subclass');
+});
+
+test('optional advancement catalog failures preserve committed action feedback and unrelated core state',async()=>{
+ const h=harness();await connect(h);let v=advancementData(),fail=false;h.setAdvancementRead(async path=>fail&&path.endsWith('/feats')?json({error:'TECHNICAL_FAILURE'},503):advancementRead(v,path));await h.session.loadAdvancement();
+ assert.ok(h.calls.some(c=>c.path==='/api/v1/progression/options?advancement=true'));
+ h.setPost(async()=>{h.setRevision(1);v=advancementData(1);fail=true;return json({build:{classes:[{classId:'class.known',nativeLevel:5}]}});});
+ await h.session.chooseAdvancement({kind:'CLASS',id:'class.known',runId:'run',revision:0});assert.equal(h.session.notice.kind,'success');assert.equal(h.session.notice.text,'Advanced Known class to native level 5.');assert.equal(h.session.snapshot!.game.run.revision,1);assert.equal(h.session.needsRefresh,false);assert.equal(h.session.pending,null);assert.equal(h.session.advancement,null);assert.ok(h.session.advancementError);
+});
+
+test('ordinary actions invalidate catalogs without eagerly running advanced class previews',async()=>{
+ const h=harness();await connect(h);let v=advancementData();h.setAdvancementRead(async path=>advancementRead(v,path));await h.session.loadAdvancement();h.setPost(async()=>{h.setRevision(1);v=advancementData(1);return json({});});await h.session.action('/api/v1/inventory/lock','SET_ITEM_LOCK',{itemId:'known-item',locked:true});
+ assert.equal(h.calls.filter(c=>c.path.includes('advancement=true')).length,1);assert.equal(h.session.advancement,null);assert.equal(h.session.snapshot!.game.run.revision,1);await h.session.loadAdvancement();assert.equal(h.session.advancement!.revision,1);
 });

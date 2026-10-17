@@ -1,3 +1,4 @@
+import { advancementScope,advancementStamp } from './advancement-view.js';
 import type pg from 'pg';
 import { executeAction,advanceRevision,type Envelope } from '../foundation/action.js';
 import { transaction } from '../foundation/transaction.js';
@@ -23,15 +24,17 @@ export function chooseFeat(pool:pg.Pool,accountId:string,envelope:Envelope,featI
     return {featId:row.feat_id as string,featRevision:row.feat_revision as number,milestone:row.milestone as number,choiceNumber:row.choice_no as number,revision:await advanceRevision(c)};
   });
 }
-export async function featView(pool:pg.Pool,accountId:string) {
+export async function featView(pool:pg.Pool,accountId:string,scoped=false) {
   return transaction(pool,async client=>{
     await client.query('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY');
+  const scope=scoped?await advancementScope(client,accountId):null;
     const selected=(await client.query(`SELECT f.feat_id AS "featId",f.feat_revision AS "featRevision",f.milestone,v.definition->>'name' AS name
       FROM run_feats f JOIN runs r ON r.id=f.run_id JOIN characters c ON c.id=r.character_id JOIN content_versions v ON v.entity_id=f.feat_id AND v.revision=f.feat_revision
       WHERE c.account_id=$1 AND r.status IN('ACTIVE','AFTERCORE') ORDER BY f.milestone`,[accountId])).rows;
     const options=(await client.query(`SELECT e.entity_id AS "featId",e.revision AS "featRevision",v.definition->>'name' AS name,re.entity_id AS "rulesId",
+      v.definition->'public'->'description' AS description,v.definition->'public'->'effects' AS effects,
       ARRAY(SELECT m::integer FROM jsonb_array_elements_text(rv.definition->'mechanics'->'featRules'->'milestones') m WHERE m::integer<=p.level
-        AND NOT EXISTS(SELECT 1 FROM run_feats chosen WHERE chosen.run_id=r.id AND chosen.milestone=m::integer)) AS "availableMilestones",
+        AND NOT EXISTS(SELECT 1 FROM run_feats chosen WHERE chosen.run_id=r.id AND chosen.milestone=m::integer) ORDER BY m::integer) AS "availableMilestones",
       CASE WHEN EXISTS(SELECT 1 FROM run_feats chosen WHERE chosen.run_id=r.id AND chosen.feat_id=e.entity_id) THEN 'ALREADY_CHOSEN'
         WHEN NOT feat_eligible(v.definition->'mechanics'->'feat',b.state,ARRAY(SELECT feat_id FROM run_feats WHERE run_id=r.id)) THEN 'PREREQUISITES_NOT_MET'
         WHEN NOT proficiency_requirements_met(r.id,v.definition->'mechanics'->'proficiencyRequirements') THEN 'PROFICIENCY_NOT_MET'
@@ -44,6 +47,6 @@ export async function featView(pool:pg.Pool,accountId:string) {
       WHERE c.account_id=$1 AND r.status IN('ACTIVE','AFTERCORE') AND r.mode IN('STANDARD','CASUAL') AND b.state->>'mode'='CONFIGURED'
         AND rv.definition->'mechanics'->'featRules'->>'buildRulesId'=b.state->'rules'->>'id'
         AND NOT EXISTS(SELECT 1 FROM run_feat_choices prior WHERE prior.run_id=r.id AND prior.rules_id<>re.entity_id) ORDER BY e.entity_id`,[accountId])).rows;
-    return {selected,options};
+    return {...(scope?advancementStamp(scope):{}),selected,options};
   });
 }

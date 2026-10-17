@@ -158,8 +158,8 @@ relying on the sidebar hidden at narrow widths.
 
 Overview and Progression use reusable section navigation. Progression preserves the
 existing explicit class-level action; Abilities, Statistics and History are labeled
-as unavailable text rather than unfinished controls. Available Choices reports only
-pending class levels from readiness. Other choice categories await their own tickets;
+as unavailable text rather than unfinished controls. CHAR-02 expands Available Decisions to the authoritative class, subclass and feat
+read models described below. Other choice categories await their own tickets;
 the absence of a connected projection is not presented as zero available choices.
 Unconfigured runs see starting class/preset selection first, without an equipment
 editor. Existing setup and level action envelopes and server legality checks remain
@@ -185,3 +185,64 @@ tests. In a disposable playtest, check setup first, configured Overview, Progres
 navigation with keyboard focus, and Pack navigation/draft preservation. Check 320px,
 375px and 768px for overflow, including long names and exact large XP values. Rollback
 is a source/build rollback; the additive read projection needs no data rollback.
+
+
+## Character Advancement Center (CHAR-02)
+
+Progression contains Available Decisions, Class Advancement, Subclasses and Feats.
+Overview uses the same decision summary. It distinguishes available choices, earned
+choices blocked by active instances, unmet requirements/not-yet-earned milestones,
+and committed selections. The class cards show current/proposed native level and
+limits. Subclasses are grouped by owning class and display the authored native-level
+requirement. Feats support search and All/Eligible/Selected/Known but unavailable
+filters, public descriptions/effects, a detail panel and an earned milestone picker.
+Eligible means the feat's requirements pass; a feat without an earned unused milestone
+cannot be committed. Chosen feats/subclasses remain visible using the existing pinned
+selection read models. No unknown catalog entities or raw mechanics are exposed.
+
+All three actions require review and explicit confirmation. They use the existing
+GameSession request ID, revision, write-scope and ambiguous-response replay handling.
+A dialog closes if its source view changes; the session revalidates the choice and
+scope before constructing an action. Optional catalog failures stay in the advancement
+panel and preserve already-confirmed action feedback and unrelated controls; only
+authentication failures affect the global session. No double-click or selection event commits a
+choice. Successful actions refresh core progression and all decision catalogs, retain
+the Progression section, and report the chosen name/native level/milestone. New runs,
+logout and expired sessions forget old catalogs and browser selections.
+
+The existing GET subclasses/feats endpoints, and options with the explicit
+`?advancement=true` query, include runId, revision and activeInstance. Ordinary options
+reads retain the lightweight starting-class catalog and do not run class previews.
+Unrelated actions invalidate old catalogs without eagerly running advancement reads;
+returning to Character loads them on demand. Advancement commits refresh them immediately. Each scoped projection runs in a repeatable-read, read-only transaction.
+The client accepts the catalogs only when their run/revision match the saved snapshot
+and one another. Crossed catalog revisions disable only advancement choices until Refresh. Empty catalogs and read
+failures have explicit states; no class/feat schedules are guessed in the browser.
+
+The options projection reuses the same immutable SQL `next_build_state` function and
+shared entity prerequisite guard used by class writes; savepoints recover expected
+limit errors without recording actions. XP readiness and curve compatibility use the
+existing pinned rules. Subclass and feat eligibility reuse their existing authoritative
+queries; the projections add only public descriptions/effects, native requirements and
+stable milestone ordering. Existing domain calls retain their default result shapes;
+scoped HTTP reads opt in to the revision envelope. No write domain, journal, milestone
+schedule, migration or feature policy changes.
+
+Disposable browser verification:
+
+```sh
+TEST_DATABASE_URL=postgres://rdnovotni@127.0.0.1:55439/realms_test node --import tsx scripts/advancement-preview.ts
+# Optional: PLAYTEST_ADVANCEMENT_STATE=blocked or empty
+```
+
+This loopback-only preview uses port 3002 and the example account/password documented
+above. It creates its own test schema; XP is earned through the existing encounter
+journal and native levels through the existing action domain. It never edits production
+runs or grants UI-only eligibility. Stop gracefully to remove its schema.
+
+Run typecheck/build, client tests and advancement/build/subclass/feat/proficiency tests.
+Coverage includes legal commits, native multiclass gates, missing prerequisites and
+proficiencies, unavailable milestones, active instances, stale/concurrent requests,
+replay, ownership, undiscovered content, read-only sessions, late reads and new runs.
+Rollback is a source/build rollback; the scoped projections are additive and no data
+migration requires reversal.

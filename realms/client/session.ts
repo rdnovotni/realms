@@ -1,3 +1,5 @@
+import { canChooseAdvancement,advancementSuccess } from './advancement-model.js';
+import type { Advancement,AdvancementChoice,AdvancementClass,AdvancementScope,SubclassCatalog,FeatCatalog,FeatFilter } from './types.js';
 import { inventorySuccess } from './inventory-usability.js';
 import { defaultTileSettings,validTileSettings,type TileSettings } from './item-tiles.js';
 import { ApiClient,ApiError,errorMessage } from './api.js';
@@ -45,6 +47,34 @@ export class GameSession {
   catch(error){if(epoch===this.epoch&&generation===this.previewGeneration){this.equipmentPreview=null;this.equipmentPreviewError=errorMessage(error);}}
   finally{if(epoch===this.epoch&&generation===this.previewGeneration){this.equipmentPreviewBusy=false;this.notify();}}
  }
+ advancement:Advancement|null=null;
+ advancementBusy=false;
+ advancementError:string|null=null;
+ advancementNeedsRefresh=false;
+ advancementSearch='';
+ advancementFilter:FeatFilter='ALL';
+ advancementFeatId:string|null=null;
+ advancementMilestone:number|null=null;
+ private advancementWanted=false;
+ private advancementGeneration=0;
+ setAdvancementBrowser(patch:Partial<Pick<GameSession,'advancementSearch'|'advancementFilter'|'advancementFeatId'|'advancementMilestone'>>){Object.assign(this,patch);this.notify();}
+ async loadAdvancement(){
+  const snapshot=this.snapshot;if(!snapshot||this.advancementBusy)return;
+  this.advancementWanted=true;this.advancementBusy=true;this.advancementError=null;this.advancementNeedsRefresh=false;const generation=++this.advancementGeneration,epoch=this.epoch,runId=snapshot.game.run.runId,revision=snapshot.game.run.revision;this.notify();
+  try {
+   const [options,subclasses,feats]=await Promise.all([this.api.request<BuildOptions&AdvancementScope&{classes:AdvancementClass[]}>('/api/v1/progression/options?advancement=true'),this.api.request<SubclassCatalog>('/api/v1/progression/subclasses'),this.api.request<FeatCatalog>('/api/v1/progression/feats')]);
+   if(epoch!==this.epoch||generation!==this.advancementGeneration||this.snapshot?.game.run.runId!==runId||this.snapshot.game.run.revision!==revision)return;
+   if([options,subclasses,feats].some(v=>v.runId!==runId||v.revision!==revision)||options.activeInstance!==subclasses.activeInstance||options.activeInstance!==feats.activeInstance)throw new ApiError(409,'STALE_REVISION');
+   this.advancement={runId,revision,activeInstance:options.activeInstance,classes:options.classes,subclasses,feats};
+  }catch(error){if(epoch===this.epoch&&generation===this.advancementGeneration){this.advancement=null;this.advancementError=errorMessage(error);this.advancementNeedsRefresh=error instanceof ApiError&&error.status===409;if(error instanceof ApiError&&error.status===401)this.handleError(error);}}
+  finally{if(epoch===this.epoch&&generation===this.advancementGeneration){this.advancementBusy=false;this.notify();}}
+ }
+ async chooseAdvancement(choice:AdvancementChoice){
+  if(this.busy||this.pending||this.needsRefresh||!this.snapshot?.game.canWrite||this.advancementBusy||choice.runId!==this.snapshot.game.run.runId||choice.revision!==this.snapshot.game.run.revision||!canChooseAdvancement(this.advancement,choice))return;
+  const path=choice.kind==='CLASS'?'level':choice.kind==='SUBCLASS'?'subclasses':'feats',type=choice.kind==='CLASS'?'LEVEL_UP':choice.kind==='SUBCLASS'?'CHOOSE_SUBCLASS':'CHOOSE_FEAT',body=choice.kind==='CLASS'?{classId:choice.id}:choice.kind==='SUBCLASS'?{subclassId:choice.id}:{featId:choice.id,milestone:choice.milestone};
+  await this.action('/api/v1/progression/'+path,type,body);
+ }
+ private clearAdvancement(newRun=false){this.advancement=null;this.advancementBusy=false;this.advancementError=null;this.advancementNeedsRefresh=false;this.advancementGeneration++;if(newRun){this.advancementSearch='';this.advancementFilter='ALL';this.advancementFeatId=null;this.advancementMilestone=null;}}
  characterSection:'overview'|'progression'='overview';
  setCharacterSection(section:'overview'|'progression'){this.characterSection=section;this.notify();}
  inventoryFiltersOpen=false;
@@ -90,21 +120,21 @@ export class GameSession {
   if(this.busy)return;this.inventorySelection.clear();this.inventorySelectionAnchor=null;this.inventoryLayout='STANDARD';this.inventoryEquipmentOpen=false;this.inventoryLoadoutsOpen=false;this.inventoryStatsOpen=false;this.tileSettings={...defaultTileSettings};this.equipmentDraft=null;this.equipmentPreview=null;this.equipmentContext=undefined;this.previewGeneration++;this.inventory=null;this.inventoryBusy=false;this.inventoryError=null;this.inventoryHistory=null;this.historyGeneration++;this.inventoryHistoryBusy=false;this.selectedInventoryItem=null;this.selectedInventoryGrouped=false;this.inventoryWanted=false;this.inventoryQuery={sort:'NAME',direction:'ASC',grouped:true,offset:0};this.inventoryGeneration++;this.busy=true;const epoch=++this.epoch;this.notify();
   try{let token=credentials.token;if(this.config?.authMode==='sessions'){const result=await this.api.request<{token:string}>('/api/v1/auth/login',{handle:credentials.handle,password:credentials.password,deviceLabel:'Follybound browser'},false);token=result.token;}
    if(epoch!==this.epoch)return;if(!token)throw new ApiError(401,'UNAUTHORIZED');this.api.setToken(token);await this.load(epoch);this.notice={text:'Connected. Your progress is saved by the server.',kind:'success'};
-  }catch(error){if(epoch===this.epoch){this.api.setToken('');this.snapshot=null;this.notice={text:errorMessage(error),kind:'error'};}}
+  }catch(error){if(epoch===this.epoch){this.clearAdvancement(true);this.advancementWanted=false;this.api.setToken('');this.snapshot=null;this.notice={text:errorMessage(error),kind:'error'};}}
   finally{if(epoch===this.epoch){this.busy=false;this.notify();}}
  }
- private async load(epoch:number){
-  this.ascension=null;this.inventory=null;this.inventoryError=null;
+ private async load(epoch:number,refreshAdvancement=this.advancementWanted){
+  this.ascension=null;this.inventory=null;this.inventoryError=null;this.clearAdvancement();
   const game=await this.api.request<GameView>('/api/v1/client/state');if(game.protocolVersion!==1)throw new ApiError(503,'UNSUPPORTED_CLIENT');
   const [progression,options]=await Promise.all([this.api.request<Progression>('/api/v1/progression'),this.api.request<BuildOptions>('/api/v1/progression/options')]);
   const id=game.activeEncounter?.kind==='TACTICAL'?game.activeEncounter.id:!game.activeEncounter?game.latestEncounter?.id:null;
   const battle=id?await this.api.request<Tactical>(`/api/v1/tactical/${id}`):null;
   // These independent projections may cross another window's action. Refuse a
   // mixed revision and let the player explicitly refresh, never write from it.
-  if(progression.revision!==game.run.revision||(battle&&battle.revision!==game.run.revision))throw new ApiError(409,'STALE_REVISION');
-  if(epoch===this.epoch){if(this.snapshot?.game.run.runId!==game.run.runId){this.equipmentContext=undefined;this.inventorySearchDraft=null;this.characterSection='overview';}this.equipmentPreviewError=null;this.snapshot={game,progression,options,battle};this.needsRefresh=false;
+  if(progression.revision!==game.run.revision||(options.revision!==undefined&&options.revision!==game.run.revision)||(options.runId!==undefined&&options.runId!==game.run.runId)||(battle&&battle.revision!==game.run.revision))throw new ApiError(409,'STALE_REVISION');
+  if(epoch===this.epoch){if(this.snapshot?.game.run.runId!==game.run.runId){this.equipmentContext=undefined;this.inventorySearchDraft=null;this.characterSection='overview';this.clearAdvancement(true);}this.equipmentPreviewError=null;this.snapshot={game,progression,options,battle};this.needsRefresh=false;
    if(this.equipmentDraft&&(this.equipmentDraft.runId!==game.run.runId||game.equipment&&equipmentKey(this.equipmentDraft.plan)===equipmentKey(game.equipment)))this.equipmentDraft=null;
-   this.equipmentPreview=null;this.previewGeneration++;this.equipmentPreviewBusy=false;if(this.inventoryWanted)await this.browseInventory(this.inventoryQuery);}
+   this.equipmentPreview=null;this.previewGeneration++;this.equipmentPreviewBusy=false;if(this.inventoryWanted)await this.browseInventory(this.inventoryQuery);if(refreshAdvancement&&this.advancementWanted&&this.snapshot?.progression.build.mode==='CONFIGURED')await this.loadAdvancement();}
  }
  selectInventory(item:InventoryItem|null){if(item?.id!==this.selectedInventoryItem?.id)this.inventoryAutomationOpen=false;this.equippedInspectionGeneration++;this.inventoryHistory=null;this.inventoryHistoryBusy=false;this.historyGeneration++;this.selectedInventoryItem=item?structuredClone(item):null;this.selectedInventoryGrouped=!!item&&!!this.inventoryQuery.grouped&&item.copies>1;this.selectedInventoryQuery=JSON.stringify(this.inventoryQuery);this.selectedInventoryRevision=this.snapshot?.game.run.revision??-1;this.notify();}
  private equippedInspectionGeneration=0;
@@ -177,17 +207,17 @@ export class GameSession {
  async retry(){if(!this.busy&&this.pending)await this.submit();}
  private async submit(){
   const pending=this.pending;if(!pending)return;const epoch=this.epoch;this.busy=true;this.notify();
-  try{const owned=[...(this.inventory?.items??[]),...(this.selectedInventoryItem?[this.selectedInventoryItem]:[])];const result=await this.api.request<Record<string,unknown>>(pending.path,pending.body);if(epoch!==this.epoch)return;this.pending=null;this.notice={text:inventorySuccess(String(pending.body.actionType),pending.body,result??{},owned),kind:'success'};await this.load(epoch);}
+  try{const owned=[...(this.inventory?.items??[]),...(this.selectedInventoryItem?[this.selectedInventoryItem]:[])];const result=await this.api.request<Record<string,unknown>>(pending.path,pending.body);if(epoch!==this.epoch)return;this.pending=null;this.notice={text:advancementSuccess(String(pending.body.actionType),pending.body,result??{},this.advancement)??inventorySuccess(String(pending.body.actionType),pending.body,result??{},owned),kind:'success'};await this.load(epoch,['LEVEL_UP','CHOOSE_SUBCLASS','CHOOSE_FEAT'].includes(String(pending.body.actionType)));}
   catch(error){if(epoch!==this.epoch)return;if(!this.pending){this.needsRefresh=true;this.notice={text:'Your action was saved, but the latest view could not be loaded. Refresh to reconnect.',kind:'error'};return;}if(!(error instanceof ApiError)||!error.ambiguous)this.pending=null;this.handleError(error);if(error instanceof ApiError&&error.ambiguous&&this.pending)this.notice.text+=' The action may have completed. Retry the same action to confirm.';if(error instanceof ApiError&&error.status===409){try{await this.load(epoch);}catch{/* Keep the stale snapshot disabled until an explicit refresh succeeds. */this.snapshot=null;}}}
   finally{if(epoch===this.epoch){this.busy=false;this.notify();}}
  }
- private handleError(error:unknown){this.notice={text:errorMessage(error),kind:'error'};if(error instanceof ApiError&&error.status===401){this.inventorySelection.clear();this.inventorySelectionAnchor=null;this.inventoryLayout='STANDARD';this.inventoryEquipmentOpen=false;this.inventoryLoadoutsOpen=false;this.inventoryStatsOpen=false;this.tileSettings={...defaultTileSettings};this.equipmentDraft=null;this.equipmentPreview=null;this.equipmentContext=undefined;this.previewGeneration++;this.equipmentPreviewBusy=false;this.api.setToken('');this.snapshot=null;this.pending=null;this.inventory=null;this.inventoryHistory=null;this.historyGeneration++;this.inventoryHistoryBusy=false;this.selectedInventoryItem=null;this.selectedInventoryGrouped=false;this.inventoryWanted=false;this.inventoryBusy=false;this.inventoryGeneration++;}}
+ private handleError(error:unknown){this.notice={text:errorMessage(error),kind:'error'};if(error instanceof ApiError&&error.status===401){this.inventorySelection.clear();this.inventorySelectionAnchor=null;this.inventoryLayout='STANDARD';this.inventoryEquipmentOpen=false;this.inventoryLoadoutsOpen=false;this.inventoryStatsOpen=false;this.tileSettings={...defaultTileSettings};this.equipmentDraft=null;this.equipmentPreview=null;this.equipmentContext=undefined;this.previewGeneration++;this.equipmentPreviewBusy=false;this.clearAdvancement(true);this.advancementWanted=false;this.api.setToken('');this.snapshot=null;this.pending=null;this.inventory=null;this.inventoryHistory=null;this.historyGeneration++;this.inventoryHistoryBusy=false;this.selectedInventoryItem=null;this.selectedInventoryGrouped=false;this.inventoryWanted=false;this.inventoryBusy=false;this.inventoryGeneration++;}}
  async logout(){
   if(this.busy||this.pending)return;this.busy=true;this.notify();
   let confirmed=true;
   try{if(this.config?.authMode==='sessions')await this.api.request('/api/v1/auth/logout',{});}
   catch{confirmed=false;}
   // Forget local account data even if revocation succeeded but its reply was lost.
-  ++this.epoch;this.inventorySelection.clear();this.inventorySelectionAnchor=null;this.inventoryLayout='STANDARD';this.inventoryEquipmentOpen=false;this.inventoryLoadoutsOpen=false;this.inventoryStatsOpen=false;this.tileSettings={...defaultTileSettings};this.equipmentDraft=null;this.equipmentPreview=null;this.equipmentContext=undefined;this.previewGeneration++;this.equipmentPreviewBusy=false;this.api.setToken('');this.snapshot=null;this.ascension=null;this.pending=null;this.inventory=null;this.selectedInventoryItem=null;this.selectedInventoryGrouped=false;this.inventoryHistory=null;this.inventoryWanted=false;this.inventoryBusy=false;this.inventoryHistoryBusy=false;this.inventoryError=null;this.inventoryGeneration++;this.historyGeneration++;this.inventoryQuery={sort:'NAME',direction:'ASC',grouped:true,offset:0};this.inventorySearchDraft=null;this.characterSection='overview';this.needsRefresh=false;this.busy=false;this.notice={text:confirmed?'Signed out. Your game is saved; sign in to resume.':'Signed out on this device. Server session revocation could not be confirmed.',kind:'info'};this.notify();
+  ++this.epoch;this.inventorySelection.clear();this.inventorySelectionAnchor=null;this.inventoryLayout='STANDARD';this.inventoryEquipmentOpen=false;this.inventoryLoadoutsOpen=false;this.inventoryStatsOpen=false;this.tileSettings={...defaultTileSettings};this.equipmentDraft=null;this.equipmentPreview=null;this.equipmentContext=undefined;this.previewGeneration++;this.equipmentPreviewBusy=false;this.clearAdvancement(true);this.advancementWanted=false;this.api.setToken('');this.snapshot=null;this.ascension=null;this.pending=null;this.inventory=null;this.selectedInventoryItem=null;this.selectedInventoryGrouped=false;this.inventoryHistory=null;this.inventoryWanted=false;this.inventoryBusy=false;this.inventoryHistoryBusy=false;this.inventoryError=null;this.inventoryGeneration++;this.historyGeneration++;this.inventoryQuery={sort:'NAME',direction:'ASC',grouped:true,offset:0};this.inventorySearchDraft=null;this.characterSection='overview';this.needsRefresh=false;this.busy=false;this.notice={text:confirmed?'Signed out. Your game is saved; sign in to resume.':'Signed out on this device. Server session revocation could not be confirmed.',kind:'info'};this.notify();
  }
 }
