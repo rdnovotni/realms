@@ -1,3 +1,5 @@
+import { renderShellHeader,renderShellNotice } from './shell.js';
+import { shellChapter,shellRenderedScreen } from './shell-model.js';
 import { renderCharacter } from './character.js';
 import { renderInventory } from './inventory.js';
 import { renderLanding } from './landing.js';
@@ -13,26 +15,26 @@ function heading(text:string){const h=el('h1',text);h.tabIndex=-1;return h;}
 function section(title:string){return add(el('section','','panel'),el('h2',title));}
 function field(text:string,name:string,type='text'){const l=el('label',text),input=el('input');input.name=name;input.type=type;input.required=true;input.autocomplete=name==='token'?'off':type==='password'?'current-password':name==='handle'?'username':'off';l.append(input);return {label:l,input};}
 export function render(root:HTMLElement,session:GameSession,screen:Screen,navigate:(screen:Screen)=>void,onCommand:(command:Command)=>void){
- root.classList.toggle('public-shell',!session.snapshot);
+ root.classList.toggle('public-shell',!session.snapshot);root.classList.toggle('game-shell',!!session.snapshot);
  const selection=document.activeElement instanceof HTMLInputElement?{start:document.activeElement.selectionStart,end:document.activeElement.selectionEnd}:null;
  const previousFocus=document.activeElement instanceof HTMLElement?document.activeElement.dataset.focus:null;
  if(previousFocus)retainedFocus=previousFocus;
- const fragment=document.createDocumentFragment(),top=el('header','','topbar');add(top,add(el('div','','wordmark'),el('span','FOLLYBOUND'),el('small','A world worth wandering')));
+ const renderedScreen=shellRenderedScreen(screen,!!session.snapshot?.battle);
+ const fragment=document.createDocumentFragment();fragment.append(renderShellHeader(session,renderedScreen,navigate),renderShellNotice(session));
  const disabled=session.busy||!!session.pending||session.needsRefresh||!session.snapshot?.game.canWrite;
- if(session.snapshot){const nav=el('nav');nav.setAttribute('aria-label','Game');for(const [key,title] of [['adventure','Adventure'],['character','Character'],['pack','Pack']] as const){const b=button(title,()=>navigate(key));b.setAttribute('aria-current',screen===key?'page':'false');nav.append(b);}add(top,nav,el('span',session.snapshot.game.canWrite?'Connected · Saved on server':'Viewing only','connection'),add(el('div','','tools'),button('Refresh',()=>void session.refresh(),session.busy,'small'),button('Sign out',()=>void session.logout(),session.busy||!!session.pending,'small')));}
- fragment.append(top);
- const notice=el('div','',`notice ${session.notice.kind}`);notice.setAttribute('role',session.notice.kind==='error'?'alert':'status');add(notice,el('span',session.busy?'Connecting to your saved game…':session.notice.text),session.pending&&!session.busy?button('Retry same action',()=>void session.retry(),session.busy,'small'):null);fragment.append(notice);
  const snapshot=session.snapshot;
  if(!snapshot){fragment.append(renderLanding(session));
  }else{
   const layout=el('div','',screen==='pack'||screen==='character'?'layout inventory-layout':'layout'),left=el('aside','','left-column'),character=section('The wayfarer');character.classList.add('character');character.prepend(el('div','✧','portrait'));add(character,el('small',snapshot.progression.build.mode==='CONFIGURED'?snapshot.progression.build.classes?.map(c=>`${snapshot.options.classes.find(option=>option.classId===c.classId)?.name??label(c.classId)} ${c.nativeLevel}`).join(' · ')??'Adventurer':'Choose your calling'),add(el('div','','stats'),stat('Level',String(snapshot.progression.level)),stat('Turns',String(snapshot.game.run.turns)),stat('XP',snapshot.progression.xp)),el('div','','rule'),el('p',snapshot.game.run.status==='AFTERCORE'?'Aftercore · A new chapter':'A life still being written','build-list muted'));left.append(character);
   const help=section('Your next step');add(help,el('p',snapshot.progression.build.mode!=='CONFIGURED'?'Choose a class and starting attributes to shape this life.':snapshot.game.activeEncounter?'Your encounter is saved. Continue from the current turn.':snapshot.progression.readiness?.pendingLevels?'You have earned a level. Choose how your character grows.':'Choose a known adventure. Each entry costs one Turn.','help'),button(snapshot.progression.build.mode!=='CONFIGURED'?'Create your build':'View character',()=>navigate('character'),false,'small'));left.append(help);
-  const main=el('main');main.id='main';main.setAttribute('aria-busy',String(session.busy));
+  left.setAttribute('aria-label','Character summary');
+  const main=el('main','','folio-page');main.id='main';main.setAttribute('aria-busy',String(session.busy));
   if(screen==='character')renderCharacter(main,snapshot,session,disabled,()=>navigate('pack'));
   else if(screen==='pack')renderPack(main,snapshot,session,disabled);
   else if(screen==='combat'&&snapshot.battle)renderCombat(main,snapshot,disabled,onCommand,navigate);
   else renderAdventure(main,snapshot,session,disabled,navigate);
-  const right=el('aside','','right-column'),journal=section('Journey journal');add(journal,el('p','The moments that shape this life.','muted help'));
+  main.prepend(el('p',shellChapter(renderedScreen),'shell-page-label'));
+  const right=el('aside','','right-column');right.setAttribute('aria-label','Journey notes');const journal=section('Journey journal');add(journal,el('p','The moments that shape this life.','muted help'));
   if(snapshot.game.latestEncounter)add(journal,add(el('div','','journal-entry'),el('strong',snapshot.game.latestEncounter.name),el('p',label(snapshot.game.latestEncounter.outcome)),button('View encounter',()=>navigate('combat'),false,'link')));
   else journal.append(el('p','Your first adventure is still ahead.','help'));
   if(snapshot.game.activeEncounter)add(journal,add(el('div','','journal-entry'),el('strong','Encounter in progress'),el('p','Reconnect resumes the same fight.')));

@@ -1,3 +1,4 @@
+import { shellChapter,shellNavigationPage,shellNoticeLabel,shellRenderedScreen } from '../client/shell-model.js';
 import { itemStatuses,groupedInspectionFacts } from '../client/item-tiles.js';
 import { itemArtKey } from '../client/item-art.js';
 import { equipmentDrag,removeEquipmentAssignment } from '../client/equipment-drag.js';
@@ -21,6 +22,7 @@ test('public preview marks account access unavailable and serves only approved s
   const config=await app.inject({url:'/api/v1/client/config'});assert.deepEqual(config.json(),{protocolVersion:1,authMode:'sessions',previewOnly:true});assert.ok(!config.body.includes('must-never-be-public'));
   const art=await app.inject({url:'/assets/realms-tavern.webp'});assert.equal(art.statusCode,200);assert.match(art.headers['content-type']!,/^image\/webp/);assert.equal(art.rawPayload.subarray(0,4).toString(),'RIFF');assert.match(art.headers['content-security-policy']!,/img-src 'self'/);assert.equal(art.headers['cache-control'],'no-store');
   const css=await app.inject({url:'/assets/welcome.css'});assert.equal(css.statusCode,200);assert.match(css.headers['content-type']!,/^text\/css/);
+  const shellStyle=await app.inject({url:'/assets/shell.css'});assert.equal(shellStyle.statusCode,200);assert.match(shellStyle.headers['content-type']!,/^text\/css/);assert.match(shellStyle.body,/\.game-shell/);
   const theme=await app.inject({url:'/assets/folio.css'});assert.equal(theme.statusCode,200);assert.match(theme.headers['content-type']!,/^text\/css/);assert.match(theme.body,/--folio-parchment:/);assert.match(theme.headers['content-security-policy']!,/style-src 'self'/);
   const grain=await app.inject({url:'/assets/folio-grain.svg'});assert.equal(grain.statusCode,200);assert.match(grain.headers['content-type']!,/^image\/svg\+xml/);assert.ok(grain.rawPayload.length<1024);assert.doesNotMatch(grain.body,/<script|https?:\/\/(?!www.w3.org)/);
   const shell=await app.inject({url:'/'});assert.match(shell.body,/href="\/assets\/folio.css"/);
@@ -418,3 +420,6 @@ test('Character sections and committed reads refresh on reconnect; new runs clea
 test('a vanished Character statistics context can be retried against the available catalog',async()=>{
  const h=harness();await connect(h);let fail=true;h.setBookRead(async()=>fail?json({error:'STAT_CONTEXT_NOT_FOUND'},404):json({runId:'run',revision:0,contexts:[],current:null,preview:null,reason:'No context'}));await h.session.loadCharacterStats('encounter.old');assert.equal(h.session.characterStatsContext,undefined);assert.match(h.session.characterStatsError!,/Retry statistics/);fail=false;await h.session.loadCharacterStats();assert.equal(new URL(h.calls.at(-1)!.path,'http://test').searchParams.has('contextId'),false);assert.equal(h.session.characterStats!.reason,'No context');
 });
+
+test('shell navigation keeps all public page names and places Combat under Adventure',()=>{for(const screen of ['adventure','character','pack','combat']as const)assert.equal(shellChapter(screen),({adventure:'Adventure',character:'Character',pack:'Pack',combat:'Combat'})[screen]);assert.equal(shellNavigationPage('combat'),'adventure');assert.equal(shellNavigationPage('character'),'character');assert.equal(shellNavigationPage('pack'),'pack');for(const screen of ['adventure','character','pack']as const)for(const hasBattle of [true,false])assert.equal(shellRenderedScreen(screen,hasBattle),screen);assert.equal(shellChapter(shellRenderedScreen('combat',false)),'Adventure');assert.equal(shellChapter(shellRenderedScreen('combat',true)),'Combat');});
+test('shell feedback identifies states without changing action messages',()=>{assert.equal(shellNoticeLabel('error',false),'Error');assert.equal(shellNoticeLabel('success',false),'Success');assert.equal(shellNoticeLabel('warning',false),'Warning');assert.equal(shellNoticeLabel('info',false),'Information');assert.equal(shellNoticeLabel('info',true),'Connecting');});

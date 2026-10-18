@@ -1,0 +1,98 @@
+/* VIS-02: authenticated framing. Screen grids, scrolling and action logic stay owned
+ * by their existing components. All paint comes from the VIS-01 Folio contract. */
+.game-shell {
+  min-height: 100dvh;
+  background-color: var(--folio-page);
+  background-image: var(--folio-paper-texture), linear-gradient(90deg,var(--folio-page-edge),transparent 12%,transparent 88%,var(--folio-page-edge)), radial-gradient(ellipse at 50% 0%,var(--folio-page-glow),transparent 75%);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.game-shell>.topbar { display: block; padding: 0; border-bottom: 3px double var(--folio-brass); box-shadow: 0 3px 12px var(--folio-page-edge); }
+.shell-bar { max-width: 1660px; margin: auto; display: grid; grid-template-columns: auto minmax(0,1fr) auto; align-items: center; gap: var(--folio-space-6); padding: var(--folio-space-4) max(var(--folio-space-5),env(safe-area-inset-right)) var(--folio-space-4) max(var(--folio-space-5),env(safe-area-inset-left)); }
+.shell-brand { display: flex; align-items: center; gap: var(--folio-space-3); min-width: 0; }
+.shell-brand>.shell-icon { width: 38px; height: 38px; color: var(--folio-on-dark-muted); }
+.game-shell .wordmark { font-size: clamp(1.45rem,2.6vw,2rem); line-height: 1.1; letter-spacing: .09em; }
+.game-shell .wordmark small { font-size: .6rem; letter-spacing: .16em; margin-top: var(--folio-space-2); }
+.game-shell .topbar .shell-navigation { display: flex; justify-content: center; gap: var(--folio-space-2); flex: initial; min-width: 0; overflow: visible; }
+.game-shell .shell-navigation button { position: relative; padding: .65rem 1rem; border-radius: var(--folio-radius-sm); border: 1px solid transparent; font-weight: 600; min-height: 44px; }
+.game-shell .topbar .shell-navigation button[aria-current=page] { background: var(--folio-surface); color: var(--folio-text); border-color: var(--folio-brass); text-decoration: underline; text-underline-offset: .3em; }
+.game-shell .topbar .shell-navigation button:not([aria-current=page]):hover:enabled { color: var(--folio-on-dark); background: var(--folio-nav-hover); border-color: var(--folio-brass); }
+.shell-utility { display: grid; justify-items: end; gap: var(--folio-space-1); min-width: 0; }
+.game-shell .topbar .connection { display: block; font-size: .72rem; color: var(--folio-on-dark-muted); overflow-wrap: anywhere; }
+.game-shell .topbar .connection::before { content: ''; display: inline-block; width: 6px; height: 6px; margin-right: .5rem; border: 1px solid currentColor; transform: rotate(45deg); }
+.game-shell .topbar .shell-readonly { font-weight: 700; text-decoration: underline; text-underline-offset: .2em; }
+.game-shell .topbar .tools { display: flex; gap: var(--folio-space-2); margin: 0; }
+.game-shell .topbar .tools button { min-height: 36px; padding: .3rem .6rem; font-size: .8rem; border-color: var(--folio-stitch); }
+.game-shell>.notice { padding: var(--folio-space-3) max(var(--folio-space-5),calc((100% - 1612px)/2)); color: var(--folio-text-secondary); background: var(--folio-surface-inset); border-bottom: 1px solid var(--folio-border); gap: var(--folio-space-3); flex-wrap: wrap; }
+.game-shell>.notice .shell-icon { width: 18px; height: 18px; flex: none; }
+.shell-notice-label { font-size: .75rem; letter-spacing: .04em; }
+.game-shell>.notice>span { flex: 1 1 240px; min-width: 0; overflow-wrap: anywhere; }
+.game-shell>.notice.success { color: var(--folio-success); background: var(--folio-success-surface); }
+.game-shell>.notice.error { color: var(--folio-danger); background: var(--folio-danger-surface); border-bottom: 2px solid var(--folio-danger); }
+.game-shell>.notice.warning { color: var(--folio-warning); background: var(--folio-warning-surface); border-bottom: 2px solid var(--folio-warning); }
+.game-shell .layout { max-width: 1660px; padding: var(--folio-space-5); gap: var(--folio-space-5); align-items: start; }
+.game-shell .folio-page { min-width: 0; padding: clamp(1rem,2.2vw,2rem); background: var(--folio-surface); border: 1px solid var(--folio-border); border-radius: var(--folio-radius-sm); box-shadow: var(--folio-shadow-raised); }
+.shell-page-label { display: flex; align-items: center; gap: var(--folio-space-3); margin: 0 0 var(--folio-space-3); font-size: .7rem; font-weight: 650; letter-spacing: .14em; text-transform: uppercase; color: var(--folio-brass-ink); }
+.shell-page-label::after { content: ''; height: 1px; background: var(--folio-border); flex: 1; }
+.game-shell .folio-page>h1,.game-shell .battle-top h1 { margin-top: 0; font-size: clamp(1.9rem,3.5vw,3rem); }
+.game-shell .folio-page>.panel.hero { background: transparent; border: 0; box-shadow: none; padding: 0 0 var(--folio-space-5); min-height: 0; border-bottom: 3px double var(--folio-border); border-radius: 0; }
+.game-shell .hero::after { display: none; }
+.game-shell :is(.left-column,.right-column) { min-width: 0; }
+.game-shell :is(.left-column,.right-column)>.panel { background: var(--folio-surface-inset); padding: var(--folio-space-4); box-shadow: none; border-radius: var(--folio-radius-sm); }
+.game-shell :is(.left-column,.right-column) h2 { font-size: 1.2rem; padding-bottom: var(--folio-space-2); border-bottom: 1px solid var(--folio-border); }
+.game-shell .left-column>.character { background: var(--folio-nav); color: var(--folio-on-dark); border-color: var(--folio-brass); }
+.game-shell .character h2 { border-color: var(--folio-stitch); }
+.game-shell .character .portrait { border-radius: var(--folio-radius-sm); background: var(--folio-nav-hover); border-color: var(--folio-brass); }
+.game-shell .right-column .journal-entry { border-left-width: 1px; }
+.game-shell>.footer { max-width: 1612px; margin: var(--folio-space-5) auto 0; padding: var(--folio-space-4) var(--folio-space-5) var(--folio-space-6); text-align: center; color: var(--folio-text-secondary); border-top: 3px double var(--folio-border); }
+/* Overlay classes are shared but only mounted by authenticated workflows. */
+:root :is(.equipment-picker,.inventory-service-dialog,.inventory-comparison-dialog,.advancement-confirmation,.item-context-menu) { color: var(--folio-text); background: var(--folio-surface-raised); border: 1px solid var(--folio-border-interactive); border-top: 3px double var(--folio-brass); border-radius: var(--folio-radius-sm); box-shadow: var(--folio-shadow-dialog); max-height: calc(100dvh - 2rem - env(safe-area-inset-top) - env(safe-area-inset-bottom)); overflow-y: auto; overscroll-behavior: contain; }
+:root :is(.equipment-picker,.inventory-service-dialog,.inventory-comparison-dialog,.advancement-confirmation,.item-context-menu)::backdrop { background: var(--folio-backdrop); backdrop-filter: none; }
+:root :is(.equipment-picker,.inventory-service-dialog,.inventory-comparison-dialog,.advancement-confirmation,.item-context-menu)>:is(h2,h3):first-child { font-family: var(--folio-font-heading); color: var(--folio-text); padding-bottom: var(--folio-space-3); border-bottom: 1px solid var(--folio-border); }
+.game-shell :is(.equipment-confirmation,.inventory-confirmation,.loadout-confirmation) { background: var(--folio-warning-surface); color: var(--folio-warning); border-color: var(--folio-border-interactive); }
+.game-shell :is(summary,.inventory-pagination button,.sheet-navigation button,.inventory-storage-nav button) { min-height: 44px; }
+.game-shell :is(summary) { align-content: center; }
+.game-shell .tooltip { background: var(--folio-surface-inset); color: var(--folio-text-secondary); padding: var(--folio-space-2) var(--folio-space-3); border-left: 2px solid var(--folio-brass); }
+@media(max-width:1200px) {
+  .shell-bar { gap: var(--folio-space-4); }
+  .shell-brand>.shell-icon { display: none; }
+  .game-shell .shell-navigation button { padding-inline: .7rem; }
+}
+@media(max-width:1050px) {
+  .shell-bar { grid-template-columns: minmax(0,1fr) auto; gap: var(--folio-space-3); }
+  .game-shell .topbar .shell-navigation { grid-column: 1/-1; grid-row: 2; justify-content: start; }
+  .game-shell .shell-navigation button { min-width: 100px; }
+  .game-shell .layout { padding: var(--folio-space-4); gap: var(--folio-space-4); }
+}
+@media(max-width:680px) {
+  .shell-bar { padding: var(--folio-space-3) max(var(--folio-space-4),env(safe-area-inset-right)) var(--folio-space-2) max(var(--folio-space-4),env(safe-area-inset-left)); }
+  .game-shell .wordmark { font-size: 1.45rem; letter-spacing: .06em; }
+  .game-shell .wordmark small { font-size: .55rem; letter-spacing: .09em; }
+  .game-shell .topbar .tools { gap: var(--folio-space-1); }
+  .game-shell .topbar .tools button { min-height: 44px; font-size: .72rem; padding: .25rem .4rem; }
+  .game-shell .topbar .connection { font-size: .65rem; max-width: 120px; }
+  .game-shell .topbar .shell-navigation { justify-content: stretch; gap: var(--folio-space-2); }
+  .game-shell .shell-navigation button { flex: 1; min-width: 0; padding: .5rem; font-size: .88rem; }
+  .game-shell>.notice { padding: var(--folio-space-3) var(--folio-space-4); gap: var(--folio-space-2); font-size: .8rem; }
+  .game-shell>.notice>span { flex-basis: calc(100% - 90px); }
+  .game-shell .layout { padding: var(--folio-space-2); gap: var(--folio-space-3); }
+  .game-shell .folio-page { padding: var(--folio-space-3); width: 100%; }
+  .game-shell .inventory-layout .folio-page { padding-bottom: 76px; }
+  .game-shell .folio-page>h1 { font-size: 1.9rem; }
+  .game-shell>.footer { margin-inline: var(--folio-space-3); font-size: .7rem; }
+}
+@media(max-width:360px) {
+  .shell-bar { column-gap: var(--folio-space-2); padding-inline: var(--folio-space-3); }
+  .game-shell .wordmark { font-size: 1.25rem; }
+  .game-shell .wordmark small { font-size: .49rem; }
+}
+@media(prefers-contrast:more) {
+  .game-shell { background-image: none; }
+  .game-shell .folio-page { box-shadow: none; }
+}
+@media(forced-colors:active) {
+  .game-shell { background: Canvas; }
+  .game-shell .folio-page,.game-shell>.topbar { box-shadow: none; }
+  .shell-page-label::after { background: CanvasText; }
+  .game-shell .topbar .shell-navigation button[aria-current=page] { border: 2px solid Highlight; outline: 2px solid Highlight; box-shadow: none; }
+  :root :is(.equipment-picker,.inventory-service-dialog,.inventory-comparison-dialog,.advancement-confirmation,.item-context-menu)::backdrop { background: Canvas; opacity: .8; }
+}

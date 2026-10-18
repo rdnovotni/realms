@@ -13,7 +13,7 @@
     "src/**/*.ts",
     "test/**/*.ts",
     "client/**/*.ts",
-    "scripts/client-preview.ts", "scripts/welcome-preview.ts",
+    "scripts/client-preview.ts", "scripts/shell-preview.ts", "scripts/welcome-preview.ts",
     "scripts/advancement-preview.ts", "scripts/character-book-preview.ts"
   ]
 }

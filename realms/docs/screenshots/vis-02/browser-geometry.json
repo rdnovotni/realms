@@ -1,0 +1,392 @@
+{
+  "comparison": [
+    {
+      "dialog": 288,
+      "height": 968,
+      "internalWidth": 271,
+      "page": 305,
+      "viewport": 305,
+      "visibleWidth": 271,
+      "width": 320
+    },
+    {
+      "dialog": 343,
+      "height": 968,
+      "internalWidth": 326,
+      "page": 360,
+      "viewport": 360,
+      "visibleWidth": 326,
+      "width": 375
+    },
+    {
+      "dialog": 736,
+      "height": 968,
+      "internalWidth": 719,
+      "page": 753,
+      "viewport": 753,
+      "visibleWidth": 719,
+      "width": 768
+    },
+    {
+      "dialog": 800,
+      "height": 968,
+      "internalWidth": 783,
+      "page": 1009,
+      "viewport": 1009,
+      "visibleWidth": 783,
+      "width": 1024
+    },
+    {
+      "dialog": 800,
+      "height": 968,
+      "internalWidth": 783,
+      "page": 1425,
+      "viewport": 1425,
+      "visibleWidth": 783,
+      "width": 1440
+    },
+    {
+      "dialog": 800,
+      "height": 968,
+      "internalWidth": 783,
+      "page": 1905,
+      "viewport": 1905,
+      "visibleWidth": 783,
+      "width": 1920
+    }
+  ],
+  "pack": [
+    {
+      "controls": [
+        {
+          "h": 44,
+          "right": 100,
+          "text": "Adventure",
+          "x": 12
+        },
+        {
+          "h": 44,
+          "right": 197,
+          "text": "Character",
+          "x": 108
+        },
+        {
+          "h": 44,
+          "right": 293,
+          "text": "Pack",
+          "x": 205
+        },
+        {
+          "h": 44,
+          "right": 230,
+          "text": "Refresh",
+          "x": 174
+        },
+        {
+          "h": 44,
+          "right": 293,
+          "text": "Sign out",
+          "x": 234
+        }
+      ],
+      "equipment": "static",
+      "grid": {
+        "height": 7190,
+        "overflow": "visible",
+        "scroll": 7190
+      },
+      "page": 305,
+      "viewport": 305,
+      "width": 320
+    },
+    {
+      "controls": [
+        {
+          "h": 44,
+          "right": 120,
+          "text": "Adventure",
+          "x": 16
+        },
+        {
+          "h": 44,
+          "right": 232,
+          "text": "Character",
+          "x": 128
+        },
+        {
+          "h": 44,
+          "right": 344,
+          "text": "Pack",
+          "x": 240
+        },
+        {
+          "h": 44,
+          "right": 281,
+          "text": "Refresh",
+          "x": 225
+        },
+        {
+          "h": 44,
+          "right": 344,
+          "text": "Sign out",
+          "x": 285
+        }
+      ],
+      "equipment": "static",
+      "grid": {
+        "height": 7190,
+        "overflow": "visible",
+        "scroll": 7190
+      },
+      "page": 360,
+      "viewport": 360,
+      "width": 375
+    },
+    {
+      "controls": [
+        {
+          "h": 47.578125,
+          "right": 127,
+          "text": "Adventure",
+          "x": 24
+        },
+        {
+          "h": 47.578125,
+          "right": 235,
+          "text": "Character",
+          "x": 135
+        },
+        {
+          "h": 47.578125,
+          "right": 343,
+          "text": "Pack",
+          "x": 243
+        },
+        {
+          "h": 36,
+          "right": 651,
+          "text": "Refresh",
+          "x": 583
+        },
+        {
+          "h": 36,
+          "right": 729,
+          "text": "Sign out",
+          "x": 659
+        }
+      ],
+      "equipment": "static",
+      "grid": {
+        "height": 3716,
+        "overflow": "visible",
+        "scroll": 3716
+      },
+      "page": 753,
+      "viewport": 753,
+      "width": 768
+    },
+    {
+      "controls": [
+        {
+          "h": 47.578125,
+          "right": 127,
+          "text": "Adventure",
+          "x": 24
+        },
+        {
+          "h": 47.578125,
+          "right": 235,
+          "text": "Character",
+          "x": 135
+        },
+        {
+          "h": 47.578125,
+          "right": 343,
+          "text": "Pack",
+          "x": 243
+        },
+        {
+          "h": 36,
+          "right": 907,
+          "text": "Refresh",
+          "x": 839
+        },
+        {
+          "h": 36,
+          "right": 985,
+          "text": "Sign out",
+          "x": 915
+        }
+      ],
+      "equipment": "sticky",
+      "grid": {
+        "height": 650,
+        "overflow": "auto",
+        "scroll": 4964
+      },
+      "page": 1009,
+      "viewport": 1009,
+      "width": 1024
+    },
+    {
+      "controls": [
+        {
+          "h": 47.578125,
+          "right": 738,
+          "text": "Adventure",
+          "x": 626
+        },
+        {
+          "h": 47.578125,
+          "right": 853,
+          "text": "Character",
+          "x": 746
+        },
+        {
+          "h": 47.578125,
+          "right": 930,
+          "text": "Pack",
+          "x": 861
+        },
+        {
+          "h": 36,
+          "right": 1323,
+          "text": "Refresh",
+          "x": 1255
+        },
+        {
+          "h": 36,
+          "right": 1401,
+          "text": "Sign out",
+          "x": 1331
+        }
+      ],
+      "equipment": "sticky",
+      "grid": {
+        "height": 650,
+        "overflow": "auto",
+        "scroll": 3100
+      },
+      "page": 1425,
+      "viewport": 1425,
+      "width": 1440
+    },
+    {
+      "controls": [
+        {
+          "h": 47.578125,
+          "right": 978,
+          "text": "Adventure",
+          "x": 866
+        },
+        {
+          "h": 47.578125,
+          "right": 1093,
+          "text": "Character",
+          "x": 986
+        },
+        {
+          "h": 47.578125,
+          "right": 1170,
+          "text": "Pack",
+          "x": 1101
+        },
+        {
+          "h": 36,
+          "right": 1680,
+          "text": "Refresh",
+          "x": 1613
+        },
+        {
+          "h": 36,
+          "right": 1759,
+          "text": "Sign out",
+          "x": 1688
+        }
+      ],
+      "equipment": "sticky",
+      "grid": {
+        "height": 650,
+        "overflow": "auto",
+        "scroll": 2479
+      },
+      "page": 1905,
+      "viewport": 1905,
+      "width": 1920
+    }
+  ],
+  "pages": [
+    {
+      "page": "Adventure",
+      "scroll": 305,
+      "viewport": 305,
+      "width": 320
+    },
+    {
+      "page": "Adventure",
+      "scroll": 360,
+      "viewport": 360,
+      "width": 375
+    },
+    {
+      "page": "Adventure",
+      "scroll": 753,
+      "viewport": 753,
+      "width": 768
+    },
+    {
+      "page": "Adventure",
+      "scroll": 1009,
+      "viewport": 1009,
+      "width": 1024
+    },
+    {
+      "page": "Adventure",
+      "scroll": 1440,
+      "viewport": 1440,
+      "width": 1440
+    },
+    {
+      "page": "Adventure",
+      "scroll": 1920,
+      "viewport": 1920,
+      "width": 1920
+    },
+    {
+      "page": "Character",
+      "scroll": 305,
+      "viewport": 305,
+      "width": 320
+    },
+    {
+      "page": "Character",
+      "scroll": 360,
+      "viewport": 360,
+      "width": 375
+    },
+    {
+      "page": "Character",
+      "scroll": 753,
+      "viewport": 753,
+      "width": 768
+    },
+    {
+      "page": "Character",
+      "scroll": 1009,
+      "viewport": 1009,
+      "width": 1024
+    },
+    {
+      "page": "Character",
+      "scroll": 1425,
+      "viewport": 1425,
+      "width": 1440
+    },
+    {
+      "page": "Character",
+      "scroll": 1905,
+      "viewport": 1905,
+      "width": 1920
+    }
+  ]
+}

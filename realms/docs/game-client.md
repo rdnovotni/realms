@@ -1,5 +1,7 @@
 # Game client foundation
 
+Shared authenticated styling and the populated shell fixture: [application shell](application-shell.md).
+
 Current inventory UI and optional carrying policy: [inventory grid, storage and measurements](inventory-grid.md).
 
 [Documentation map](README.md) · [Current status](implementation-status.md) · [Migration map](migration-guide.md)

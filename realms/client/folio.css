@@ -40,6 +40,9 @@
   --folio-focus: #725020;
   --folio-focus-halo: #fff9eb;
   --folio-backdrop: #241b17b3;
+  --folio-page-edge: #30241d12;
+  --folio-page-glow: #fff9eb66;
+  --folio-stitch: #f7efdc33;
   --folio-shadow: 0 2px 8px #30241d0d, inset 0 1px 0 #fff9eb99;
   --folio-shadow-raised: 0 6px 22px #30241d20;
   --folio-shadow-dialog: 0 16px 48px #30241d40;
@@ -113,7 +116,7 @@ summary { cursor: pointer; }
 .folio-panel,.panel { background: var(--folio-surface); border: 1px solid var(--folio-border); border-radius: var(--folio-radius-panel); box-shadow: var(--folio-shadow); }
 .folio-card { background: var(--folio-surface-raised); border: 1px solid var(--folio-border); border-radius: var(--folio-radius); padding: var(--folio-space-4); }
 .folio-inset { background: var(--folio-surface-inset); border: 1px solid var(--folio-border); padding: var(--folio-space-3); border-radius: var(--folio-radius-sm); }
-.folio-leather,.character,.topbar,.item-context-menu { background: var(--folio-nav); color: var(--folio-on-dark); border-color: var(--folio-brass); }
+.folio-leather,.character,.topbar { background: var(--folio-nav); color: var(--folio-on-dark); border-color: var(--folio-brass); }
 .folio-leather :is(small,.muted),.character :is(small,.muted) { color: var(--folio-on-dark-muted); }
 .topbar .wordmark small,.topbar .connection { color: var(--folio-on-dark-muted); }
 .topbar button { color: var(--folio-on-dark); background: transparent; border-color: transparent; }
@@ -135,9 +138,6 @@ summary { cursor: pointer; }
 .folio-selected { border-color: var(--folio-action); background: var(--folio-selected); outline: 2px solid var(--folio-action); outline-offset: 1px; }
 .folio-locked,.folio-unavailable { border-style: dashed; }
 .folio-icon { width: 1.25em; height: 1.25em; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; flex: none; vertical-align: -.2em; }
-/* Shared overlays; only visual treatment, never dialog behavior or geometry. */
-:is(.equipment-picker,.inventory-service-dialog,.inventory-comparison-dialog,.advancement-confirmation) { background: var(--folio-surface-raised); color: var(--folio-text); border: 1px solid var(--folio-border-interactive); border-radius: var(--folio-radius-panel); box-shadow: var(--folio-shadow-dialog); }
-dialog::backdrop { background: var(--folio-backdrop); }
 @media (prefers-reduced-motion: reduce) { :root { --folio-duration: 0ms; } *,*::before,*::after { scroll-behavior: auto!important; animation: none!important; transition: none!important; } :root .inventory-tile:hover { transform: none; } :root .item-illustration { filter: none; } }
 @media (prefers-contrast: more) { :root { --folio-text-muted: var(--folio-ink); --folio-border: var(--folio-border-interactive); --folio-paper-texture: none; --folio-shadow: none; } }
 @media (forced-colors: active) {
