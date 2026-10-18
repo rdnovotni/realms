@@ -20,6 +20,7 @@ Additional states: [comparison dialog](after-comparison.jpg), [Combat](after-com
 - All **197 unit tests** passed.
 - **22 integration tests** passed across client integration, inventory browser, Character Book, advancement and growth. They include read-only and account isolation, discovery restrictions, stale/replayed actions, legal advancement and equipment/state persistence.
 - Style check: **75 tokens**, **53 semantic contrast pairs**, minimum normal text **4.79:1**. CSS structure and local-asset checks passed.
+- The production-image stylesheet regression reproduced missing `folio.css`/`shell.css`, then passed after adding them to the image copy list.
 - Documentation links/API coverage and feature-registry checks passed.
 - Browser console reported no warnings/errors after the complete scenario.
 
