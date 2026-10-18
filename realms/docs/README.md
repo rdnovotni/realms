@@ -26,6 +26,7 @@ Current product name: **Follybound**. [Implementation status](implementation-sta
 - [Game client foundation](game-client.md)
 - [The Adventurer's Folio visual design system](adventurers-folio.md)
 - [Authenticated application shell and browser fixture](application-shell.md)
+- [Illustrated Character folio and visual fixture](character-folio.md)
 - [Privacy notice: evidence and launch decisions](privacy-policy.md)
 - [Public monetization policy](monetization-policy.md)
 

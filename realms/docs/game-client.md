@@ -1,5 +1,7 @@
 # Game client foundation
 
+Character presentation and visual playtests: [illustrated Character folio](character-folio.md).
+
 Shared authenticated styling and the populated shell fixture: [application shell](application-shell.md).
 
 Current inventory UI and optional carrying policy: [inventory grid, storage and measurements](inventory-grid.md).

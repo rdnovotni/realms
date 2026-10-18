@@ -1,3 +1,4 @@
+import { knownSpecializations,abilityCostText } from '../client/character-presentation-model.js';
 import { shellChapter,shellNavigationPage,shellNoticeLabel,shellRenderedScreen } from '../client/shell-model.js';
 import { itemStatuses,groupedInspectionFacts } from '../client/item-tiles.js';
 import { itemArtKey } from '../client/item-art.js';
@@ -22,6 +23,7 @@ test('public preview marks account access unavailable and serves only approved s
   const config=await app.inject({url:'/api/v1/client/config'});assert.deepEqual(config.json(),{protocolVersion:1,authMode:'sessions',previewOnly:true});assert.ok(!config.body.includes('must-never-be-public'));
   const art=await app.inject({url:'/assets/realms-tavern.webp'});assert.equal(art.statusCode,200);assert.match(art.headers['content-type']!,/^image\/webp/);assert.equal(art.rawPayload.subarray(0,4).toString(),'RIFF');assert.match(art.headers['content-security-policy']!,/img-src 'self'/);assert.equal(art.headers['cache-control'],'no-store');
   const css=await app.inject({url:'/assets/welcome.css'});assert.equal(css.statusCode,200);assert.match(css.headers['content-type']!,/^text\/css/);
+  const characterStyle=await app.inject({url:'/assets/character-folio.css'});assert.equal(characterStyle.statusCode,200);assert.match(characterStyle.body,/\.character-sheet/);
   const shellStyle=await app.inject({url:'/assets/shell.css'});assert.equal(shellStyle.statusCode,200);assert.match(shellStyle.headers['content-type']!,/^text\/css/);assert.match(shellStyle.body,/\.game-shell/);
   const theme=await app.inject({url:'/assets/folio.css'});assert.equal(theme.statusCode,200);assert.match(theme.headers['content-type']!,/^text\/css/);assert.match(theme.body,/--folio-parchment:/);assert.match(theme.headers['content-security-policy']!,/style-src 'self'/);
   const grain=await app.inject({url:'/assets/folio-grain.svg'});assert.equal(grain.statusCode,200);assert.match(grain.headers['content-type']!,/^image\/svg\+xml/);assert.ok(grain.rawPayload.length<1024);assert.doesNotMatch(grain.body,/<script|https?:\/\/(?!www.w3.org)/);
@@ -440,3 +442,14 @@ test('Character presentation preferences survive a tab session without storing g
 
 test('shell navigation keeps all public page names and places Combat under Adventure',()=>{for(const screen of ['adventure','character','pack','combat']as const)assert.equal(shellChapter(screen),({adventure:'Adventure',character:'Character',pack:'Pack',combat:'Combat'})[screen]);assert.equal(shellNavigationPage('combat'),'adventure');assert.equal(shellNavigationPage('character'),'character');assert.equal(shellNavigationPage('pack'),'pack');for(const screen of ['adventure','character','pack']as const)for(const hasBattle of [true,false])assert.equal(shellRenderedScreen(screen,hasBattle),screen);assert.equal(shellChapter(shellRenderedScreen('combat',false)),'Adventure');assert.equal(shellChapter(shellRenderedScreen('combat',true)),'Combat');});
 test('shell feedback identifies states without changing action messages',()=>{assert.equal(shellNoticeLabel('error',false),'Error');assert.equal(shellNoticeLabel('success',false),'Success');assert.equal(shellNoticeLabel('warning',false),'Warning');assert.equal(shellNoticeLabel('info',false),'Information');assert.equal(shellNoticeLabel('info',true),'Connecting');});
+
+
+test('Character folio specialization labels require the current owned build and revision',async()=>{
+ const h=harness();await connect(h);const s=h.session.snapshot!,view=advancementData();s.progression.build.classes=[{classId:'class.known',nativeLevel:5}];
+ view.subclasses.selected=[{classId:'class.known',subclassId:'sub.known',name:'Known specialization'},{classId:'class.other',subclassId:'sub.foreign',name:'Other build'}];
+ assert.deepEqual(knownSpecializations(s,view),[{classId:'class.known',name:'Known specialization'}]);assert.equal(knownSpecializations(s,null),null);assert.equal(knownSpecializations(s,{...view,runId:'another-run'}),null);assert.equal(knownSpecializations(s,{...view,revision:1}),null);
+ s.progression.build.classes=[];assert.deepEqual(knownSpecializations(s,view),[]);
+});
+test('Ability Book compact costs distinguish unknown, absent authored cost and explicit zero',()=>{
+ assert.equal(abilityCostText(null),'Cost unavailable');assert.equal(abilityCostText([]),'No authored resource cost');assert.equal(abilityCostText([{name:'Mana',amount:0,clock:null}]),'0 Mana');assert.equal(abilityCostText([{name:'Mana',amount:2,clock:null},{name:'Focus',amount:1,clock:'COMBAT_ROUND'}]),'2 Mana · 1 Focus');
+});

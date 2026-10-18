@@ -8,7 +8,7 @@ This is a reusable visual foundation, not a screen redesign or a new design-bibl
 
 ## Existing-style audit
 
-The baseline main branch was `8719f1062e0d2539662612e6f7cd71388076c7bd` (through CHAR-04). CHAR-05 remains an independent PR; its History components can use these same primitives and aliases.
+The baseline main branch was `8719f1062e0d2539662612e6f7cd71388076c7bd` (through CHAR-04). At the VIS-01 baseline, CHAR-05 was an independent PR. It is now merged; the [illustrated Character folio](character-folio.md) applies these same primitives to all five Character chapters.
 
 | Finding | Foundation response |
 |---|---|
