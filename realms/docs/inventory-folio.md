@@ -60,7 +60,7 @@ python3 -m unittest discover -s infra/tests -p test_release_verification.py
 ```
 
 The client asset allowlist, index, style checker and final release image all
-include the new stylesheet. No external fonts, raster artwork, database migration,
+include the new stylesheet. The [public edge rollout](../../infra/docs/playfollybound-hosting.md#updating-reviewed-client-assets) must also refresh its explicit static-asset catalog; the new inert staging command preserves managed credentials and listeners. No external fonts, raster artwork, database migration,
 accounting change or gameplay calculation was added.
 
 ## Disposable visual fixture

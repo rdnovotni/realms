@@ -15,7 +15,7 @@ Mobile with equipment collapsed: [inventory access](mobile-collapsed.jpg).
 Additional panels: [comparison](comparison-desktop.jpg), [repair quote](repair-desktop.jpg).
 
 All three layout modes passed DOM geometry checks at 320, 375, 768, 1024 and
-1440px with 48 visible individual items. No horizontal overflow was detected;
+1440px with 48 visible individual items. No horizontal overflow or metadata/footer collisions were detected;
 mobile grid/equipment overflow stays visible rather than creating nested scrollers.
 
 The browser pass covers the standard partly empty paperdoll and fully populated
