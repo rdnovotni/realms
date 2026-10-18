@@ -1,3 +1,4 @@
+import { adventureAvailability,combatTurn,canOpenJourneyRecord } from '../client/campaign-model.js';
 import { shellChapter,shellNavigationPage,shellNoticeLabel,shellRenderedScreen } from '../client/shell-model.js';
 import { itemStatuses,groupedInspectionFacts } from '../client/item-tiles.js';
 import { itemArtKey } from '../client/item-art.js';
@@ -23,6 +24,7 @@ test('public preview marks account access unavailable and serves only approved s
   const art=await app.inject({url:'/assets/realms-tavern.webp'});assert.equal(art.statusCode,200);assert.match(art.headers['content-type']!,/^image\/webp/);assert.equal(art.rawPayload.subarray(0,4).toString(),'RIFF');assert.match(art.headers['content-security-policy']!,/img-src 'self'/);assert.equal(art.headers['cache-control'],'no-store');
   const css=await app.inject({url:'/assets/welcome.css'});assert.equal(css.statusCode,200);assert.match(css.headers['content-type']!,/^text\/css/);
   const shellStyle=await app.inject({url:'/assets/shell.css'});assert.equal(shellStyle.statusCode,200);assert.match(shellStyle.headers['content-type']!,/^text\/css/);assert.match(shellStyle.body,/\.game-shell/);
+  const campaign=await app.inject({url:'/assets/campaign-folio.css'});assert.equal(campaign.statusCode,200);assert.match(campaign.headers['content-type']!,/^text\/css/);assert.match(campaign.body,/\.battlefield/);
   const theme=await app.inject({url:'/assets/folio.css'});assert.equal(theme.statusCode,200);assert.match(theme.headers['content-type']!,/^text\/css/);assert.match(theme.body,/--folio-parchment:/);assert.match(theme.headers['content-security-policy']!,/style-src 'self'/);
   const grain=await app.inject({url:'/assets/folio-grain.svg'});assert.equal(grain.statusCode,200);assert.match(grain.headers['content-type']!,/^image\/svg\+xml/);assert.ok(grain.rawPayload.length<1024);assert.doesNotMatch(grain.body,/<script|https?:\/\/(?!www.w3.org)/);
   const shell=await app.inject({url:'/'});assert.match(shell.body,/href="\/assets\/folio.css"/);
@@ -440,3 +442,28 @@ test('Character presentation preferences survive a tab session without storing g
 
 test('shell navigation keeps all public page names and places Combat under Adventure',()=>{for(const screen of ['adventure','character','pack','combat']as const)assert.equal(shellChapter(screen),({adventure:'Adventure',character:'Character',pack:'Pack',combat:'Combat'})[screen]);assert.equal(shellNavigationPage('combat'),'adventure');assert.equal(shellNavigationPage('character'),'character');assert.equal(shellNavigationPage('pack'),'pack');for(const screen of ['adventure','character','pack']as const)for(const hasBattle of [true,false])assert.equal(shellRenderedScreen(screen,hasBattle),screen);assert.equal(shellChapter(shellRenderedScreen('combat',false)),'Adventure');assert.equal(shellChapter(shellRenderedScreen('combat',true)),'Combat');});
 test('shell feedback identifies states without changing action messages',()=>{assert.equal(shellNoticeLabel('error',false),'Error');assert.equal(shellNoticeLabel('success',false),'Success');assert.equal(shellNoticeLabel('warning',false),'Warning');assert.equal(shellNoticeLabel('info',false),'Information');assert.equal(shellNoticeLabel('info',true),'Connecting');});
+
+test('campaign entry presentation preserves entry gates and explicit unavailable explanations',()=>{
+ const s={game:{canWrite:true,run:{turns:2},carry:{state:'COMFORTABLE'}},progression:{build:{mode:'CONFIGURED'}}} as Snapshot;
+ assert.equal(adventureAvailability(s,2,false).unavailable,false);
+ assert.equal(adventureAvailability(s,3,false).label,'Insufficient Turns');
+ assert.equal(adventureAvailability(s,1,true).label,'Temporarily unavailable');
+ const unchanged=structuredClone(s);assert.equal(adventureAvailability({...s,game:{...s.game,canWrite:false}},1,true).label,'View only');
+ assert.equal(adventureAvailability({...s,progression:{...s.progression,build:{mode:'UNCONFIGURED'}}},1,false).label,'Starting build required');
+ for(const state of ['OVERLOADED','UNMEASURED'])assert.equal(adventureAvailability({...s,game:{...s.game,carry:{...s.game.carry!,state}}},1,false).label,'Carrying restriction');
+ assert.deepEqual(s,unchanged);
+});
+test('combat turn presentation distinguishes manual companions, server turns, read-only and completed encounters',()=>{
+ const b={currentActor:'companion',outcome:null,units:[{id:'companion',side:'PARTY'}],partyCapabilities:[{id:'companion',control:'PLAYER'}]} as import('../client/types.js').Tactical;
+ assert.equal(combatTurn(b,false).label,'Party turn');
+ assert.equal(combatTurn({...b,partyCapabilities:[{...b.partyCapabilities[0]!,control:'SERVER'}]},false).server,true);
+ assert.equal(combatTurn({...b,units:[{...b.units[0]!,side:'ENEMY'}]},false).label,'World turn');
+ assert.match(combatTurn(b,true).description,/View-only/);
+ assert.equal(combatTurn({...b,currentActor:null,units:[]},false).label,'Saved encounter');
+ assert.equal(combatTurn({...b,outcome:'VICTORY',currentActor:null},false).label,'Victory');
+});
+
+test('journey links never open an active fight on behalf of an older recorded outcome',()=>{
+ const s={battle:{instanceId:'active-fight'}} as Snapshot;
+ assert.equal(canOpenJourneyRecord(s,'older-record'),false);assert.equal(canOpenJourneyRecord(s,'active-fight'),true);assert.equal(canOpenJourneyRecord({...s,battle:null},'older-record'),false);
+});

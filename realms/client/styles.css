@@ -25,47 +25,15 @@ small,.muted{color:var(--muted)}
 .notice.error{background:var(--folio-danger-surface);color:var(--folio-danger)}
 .notice.success{background:var(--folio-success-surface);color:var(--folio-success)}
 .notice span{flex:1}
-.hero{min-height:220px;position:relative;overflow:hidden;padding:2rem;background:#e0e7d8;border-color:var(--folio-border)}
-.hero:after{content:"";position:absolute;right:-45px;bottom:-50px;width:300px;height:210px;transform:rotate(-22deg);border:1px solid #9bb194;border-radius:50%;box-shadow:0 0 0 28px #acbfa41c,0 0 0 60px #93aa8720,0 0 0 96px #8aa57e16;pointer-events:none}
-.hero p{max-width:470px;position:relative;z-index:1}
-.hero h1{position:relative;z-index:1}
 .section-header{display:flex;justify-content:space-between;align-items:center;gap:var(--folio-space-4);margin:1.6rem 0 .9rem}
 .section-header h2{margin:0}
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:var(--folio-space-4)}
-.adventure{display:flex;flex-direction:column;gap:.7rem;margin:0;padding:1.4rem}
-.adventure .description{flex:1;font-size:.92rem}
-.crest{width:40px;height:40px;display:grid;place-items:center;background:#e8edde;border-radius:var(--folio-radius);font:1.5rem var(--folio-font-heading);color:#5f7253}
-.cost{font-size:.8rem;padding:.65rem .8rem;background:var(--folio-surface-inset);border-left:2px solid var(--gold)}
-.adventure button{margin-top:auto;width:100%}
-.journal-entry{border-left:2px solid var(--gold);padding-left:1rem;margin:1rem 0;font-size:.9rem}
-.journal-entry strong{display:block}
 .empty{border:1px dashed var(--folio-border-interactive);border-radius:var(--folio-radius);padding:1.5rem;color:var(--muted);background:var(--folio-surface-inset)}
 .attributes{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:var(--folio-space-4)}
 .attribute{background:var(--folio-surface-inset);padding:.6rem .8rem;border-radius:var(--folio-radius)}
 .attribute strong{display:block}
 .pack-row{display:flex;justify-content:space-between;gap:var(--folio-space-4);border-bottom:1px solid var(--line);padding:.8rem 0}
 .pack-row small{display:block}
-.battle-top{display:flex;align-items:center;justify-content:space-between;gap:var(--folio-space-4)}
-.battlefield{display:grid;gap:var(--folio-space-4);margin:1.2rem 0}
-.zone{border:1px solid #b7c6ae;background:var(--folio-surface-inset);border-radius:var(--folio-radius);padding:var(--folio-space-4)}
-.zone h3{font:600 .78rem var(--folio-font-body);text-transform:uppercase;letter-spacing:.1em;color:var(--folio-text-muted)}
-.units{display:flex;flex-wrap:wrap;gap:.8rem}
-.unit{padding:.8rem 1rem;min-width:150px;flex:1;max-width:250px;border:1px solid #cbd4c3;border-radius:var(--folio-radius);background:var(--folio-surface-raised)}
-.unit.enemy{border-left:3px solid #a7654d}
-.unit.party{border-left:3px solid var(--folio-success)}
-.unit.current{outline:2px solid #8b9868;outline-offset:2px}
-.unit strong{display:block}
-.unit p{font-size:.8rem;margin:.3rem 0}
-.meter{height:7px;display:flex;background:#d7daca;border-radius:var(--folio-radius-panel);overflow:hidden;margin:.4rem 0}
-.meter span{background:var(--folio-success)}
-.enemy .meter span{background:#a76c51}
-.meter .missing{background:transparent}
-.actions{display:flex;flex-wrap:wrap;gap:.6rem}
-.action-group{margin:1.1rem 0}
-.action-group h3{font:600 .8rem var(--folio-font-body)}
-.budget{display:flex;gap:var(--folio-space-4);font-size:.8rem;color:var(--muted)}
-.outcome{background:var(--folio-success-surface);border-color:#afc4a2}
-.outcome h2{font-size:2rem}
 .login-shell{max-width:1100px;margin:5vh auto;padding:2rem;display:grid;grid-template-columns:1.35fr 1fr;gap:4rem;align-items:center}
 .login-shell .intro{padding:3rem 0}
 .login-shell h1{font-size:clamp(3rem,7vw,5rem)}
@@ -97,14 +65,14 @@ small,.muted{color:var(--muted)}
 .character .rule,.character .build-list{display:none}
 .right-column{display:block}
 .right-column .panel{margin-bottom:1rem}
-.hero{padding:1.5rem;min-height:180px}
+
 .panel{padding:1.2rem}
 .cards{grid-template-columns:1fr}
 .login-shell{display:block;padding:1.5rem;margin:1rem auto}
 .login-shell .intro{padding:0}
 .login-shell h1{font-size:3rem}
 .login-shell .panel{padding:1.5rem}
-.unit{min-width:125px}
+
 .notice{padding:.7rem 1rem;align-items:flex-start}
 }
 .equipment-panel,.gear-card{margin-top:var(--folio-space-4)}

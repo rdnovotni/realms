@@ -133,3 +133,52 @@ Following the operator reboot, the host boot time advanced beyond the connector 
 Remaining separate checks include independent IPv4/IPv6 origin-port exposure, dashboard cache/Access policy inspection, actionable operational alerts and a reviewed release/rollback workflow. Native player-data authority/cutover and finalized gameplay schedule values remain separate decisions.
 
 The expanded [desktop operations console](operations-console.md) now supplies a gated staging/production release workflow, USB backup/restore controls, project/service logs and monitoring. Its unattended timer was installed and verified active; local monitoring reports no active issues after Glances was restricted to localhost. Email delivery and the independent outside-origin scan remain pending operator configuration/execution.
+
+## Updating reviewed client assets
+
+A release with a new client stylesheet or module must also update
+`infra/compose/edge/public-client-assets.json`. This explicit catalog includes
+Folio styles, Character/Pack modules and local item illustrations; arbitrary
+files and development routes remain denied. Authored raster art uses the same
+bounded filename rule as the public backend asset route. Regression tests compare
+the client entry styles/modules/art against the proxy catalog.
+
+For an existing managed edge, staging a game image alone does not update its
+Caddyfile. After reviewing the release, an operator can stage the updated reviewed
+public API/static catalogs with:
+
+```sh
+cd /srv/Realms/source/infra
+sudo python3 scripts/edge.py refresh-client-assets
+```
+
+This verifies managed-file hashes, retains a protected Caddyfile rollback copy,
+changes only the two route expressions, validates the staged configuration using
+the existing Caddy image without starting listeners, and updates its tracking
+hash. Failed validation restores the previous file and manifest. Repeating it is
+a no-op. It refuses customized files. Listeners, hostname, ingress credential,
+Compose settings and dashboard/local connector configuration are preserved.
+
+**This command does not restart services or claim deployment.** Caddy has its
+admin interface disabled, so a running proxy requires a separately approved
+restart of only the managed Caddy service to read the staged file. For the current
+`/srv/Realms/projects` layout:
+
+```sh
+sudo docker --host unix:///var/run/docker.sock compose \
+  --project-directory /srv/Realms/projects/kol-edge \
+  --env-file /srv/Realms/projects/kol-edge/.env \
+  -f /srv/Realms/projects/kol-edge/compose.yaml restart caddy
+sudo python3 scripts/edge.py validate
+```
+
+On a legacy installation use the existing managed project's actual directory
+(the script also supports `/srv/kol-infra/projects`). Verify stylesheet/module
+requests through the public edge and repeat outside-network checks after the
+restart. Do not restart the tunnel, game services or unrelated containers.
+
+Rollback: restore the protected `Caddyfile.before-client-assets-*` copy to the
+managed Caddyfile, update only its SHA-256 entry in `managed.json`, validate it,
+and separately approve the same Caddy-only restart. Retain the matching prior
+game image when rolling back client assets. No live refresh or restart was
+performed as part of VIS-04 verification.

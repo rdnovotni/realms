@@ -1,7 +1,7 @@
 /** Offline theme contract checks; no browser, network, or dependencies required. */
 import { readFileSync } from 'node:fs';
 import assert from 'node:assert/strict';
-const files=['client/folio.css','client/styles.css','client/welcome.css','client/shell.css'];
+const files=['client/folio.css','client/styles.css','client/welcome.css','client/shell.css','client/campaign-folio.css'];
 const sources=files.map(p=>readFileSync(new URL('../'+p,import.meta.url),'utf8'));
 const theme=sources[0],root=theme.slice(theme.indexOf(':root {'),theme.indexOf(':root[data-folio-texture'));
 const tokens=new Map([...root.matchAll(/(--[\w-]+):\s*([^;]+);/g)].map(m=>[m[1],m[2].trim()]));
@@ -9,6 +9,7 @@ for(const [i,raw] of sources.entries()){
  const text=raw.replace(/\/\*[\s\S]*?\*\//g,'');let depth=0;
  // Quoted strings have no structural braces; strip them before balancing.
  for(const c of text.replace(/(['"])(?:\\.|(?!\1).)*?\1/g,'')){if(c==='{')depth++;if(c==='}')depth--;assert.ok(depth>=0,files[i]+': unmatched closing brace');}assert.equal(depth,0,files[i]+': unmatched opening brace');
+ let parentheses=0;for(const c of text.replace(/(['"])(?:\\.|(?!\1).)*?\1/g,'')){if(c==='(')parentheses++;if(c===')')parentheses--;assert.ok(parentheses>=0,files[i]+': unmatched closing parenthesis');}assert.equal(parentheses,0,files[i]+': unmatched opening parenthesis');
  for(const m of text.matchAll(/var\((--[\w-]+)/g))assert.ok(tokens.has(m[1]),files[i]+': undefined token '+m[1]);
  assert.doesNotMatch(text,/@import|https?:\/\/|@font-face/,files[i]+': core styles must be local and font-independent');
 }
