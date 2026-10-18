@@ -356,3 +356,11 @@ long inspector names, and wrapping pagination remain readable.
 
 No schema, authored content, reward rules or production services change. Rollback
 is a client source/build rollback; there is no data migration to reverse.
+
+## Equipment ledger presentation
+
+The unified Pack’s Folio surfaces, original empty-slot icons, weapon-set frames,
+rarity labels, aligned item facts and catalog inspector are documented in the
+[inventory equipment ledger](inventory-folio.md), including its disposable visual
+fixture and browser evidence. Equipment authority and inventory accounting are
+unchanged.

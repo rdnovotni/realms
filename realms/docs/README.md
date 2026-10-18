@@ -43,6 +43,7 @@ Current product name: **Follybound**. [Implementation status](implementation-sta
 
 ## Items and crafting
 
+- [Inventory equipment ledger presentation and visual verification](inventory-folio.md)
 - [Inventory grid, personal storage and carrying rules](inventory-grid.md)
 - [Repair, item-use services and inventory workspace](inventory-services.md)
 - [Inventory accounting](inventory-accounting.md)

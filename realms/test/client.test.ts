@@ -1,3 +1,4 @@
+import { equipmentSlotPresentation } from '../client/equipment-presentation.js';
 import { shellChapter,shellNavigationPage,shellNoticeLabel,shellRenderedScreen } from '../client/shell-model.js';
 import { itemStatuses,groupedInspectionFacts } from '../client/item-tiles.js';
 import { itemArtKey } from '../client/item-art.js';
@@ -23,6 +24,7 @@ test('public preview marks account access unavailable and serves only approved s
   const art=await app.inject({url:'/assets/realms-tavern.webp'});assert.equal(art.statusCode,200);assert.match(art.headers['content-type']!,/^image\/webp/);assert.equal(art.rawPayload.subarray(0,4).toString(),'RIFF');assert.match(art.headers['content-security-policy']!,/img-src 'self'/);assert.equal(art.headers['cache-control'],'no-store');
   const css=await app.inject({url:'/assets/welcome.css'});assert.equal(css.statusCode,200);assert.match(css.headers['content-type']!,/^text\/css/);
   const shellStyle=await app.inject({url:'/assets/shell.css'});assert.equal(shellStyle.statusCode,200);assert.match(shellStyle.headers['content-type']!,/^text\/css/);assert.match(shellStyle.body,/\.game-shell/);
+  const ledger=await app.inject({url:'/assets/inventory-folio.css'});assert.equal(ledger.statusCode,200);assert.match(ledger.headers['content-type']!,/^text\/css/);assert.match(ledger.body,/\.paperdoll-slot/);
   const theme=await app.inject({url:'/assets/folio.css'});assert.equal(theme.statusCode,200);assert.match(theme.headers['content-type']!,/^text\/css/);assert.match(theme.body,/--folio-parchment:/);assert.match(theme.headers['content-security-policy']!,/style-src 'self'/);
   const grain=await app.inject({url:'/assets/folio-grain.svg'});assert.equal(grain.statusCode,200);assert.match(grain.headers['content-type']!,/^image\/svg\+xml/);assert.ok(grain.rawPayload.length<1024);assert.doesNotMatch(grain.body,/<script|https?:\/\/(?!www.w3.org)/);
   const shell=await app.inject({url:'/'});assert.match(shell.body,/href="\/assets\/folio.css"/);
@@ -440,3 +442,16 @@ test('Character presentation preferences survive a tab session without storing g
 
 test('shell navigation keeps all public page names and places Combat under Adventure',()=>{for(const screen of ['adventure','character','pack','combat']as const)assert.equal(shellChapter(screen),({adventure:'Adventure',character:'Character',pack:'Pack',combat:'Combat'})[screen]);assert.equal(shellNavigationPage('combat'),'adventure');assert.equal(shellNavigationPage('character'),'character');assert.equal(shellNavigationPage('pack'),'pack');for(const screen of ['adventure','character','pack']as const)for(const hasBattle of [true,false])assert.equal(shellRenderedScreen(screen,hasBattle),screen);assert.equal(shellChapter(shellRenderedScreen('combat',false)),'Adventure');assert.equal(shellChapter(shellRenderedScreen('combat',true)),'Combat');});
 test('shell feedback identifies states without changing action messages',()=>{assert.equal(shellNoticeLabel('error',false),'Error');assert.equal(shellNoticeLabel('success',false),'Success');assert.equal(shellNoticeLabel('warning',false),'Warning');assert.equal(shellNoticeLabel('info',false),'Information');assert.equal(shellNoticeLabel('info',true),'Connecting');});
+
+ test('equipment ledger states preserve unknown condition, percentage thresholds and inspection during locks',()=>{
+ const state=(item:{condition:number|null;maximumCondition:number|null}|null,selected=false,compatible=false,blocked=false,twoHand=false)=>equipmentSlotPresentation(item,selected,compatible,blocked,twoHand,defaultTileSettings);
+ assert.equal(state(null).hint,'Search equipment');assert.equal(state(null).condition,null);
+ assert.match(state(null,false,false,false,true).className,/two-handed/);
+ assert.equal(state({condition:null,maximumCondition:null}).condition,null);
+ assert.equal(state({condition:180,maximumCondition:250}).condition?.state,'healthy');
+ assert.match(state({condition:46,maximumCondition:100}).className,/damaged/);
+ assert.equal(state({condition:0,maximumCondition:250}).broken,true);
+ assert.match(state(null,true,true).className,/compatible/);assert.equal(state(null,true,false).hint,'Does not fit selected item');
+ assert.equal(state(null,true,true,true).hint,'Changes locked');
+ assert.equal(state({condition:0,maximumCondition:250},false,false,true).broken,true);
+ });
