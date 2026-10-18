@@ -1,5 +1,5 @@
 import { renderShellHeader,renderShellNotice } from './shell.js';
-import { shellChapter } from './shell-model.js';
+import { shellChapter,shellRenderedScreen } from './shell-model.js';
 import { renderCharacter } from './character.js';
 import { renderInventory } from './inventory.js';
 import { renderLanding } from './landing.js';
@@ -19,7 +19,8 @@ export function render(root:HTMLElement,session:GameSession,screen:Screen,naviga
  const selection=document.activeElement instanceof HTMLInputElement?{start:document.activeElement.selectionStart,end:document.activeElement.selectionEnd}:null;
  const previousFocus=document.activeElement instanceof HTMLElement?document.activeElement.dataset.focus:null;
  if(previousFocus)retainedFocus=previousFocus;
- const fragment=document.createDocumentFragment();fragment.append(renderShellHeader(session,screen,navigate),renderShellNotice(session));
+ const renderedScreen=shellRenderedScreen(screen,!!session.snapshot?.battle);
+ const fragment=document.createDocumentFragment();fragment.append(renderShellHeader(session,renderedScreen,navigate),renderShellNotice(session));
  const disabled=session.busy||!!session.pending||session.needsRefresh||!session.snapshot?.game.canWrite;
  const snapshot=session.snapshot;
  if(!snapshot){fragment.append(renderLanding(session));
@@ -32,7 +33,7 @@ export function render(root:HTMLElement,session:GameSession,screen:Screen,naviga
   else if(screen==='pack')renderPack(main,snapshot,session,disabled);
   else if(screen==='combat'&&snapshot.battle)renderCombat(main,snapshot,disabled,onCommand,navigate);
   else renderAdventure(main,snapshot,session,disabled,navigate);
-  main.prepend(el('p',shellChapter(screen),'shell-page-label'));
+  main.prepend(el('p',shellChapter(renderedScreen),'shell-page-label'));
   const right=el('aside','','right-column');right.setAttribute('aria-label','Journey notes');const journal=section('Journey journal');add(journal,el('p','The moments that shape this life.','muted help'));
   if(snapshot.game.latestEncounter)add(journal,add(el('div','','journal-entry'),el('strong',snapshot.game.latestEncounter.name),el('p',label(snapshot.game.latestEncounter.outcome)),button('View encounter',()=>navigate('combat'),false,'link')));
   else journal.append(el('p','Your first adventure is still ahead.','help'));

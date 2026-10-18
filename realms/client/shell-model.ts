@@ -1,4 +1,5 @@
 import type { Screen } from './views.js';
+export const shellRenderedScreen=(screen:Screen,hasBattle:boolean):Screen=>screen==='combat'&&!hasBattle?'adventure':screen;
 /** Presentation only: a saved encounter belongs to the Adventure navigation area. */
 export const shellChapter=(screen:Screen)=>({adventure:'Adventure',character:'Character',pack:'Pack',combat:'Combat'})[screen];
 export const shellNavigationPage=(screen:Screen)=>screen==='combat'?'adventure':screen;
