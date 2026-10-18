@@ -1,10 +1,18 @@
-import importlib.util,json,subprocess,tempfile,unittest
+import importlib.util,json,re,subprocess,tempfile,unittest
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import Mock,patch
 ROOT=Path(__file__).resolve().parents[2]
 s=importlib.util.spec_from_file_location('verification_tests',ROOT/'infra/scripts/release_verification.py');v=importlib.util.module_from_spec(s);s.loader.exec_module(v)
 class VerificationTests(unittest.TestCase):
+ def test_production_image_includes_every_page_stylesheet(self):
+  html=(ROOT/'realms/client/index.html').read_text()
+  styles=set(re.findall(r'href="/assets/([^"?]+\.css)"',html))
+  production=(ROOT/'infra/container/Dockerfile.release').read_text().rsplit('\nFROM ',1)[1]
+  copied=set(re.findall(r'/app/client/([^\s]+\.css)',production))
+  self.assertTrue(styles)
+  self.assertFalse(styles-copied,'Production image omits page stylesheets: '+str(sorted(styles-copied)))
+  for style in styles:self.assertTrue((ROOT/'realms/client'/style).is_file())
  def record(self):return {'source_commit':'a'*40,'image':'sha256:'+'b'*64,'schema':[{'name':'001.sql','checksum':'c'}],'verification':{'status':'passed','source_commit':'a'*40,'image':'sha256:'+'b'*64,'schema':[{'name':'001.sql','checksum':'c'}],'checks':v.CHECKS.copy()}}
  def test_receipt_requires_same_commit_image_schema_and_complete_checks(self):
   v.require_verification(self.record())

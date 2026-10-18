@@ -1,5 +1,7 @@
 # Game client foundation
 
+Shared authenticated styling and the populated shell fixture: [application shell](application-shell.md).
+
 Current inventory UI and optional carrying policy: [inventory grid, storage and measurements](inventory-grid.md).
 
 [Documentation map](README.md) · [Current status](implementation-status.md) · [Migration map](migration-guide.md)
@@ -429,3 +431,7 @@ paging focus, dialog cancellation, refresh/reload, read-only/active/empty states
 continued play, equipment, campaign victory and Ascension into a separate empty
 history. Existing journals and rules are unchanged. Rollback is source/build rollback,
 with no data migration or history edits to reverse.
+
+## Shared visual foundation (VIS-01)
+
+The [Adventurer's Folio](adventurers-folio.md) defines semantic theme tokens, shared surfaces, typography, controls, icons and accessibility states. `folio.css` loads before the screen layout styles; compatibility aliases keep existing modules working. The foundation changes presentation only. Authored item art, the public tavern illustration, equipment drafts and authoritative progression/combat projections remain intact. The development-only component reference is available through `npm run preview:welcome` at `/dev/folio`, never on the game server.

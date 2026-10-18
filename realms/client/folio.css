@@ -1,0 +1,157 @@
+/* The Adventurer's Folio — shared visual contract. Load before screen layout CSS.
+ * Geometry stays with each screen; paint, type, controls and states live here. */
+:root {
+  color-scheme: light;
+  --folio-parchment: #e8dcc3;
+  --folio-vellum: #f7efdc;
+  --folio-ink: #332b24;
+  --folio-walnut: #30241d;
+  --folio-brass: #aa8748;
+  --folio-burgundy: #793f42;
+  --folio-forest: #375442;
+  --folio-muted: #685b4b;
+  --folio-page: var(--folio-parchment);
+  --folio-surface: var(--folio-vellum);
+  --folio-surface-raised: #fff9eb;
+  --folio-surface-inset: #e9dfc9;
+  --folio-nav: var(--folio-walnut);
+  --folio-nav-hover: #49382b;
+  --folio-on-dark: #f7efdc;
+  --folio-on-dark-muted: #d3c5a9;
+  --folio-text: var(--folio-ink);
+  --folio-text-secondary: #514536;
+  --folio-text-muted: var(--folio-muted);
+  --folio-border: #b6a17b;
+  --folio-border-interactive: #7d694a;
+  --folio-brass-ink: #725520;
+  --folio-action: var(--folio-forest);
+  --folio-action-hover: #293f32;
+  --folio-on-action: #fff9eb;
+  --folio-selected: #dce4d1;
+  --folio-hover: #eee2c8;
+  --folio-success: #375a40;
+  --folio-success-surface: #e1e8d6;
+  --folio-warning: #775014;
+  --folio-warning-surface: #f2e2bc;
+  --folio-danger: var(--folio-burgundy);
+  --folio-danger-surface: #f2dfd7;
+  --folio-disabled: #655b4d;
+  --folio-disabled-surface: #e3dac8;
+  --folio-focus: #725020;
+  --folio-focus-halo: #fff9eb;
+  --folio-backdrop: #241b17b3;
+  --folio-page-edge: #30241d12;
+  --folio-page-glow: #fff9eb66;
+  --folio-stitch: #f7efdc33;
+  --folio-shadow: 0 2px 8px #30241d0d, inset 0 1px 0 #fff9eb99;
+  --folio-shadow-raised: 0 6px 22px #30241d20;
+  --folio-shadow-dialog: 0 16px 48px #30241d40;
+  --folio-radius-sm: 2px;
+  --folio-radius: 4px;
+  --folio-radius-panel: 5px;
+  --folio-space-1: .25rem;
+  --folio-space-2: .5rem;
+  --folio-space-3: .75rem;
+  --folio-space-4: 1rem;
+  --folio-space-5: 1.5rem;
+  --folio-space-6: 2rem;
+  --folio-space-7: 3rem;
+  --folio-font-heading: "Palatino Linotype", "Book Antiqua", Palatino, Georgia, serif;
+  --folio-font-body: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --folio-font-narrative: Georgia, "Times New Roman", serif;
+  --folio-type-small: .875rem;
+  --folio-type-label: .75rem;
+  --folio-type-body: 1rem;
+  --folio-type-card: 1.2rem;
+  --folio-type-section: 1.55rem;
+  --folio-type-title: clamp(2rem, 4vw, 3.4rem);
+  --folio-leading: 1.55;
+  --folio-leading-heading: 1.2;
+  --folio-duration: 120ms;
+  --folio-ease: ease-out;
+  /* Set to none to remove grain without changing any layout or text colors. */
+  --folio-paper-texture: url('/assets/folio-grain.svg');
+  /* Compatibility contract: existing modules can migrate incrementally. */
+  --paper: var(--folio-surface);
+  --ink: var(--folio-text);
+  --muted: var(--folio-text-muted);
+  --accent: var(--folio-action);
+  --line: var(--folio-border);
+  --gold: var(--folio-brass);
+  --danger: var(--folio-danger);
+  font-family: var(--folio-font-body);
+  font-size: 16px;
+  font-synthesis: none;
+  line-height: var(--folio-leading);
+  color: var(--folio-text);
+  background: var(--folio-page);
+  background-image: var(--folio-paper-texture);
+}
+:root[data-folio-texture=off] { --folio-paper-texture: none; }
+h1,h2,h3,h4,.wordmark,.folio-heading { font-family: var(--folio-font-heading); font-weight: 500; line-height: var(--folio-leading-heading); }
+h1 { font-size: var(--folio-type-title); }
+h2 { font-size: var(--folio-type-section); }
+h3 { font-size: var(--folio-type-card); }
+.folio-narrative,.adventure .description { font-family: var(--folio-font-narrative); line-height: 1.7; }
+.folio-label { font-size: var(--folio-type-label); font-weight: 650; letter-spacing: .04em; }
+.folio-value,.stat strong,.sheet-facts dd,.attribute-score,td { font-variant-numeric: lining-nums tabular-nums; }
+a { color: var(--folio-action); text-underline-offset: .2em; }
+a:hover { text-decoration-thickness: 2px; }
+button,input,select,textarea { font: inherit; }
+button,.folio-button { cursor: pointer; border: 1px solid var(--folio-border-interactive); background: var(--folio-surface); border-radius: var(--folio-radius); padding: .6rem var(--folio-space-4); color: var(--folio-text); font-weight: 600; min-height: 44px; transition: background-color var(--folio-duration) var(--folio-ease),border-color var(--folio-duration) var(--folio-ease); }
+button:hover:enabled,.folio-button:hover { border-color: var(--folio-action); background-color: var(--folio-hover); }
+button.primary,.folio-button-primary { background: var(--folio-action); border-color: var(--folio-action); color: var(--folio-on-action); box-shadow: inset 0 1px 0 #fff9eb24; }
+button.primary:hover:enabled,.folio-button-primary:hover { background: var(--folio-action-hover); color: var(--folio-on-action); }
+button.danger,.folio-button-danger { color: var(--folio-danger); border-color: var(--folio-danger); }
+button.danger:hover:enabled,.folio-button-danger:hover { background: var(--folio-danger-surface); border-color: var(--folio-danger); }
+button:is([aria-current=page],[aria-selected=true],[aria-pressed=true]) { text-decoration: underline; text-underline-offset: .25em; }
+button.small { font-size: var(--folio-type-small); padding: .35rem .65rem; }
+button.link,.folio-button-link { background: transparent; border: 0; color: var(--folio-action); text-decoration: underline; text-underline-offset: .2em; box-shadow: none; }
+button:disabled,.folio-button:disabled { cursor: not-allowed; opacity: 1; color: var(--folio-disabled); background: var(--folio-disabled-surface); border-color: var(--folio-border-interactive); border-style: dashed; box-shadow: none; }
+input,select,textarea { border: 1px solid var(--folio-border-interactive); border-radius: var(--folio-radius-sm); padding: .6rem; width: 100%; background: var(--folio-surface-raised); color: var(--folio-text); min-height: 44px; accent-color: var(--folio-action); }
+input:is([type=checkbox],[type=radio]) { width: 20px; height: 20px; min-height: 20px; flex: none; padding: 0; }
+summary { cursor: pointer; }
+/* Two-tone focus remains visible on both vellum and dark leather. */
+:root :is(button,a,input,select,textarea,summary,[tabindex]):focus-visible { outline: 3px solid var(--folio-focus); outline-offset: 3px; box-shadow: 0 0 0 3px var(--folio-focus-halo); }
+.folio-panel,.panel { background: var(--folio-surface); border: 1px solid var(--folio-border); border-radius: var(--folio-radius-panel); box-shadow: var(--folio-shadow); }
+.folio-card { background: var(--folio-surface-raised); border: 1px solid var(--folio-border); border-radius: var(--folio-radius); padding: var(--folio-space-4); }
+.folio-inset { background: var(--folio-surface-inset); border: 1px solid var(--folio-border); padding: var(--folio-space-3); border-radius: var(--folio-radius-sm); }
+.folio-leather,.character,.topbar { background: var(--folio-nav); color: var(--folio-on-dark); border-color: var(--folio-brass); }
+.folio-leather :is(small,.muted),.character :is(small,.muted) { color: var(--folio-on-dark-muted); }
+.topbar .wordmark small,.topbar .connection { color: var(--folio-on-dark-muted); }
+.topbar button { color: var(--folio-on-dark); background: transparent; border-color: transparent; }
+.topbar button[aria-current=page],.topbar button:hover:enabled { background: var(--folio-nav-hover); border-color: var(--folio-brass); color: var(--folio-on-dark); }
+.topbar button[aria-current=page] { text-decoration: underline; text-underline-offset: .3em; }
+.topbar button:disabled { color: var(--folio-on-dark-muted); border-color: var(--folio-brass); border-style: dashed; }
+.folio-section-heading { border-bottom: 3px double var(--folio-border); padding-bottom: var(--folio-space-2); }
+.folio-divider,.rule { border: 0; border-top: 1px solid var(--folio-border); }
+.folio-ornament { border: 0; border-top: 3px double var(--folio-brass); margin-block: var(--folio-space-5); }
+.folio-table { width: 100%; border-collapse: collapse; }
+.folio-table :is(th,td) { text-align: left; padding: var(--folio-space-2); border-bottom: 1px solid var(--folio-border); overflow-wrap: anywhere; }
+.folio-table th { color: var(--folio-text-secondary); font-weight: 650; }
+.folio-status { display: inline-flex; align-items: center; gap: var(--folio-space-2); padding: var(--folio-space-1) var(--folio-space-2); border: 1px solid currentColor; border-radius: var(--folio-radius-sm); font-size: var(--folio-type-small); font-weight: 600; }
+.folio-status-success,.notice.success { color: var(--folio-success); background: var(--folio-success-surface); }
+.folio-status-warning { color: var(--folio-warning); background: var(--folio-warning-surface); }
+.folio-status-danger,.notice.error { color: var(--folio-danger); background: var(--folio-danger-surface); }
+.folio-status-pending { border-style: dashed; }
+.folio-empty,.empty { border: 1px dashed var(--folio-border-interactive); border-radius: var(--folio-radius); padding: var(--folio-space-5); background: var(--folio-surface-inset); color: var(--folio-text-muted); }
+.folio-selected { border-color: var(--folio-action); background: var(--folio-selected); outline: 2px solid var(--folio-action); outline-offset: 1px; }
+.folio-locked,.folio-unavailable { border-style: dashed; }
+.folio-icon { width: 1.25em; height: 1.25em; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; flex: none; vertical-align: -.2em; }
+@media (prefers-reduced-motion: reduce) { :root { --folio-duration: 0ms; } *,*::before,*::after { scroll-behavior: auto!important; animation: none!important; transition: none!important; } :root .inventory-tile:hover { transform: none; } :root .item-illustration { filter: none; } }
+@media (prefers-contrast: more) { :root { --folio-text-muted: var(--folio-ink); --folio-border: var(--folio-border-interactive); --folio-paper-texture: none; --folio-shadow: none; } }
+@media (forced-colors: active) {
+  :root { --folio-paper-texture: none; --folio-page: Canvas; --folio-surface: Canvas; --folio-surface-raised: Canvas; --folio-surface-inset: Canvas; --folio-text: CanvasText; --folio-text-secondary: CanvasText; --folio-text-muted: CanvasText; --folio-nav: Canvas; --folio-on-dark: CanvasText; --folio-on-dark-muted: CanvasText; --folio-border: CanvasText; --folio-border-interactive: ButtonText; --folio-brass: CanvasText; --folio-action: LinkText; --folio-selected: Canvas; --folio-focus: Highlight; --folio-focus-halo: Canvas; --folio-shadow: none; --folio-shadow-raised: none; --folio-shadow-dialog: none; }
+  :root :is(button,a,input,select,textarea,summary,[tabindex]):focus-visible { outline: 3px solid Highlight!important; box-shadow: none; }
+  :is(button,[role=button])[aria-pressed=true],button[aria-current=page],button[aria-selected=true] { outline: 2px solid Highlight; outline-offset: -4px; }
+  .folio-ornament,.intro-ornament,.tabletop-die { display: none; }
+  .welcome,.welcome-access,.compact-panel,.inventory-tile,.paperdoll-panel,.sheet-identity { background-image: none; box-shadow: none; }
+  button:disabled { border-style: dashed; color: GrayText; }
+  :root dialog::backdrop { background: Canvas; opacity: .8; backdrop-filter: none; }
+}
+/* Documentation-only showcase. Its route exists solely in welcome-preview.ts. */
+.folio-reference { max-width: 70rem; margin: auto; padding: var(--folio-space-5); }
+.folio-reference-panel { padding: var(--folio-space-5); border-radius: var(--folio-radius-panel); }
+.folio-reference .actions { margin-block: var(--folio-space-4); }
+.folio-check { display: flex; align-items: center; gap: var(--folio-space-2); min-height: 44px; }
+.folio-on-dark-link { color: var(--folio-on-dark); }
