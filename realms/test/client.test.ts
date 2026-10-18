@@ -21,6 +21,9 @@ test('public preview marks account access unavailable and serves only approved s
   const config=await app.inject({url:'/api/v1/client/config'});assert.deepEqual(config.json(),{protocolVersion:1,authMode:'sessions',previewOnly:true});assert.ok(!config.body.includes('must-never-be-public'));
   const art=await app.inject({url:'/assets/realms-tavern.webp'});assert.equal(art.statusCode,200);assert.match(art.headers['content-type']!,/^image\/webp/);assert.equal(art.rawPayload.subarray(0,4).toString(),'RIFF');assert.match(art.headers['content-security-policy']!,/img-src 'self'/);assert.equal(art.headers['cache-control'],'no-store');
   const css=await app.inject({url:'/assets/welcome.css'});assert.equal(css.statusCode,200);assert.match(css.headers['content-type']!,/^text\/css/);
+  const theme=await app.inject({url:'/assets/folio.css'});assert.equal(theme.statusCode,200);assert.match(theme.headers['content-type']!,/^text\/css/);assert.match(theme.body,/--folio-parchment:/);assert.match(theme.headers['content-security-policy']!,/style-src 'self'/);
+  const grain=await app.inject({url:'/assets/folio-grain.svg'});assert.equal(grain.statusCode,200);assert.match(grain.headers['content-type']!,/^image\/svg\+xml/);assert.ok(grain.rawPayload.length<1024);assert.doesNotMatch(grain.body,/<script|https?:\/\/(?!www.w3.org)/);
+  const shell=await app.inject({url:'/'});assert.match(shell.body,/href="\/assets\/folio.css"/);
   assert.equal((await app.inject({method:'POST',url:'/api/v1/auth/login',payload:{handle:'preview',password:'example'}})).statusCode,404);
   assert.equal((await app.inject({url:'/assets/README.md'})).statusCode,404);
  }finally{await app.close();}
@@ -35,6 +38,7 @@ test('public page links support direct loads while unknown routes stay unavailab
    const page=await app.inject({url:route});assert.equal(page.statusCode,200,route);assert.equal(page.body,home.body);assert.match(page.headers['content-type']!,/^text\/html/);assert.equal(page.headers['content-security-policy'],home.headers['content-security-policy']);
   }
   assert.equal((await app.inject({url:'/not-a-page'})).statusCode,404);
+  assert.equal((await app.inject({url:'/dev/folio'})).statusCode,404,'design reference must never be a game route');
  }finally{await app.close();}
 });
 function harness(authMode:'development'|'sessions'='development'){

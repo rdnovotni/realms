@@ -1,0 +1,146 @@
+[
+  {
+    "width": 320,
+    "screen": "Welcome",
+    "content": 305,
+    "viewport": 305
+  },
+  {
+    "width": 375,
+    "screen": "Welcome",
+    "content": 360,
+    "viewport": 360
+  },
+  {
+    "width": 768,
+    "screen": "Welcome",
+    "content": 753,
+    "viewport": 753
+  },
+  {
+    "width": 1440,
+    "screen": "Welcome",
+    "content": 1425,
+    "viewport": 1425
+  },
+  {
+    "width": 320,
+    "screen": "Overview",
+    "content": 305,
+    "viewport": 305
+  },
+  {
+    "width": 320,
+    "screen": "Progression",
+    "content": 305,
+    "viewport": 305
+  },
+  {
+    "width": 320,
+    "screen": "Abilities",
+    "content": 305,
+    "viewport": 305
+  },
+  {
+    "width": 320,
+    "screen": "Statistics",
+    "content": 305,
+    "viewport": 305
+  },
+  {
+    "width": 320,
+    "screen": "Pack",
+    "content": 305,
+    "viewport": 305
+  },
+  {
+    "width": 375,
+    "screen": "Overview",
+    "content": 360,
+    "viewport": 360
+  },
+  {
+    "width": 375,
+    "screen": "Progression",
+    "content": 360,
+    "viewport": 360
+  },
+  {
+    "width": 375,
+    "screen": "Abilities",
+    "content": 360,
+    "viewport": 360
+  },
+  {
+    "width": 375,
+    "screen": "Statistics",
+    "content": 360,
+    "viewport": 360
+  },
+  {
+    "width": 375,
+    "screen": "Pack",
+    "content": 360,
+    "viewport": 360
+  },
+  {
+    "width": 768,
+    "screen": "Overview",
+    "content": 753,
+    "viewport": 753
+  },
+  {
+    "width": 768,
+    "screen": "Progression",
+    "content": 753,
+    "viewport": 753
+  },
+  {
+    "width": 768,
+    "screen": "Abilities",
+    "content": 753,
+    "viewport": 753
+  },
+  {
+    "width": 768,
+    "screen": "Statistics",
+    "content": 753,
+    "viewport": 753
+  },
+  {
+    "width": 768,
+    "screen": "Pack",
+    "content": 753,
+    "viewport": 753
+  },
+  {
+    "width": 1440,
+    "screen": "Overview",
+    "content": 1425,
+    "viewport": 1425
+  },
+  {
+    "width": 1440,
+    "screen": "Progression",
+    "content": 1425,
+    "viewport": 1425
+  },
+  {
+    "width": 1440,
+    "screen": "Abilities",
+    "content": 1425,
+    "viewport": 1425
+  },
+  {
+    "width": 1440,
+    "screen": "Statistics",
+    "content": 1425,
+    "viewport": 1425
+  },
+  {
+    "width": 1440,
+    "screen": "Pack",
+    "content": 1425,
+    "viewport": 1425
+  }
+]
