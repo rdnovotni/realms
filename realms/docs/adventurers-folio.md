@@ -121,6 +121,10 @@ Reuse original manuscript motifs and item SVGs. New interface icons should use a
 
 Decorative icons beside text use `aria-hidden="true"`. Icon-only controls need an accessible name and a touch/keyboard alternative; meaningful standalone images need equivalent text. Never put undiscovered stats in titles, labels or SVG metadata. Preserve the existing public die's deliberate colored illustration rather than recoloring every asset.
 
+## Authenticated framing
+
+The [VIS-02 application shell](application-shell.md) applies this contract to shared navigation, page layers, sidebars, notices and overlays. `shell.css` owns this framing and replaces older header/dialog paint rather than creating a parallel theme. The token inventory now includes three derived alpha treatments for page edge, page glow and leather stitching (75 tokens total).
+
 ## Reference and verification
 
 See the committed [before/after screenshots and verification record](screenshots/vis-01/README.md).

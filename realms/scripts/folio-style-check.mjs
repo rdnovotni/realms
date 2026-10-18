@@ -1,7 +1,7 @@
 /** Offline theme contract checks; no browser, network, or dependencies required. */
 import { readFileSync } from 'node:fs';
 import assert from 'node:assert/strict';
-const files=['client/folio.css','client/styles.css','client/welcome.css'];
+const files=['client/folio.css','client/styles.css','client/welcome.css','client/shell.css'];
 const sources=files.map(p=>readFileSync(new URL('../'+p,import.meta.url),'utf8'));
 const theme=sources[0],root=theme.slice(theme.indexOf(':root {'),theme.indexOf(':root[data-folio-texture'));
 const tokens=new Map([...root.matchAll(/(--[\w-]+):\s*([^;]+);/g)].map(m=>[m[1],m[2].trim()]));
