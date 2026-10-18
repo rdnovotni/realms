@@ -358,3 +358,7 @@ and 320/375/768px layouts. Run typecheck/build/unit tests plus `test/character-b
 database. These cover multiclass attribution, active/prepared equipment, discovery,
 read-only and cross-account access, no hidden-stat disclosure and refresh guards.
 Rollback is source/build rollback only; there is no data migration or rules change.
+
+## Shared visual foundation (VIS-01)
+
+The [Adventurer's Folio](adventurers-folio.md) defines semantic theme tokens, shared surfaces, typography, controls, icons and accessibility states. `folio.css` loads before the screen layout styles; compatibility aliases keep existing modules working. The foundation changes presentation only. Authored item art, the public tavern illustration, equipment drafts and authoritative progression/combat projections remain intact. The development-only component reference is available through `npm run preview:welcome` at `/dev/folio`, never on the game server.
