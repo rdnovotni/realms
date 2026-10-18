@@ -30,7 +30,7 @@ Signed in; opened Character Overview, Progression, Abilities and Statistics; rev
 
 Actual disposable actions committed Sentinel subclass, Warden native level 6, and weapon set B. Success notices named each change, available choices refreshed, and Statistics/Ability Book reflected the committed equipment set. Entering the known Tactical encounter rendered Combat with Adventure selected in the main navigation. No production account was used.
 
-Escape restored focus to the subclass review button, comparison action and original inventory tile respectively. Existing confirmation logic and modal mechanisms were not replaced. Native pointer drag/drop was not automated by this DOM-only browser tool; drag handlers and targets are untouched, their payload/authority regressions are covered by existing tests. Manual pointer and touch-device validation remains useful.
+Escape restored focus to the subclass review button, comparison action and original inventory tile respectively. A final keyboard check using the real shared styles in an isolated header harness confirmed that the selected tab retains the standard light outer focus halo; its decorative inset shadow was removed because it masked that halo. Tab/Shift+Tab produced a 3px light halo with the brown outline. Existing confirmation logic and modal mechanisms were not replaced. Native pointer drag/drop was not automated by this DOM-only browser tool; drag handlers and targets are untouched, their payload/authority regressions are covered by existing tests. Manual pointer and touch-device validation remains useful.
 
 ## Responsive measurements
 

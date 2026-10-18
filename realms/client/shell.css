@@ -14,7 +14,7 @@
 .game-shell .wordmark small { font-size: .6rem; letter-spacing: .16em; margin-top: var(--folio-space-2); }
 .game-shell .topbar .shell-navigation { display: flex; justify-content: center; gap: var(--folio-space-2); flex: initial; min-width: 0; overflow: visible; }
 .game-shell .shell-navigation button { position: relative; padding: .65rem 1rem; border-radius: var(--folio-radius-sm); border: 1px solid transparent; font-weight: 600; min-height: 44px; }
-.game-shell .topbar .shell-navigation button[aria-current=page] { background: var(--folio-surface); color: var(--folio-text); border-color: var(--folio-brass); box-shadow: inset 0 -3px 0 var(--folio-brass); text-decoration: underline; text-underline-offset: .3em; }
+.game-shell .topbar .shell-navigation button[aria-current=page] { background: var(--folio-surface); color: var(--folio-text); border-color: var(--folio-brass); text-decoration: underline; text-underline-offset: .3em; }
 .game-shell .topbar .shell-navigation button:not([aria-current=page]):hover:enabled { color: var(--folio-on-dark); background: var(--folio-nav-hover); border-color: var(--folio-brass); }
 .shell-utility { display: grid; justify-items: end; gap: var(--folio-space-1); min-width: 0; }
 .game-shell .topbar .connection { display: block; font-size: .72rem; color: var(--folio-on-dark-muted); overflow-wrap: anywhere; }
