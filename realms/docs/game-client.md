@@ -158,10 +158,10 @@ label “Your character”; the current API does not supply a character name, bi
 race or portrait. Essential information is repeated in the main sheet rather than
 relying on the sidebar hidden at narrow widths.
 
-Overview and Progression use reusable section navigation. Progression preserves the
-existing explicit class-level action; Abilities, Statistics and History are labeled
-as unavailable text rather than unfinished controls. CHAR-02 expands Available Decisions to the authoritative class, subclass and feat
-read models described below. Other choice categories await their own tickets;
+All five Character sections use reusable section navigation. Progression preserves the
+existing explicit actions and now connects class, subclass, feat, attribute and
+proficiency choices. Abilities, Statistics and History are supported read-only views,
+described below. Unsupported future systems are not exposed as functional controls;
 the absence of a connected projection is not presented as zero available choices.
 Unconfigured runs see starting class/preset selection first, without an equipment
 editor. Existing setup and level action envelopes and server legality checks remain
@@ -299,7 +299,7 @@ is a source/build rollback and requires no data reversal.
 ## Character Statistics and Ability Book (CHAR-04)
 
 Character navigation now exposes Overview, Progression, Abilities and Statistics.
-History remains labelled as unavailable. Both new sections are read-only, work in
+History is now connected by CHAR-05 below. Both sections are read-only, work in
 view-only sessions and refresh from the current owned run after reconnect or a saved
 action. Their optional read failures stay local; stale or crossed run/revision results
 are rejected, and logout/new runs discard old responses and browser selections.
@@ -360,6 +360,77 @@ and 320/375/768px layouts. Run typecheck/build/unit tests plus `test/character-b
 database. These cover multiclass attribution, active/prepared equipment, discovery,
 read-only and cross-account access, no hidden-stat disclosure and refresh guards.
 Rollback is source/build rollback only; there is no data migration or rules change.
+
+## Character advancement history and navigation (CHAR-05)
+
+Character now has five usable sections: Overview, Progression, Abilities, Statistics
+and History. The selected section and history page are retained in tab-scoped sessionStorage
+during ordinary navigation, refresh and reload, scoped to the current run. New runs and sign-out reset the
+selection and page. Only run identity, section and page offset are stored; credentials, choices and history
+records are never stored there. Storage denial falls back to memory-only presentation.
+No account-level cosmetic setting or migration is introduced.
+A Progression badge describes known pending decisions, deduplicating alternative
+options and shared milestone slots. Before catalogs load, it can show only the
+server's pending class levels; it never guesses undiscovered or upcoming rewards.
+Read-only and active-encounter states remain explicit, with inspection available.
+Unconfigured characters see starting-build selection first and an explanation that
+their first commitment begins the new run's history.
+
+History is a chronological current-run timeline of starting builds, native class
+levels, subclasses, feats, attribute allocations and proficiency ranks. It reads the
+existing immutable journals and the recorded content revisions, so a later content
+rename cannot rewrite a past choice. Starting attributes are shown only at build
+creation; later class events do not misleadingly repeat their old base attributes.
+Attribute entries use their recorded before/after scores, and proficiency entries
+use recorded consecutive ranks. Character level at choice and spent milestone are
+separate facts. Recorded event times are displayed in the device's local timezone,
+with the actual UTC timestamp on the semantic time element. Missing times/values
+remain unavailable; the client never fabricates a date or a historical increase.
+
+`GET /api/v1/character/history?expectedRevision=N&offset=0` is an authenticated,
+account-owned, repeatable-read, read-only projection. It returns run/revision metadata,
+up to 25 entries, total, offset, pageSize and hasMore. Offset is bounded to 10000;
+the current journal contracts bound the total number of advancement entries. Every
+page must match the run revision, preventing a silent page shift after a concurrent
+commit. Ordering uses committed action revision with recorded time and stable journal
+identity as tie-breakers. Legacy evidence without a recorded action revision uses
+recorded time/identity after those ordered records. No raw build snapshots, mechanics,
+receipt bodies or foreign account data are returned. Names are recorded choices the
+player was authorized to make; current discovery/catalog availability does not erase
+those historical facts. Archived lives are never combined into this endpoint and
+there is no arbitrary run selector. No history write/delete endpoint exists.
+
+Use Show earliest/newest history and Previous/Next history page for long timelines.
+Paging announces the visible range and focuses the history heading. Every control
+is keyboard accessible; section buttons expose their active state and badge
+information, headings have visible focus, and native confirmation dialogs support
+Escape and restore focus to the invoking control or Character heading. No operation
+requires hovering. Successful actions invalidate all Character read models; visible
+sections reload their authoritative state, and other sections load fresh on return.
+Optional history failures remain local, while stale pages offer a Character refresh.
+
+Disposable browser/lifecycle verification:
+
+```sh
+npm run typecheck
+npm run build
+npm test
+TEST_DATABASE_URL=postgres://rdnovotni@127.0.0.1:55439/realms_test node --import tsx --test --test-concurrency=1 test/character-history.test.ts test/advancement.test.ts test/growth.test.ts test/character-book.test.ts test/ascension-contract.test.ts test/tactical-campaign.test.ts
+TEST_DATABASE_URL=postgres://rdnovotni@127.0.0.1:55439/realms_test node --import tsx scripts/character-history-preview.ts
+# PLAYTEST_HISTORY_STATE: available, setup, aftercore, empty, blocked
+python3 ../infra/scripts/documentation-check.py
+python3 ../infra/scripts/feature_registry.py
+```
+
+The preview is loopback-only on port 3004 with its own disposable `realms_test`
+schema and the example account `wayfarer` / `A road worth wandering 47!`. It creates
+29 legal advancement records for paging. The aftercore fixture completes a minimal
+test campaign through actual combat evidence; it does not bypass completion guards.
+Stop gracefully to remove its schema. Verify desktop and 320/375/768px navigation,
+paging focus, dialog cancellation, refresh/reload, read-only/active/empty states,
+continued play, equipment, campaign victory and Ascension into a separate empty
+history. Existing journals and rules are unchanged. Rollback is source/build rollback,
+with no data migration or history edits to reverse.
 
 ## Shared visual foundation (VIS-01)
 
