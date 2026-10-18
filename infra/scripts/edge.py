@@ -15,8 +15,12 @@ def approved_paths():
  paths=json.loads((TEMPLATE/'public-api-paths.json').read_text())
  static=['/','/about','/announcements','/changelog','/guide','/community','/newsletter','/privacy','/monetization','/contact','/health/live']
  # Enumerated assets and APIs: future admin routes are denied unless explicitly reviewed.
- static+=['/assets/'+n for n in ['styles.css','welcome.css','realms-tavern.webp','realms-dawn.webp','app.js','api.js','session.js','views.js','types.js','equipment.js','landing.js']]
+ assets=json.loads((TEMPLATE/'public-client-assets.json').read_text())
+ if not isinstance(assets,list) or not all(isinstance(x,str) and re.fullmatch(r'/assets/(?:items/)?[a-z0-9][a-z0-9-]*\.(?:css|js|svg|webp)',x) for x in assets):raise ValueError('Invalid reviewed client asset manifest')
+ static+=assets
  parts=[re.escape(x) for x in static]
+ # Matches the authenticated server's bounded, public raster-art route only.
+ parts.append(r'/assets/items/authored/[a-z0-9][a-z0-9_-]{0,79}\.(png|webp|jpg|avif)')
  for path in paths:parts.append('/'.join('[^/]+' if part.startswith(':') else re.escape(part) for part in path.split('/')))
  return '^('+'|'.join(parts)+')$'
 
@@ -130,6 +134,28 @@ def refresh_proxy():
  compose('--profile','public','config','--quiet',capture=True)
  print('Caddy-only capability correction staged. Credentials, routes and existing connector retained; no containers restarted.')
 
+def refresh_client_assets():
+ # Check managed checksums before touching routes; preserve listeners, host,
+ # credentials and connector configuration byte-for-byte. Route expressions
+ # come only from the reviewed public API and static-asset catalogs.
+ managed()
+ path=ROOT/'Caddyfile';original=path.read_text();record_text=(ROOT/'managed.json').read_text()
+ lines=re.findall(r'(?m)^  path_regexp public (.+)$',original)
+ if len(lines)!=2 or lines[0]!=lines[1]:raise RuntimeError('Unexpected managed route layout; refusing changes')
+ updated=re.sub(r'(?m)^  path_regexp public .+$',lambda _: '  path_regexp public '+approved_paths(),original)
+ if updated==original:print('Reviewed client assets already staged; no services restarted.');return
+ # Keep a protected rollback copy. Validation is inert and starts no listener.
+ backup=ROOT/('Caddyfile.before-client-assets-'+str(time.time_ns()))
+ write(backup,original)
+ try:
+  write(path,updated)
+  compose('run','--rm','--no-deps','caddy','caddy','validate','--config','/etc/caddy/Caddyfile','--adapter','caddyfile',capture=True)
+  record=json.loads(record_text);record['Caddyfile']=hashlib.sha256(path.read_bytes()).hexdigest()
+  write(ROOT/'managed.json',json.dumps(record)+'\n',0o600)
+ except Exception:
+  write(path,original);write(ROOT/'managed.json',record_text,0o600);raise
+ print('Reviewed client routes staged and validated; rollback copy retained. No services restarted. Restart only managed Caddy after operator approval, then run validate.')
+
 def deploy_local():
  managed()
  if compose('ps','-q','caddy',capture=True).strip():
@@ -157,7 +183,7 @@ def activate(approved):
  compose('--profile','public','up','-d','--wait','--wait-timeout','180','tunnel');save()
  print('Approved tunnel started. DNS remains an explicitly separate operator action. Run public verification from outside the home LAN.')
 def main():
- ap=argparse.ArgumentParser(description=__doc__);ap.add_argument('action',choices=['deploy-backend','prepare','refresh-proxy','credentials','deploy-local','validate','activate','stop-public','restart-tunnel','after-reboot']);ap.add_argument('--hostname');ap.add_argument('--tunnel-id');ap.add_argument('--credentials-file');ap.add_argument('--dashboard-managed',action='store_true');ap.add_argument('--approve-public-exposure',action='store_true');args=ap.parse_args()
+ ap=argparse.ArgumentParser(description=__doc__);ap.add_argument('action',choices=['deploy-backend','prepare','refresh-proxy','refresh-client-assets','credentials','deploy-local','validate','activate','stop-public','restart-tunnel','after-reboot']);ap.add_argument('--hostname');ap.add_argument('--tunnel-id');ap.add_argument('--credentials-file');ap.add_argument('--dashboard-managed',action='store_true');ap.add_argument('--approve-public-exposure',action='store_true');args=ap.parse_args()
  if os.geteuid()!=0:ap.error('Run with sudo; uses only the fixed local Docker administrative socket.')
  lockdir=Path('/run/lock/kol-docker');lockdir.mkdir(exist_ok=True,mode=0o700)
  with (lockdir/'operations.lock').open('a') as lock:
@@ -172,6 +198,7 @@ def main():
    if not args.credentials_file:ap.error('--credentials-file is required')
    install_credentials(args.credentials_file)
   elif args.action=='refresh-proxy':refresh_proxy()
+  elif args.action=='refresh-client-assets':refresh_client_assets()
   elif args.action=='deploy-local':deploy_local()
   elif args.action=='validate':validate()
   elif args.action=='activate':activate(args.approve_public_exposure)

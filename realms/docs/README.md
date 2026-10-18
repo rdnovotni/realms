@@ -25,6 +25,7 @@ Current product name: **Follybound**. [Implementation status](implementation-sta
 - [Accounts and sessions](account-sessions.md)
 - [Game client foundation](game-client.md)
 - [The Adventurer's Folio visual design system](adventurers-folio.md)
+- [Adventure, Combat and Journey Journal presentation](campaign-folio.md)
 - [Authenticated application shell and browser fixture](application-shell.md)
 - [Illustrated Character folio and visual fixture](character-folio.md)
 - [Privacy notice: evidence and launch decisions](privacy-policy.md)
@@ -44,6 +45,7 @@ Current product name: **Follybound**. [Implementation status](implementation-sta
 
 ## Items and crafting
 
+- [Inventory equipment ledger presentation and visual verification](inventory-folio.md)
 - [Inventory grid, personal storage and carrying rules](inventory-grid.md)
 - [Repair, item-use services and inventory workspace](inventory-services.md)
 - [Inventory accounting](inventory-accounting.md)

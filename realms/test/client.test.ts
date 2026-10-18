@@ -1,4 +1,6 @@
 import { knownSpecializations,abilityCostText } from '../client/character-presentation-model.js';
+import { equipmentSlotPresentation } from '../client/equipment-presentation.js';
+import { adventureAvailability,combatTurn,canOpenJourneyRecord } from '../client/campaign-model.js';
 import { shellChapter,shellNavigationPage,shellNoticeLabel,shellRenderedScreen } from '../client/shell-model.js';
 import { itemStatuses,groupedInspectionFacts } from '../client/item-tiles.js';
 import { itemArtKey } from '../client/item-art.js';
@@ -25,6 +27,8 @@ test('public preview marks account access unavailable and serves only approved s
   const css=await app.inject({url:'/assets/welcome.css'});assert.equal(css.statusCode,200);assert.match(css.headers['content-type']!,/^text\/css/);
   const characterStyle=await app.inject({url:'/assets/character-folio.css'});assert.equal(characterStyle.statusCode,200);assert.match(characterStyle.body,/\.character-sheet/);
   const shellStyle=await app.inject({url:'/assets/shell.css'});assert.equal(shellStyle.statusCode,200);assert.match(shellStyle.headers['content-type']!,/^text\/css/);assert.match(shellStyle.body,/\.game-shell/);
+  const ledger=await app.inject({url:'/assets/inventory-folio.css'});assert.equal(ledger.statusCode,200);assert.match(ledger.headers['content-type']!,/^text\/css/);assert.match(ledger.body,/\.paperdoll-slot/);
+  const campaign=await app.inject({url:'/assets/campaign-folio.css'});assert.equal(campaign.statusCode,200);assert.match(campaign.headers['content-type']!,/^text\/css/);assert.match(campaign.body,/\.battlefield/);
   const theme=await app.inject({url:'/assets/folio.css'});assert.equal(theme.statusCode,200);assert.match(theme.headers['content-type']!,/^text\/css/);assert.match(theme.body,/--folio-parchment:/);assert.match(theme.headers['content-security-policy']!,/style-src 'self'/);
   const grain=await app.inject({url:'/assets/folio-grain.svg'});assert.equal(grain.statusCode,200);assert.match(grain.headers['content-type']!,/^image\/svg\+xml/);assert.ok(grain.rawPayload.length<1024);assert.doesNotMatch(grain.body,/<script|https?:\/\/(?!www.w3.org)/);
   const shell=await app.inject({url:'/'});assert.match(shell.body,/href="\/assets\/folio.css"/);
@@ -452,4 +456,40 @@ test('Character folio specialization labels require the current owned build and 
 });
 test('Ability Book compact costs distinguish unknown, absent authored cost and explicit zero',()=>{
  assert.equal(abilityCostText(null),'Cost unavailable');assert.equal(abilityCostText([]),'No authored resource cost');assert.equal(abilityCostText([{name:'Mana',amount:0,clock:null}]),'0 Mana');assert.equal(abilityCostText([{name:'Mana',amount:2,clock:null},{name:'Focus',amount:1,clock:'COMBAT_ROUND'}]),'2 Mana · 1 Focus');
+});
+ test('equipment ledger states preserve unknown condition, percentage thresholds and inspection during locks',()=>{
+ const state=(item:{condition:number|null;maximumCondition:number|null}|null,selected=false,compatible=false,blocked=false,twoHand=false)=>equipmentSlotPresentation(item,selected,compatible,blocked,twoHand,defaultTileSettings);
+ assert.equal(state(null).hint,'Search equipment');assert.equal(state(null).condition,null);
+ assert.match(state(null,false,false,false,true).className,/two-handed/);
+ assert.equal(state({condition:null,maximumCondition:null}).condition,null);
+ assert.equal(state({condition:180,maximumCondition:250}).condition?.state,'healthy');
+ assert.match(state({condition:46,maximumCondition:100}).className,/damaged/);
+ assert.equal(state({condition:0,maximumCondition:250}).broken,true);
+ assert.match(state(null,true,true).className,/compatible/);assert.equal(state(null,true,false).hint,'Does not fit selected item');
+ assert.equal(state(null,true,true,true).hint,'Changes locked');
+ assert.equal(state({condition:0,maximumCondition:250},false,false,true).broken,true);
+ });
+test('campaign entry presentation preserves entry gates and explicit unavailable explanations',()=>{
+ const s={game:{canWrite:true,run:{turns:2},carry:{state:'COMFORTABLE'}},progression:{build:{mode:'CONFIGURED'}}} as Snapshot;
+ assert.equal(adventureAvailability(s,2,false).unavailable,false);
+ assert.equal(adventureAvailability(s,3,false).label,'Insufficient Turns');
+ assert.equal(adventureAvailability(s,1,true).label,'Temporarily unavailable');
+ const unchanged=structuredClone(s);assert.equal(adventureAvailability({...s,game:{...s.game,canWrite:false}},1,true).label,'View only');
+ assert.equal(adventureAvailability({...s,progression:{...s.progression,build:{mode:'UNCONFIGURED'}}},1,false).label,'Starting build required');
+ for(const state of ['OVERLOADED','UNMEASURED'])assert.equal(adventureAvailability({...s,game:{...s.game,carry:{...s.game.carry!,state}}},1,false).label,'Carrying restriction');
+ assert.deepEqual(s,unchanged);
+});
+test('combat turn presentation distinguishes manual companions, server turns, read-only and completed encounters',()=>{
+ const b={currentActor:'companion',outcome:null,units:[{id:'companion',side:'PARTY'}],partyCapabilities:[{id:'companion',control:'PLAYER'}]} as import('../client/types.js').Tactical;
+ assert.equal(combatTurn(b,false).label,'Party turn');
+ assert.equal(combatTurn({...b,partyCapabilities:[{...b.partyCapabilities[0]!,control:'SERVER'}]},false).server,true);
+ assert.equal(combatTurn({...b,units:[{...b.units[0]!,side:'ENEMY'}]},false).label,'World turn');
+ assert.match(combatTurn(b,true).description,/View-only/);
+ assert.equal(combatTurn({...b,currentActor:null,units:[]},false).label,'Saved encounter');
+ assert.equal(combatTurn({...b,outcome:'VICTORY',currentActor:null},false).label,'Victory');
+});
+
+test('journey links never open an active fight on behalf of an older recorded outcome',()=>{
+ const s={battle:{instanceId:'active-fight'}} as Snapshot;
+ assert.equal(canOpenJourneyRecord(s,'older-record'),false);assert.equal(canOpenJourneyRecord(s,'active-fight'),true);assert.equal(canOpenJourneyRecord({...s,battle:null},'older-record'),false);
 });

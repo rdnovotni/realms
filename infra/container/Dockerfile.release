@@ -25,7 +25,7 @@ LABEL org.opencontainers.image.title="KoL Realms backend"
 RUN groupadd -g 10001 kol && useradd -u 10001 -g kol -M kol
 WORKDIR /app
 COPY --from=build --chown=10001:10001 /app/dist ./dist
-COPY --from=build --chown=10001:10001 /app/client/index.html /app/client/folio.css /app/client/styles.css /app/client/welcome.css /app/client/shell.css /app/client/character-folio.css ./client/
+COPY --from=build --chown=10001:10001 /app/client/index.html /app/client/folio.css /app/client/styles.css /app/client/welcome.css /app/client/shell.css /app/client/character-folio.css /app/client/inventory-folio.css /app/client/campaign-folio.css ./client/
 COPY --from=build --chown=10001:10001 /app/client/art ./client/art
 COPY --from=production-dependencies --chown=10001:10001 /app/node_modules ./node_modules
 COPY realms/package.json ./
