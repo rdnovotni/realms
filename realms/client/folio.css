@@ -27,6 +27,10 @@
   --folio-action: var(--folio-forest);
   --folio-action-hover: #293f32;
   --folio-on-action: #fff9eb;
+  --folio-on-danger: #fff9eb;
+  --folio-danger-hover: #653337;
+  --folio-rarity-rare: #48657b;
+  --folio-rarity-exceptional: #725377;
   --folio-selected: #dce4d1;
   --folio-hover: #eee2c8;
   --folio-success: #375a40;
@@ -43,6 +47,7 @@
   --folio-page-edge: #30241d12;
   --folio-page-glow: #fff9eb66;
   --folio-stitch: #f7efdc33;
+  --folio-control-highlight: #fff9eb24;
   --folio-shadow: 0 2px 8px #30241d0d, inset 0 1px 0 #fff9eb99;
   --folio-shadow-raised: 0 6px 22px #30241d20;
   --folio-shadow-dialog: 0 16px 48px #30241d40;
@@ -70,7 +75,8 @@
   --folio-duration: 120ms;
   --folio-ease: ease-out;
   /* Set to none to remove grain without changing any layout or text colors. */
-  --folio-paper-texture: url('/assets/folio-grain.svg');
+  --folio-texture-source: url('/assets/folio-grain.svg');
+  --folio-paper-texture: var(--folio-texture-source);
   /* Compatibility contract: existing modules can migrate incrementally. */
   --paper: var(--folio-surface);
   --ink: var(--folio-text);
@@ -100,9 +106,11 @@ a:hover { text-decoration-thickness: 2px; }
 button,input,select,textarea { font: inherit; }
 button,.folio-button { cursor: pointer; border: 1px solid var(--folio-border-interactive); background: var(--folio-surface); border-radius: var(--folio-radius); padding: .6rem var(--folio-space-4); color: var(--folio-text); font-weight: 600; min-height: 44px; transition: background-color var(--folio-duration) var(--folio-ease),border-color var(--folio-duration) var(--folio-ease); }
 button:hover:enabled,.folio-button:hover { border-color: var(--folio-action); background-color: var(--folio-hover); }
-button.primary,.folio-button-primary { background: var(--folio-action); border-color: var(--folio-action); color: var(--folio-on-action); box-shadow: inset 0 1px 0 #fff9eb24; }
+button.primary,.folio-button-primary { background: var(--folio-action); border-color: var(--folio-action); color: var(--folio-on-action); box-shadow: inset 0 1px 0 var(--folio-control-highlight); }
 button.primary:hover:enabled,.folio-button-primary:hover { background: var(--folio-action-hover); color: var(--folio-on-action); }
 button.danger,.folio-button-danger { color: var(--folio-danger); border-color: var(--folio-danger); }
+button.primary.danger { background:var(--folio-danger);color:var(--folio-on-danger);border-color:var(--folio-danger); }
+button.primary.danger:hover:enabled { background:var(--folio-danger-hover);color:var(--folio-on-danger); }
 button.danger:hover:enabled,.folio-button-danger:hover { background: var(--folio-danger-surface); border-color: var(--folio-danger); }
 button:is([aria-current=page],[aria-selected=true],[aria-pressed=true]) { text-decoration: underline; text-underline-offset: .25em; }
 button.small { font-size: var(--folio-type-small); padding: .35rem .65rem; }
@@ -142,6 +150,7 @@ summary { cursor: pointer; }
 @media (prefers-contrast: more) { :root { --folio-text-muted: var(--folio-ink); --folio-border: var(--folio-border-interactive); --folio-paper-texture: none; --folio-shadow: none; } }
 @media (forced-colors: active) {
   :root { --folio-paper-texture: none; --folio-page: Canvas; --folio-surface: Canvas; --folio-surface-raised: Canvas; --folio-surface-inset: Canvas; --folio-text: CanvasText; --folio-text-secondary: CanvasText; --folio-text-muted: CanvasText; --folio-nav: Canvas; --folio-on-dark: CanvasText; --folio-on-dark-muted: CanvasText; --folio-border: CanvasText; --folio-border-interactive: ButtonText; --folio-brass: CanvasText; --folio-action: LinkText; --folio-selected: Canvas; --folio-focus: Highlight; --folio-focus-halo: Canvas; --folio-shadow: none; --folio-shadow-raised: none; --folio-shadow-dialog: none; }
+  :root { --folio-action-hover:LinkText; --folio-on-action:Canvas; --folio-on-danger:Canvas; --folio-danger:CanvasText; --folio-danger-hover:CanvasText; --folio-success:CanvasText; --folio-success-surface:Canvas; --folio-warning:CanvasText; --folio-warning-surface:Canvas; --folio-danger-surface:Canvas; --folio-disabled:GrayText; --folio-disabled-surface:Canvas; --folio-hover:Canvas; --folio-nav-hover:Canvas; --folio-brass-ink:CanvasText; --folio-page-edge:transparent; --folio-page-glow:transparent; --folio-stitch:CanvasText; --folio-control-highlight:transparent; --folio-rarity-rare:CanvasText; --folio-rarity-exceptional:CanvasText; }
   :root :is(button,a,input,select,textarea,summary,[tabindex]):focus-visible { outline: 3px solid Highlight!important; box-shadow: none; }
   :is(button,[role=button])[aria-pressed=true],button[aria-current=page],button[aria-selected=true] { outline: 2px solid Highlight; outline-offset: -4px; }
   .folio-ornament,.intro-ornament,.tabletop-die { display: none; }
@@ -155,3 +164,7 @@ summary { cursor: pointer; }
 .folio-reference .actions { margin-block: var(--folio-space-4); }
 .folio-check { display: flex; align-items: center; gap: var(--folio-space-2); min-height: 44px; }
 .folio-on-dark-link { color: var(--folio-on-dark); }
+/* Development-only reference controls; no production route mounts this panel. */
+.visual-reference-controls { position:relative;padding:var(--folio-space-4);border-top:3px double var(--folio-border);display:flex;flex-wrap:wrap;align-items:center;gap:var(--folio-space-3);background:var(--folio-surface-raised);color:var(--folio-text); }
+.visual-reference-controls label { margin:0;min-width:0; }
+.visual-reference-controls output { flex-basis:100%;overflow-wrap:anywhere;font-family:monospace;font-size:.8rem; }

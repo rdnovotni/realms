@@ -13,39 +13,27 @@ small,.muted{color:var(--muted)}
 
 .layout{display:grid;grid-template-columns:230px minmax(0,1fr) 265px;max-width:1500px;margin:auto;gap:1.5rem;padding:2rem 2%}
 .panel{padding:var(--folio-space-5);margin-bottom:1.3rem}
-.character{background:var(--folio-nav);color:var(--folio-on-dark);border-color:#3a4d3f}
+.character{background:var(--folio-nav);color:var(--folio-on-dark);border-color:var(--folio-brass)}
 .character .muted,.character small{color:var(--folio-on-dark-muted)}
-.portrait{width:64px;height:64px;border:1px solid #94a982;border-radius:50%;display:grid;place-items:center;color:#d7c79b;font:2.4rem var(--folio-font-heading);margin-bottom:1rem;background:#34473b}
+.portrait{width:64px;height:64px;border:1px solid var(--folio-brass);border-radius:50%;display:grid;place-items:center;color:var(--folio-on-dark-muted);font:2.4rem var(--folio-font-heading);margin-bottom:1rem;background:var(--folio-nav-hover)}
 .stats{display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin-top:var(--folio-space-4)}
 .stat strong{display:block;font-size:1.35rem}
 .stat span{font-size:.75rem;color:var(--folio-on-dark-muted)}
 .rule{border-top:1px solid var(--line);margin:1.3rem 0}
-.character .rule{border-color:#4d5b4b}
-.notice{padding:.8rem 2%;background:var(--folio-success-surface);border-bottom:1px solid #d5dece;display:flex;gap:var(--folio-space-4);align-items:center;min-height:3rem;font-size:.9rem}
+.character .rule{border-color:var(--folio-stitch)}
+.notice{padding:.8rem 2%;background:var(--folio-success-surface);border-bottom:1px solid var(--folio-border);display:flex;gap:var(--folio-space-4);align-items:center;min-height:3rem;font-size:.9rem}
 .notice.error{background:var(--folio-danger-surface);color:var(--folio-danger)}
 .notice.success{background:var(--folio-success-surface);color:var(--folio-success)}
 .notice span{flex:1}
-.section-header{display:flex;justify-content:space-between;align-items:center;gap:var(--folio-space-4);margin:1.6rem 0 .9rem}
+.section-header{display:flex;flex-wrap:wrap;overflow-wrap:anywhere;justify-content:space-between;align-items:center;gap:var(--folio-space-4);margin:1.6rem 0 .9rem}
 .section-header h2{margin:0}
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:var(--folio-space-4)}
 .empty{border:1px dashed var(--folio-border-interactive);border-radius:var(--folio-radius);padding:1.5rem;color:var(--muted);background:var(--folio-surface-inset)}
-.attributes{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:var(--folio-space-4)}
-.attribute{background:var(--folio-surface-inset);padding:.6rem .8rem;border-radius:var(--folio-radius)}
-.attribute strong{display:block}
-.pack-row{display:flex;justify-content:space-between;gap:var(--folio-space-4);border-bottom:1px solid var(--line);padding:.8rem 0}
-.pack-row small{display:block}
-.login-shell{max-width:1100px;margin:5vh auto;padding:2rem;display:grid;grid-template-columns:1.35fr 1fr;gap:4rem;align-items:center}
-.login-shell .intro{padding:3rem 0}
-.login-shell h1{font-size:clamp(3rem,7vw,5rem)}
-.login-shell .panel{padding:2rem}
-.login-shell .intro p{max-width:480px}
-.login-shell form button{width:100%}
 .footer{max-width:1500px;margin:0 auto;padding:0 2% 2rem;color:var(--muted);font-size:.75rem}
-.skip{position:absolute;left:1rem;top:-100px;z-index:9;background:white;padding:.6rem}
+.skip{position:absolute;left:1rem;top:-100px;z-index:9;background:var(--folio-surface-raised);color:var(--folio-text);padding:.6rem}
 .skip:focus{top:1rem}
 .loading{padding:3rem;text-align:center}
 .help{font-size:.85rem}
-.tag{font-size:.72rem;color:#536a4f;background:var(--folio-selected);border-radius:4px;padding:.2rem .4rem}
 .tooltip{font-size:.8rem;margin:.4rem 0;color:var(--muted)}
 @media(min-width:1500px){.layout{padding-top:3rem}
 }
@@ -68,10 +56,6 @@ small,.muted{color:var(--muted)}
 
 .panel{padding:1.2rem}
 .cards{grid-template-columns:1fr}
-.login-shell{display:block;padding:1.5rem;margin:1rem auto}
-.login-shell .intro{padding:0}
-.login-shell h1{font-size:3rem}
-.login-shell .panel{padding:1.5rem}
 
 .notice{padding:.7rem 1rem;align-items:flex-start}
 }

@@ -11,6 +11,7 @@ for(const [i,raw] of sources.entries()){
  for(const c of text.replace(/(['"])(?:\\.|(?!\1).)*?\1/g,'')){if(c==='{')depth++;if(c==='}')depth--;assert.ok(depth>=0,files[i]+': unmatched closing brace');}assert.equal(depth,0,files[i]+': unmatched opening brace');
  let parentheses=0;for(const c of text.replace(/(['"])(?:\\.|(?!\1).)*?\1/g,'')){if(c==='(')parentheses++;if(c===')')parentheses--;assert.ok(parentheses>=0,files[i]+': unmatched closing parenthesis');}assert.equal(parentheses,0,files[i]+': unmatched opening parenthesis');
  for(const m of text.matchAll(/var\((--[\w-]+)/g))assert.ok(tokens.has(m[1]),files[i]+': undefined token '+m[1]);
+ if(!['client/folio.css','client/welcome.css'].includes(files[i]))assert.doesNotMatch(text,/#[\da-f]{3,8}\b/i,files[i]+': authenticated paint must use semantic tokens');
  assert.doesNotMatch(text,/@import|https?:\/\/|@font-face/,files[i]+': core styles must be local and font-independent');
 }
 function resolve(name,seen=new Set()){
@@ -20,7 +21,7 @@ function luminance(hex){assert.match(hex,/^#[\da-f]{6}$/i);const rgb=hex.slice(1
 function contrast(a,b){const l=[luminance(resolve(a)),luminance(resolve(b))].sort((x,y)=>y-x);return (l[0]+.05)/(l[1]+.05);}
 const pairs=[];
 for(const surface of ['page','surface','surface-raised','surface-inset','hover','selected'])for(const text of ['text','text-secondary','text-muted','action','danger','brass-ink'])pairs.push([text,surface,4.5]);
-for(const pair of [['on-dark','nav'],['on-dark-muted','nav'],['on-dark','nav-hover'],['on-dark-muted','nav-hover'],['on-action','action'],['on-action','action-hover'],['success','success-surface'],['warning','warning-surface'],['danger','danger-surface'],['disabled','disabled-surface']])pairs.push([...pair,4.5]);
+for(const pair of [['on-dark','nav'],['on-dark-muted','nav'],['on-dark','nav-hover'],['on-dark-muted','nav-hover'],['on-action','action'],['on-action','action-hover'],['success','success-surface'],['warning','warning-surface'],['danger','danger-surface'],['disabled','disabled-surface'],['on-danger','danger'],['on-danger','danger-hover']])pairs.push([...pair,4.5]);
 for(const surface of ['surface','surface-raised','surface-inset'])pairs.push(['border-interactive',surface,3],['focus',surface,3]);
 pairs.push(['focus-halo','nav',3]);
 for(const [foreground,background,minimum] of pairs){const ratio=contrast(foreground,background);assert.ok(ratio>=minimum,`${foreground} / ${background}: ${ratio.toFixed(2)} < ${minimum}`);}

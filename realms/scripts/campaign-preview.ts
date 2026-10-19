@@ -35,6 +35,6 @@ try{
   }
   await enrollPassword(db.pool,f.account,name,'A road worth wandering 47!');
  }
- app=buildApp(db.pool,{mode:'sessions',throttleKey:randomBytes(32).toString('hex')});app.addHook('preValidation',async request=>{if(request.url==='/api/v1/auth/login'&&(request.body as {handle?:string}|undefined)?.handle==='viewer')(request.body as {readOnly?:boolean}).readOnly=true;});await app.listen({host:'127.0.0.1',port:3011});console.log('Disposable campaign preview: http://127.0.0.1:3011 · road/player/server/exhausted/victory/defeat/spent/newcomer/viewer/dense');
+ app=buildApp(db.pool,{mode:'sessions',throttleKey:randomBytes(32).toString('hex')});app.addHook('preValidation',async request=>{if(request.url==='/api/v1/auth/login'&&(request.body as {handle?:string}|undefined)?.handle==='viewer')(request.body as {readOnly?:boolean}).readOnly=true;});app.addHook('onSend',async(_request,reply,payload)=>{reply.header('X-Follybound-Fixture','disposable-visual');return payload;});await app.listen({host:'127.0.0.1',port:3011});console.log('Disposable campaign preview: http://127.0.0.1:3011 · road/player/server/exhausted/victory/defeat/spent/newcomer/viewer/dense');
  let closing=false;const close=async()=>{if(closing)return;closing=true;await app?.close();await db.close();};for(const sig of ['SIGINT','SIGTERM']as const)process.once(sig,()=>void close());
 }catch(error){await app?.close();await db.close();throw error;}

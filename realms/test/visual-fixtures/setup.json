@@ -1,0 +1,231 @@
+{
+  "schemaVersion": 1,
+  "source": "Public projections from disposable setup fixture; frozen for repeatable presentation checks.",
+  "snapshot": {
+    "game": {
+      "protocolVersion": 1,
+      "run": {
+        "runId": "60467fc6-fecd-46ab-8434-b360e78d0cd8",
+        "turns": 10,
+        "revision": 0,
+        "status": "ACTIVE",
+        "mode": "STANDARD"
+      },
+      "canWrite": true,
+      "carry": {
+        "enabled": false,
+        "strength": 10,
+        "weight": "0",
+        "bulk": "0",
+        "weightCapacity": null,
+        "bulkCapacity": null,
+        "unmeasuredItems": 0,
+        "state": "UNCONFIGURED",
+        "penalties": {
+          "stealth": 0,
+          "mobility": 0,
+          "initiative": 0
+        },
+        "sources": [],
+        "baseCapacity": null,
+        "strengthBonus": null,
+        "thresholds": null
+      },
+      "activeEncounter": null,
+      "latestEncounter": null,
+      "adventures": [
+        {
+          "id": "encounter.tactical",
+          "name": "The Old Watchtower",
+          "description": {
+            "summary": "A weathered watchtower overlooks the road. Join your companions for a short tactical encounter."
+          },
+          "turnCost": 1,
+          "failure": {
+            "turnCost": 2,
+            "destination": "HOME",
+            "recoveryHealth": 5
+          }
+        }
+      ],
+      "inventory": [],
+      "hasMoreAdventures": false,
+      "hasMoreItems": false,
+      "equipment": {
+        "slots": [],
+        "activeSet": "A"
+      },
+      "gear": [],
+      "loadouts": []
+    },
+    "progression": {
+      "runId": "60467fc6-fecd-46ab-8434-b360e78d0cd8",
+      "revision": 0,
+      "campaignState": "ACTIVE",
+      "xp": "0",
+      "level": 1,
+      "curveId": null,
+      "curveRevision": null,
+      "build": {
+        "mode": "UNCONFIGURED",
+        "level": 1,
+        "rules": null,
+        "classes": [],
+        "presetKey": null,
+        "attributes": {
+          "luck": null,
+          "wisdom": 10,
+          "charisma": 10,
+          "strength": 10,
+          "dexterity": 10,
+          "constitution": 10,
+          "intelligence": 10
+        }
+      },
+      "readiness": null,
+      "xpProgress": null
+    },
+    "options": {
+      "classes": [],
+      "rules": []
+    },
+    "battle": null
+  },
+  "inventory": {
+    "automation": {
+      "keep": []
+    },
+    "views": [],
+    "workspacePreferences": {
+      "layout": "STANDARD"
+    },
+    "displayPreferences": {
+      "healthyPercent": 70,
+      "wornPercent": 25,
+      "showSingleQuantity": true
+    },
+    "revision": 0,
+    "runId": "60467fc6-fecd-46ab-8434-b360e78d0cd8",
+    "items": [],
+    "total": 0,
+    "offset": 0,
+    "pageSize": 48,
+    "containers": [],
+    "hasMoreContainers": false,
+    "carry": {
+      "enabled": false,
+      "strength": 10,
+      "weight": "0",
+      "bulk": "0",
+      "weightCapacity": null,
+      "bulkCapacity": null,
+      "unmeasuredItems": 0,
+      "state": "UNCONFIGURED",
+      "penalties": {
+        "stealth": 0,
+        "mobility": 0,
+        "initiative": 0
+      },
+      "sources": [],
+      "baseCapacity": null,
+      "strengthBonus": null,
+      "thresholds": null
+    },
+    "preferences": {
+      "autoStoreMaterials": false,
+      "autoOverflow": false
+    }
+  },
+  "advancement": {
+    "runId": "60467fc6-fecd-46ab-8434-b360e78d0cd8",
+    "revision": 0,
+    "activeInstance": false,
+    "classes": [],
+    "subclasses": {
+      "runId": "60467fc6-fecd-46ab-8434-b360e78d0cd8",
+      "revision": 0,
+      "activeInstance": false,
+      "selected": [],
+      "options": []
+    },
+    "feats": {
+      "runId": "60467fc6-fecd-46ab-8434-b360e78d0cd8",
+      "revision": 0,
+      "activeInstance": false,
+      "selected": [],
+      "options": []
+    },
+    "attributes": {
+      "runId": "60467fc6-fecd-46ab-8434-b360e78d0cd8",
+      "revision": 0,
+      "activeInstance": false,
+      "explanation": "Starting build scores plus committed attribute milestone allocations. Equipment and temporary effects are not included.",
+      "attributes": {
+        "luck": null,
+        "wisdom": 10,
+        "charisma": 10,
+        "strength": 10,
+        "dexterity": 10,
+        "constitution": 10,
+        "intelligence": 10
+      },
+      "choices": [],
+      "rules": []
+    },
+    "proficiencies": {
+      "runId": "60467fc6-fecd-46ab-8434-b360e78d0cd8",
+      "revision": 0,
+      "activeInstance": false,
+      "selected": [],
+      "choices": [],
+      "options": []
+    },
+    "milestones": {
+      "runId": "60467fc6-fecd-46ab-8434-b360e78d0cd8",
+      "revision": 0,
+      "activeInstance": false,
+      "milestones": [],
+      "truncated": false
+    }
+  },
+  "equipmentPreview": {
+    "runId": "60467fc6-fecd-46ab-8434-b360e78d0cd8",
+    "revision": 0,
+    "contexts": [],
+    "current": null,
+    "preview": null,
+    "reason": "Discover a character-stat encounter to view contextual totals."
+  },
+  "characterStats": {
+    "runId": "60467fc6-fecd-46ab-8434-b360e78d0cd8",
+    "revision": 0,
+    "contexts": [],
+    "current": null,
+    "preview": null,
+    "reason": "Discover a character-stat encounter to view contextual totals."
+  },
+  "abilityBook": {
+    "runId": "60467fc6-fecd-46ab-8434-b360e78d0cd8",
+    "revision": 0,
+    "activeInstance": false,
+    "activeSet": "A",
+    "entries": [],
+    "truncated": false,
+    "notes": [
+      "Only assessed (Advanced) owned sources are included. Unassessed or undiscovered capabilities are not exposed.",
+      "Prepared inactive weapon sets and uncommitted equipment drafts do not grant entries.",
+      "This book describes owned capabilities, not encounter action legality. Temporary encounter effects are excluded; inspect the battle view for those.",
+      "Mastery is not yet supported."
+    ]
+  },
+  "characterHistory": {
+    "runId": "60467fc6-fecd-46ab-8434-b360e78d0cd8",
+    "revision": 0,
+    "activeInstance": false,
+    "entries": [],
+    "total": 0,
+    "offset": 0,
+    "pageSize": 25,
+    "hasMore": false
+  }
+}

@@ -1,0 +1,590 @@
+{
+  "schemaVersion": 1,
+  "source": "Public projections from disposable adventure fixture; frozen for repeatable presentation checks.",
+  "snapshot": {
+    "game": {
+      "protocolVersion": 1,
+      "run": {
+        "runId": "85335e0d-56f0-4e03-8d43-1966af0f1c50",
+        "turns": 20,
+        "revision": 4,
+        "status": "ACTIVE",
+        "mode": "STANDARD"
+      },
+      "canWrite": true,
+      "carry": {
+        "enabled": false,
+        "strength": 12,
+        "weight": "0",
+        "bulk": "0",
+        "weightCapacity": null,
+        "bulkCapacity": null,
+        "unmeasuredItems": 2,
+        "state": "UNCONFIGURED",
+        "penalties": {
+          "stealth": 0,
+          "mobility": 0,
+          "initiative": 0
+        },
+        "sources": [],
+        "baseCapacity": null,
+        "strengthBonus": null,
+        "thresholds": null
+      },
+      "activeEncounter": null,
+      "latestEncounter": null,
+      "adventures": [
+        {
+          "id": "encounter.tactical",
+          "name": "The Old Watchtower",
+          "description": {
+            "summary": "A weathered watchtower overlooks the road. Join your companions for a short tactical encounter."
+          },
+          "turnCost": 1,
+          "failure": {
+            "turnCost": 2,
+            "destination": "HOME",
+            "recoveryHealth": 5
+          }
+        }
+      ],
+      "inventory": [
+        {
+          "id": "75ffe03f-fd4a-4aff-81b7-abfce2fc9b46",
+          "name": "Sword",
+          "quantity": "1",
+          "binding": "TRADEABLE"
+        },
+        {
+          "id": "c2bd185f-3e55-4aff-ac87-3ba18e97eb56",
+          "name": "Shield",
+          "quantity": "1",
+          "binding": "TRADEABLE"
+        }
+      ],
+      "hasMoreAdventures": false,
+      "hasMoreItems": false,
+      "equipment": {
+        "slots": [
+          {
+            "set": "A",
+            "slot": "MAIN_HAND",
+            "itemId": "75ffe03f-fd4a-4aff-81b7-abfce2fc9b46"
+          },
+          {
+            "set": "A",
+            "slot": "OFF_HAND",
+            "itemId": "c2bd185f-3e55-4aff-ac87-3ba18e97eb56"
+          }
+        ],
+        "activeSet": "A"
+      },
+      "gear": [
+        {
+          "id": "75ffe03f-fd4a-4aff-81b7-abfce2fc9b46",
+          "name": "Sword",
+          "binding": "TRADEABLE",
+          "artwork": null,
+          "icon": null,
+          "qualityLabel": "Unassessed",
+          "numericQuality": null,
+          "slots": [
+            "MAIN_HAND"
+          ],
+          "unitWeight": null,
+          "unitBulk": null,
+          "knownStats": null,
+          "knownEffects": null,
+          "hands": 1,
+          "minimumLevel": 1,
+          "bindingPolicy": "PRESERVE",
+          "eligible": true,
+          "proficiencyMet": true,
+          "manualLocked": false,
+          "protectedLoadouts": [],
+          "condition": null,
+          "maximumCondition": null
+        },
+        {
+          "id": "c2bd185f-3e55-4aff-ac87-3ba18e97eb56",
+          "name": "Shield",
+          "binding": "TRADEABLE",
+          "artwork": null,
+          "icon": null,
+          "qualityLabel": "Unassessed",
+          "numericQuality": null,
+          "slots": [
+            "OFF_HAND"
+          ],
+          "unitWeight": null,
+          "unitBulk": null,
+          "knownStats": null,
+          "knownEffects": null,
+          "hands": 1,
+          "minimumLevel": 1,
+          "bindingPolicy": "PRESERVE",
+          "eligible": true,
+          "proficiencyMet": true,
+          "manualLocked": false,
+          "protectedLoadouts": [],
+          "condition": null,
+          "maximumCondition": null
+        }
+      ],
+      "loadouts": []
+    },
+    "progression": {
+      "runId": "85335e0d-56f0-4e03-8d43-1966af0f1c50",
+      "revision": 4,
+      "campaignState": "ACTIVE",
+      "xp": "0",
+      "level": 1,
+      "curveId": "curve.build",
+      "curveRevision": 1,
+      "build": {
+        "mode": "CONFIGURED",
+        "level": 1,
+        "rules": {
+          "id": "rules.build",
+          "curveId": "curve.build",
+          "revision": 1,
+          "releaseId": "3d37f5f0-bc16-428f-86d9-29822b257af1",
+          "curveRevision": 1
+        },
+        "classes": [
+          {
+            "classId": "class.one",
+            "nativeLevel": 1
+          }
+        ],
+        "presetKey": "balanced",
+        "attributes": {
+          "luck": 10,
+          "wisdom": 8,
+          "charisma": 7,
+          "strength": 12,
+          "dexterity": 11,
+          "constitution": 10,
+          "intelligence": 9
+        }
+      },
+      "readiness": {
+        "xp": "0",
+        "level": 1,
+        "readyThroughLevel": 1,
+        "pendingLevels": 0,
+        "nextThreshold": "100"
+      },
+      "xpProgress": {
+        "earnedThreshold": "0",
+        "maximumLevel": 25
+      }
+    },
+    "options": {
+      "classes": [
+        {
+          "classId": "class.one",
+          "revision": 1,
+          "name": "one",
+          "rulesId": "rules.build",
+          "maximumNativeLevel": 25
+        }
+      ],
+      "rules": [
+        {
+          "rulesId": "rules.build",
+          "revision": 1,
+          "curveId": "curve.build",
+          "presets": [
+            {
+              "key": "balanced",
+              "attributes": {
+                "luck": 10,
+                "wisdom": 8,
+                "charisma": 7,
+                "strength": 12,
+                "dexterity": 11,
+                "constitution": 10,
+                "intelligence": 9
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "battle": null
+  },
+  "inventory": {
+    "automation": {
+      "keep": []
+    },
+    "views": [],
+    "workspacePreferences": {
+      "layout": "STANDARD"
+    },
+    "displayPreferences": {
+      "healthyPercent": 70,
+      "wornPercent": 25,
+      "showSingleQuantity": true
+    },
+    "revision": 4,
+    "runId": "85335e0d-56f0-4e03-8d43-1966af0f1c50",
+    "items": [
+      {
+        "collectionProtected": false,
+        "favorite": false,
+        "inspectionToken": "",
+        "isNew": true,
+        "id": "c2bd185f-3e55-4aff-ac87-3ba18e97eb56",
+        "definitionId": "item.shield",
+        "containerId": "dbfe026c-18cf-4c57-a5ad-de5a23e8a319",
+        "kind": "CARRIED",
+        "name": "Shield",
+        "artwork": null,
+        "icon": null,
+        "quantity": "1",
+        "binding": "TRADEABLE",
+        "category": "EQUIPMENT",
+        "rarity": "UNKNOWN",
+        "description": "",
+        "family": "",
+        "qualityLabel": "Unassessed",
+        "numericQuality": null,
+        "unitWeight": null,
+        "unitBulk": null,
+        "totalWeight": null,
+        "totalBulk": null,
+        "useKind": null,
+        "equipment": {
+          "hands": 1,
+          "slots": [
+            "OFF_HAND"
+          ],
+          "version": 1,
+          "minimumLevel": 1,
+          "bindingPolicy": "PRESERVE"
+        },
+        "eligible": true,
+        "proficiencyMet": true,
+        "knownStats": null,
+        "knownEffects": null,
+        "storageMode": "INSTANCE",
+        "locked": false,
+        "equipped": true,
+        "loadouts": [],
+        "protected": true,
+        "accessible": true,
+        "condition": null,
+        "maximumCondition": null,
+        "groupFavoriteCount": 0,
+        "groupNewCount": 1,
+        "copies": 1,
+        "multipleLocations": false,
+        "groupQuantity": "1",
+        "groupWeight": null,
+        "groupBulk": null
+      },
+      {
+        "collectionProtected": false,
+        "favorite": false,
+        "inspectionToken": "",
+        "isNew": true,
+        "id": "75ffe03f-fd4a-4aff-81b7-abfce2fc9b46",
+        "definitionId": "item.sword",
+        "containerId": "dbfe026c-18cf-4c57-a5ad-de5a23e8a319",
+        "kind": "CARRIED",
+        "name": "Sword",
+        "artwork": null,
+        "icon": null,
+        "quantity": "1",
+        "binding": "TRADEABLE",
+        "category": "EQUIPMENT",
+        "rarity": "UNKNOWN",
+        "description": "",
+        "family": "",
+        "qualityLabel": "Unassessed",
+        "numericQuality": null,
+        "unitWeight": null,
+        "unitBulk": null,
+        "totalWeight": null,
+        "totalBulk": null,
+        "useKind": null,
+        "equipment": {
+          "hands": 1,
+          "slots": [
+            "MAIN_HAND"
+          ],
+          "version": 1,
+          "minimumLevel": 1,
+          "bindingPolicy": "PRESERVE"
+        },
+        "eligible": true,
+        "proficiencyMet": true,
+        "knownStats": null,
+        "knownEffects": null,
+        "storageMode": "INSTANCE",
+        "locked": false,
+        "equipped": true,
+        "loadouts": [],
+        "protected": true,
+        "accessible": true,
+        "condition": null,
+        "maximumCondition": null,
+        "groupFavoriteCount": 0,
+        "groupNewCount": 1,
+        "copies": 1,
+        "multipleLocations": false,
+        "groupQuantity": "1",
+        "groupWeight": null,
+        "groupBulk": null
+      }
+    ],
+    "total": 2,
+    "offset": 0,
+    "pageSize": 48,
+    "containers": [
+      {
+        "id": "dbfe026c-18cf-4c57-a5ad-de5a23e8a319",
+        "kind": "CARRIED",
+        "label": "",
+        "lifecycle": "ACTIVE",
+        "accessible": true,
+        "archived": false,
+        "count": 2
+      }
+    ],
+    "hasMoreContainers": false,
+    "carry": {
+      "enabled": false,
+      "strength": 12,
+      "weight": "0",
+      "bulk": "0",
+      "weightCapacity": null,
+      "bulkCapacity": null,
+      "unmeasuredItems": 2,
+      "state": "UNCONFIGURED",
+      "penalties": {
+        "stealth": 0,
+        "mobility": 0,
+        "initiative": 0
+      },
+      "sources": [],
+      "baseCapacity": null,
+      "strengthBonus": null,
+      "thresholds": null
+    },
+    "preferences": {
+      "autoStoreMaterials": false,
+      "autoOverflow": false
+    }
+  },
+  "advancement": {
+    "runId": "85335e0d-56f0-4e03-8d43-1966af0f1c50",
+    "revision": 4,
+    "activeInstance": false,
+    "classes": [
+      {
+        "classId": "class.one",
+        "revision": 1,
+        "name": "one",
+        "rulesId": "rules.build",
+        "maximumNativeLevel": 25,
+        "nativeLevel": 1,
+        "nextNativeLevel": 2,
+        "eligibility": "LEVEL_NOT_READY"
+      }
+    ],
+    "subclasses": {
+      "runId": "85335e0d-56f0-4e03-8d43-1966af0f1c50",
+      "revision": 4,
+      "activeInstance": false,
+      "selected": [],
+      "options": []
+    },
+    "feats": {
+      "runId": "85335e0d-56f0-4e03-8d43-1966af0f1c50",
+      "revision": 4,
+      "activeInstance": false,
+      "selected": [
+        {
+          "featId": "feat.vigor",
+          "featRevision": 1,
+          "milestone": 1,
+          "name": "Vigor"
+        }
+      ],
+      "options": [
+        {
+          "featId": "feat.vigor",
+          "featRevision": 1,
+          "name": "Vigor",
+          "rulesId": "rules.feats",
+          "description": null,
+          "effects": null,
+          "availableMilestones": [],
+          "eligibility": "ALREADY_CHOSEN"
+        }
+      ]
+    },
+    "attributes": {
+      "runId": "85335e0d-56f0-4e03-8d43-1966af0f1c50",
+      "revision": 4,
+      "activeInstance": false,
+      "explanation": "Starting build scores plus committed attribute milestone allocations. Equipment and temporary effects are not included.",
+      "attributes": {
+        "luck": 10,
+        "wisdom": 8,
+        "charisma": 7,
+        "strength": 12,
+        "dexterity": 11,
+        "constitution": 10,
+        "intelligence": 9
+      },
+      "choices": [],
+      "rules": []
+    },
+    "proficiencies": {
+      "runId": "85335e0d-56f0-4e03-8d43-1966af0f1c50",
+      "revision": 4,
+      "activeInstance": false,
+      "selected": [],
+      "choices": [],
+      "options": []
+    },
+    "milestones": {
+      "runId": "85335e0d-56f0-4e03-8d43-1966af0f1c50",
+      "revision": 4,
+      "activeInstance": false,
+      "milestones": [
+        {
+          "category": "FEAT",
+          "contractId": "rules.feats",
+          "contractRevision": 1,
+          "level": 1,
+          "basis": "CHARACTER",
+          "name": null,
+          "state": "COMPLETED",
+          "details": null
+        }
+      ],
+      "truncated": false
+    }
+  },
+  "equipmentPreview": {
+    "runId": "85335e0d-56f0-4e03-8d43-1966af0f1c50",
+    "revision": 4,
+    "contexts": [
+      {
+        "id": "encounter.tactical",
+        "name": "The Old Watchtower"
+      }
+    ],
+    "contextId": "encounter.tactical",
+    "current": null,
+    "preview": null,
+    "reason": "Assess all currently active and proposed active equipment before viewing numerical totals and comparisons. Hidden item mechanics remain concealed."
+  },
+  "characterStats": {
+    "runId": "85335e0d-56f0-4e03-8d43-1966af0f1c50",
+    "revision": 4,
+    "contexts": [
+      {
+        "id": "encounter.tactical",
+        "name": "The Old Watchtower"
+      }
+    ],
+    "contextId": "encounter.tactical",
+    "current": null,
+    "preview": null,
+    "reason": "Assess all currently active and proposed active equipment before viewing numerical totals and comparisons. Hidden item mechanics remain concealed."
+  },
+  "abilityBook": {
+    "runId": "85335e0d-56f0-4e03-8d43-1966af0f1c50",
+    "revision": 4,
+    "activeInstance": false,
+    "activeSet": "A",
+    "entries": [],
+    "truncated": false,
+    "notes": [
+      "Only assessed (Advanced) owned sources are included. Unassessed or undiscovered capabilities are not exposed.",
+      "Prepared inactive weapon sets and uncommitted equipment drafts do not grant entries.",
+      "This book describes owned capabilities, not encounter action legality. Temporary encounter effects are excluded; inspect the battle view for those.",
+      "Mastery is not yet supported."
+    ]
+  },
+  "characterHistory": {
+    "runId": "85335e0d-56f0-4e03-8d43-1966af0f1c50",
+    "revision": 4,
+    "activeInstance": false,
+    "entries": [
+      {
+        "id": "START_BUILD:609f8dae-6586-45c2-98ef-ae45a696915d",
+        "category": "START_BUILD",
+        "name": "one",
+        "level": 1,
+        "milestone": null,
+        "recordedAt": "2026-10-18T21:13:44.980242-05:00",
+        "changes": [
+          {
+            "name": "Native class level",
+            "before": null,
+            "after": 1
+          },
+          {
+            "name": "Starting preset",
+            "before": null,
+            "after": "balanced"
+          },
+          {
+            "name": "strength",
+            "before": null,
+            "after": 12
+          },
+          {
+            "name": "dexterity",
+            "before": null,
+            "after": 11
+          },
+          {
+            "name": "constitution",
+            "before": null,
+            "after": 10
+          },
+          {
+            "name": "intelligence",
+            "before": null,
+            "after": 9
+          },
+          {
+            "name": "wisdom",
+            "before": null,
+            "after": 8
+          },
+          {
+            "name": "charisma",
+            "before": null,
+            "after": 7
+          },
+          {
+            "name": "luck",
+            "before": null,
+            "after": 10
+          }
+        ]
+      },
+      {
+        "id": "FEAT:0c728a02-356f-4ab0-8e30-938740f07f2b",
+        "category": "FEAT",
+        "name": "Vigor",
+        "level": 1,
+        "milestone": 1,
+        "recordedAt": "2026-10-18T21:13:45.098199-05:00",
+        "changes": []
+      }
+    ],
+    "total": 2,
+    "offset": 0,
+    "pageSize": 25,
+    "hasMore": false
+  }
+}

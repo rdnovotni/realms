@@ -45,9 +45,9 @@
 .game-shell .right-column .journal-entry { border-left-width: 1px; }
 .game-shell>.footer { max-width: 1612px; margin: var(--folio-space-5) auto 0; padding: var(--folio-space-4) var(--folio-space-5) var(--folio-space-6); text-align: center; color: var(--folio-text-secondary); border-top: 3px double var(--folio-border); }
 /* Overlay classes are shared but only mounted by authenticated workflows. */
-:root :is(.equipment-picker,.inventory-service-dialog,.inventory-comparison-dialog,.advancement-confirmation,.item-context-menu) { color: var(--folio-text); background: var(--folio-surface-raised); border: 1px solid var(--folio-border-interactive); border-top: 3px double var(--folio-brass); border-radius: var(--folio-radius-sm); box-shadow: var(--folio-shadow-dialog); max-height: calc(100dvh - 2rem - env(safe-area-inset-top) - env(safe-area-inset-bottom)); overflow-y: auto; overscroll-behavior: contain; }
-:root :is(.equipment-picker,.inventory-service-dialog,.inventory-comparison-dialog,.advancement-confirmation,.item-context-menu)::backdrop { background: var(--folio-backdrop); backdrop-filter: none; }
-:root :is(.equipment-picker,.inventory-service-dialog,.inventory-comparison-dialog,.advancement-confirmation,.item-context-menu)>:is(h2,h3):first-child { font-family: var(--folio-font-heading); color: var(--folio-text); padding-bottom: var(--folio-space-3); border-bottom: 1px solid var(--folio-border); }
+:root :is(.appearance-dialog,.equipment-picker,.inventory-service-dialog,.inventory-comparison-dialog,.advancement-confirmation,.item-context-menu) { color: var(--folio-text); background: var(--folio-surface-raised); border: 1px solid var(--folio-border-interactive); border-top: 3px double var(--folio-brass); border-radius: var(--folio-radius-sm); box-shadow: var(--folio-shadow-dialog); max-height: calc(100dvh - 2rem - env(safe-area-inset-top) - env(safe-area-inset-bottom)); overflow-y: auto; overscroll-behavior: contain; }
+:root :is(.appearance-dialog,.equipment-picker,.inventory-service-dialog,.inventory-comparison-dialog,.advancement-confirmation,.item-context-menu)::backdrop { background: var(--folio-backdrop); backdrop-filter: none; }
+:root :is(.appearance-dialog,.equipment-picker,.inventory-service-dialog,.inventory-comparison-dialog,.advancement-confirmation,.item-context-menu)>:is(h2,h3):first-child { font-family: var(--folio-font-heading); color: var(--folio-text); padding-bottom: var(--folio-space-3); border-bottom: 1px solid var(--folio-border); }
 .game-shell :is(.equipment-confirmation,.inventory-confirmation,.loadout-confirmation) { background: var(--folio-warning-surface); color: var(--folio-warning); border-color: var(--folio-border-interactive); }
 .game-shell :is(summary,.inventory-pagination button,.sheet-navigation button,.inventory-storage-nav button) { min-height: 44px; }
 .game-shell :is(summary) { align-content: center; }
@@ -94,5 +94,12 @@
   .game-shell .folio-page,.game-shell>.topbar { box-shadow: none; }
   .shell-page-label::after { background: CanvasText; }
   .game-shell .topbar .shell-navigation button[aria-current=page] { border: 2px solid Highlight; outline: 2px solid Highlight; box-shadow: none; }
-  :root :is(.equipment-picker,.inventory-service-dialog,.inventory-comparison-dialog,.advancement-confirmation,.item-context-menu)::backdrop { background: Canvas; opacity: .8; }
+  :root :is(.appearance-dialog,.equipment-picker,.inventory-service-dialog,.inventory-comparison-dialog,.advancement-confirmation,.item-context-menu)::backdrop { background: Canvas; opacity: .8; }
 }
+
+.appearance-dialog { width:min(32rem,calc(100vw - 24px));padding:var(--folio-space-5); }
+.shell-navigation button>.folio-icon { margin-inline-end:.3em; }
+.unit-resource p>span>.folio-icon { margin-inline-start:.3em; }
+/* Text enlargement must wrap utility controls rather than widening the page. */
+.game-shell .topbar .tools { flex-wrap:wrap;justify-content:flex-end;max-width:100%; }
+.game-shell .shell-navigation button { white-space:normal;overflow-wrap:anywhere; }

@@ -21,6 +21,7 @@
 .battle-top{display:grid;grid-template-columns:auto minmax(0,1fr);gap:var(--folio-space-4);align-items:center;padding:var(--folio-space-4);border:1px solid var(--folio-border);border-top:3px double var(--folio-brass);background:var(--folio-surface-raised);margin-bottom:var(--folio-space-5)}
 .combat-round{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:65px;min-height:80px;padding:var(--folio-space-2);border:3px double var(--folio-brass);border-radius:var(--folio-radius-sm);background:var(--folio-surface-inset);font-variant-numeric:tabular-nums}
 .combat-round span{font-size:.65rem;text-transform:uppercase;letter-spacing:.08em}.combat-round strong{font:2rem/1.2 var(--folio-font-heading)}
+.combat-identity{min-width:0;overflow-wrap:anywhere}
 .combat-identity h1{font-size:clamp(1.5rem,3vw,2.1rem);line-height:1.2;margin:.3rem 0;overflow-wrap:anywhere}
 .combat-turn{grid-column:1/-1;border-top:1px solid var(--folio-border);padding-top:var(--folio-space-3);display:flex;flex-wrap:wrap;align-items:baseline;gap:5px 12px;font-size:.9rem}
 .combat-turn>strong{font:600 1.05rem var(--folio-font-heading);color:var(--folio-success)}.combat-turn[data-control=server]>strong{color:var(--folio-brass-ink)}.combat-turn p{flex-basis:100%;font-size:.8rem;color:var(--folio-text-muted);margin:0}

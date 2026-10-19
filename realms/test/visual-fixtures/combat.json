@@ -1,0 +1,944 @@
+{
+  "schemaVersion": 1,
+  "source": "Public projections from disposable combat fixture; frozen for repeatable presentation checks.",
+  "snapshot": {
+    "game": {
+      "protocolVersion": 1,
+      "run": {
+        "runId": "f38e5012-f276-4eb5-92ac-0670317d56e0",
+        "turns": 19,
+        "revision": 6,
+        "status": "ACTIVE",
+        "mode": "STANDARD"
+      },
+      "canWrite": true,
+      "carry": {
+        "enabled": false,
+        "strength": 12,
+        "weight": "0",
+        "bulk": "0",
+        "weightCapacity": null,
+        "bulkCapacity": null,
+        "unmeasuredItems": 2,
+        "state": "UNCONFIGURED",
+        "penalties": {
+          "stealth": 0,
+          "mobility": 0,
+          "initiative": 0
+        },
+        "sources": [],
+        "baseCapacity": null,
+        "strengthBonus": null,
+        "thresholds": null
+      },
+      "activeEncounter": {
+        "id": "f25bb15e-6ac3-4e23-a94b-c9ccc72bb3a7",
+        "kind": "TACTICAL"
+      },
+      "latestEncounter": null,
+      "adventures": [
+        {
+          "id": "encounter.tactical",
+          "name": "The Old Watchtower",
+          "description": {
+            "summary": "A weathered watchtower overlooks the road. Join your companions for a short tactical encounter."
+          },
+          "turnCost": 1,
+          "failure": {
+            "turnCost": 2,
+            "destination": "HOME",
+            "recoveryHealth": 5
+          }
+        }
+      ],
+      "inventory": [
+        {
+          "id": "4e41e2ae-8b56-414f-9fea-d46d97ac4282",
+          "name": "Shield",
+          "quantity": "1",
+          "binding": "TRADEABLE"
+        },
+        {
+          "id": "8405bd4c-c79c-4012-b87d-9cde08b16c20",
+          "name": "Sword",
+          "quantity": "1",
+          "binding": "TRADEABLE"
+        }
+      ],
+      "hasMoreAdventures": false,
+      "hasMoreItems": false,
+      "equipment": {
+        "slots": [
+          {
+            "set": "A",
+            "slot": "MAIN_HAND",
+            "itemId": "8405bd4c-c79c-4012-b87d-9cde08b16c20"
+          },
+          {
+            "set": "A",
+            "slot": "OFF_HAND",
+            "itemId": "4e41e2ae-8b56-414f-9fea-d46d97ac4282"
+          }
+        ],
+        "activeSet": "A"
+      },
+      "gear": [
+        {
+          "id": "4e41e2ae-8b56-414f-9fea-d46d97ac4282",
+          "name": "Shield",
+          "binding": "TRADEABLE",
+          "artwork": null,
+          "icon": null,
+          "qualityLabel": "Unassessed",
+          "numericQuality": null,
+          "slots": [
+            "OFF_HAND"
+          ],
+          "unitWeight": null,
+          "unitBulk": null,
+          "knownStats": null,
+          "knownEffects": null,
+          "hands": 1,
+          "minimumLevel": 1,
+          "bindingPolicy": "PRESERVE",
+          "eligible": true,
+          "proficiencyMet": true,
+          "manualLocked": false,
+          "protectedLoadouts": [],
+          "condition": null,
+          "maximumCondition": null
+        },
+        {
+          "id": "8405bd4c-c79c-4012-b87d-9cde08b16c20",
+          "name": "Sword",
+          "binding": "TRADEABLE",
+          "artwork": null,
+          "icon": null,
+          "qualityLabel": "Unassessed",
+          "numericQuality": null,
+          "slots": [
+            "MAIN_HAND"
+          ],
+          "unitWeight": null,
+          "unitBulk": null,
+          "knownStats": null,
+          "knownEffects": null,
+          "hands": 1,
+          "minimumLevel": 1,
+          "bindingPolicy": "PRESERVE",
+          "eligible": true,
+          "proficiencyMet": true,
+          "manualLocked": false,
+          "protectedLoadouts": [],
+          "condition": null,
+          "maximumCondition": null
+        }
+      ],
+      "loadouts": []
+    },
+    "progression": {
+      "runId": "f38e5012-f276-4eb5-92ac-0670317d56e0",
+      "revision": 6,
+      "campaignState": "ACTIVE",
+      "xp": "0",
+      "level": 1,
+      "curveId": "curve.build",
+      "curveRevision": 2,
+      "build": {
+        "mode": "CONFIGURED",
+        "level": 1,
+        "rules": {
+          "id": "rules.build",
+          "curveId": "curve.build",
+          "revision": 2,
+          "releaseId": "c504eb3f-a248-4f25-a23a-61cb7a209935",
+          "curveRevision": 2
+        },
+        "classes": [
+          {
+            "classId": "class.one",
+            "nativeLevel": 1
+          }
+        ],
+        "presetKey": "balanced",
+        "attributes": {
+          "luck": 10,
+          "wisdom": 8,
+          "charisma": 7,
+          "strength": 12,
+          "dexterity": 11,
+          "constitution": 10,
+          "intelligence": 9
+        }
+      },
+      "readiness": {
+        "xp": "0",
+        "level": 1,
+        "readyThroughLevel": 1,
+        "pendingLevels": 0,
+        "nextThreshold": "100"
+      },
+      "xpProgress": {
+        "earnedThreshold": "0",
+        "maximumLevel": 25
+      }
+    },
+    "options": {
+      "classes": [
+        {
+          "classId": "class.one",
+          "revision": 2,
+          "name": "one",
+          "rulesId": "rules.build",
+          "maximumNativeLevel": 25
+        }
+      ],
+      "rules": [
+        {
+          "rulesId": "rules.build",
+          "revision": 2,
+          "curveId": "curve.build",
+          "presets": [
+            {
+              "key": "balanced",
+              "attributes": {
+                "luck": 10,
+                "wisdom": 8,
+                "charisma": 7,
+                "strength": 12,
+                "dexterity": 11,
+                "constitution": 10,
+                "intelligence": 9
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "battle": {
+      "instanceId": "f25bb15e-6ac3-4e23-a94b-c9ccc72bb3a7",
+      "revision": 6,
+      "encounterRevision": 6,
+      "tacticalRevision": 5,
+      "round": 1,
+      "currentActor": "hero",
+      "order": [
+        "enemy",
+        "watchtower_sentinel_of_the_long_forgotten_road",
+        "hero",
+        "ally",
+        "road_companion"
+      ],
+      "outcome": null,
+      "units": [
+        {
+          "id": "hero",
+          "side": "PARTY",
+          "zone": "floor",
+          "health": 35,
+          "maxHealth": 35,
+          "mana": 6,
+          "maxMana": 6,
+          "state": "ACTIVE",
+          "strikes": 0,
+          "guardReady": false,
+          "stabilized": false,
+          "concentration": null,
+          "resources": {
+            "class.one.focus": 2
+          },
+          "cooldowns": {},
+          "effects": []
+        },
+        {
+          "id": "ally",
+          "side": "PARTY",
+          "zone": "floor",
+          "health": 7,
+          "maxHealth": 20,
+          "mana": 6,
+          "maxMana": 6,
+          "state": "ACTIVE",
+          "strikes": 0,
+          "guardReady": false,
+          "stabilized": false,
+          "concentration": null,
+          "resources": {},
+          "cooldowns": {},
+          "effects": [
+            {
+              "effectId": "effect.frayed",
+              "family": "frayed",
+              "polarity": "HARMFUL",
+              "tags": [
+                "condition"
+              ],
+              "clock": "ROUNDS",
+              "tick": "OWNER_END",
+              "stacking": "REFRESH",
+              "remaining": 3,
+              "modifiers": [
+                {
+                  "stat": "armor",
+                  "amount": -1
+                }
+              ],
+              "sourceUnitId": "enemy"
+            }
+          ]
+        },
+        {
+          "id": "road_companion",
+          "side": "PARTY",
+          "zone": "balcony",
+          "health": 20,
+          "maxHealth": 20,
+          "mana": 6,
+          "maxMana": 6,
+          "state": "ACTIVE",
+          "strikes": 0,
+          "guardReady": false,
+          "stabilized": false,
+          "concentration": null,
+          "resources": {},
+          "cooldowns": {},
+          "effects": []
+        },
+        {
+          "id": "enemy",
+          "side": "ENEMY",
+          "zone": "floor",
+          "health": 12,
+          "maxHealth": 12,
+          "mana": 6,
+          "maxMana": 6,
+          "state": "ACTIVE",
+          "strikes": 0,
+          "guardReady": false,
+          "stabilized": false,
+          "concentration": null,
+          "resources": {},
+          "cooldowns": {},
+          "effects": []
+        },
+        {
+          "id": "watchtower_sentinel_of_the_long_forgotten_road",
+          "side": "ENEMY",
+          "zone": "floor",
+          "health": 12,
+          "maxHealth": 12,
+          "mana": 6,
+          "maxMana": 6,
+          "state": "ACTIVE",
+          "strikes": 0,
+          "guardReady": false,
+          "stabilized": false,
+          "concentration": null,
+          "resources": {},
+          "cooldowns": {},
+          "effects": []
+        }
+      ],
+      "budgets": {
+        "ally": {
+          "main": 1,
+          "quick": 1,
+          "reaction": 1
+        },
+        "hero": {
+          "main": 1,
+          "quick": 1,
+          "reaction": 1
+        },
+        "enemy": {
+          "main": 0,
+          "quick": 1,
+          "reaction": 1
+        },
+        "road_companion": {
+          "main": 1,
+          "quick": 1,
+          "reaction": 1
+        },
+        "watchtower_sentinel_of_the_long_forgotten_road": {
+          "main": 0,
+          "quick": 0,
+          "reaction": 1
+        }
+      },
+      "actionRules": {
+        "attackRange": 0,
+        "healRange": 1,
+        "healAmount": 5,
+        "healManaCost": 2,
+        "guardArmorBonus": 5
+      },
+      "partyCapabilities": [
+        {
+          "id": "hero",
+          "heal": true,
+          "guard": true,
+          "techniques": [
+            {
+              "abilityId": "class.one.practice_mend_1",
+              "action": "MAIN",
+              "targetSide": "ALLY",
+              "range": 1,
+              "area": "SINGLE",
+              "manaCost": 1,
+              "resourceCost": {
+                "class.one.focus": 1
+              },
+              "cooldownRounds": 1,
+              "concentration": false,
+              "bypassStatusImmunity": false,
+              "effect": {
+                "max": 2,
+                "min": 1,
+                "kind": "HEAL"
+              }
+            },
+            {
+              "abilityId": "class.one.practice_mend_2",
+              "action": "QUICK",
+              "targetSide": "ALLY",
+              "range": 1,
+              "area": "SINGLE",
+              "manaCost": 1,
+              "resourceCost": {
+                "class.one.focus": 1
+              },
+              "cooldownRounds": 1,
+              "concentration": false,
+              "bypassStatusImmunity": false,
+              "effect": {
+                "max": 2,
+                "min": 1,
+                "kind": "HEAL"
+              }
+            },
+            {
+              "abilityId": "class.one.practice_mend_3",
+              "action": "MAIN",
+              "targetSide": "ALLY",
+              "range": 1,
+              "area": "SINGLE",
+              "manaCost": 1,
+              "resourceCost": {
+                "class.one.focus": 1
+              },
+              "cooldownRounds": 1,
+              "concentration": false,
+              "bypassStatusImmunity": false,
+              "effect": {
+                "max": 2,
+                "min": 1,
+                "kind": "HEAL"
+              }
+            },
+            {
+              "abilityId": "class.one.practice_mend_4",
+              "action": "QUICK",
+              "targetSide": "ALLY",
+              "range": 1,
+              "area": "SINGLE",
+              "manaCost": 1,
+              "resourceCost": {
+                "class.one.focus": 1
+              },
+              "cooldownRounds": 1,
+              "concentration": false,
+              "bypassStatusImmunity": false,
+              "effect": {
+                "max": 2,
+                "min": 1,
+                "kind": "HEAL"
+              }
+            },
+            {
+              "abilityId": "class.one.practice_mend_5",
+              "action": "MAIN",
+              "targetSide": "ALLY",
+              "range": 1,
+              "area": "SINGLE",
+              "manaCost": 1,
+              "resourceCost": {
+                "class.one.focus": 1
+              },
+              "cooldownRounds": 1,
+              "concentration": false,
+              "bypassStatusImmunity": false,
+              "effect": {
+                "max": 2,
+                "min": 1,
+                "kind": "HEAL"
+              }
+            },
+            {
+              "abilityId": "class.one.practice_mend_6",
+              "action": "QUICK",
+              "targetSide": "ALLY",
+              "range": 1,
+              "area": "SINGLE",
+              "manaCost": 1,
+              "resourceCost": {
+                "class.one.focus": 1
+              },
+              "cooldownRounds": 1,
+              "concentration": false,
+              "bypassStatusImmunity": false,
+              "effect": {
+                "max": 2,
+                "min": 1,
+                "kind": "HEAL"
+              }
+            }
+          ],
+          "onHitEffects": [
+            {
+              "effectId": "effect.frayed",
+              "family": "frayed",
+              "rounds": 3,
+              "clock": "ROUNDS",
+              "tick": "OWNER_END",
+              "stacking": "REFRESH",
+              "polarity": "HARMFUL",
+              "tags": [
+                "condition"
+              ],
+              "modifiers": [
+                {
+                  "stat": "armor",
+                  "amount": -1
+                }
+              ]
+            }
+          ],
+          "damageProfile": {
+            "version": 1,
+            "attackType": "slashing",
+            "penetration": 0,
+            "resistances": {}
+          }
+        },
+        {
+          "id": "ally",
+          "heal": true,
+          "guard": false,
+          "techniques": [],
+          "onHitEffects": [],
+          "damageProfile": {
+            "version": 1,
+            "attackType": "slashing",
+            "penetration": 0,
+            "resistances": {}
+          }
+        },
+        {
+          "id": "road_companion",
+          "heal": true,
+          "guard": false,
+          "techniques": [],
+          "onHitEffects": [],
+          "damageProfile": {
+            "version": 1,
+            "attackType": "slashing",
+            "penetration": 0,
+            "resistances": {}
+          }
+        }
+      ],
+      "battlefield": {
+        "zones": [
+          "floor",
+          "balcony"
+        ],
+        "edges": [
+          [
+            "floor",
+            "balcony"
+          ]
+        ]
+      },
+      "failureContract": {
+        "turnCost": 2,
+        "destination": "HOME",
+        "recoveryHealth": 5
+      },
+      "recovery": null
+    }
+  },
+  "inventory": {
+    "automation": {
+      "keep": []
+    },
+    "views": [],
+    "workspacePreferences": {
+      "layout": "STANDARD"
+    },
+    "displayPreferences": {
+      "healthyPercent": 70,
+      "wornPercent": 25,
+      "showSingleQuantity": true
+    },
+    "revision": 6,
+    "runId": "f38e5012-f276-4eb5-92ac-0670317d56e0",
+    "items": [
+      {
+        "collectionProtected": false,
+        "favorite": false,
+        "inspectionToken": "",
+        "isNew": true,
+        "id": "4e41e2ae-8b56-414f-9fea-d46d97ac4282",
+        "definitionId": "item.shield",
+        "containerId": "528380fa-26f3-45a9-970b-0939353cf0ad",
+        "kind": "CARRIED",
+        "name": "Shield",
+        "artwork": null,
+        "icon": null,
+        "quantity": "1",
+        "binding": "TRADEABLE",
+        "category": "EQUIPMENT",
+        "rarity": "UNKNOWN",
+        "description": "",
+        "family": "",
+        "qualityLabel": "Unassessed",
+        "numericQuality": null,
+        "unitWeight": null,
+        "unitBulk": null,
+        "totalWeight": null,
+        "totalBulk": null,
+        "useKind": null,
+        "equipment": {
+          "hands": 1,
+          "slots": [
+            "OFF_HAND"
+          ],
+          "version": 1,
+          "minimumLevel": 1,
+          "bindingPolicy": "PRESERVE"
+        },
+        "eligible": true,
+        "proficiencyMet": true,
+        "knownStats": null,
+        "knownEffects": null,
+        "storageMode": "INSTANCE",
+        "locked": false,
+        "equipped": true,
+        "loadouts": [],
+        "protected": true,
+        "accessible": true,
+        "condition": null,
+        "maximumCondition": null,
+        "groupFavoriteCount": 0,
+        "groupNewCount": 1,
+        "copies": 1,
+        "multipleLocations": false,
+        "groupQuantity": "1",
+        "groupWeight": null,
+        "groupBulk": null
+      },
+      {
+        "collectionProtected": false,
+        "favorite": false,
+        "inspectionToken": "",
+        "isNew": true,
+        "id": "8405bd4c-c79c-4012-b87d-9cde08b16c20",
+        "definitionId": "item.sword",
+        "containerId": "528380fa-26f3-45a9-970b-0939353cf0ad",
+        "kind": "CARRIED",
+        "name": "Sword",
+        "artwork": null,
+        "icon": null,
+        "quantity": "1",
+        "binding": "TRADEABLE",
+        "category": "EQUIPMENT",
+        "rarity": "UNKNOWN",
+        "description": "",
+        "family": "",
+        "qualityLabel": "Unassessed",
+        "numericQuality": null,
+        "unitWeight": null,
+        "unitBulk": null,
+        "totalWeight": null,
+        "totalBulk": null,
+        "useKind": null,
+        "equipment": {
+          "hands": 1,
+          "slots": [
+            "MAIN_HAND"
+          ],
+          "version": 1,
+          "minimumLevel": 1,
+          "bindingPolicy": "PRESERVE"
+        },
+        "eligible": true,
+        "proficiencyMet": true,
+        "knownStats": null,
+        "knownEffects": null,
+        "storageMode": "INSTANCE",
+        "locked": false,
+        "equipped": true,
+        "loadouts": [],
+        "protected": true,
+        "accessible": true,
+        "condition": null,
+        "maximumCondition": null,
+        "groupFavoriteCount": 0,
+        "groupNewCount": 1,
+        "copies": 1,
+        "multipleLocations": false,
+        "groupQuantity": "1",
+        "groupWeight": null,
+        "groupBulk": null
+      }
+    ],
+    "total": 2,
+    "offset": 0,
+    "pageSize": 48,
+    "containers": [
+      {
+        "id": "528380fa-26f3-45a9-970b-0939353cf0ad",
+        "kind": "CARRIED",
+        "label": "",
+        "lifecycle": "ACTIVE",
+        "accessible": true,
+        "archived": false,
+        "count": 2
+      }
+    ],
+    "hasMoreContainers": false,
+    "carry": {
+      "enabled": false,
+      "strength": 12,
+      "weight": "0",
+      "bulk": "0",
+      "weightCapacity": null,
+      "bulkCapacity": null,
+      "unmeasuredItems": 2,
+      "state": "UNCONFIGURED",
+      "penalties": {
+        "stealth": 0,
+        "mobility": 0,
+        "initiative": 0
+      },
+      "sources": [],
+      "baseCapacity": null,
+      "strengthBonus": null,
+      "thresholds": null
+    },
+    "preferences": {
+      "autoStoreMaterials": false,
+      "autoOverflow": false
+    }
+  },
+  "advancement": {
+    "runId": "f38e5012-f276-4eb5-92ac-0670317d56e0",
+    "revision": 6,
+    "activeInstance": true,
+    "classes": [
+      {
+        "classId": "class.one",
+        "revision": 2,
+        "name": "one",
+        "rulesId": "rules.build",
+        "maximumNativeLevel": 25,
+        "nativeLevel": 1,
+        "nextNativeLevel": 2,
+        "eligibility": "LEVEL_NOT_READY"
+      }
+    ],
+    "subclasses": {
+      "runId": "f38e5012-f276-4eb5-92ac-0670317d56e0",
+      "revision": 6,
+      "activeInstance": true,
+      "selected": [],
+      "options": []
+    },
+    "feats": {
+      "runId": "f38e5012-f276-4eb5-92ac-0670317d56e0",
+      "revision": 6,
+      "activeInstance": true,
+      "selected": [
+        {
+          "featId": "feat.vigor",
+          "featRevision": 2,
+          "milestone": 1,
+          "name": "Vigor"
+        }
+      ],
+      "options": [
+        {
+          "featId": "feat.vigor",
+          "featRevision": 2,
+          "name": "Vigor",
+          "rulesId": "rules.feats",
+          "description": null,
+          "effects": null,
+          "availableMilestones": [],
+          "eligibility": "ALREADY_CHOSEN"
+        }
+      ]
+    },
+    "attributes": {
+      "runId": "f38e5012-f276-4eb5-92ac-0670317d56e0",
+      "revision": 6,
+      "activeInstance": true,
+      "explanation": "Starting build scores plus committed attribute milestone allocations. Equipment and temporary effects are not included.",
+      "attributes": {
+        "luck": 10,
+        "wisdom": 8,
+        "charisma": 7,
+        "strength": 12,
+        "dexterity": 11,
+        "constitution": 10,
+        "intelligence": 9
+      },
+      "choices": [],
+      "rules": []
+    },
+    "proficiencies": {
+      "runId": "f38e5012-f276-4eb5-92ac-0670317d56e0",
+      "revision": 6,
+      "activeInstance": true,
+      "selected": [],
+      "choices": [],
+      "options": []
+    },
+    "milestones": {
+      "runId": "f38e5012-f276-4eb5-92ac-0670317d56e0",
+      "revision": 6,
+      "activeInstance": true,
+      "milestones": [
+        {
+          "category": "FEAT",
+          "contractId": "rules.feats",
+          "contractRevision": 2,
+          "level": 1,
+          "basis": "CHARACTER",
+          "name": null,
+          "state": "COMPLETED",
+          "details": null
+        }
+      ],
+      "truncated": false
+    }
+  },
+  "equipmentPreview": {
+    "runId": "f38e5012-f276-4eb5-92ac-0670317d56e0",
+    "revision": 6,
+    "contexts": [
+      {
+        "id": "encounter.tactical",
+        "name": "The Old Watchtower"
+      }
+    ],
+    "contextId": "encounter.tactical",
+    "current": null,
+    "preview": null,
+    "reason": "Assess all currently active and proposed active equipment before viewing numerical totals and comparisons. Hidden item mechanics remain concealed."
+  },
+  "characterStats": {
+    "runId": "f38e5012-f276-4eb5-92ac-0670317d56e0",
+    "revision": 6,
+    "contexts": [
+      {
+        "id": "encounter.tactical",
+        "name": "The Old Watchtower"
+      }
+    ],
+    "contextId": "encounter.tactical",
+    "current": null,
+    "preview": null,
+    "reason": "Assess all currently active and proposed active equipment before viewing numerical totals and comparisons. Hidden item mechanics remain concealed."
+  },
+  "abilityBook": {
+    "runId": "f38e5012-f276-4eb5-92ac-0670317d56e0",
+    "revision": 6,
+    "activeInstance": true,
+    "activeSet": "A",
+    "entries": [],
+    "truncated": false,
+    "notes": [
+      "Only assessed (Advanced) owned sources are included. Unassessed or undiscovered capabilities are not exposed.",
+      "Prepared inactive weapon sets and uncommitted equipment drafts do not grant entries.",
+      "This book describes owned capabilities, not encounter action legality. Temporary encounter effects are excluded; inspect the battle view for those.",
+      "Mastery is not yet supported."
+    ]
+  },
+  "characterHistory": {
+    "runId": "f38e5012-f276-4eb5-92ac-0670317d56e0",
+    "revision": 6,
+    "activeInstance": true,
+    "entries": [
+      {
+        "id": "START_BUILD:c0f44964-e3aa-4d13-996a-513c8a111a09",
+        "category": "START_BUILD",
+        "name": "one",
+        "level": 1,
+        "milestone": null,
+        "recordedAt": "2026-10-18T21:13:51.532029-05:00",
+        "changes": [
+          {
+            "name": "Native class level",
+            "before": null,
+            "after": 1
+          },
+          {
+            "name": "Starting preset",
+            "before": null,
+            "after": "balanced"
+          },
+          {
+            "name": "strength",
+            "before": null,
+            "after": 12
+          },
+          {
+            "name": "dexterity",
+            "before": null,
+            "after": 11
+          },
+          {
+            "name": "constitution",
+            "before": null,
+            "after": 10
+          },
+          {
+            "name": "intelligence",
+            "before": null,
+            "after": 9
+          },
+          {
+            "name": "wisdom",
+            "before": null,
+            "after": 8
+          },
+          {
+            "name": "charisma",
+            "before": null,
+            "after": 7
+          },
+          {
+            "name": "luck",
+            "before": null,
+            "after": 10
+          }
+        ]
+      },
+      {
+        "id": "FEAT:4ad588eb-2eb8-424d-8889-66ac669f8316",
+        "category": "FEAT",
+        "name": "Vigor",
+        "level": 1,
+        "milestone": 1,
+        "recordedAt": "2026-10-18T21:13:51.542778-05:00",
+        "changes": []
+      }
+    ],
+    "total": 2,
+    "offset": 0,
+    "pageSize": 25,
+    "hasMore": false
+  }
+}

@@ -37,6 +37,8 @@ jobs:
       - run: cp .env.example .env
       - run: npm run typecheck
       - run: npm run styles:check
+      - name: Frozen visual source and browser contract
+        run: npm run visual:check
       - run: npm run content:check
       - name: Design coverage and implementation contracts
         run: npm run features:check

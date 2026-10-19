@@ -1,0 +1,2228 @@
+{
+  "schemaVersion": 1,
+  "source": "Public projections from disposable character fixture; frozen for repeatable presentation checks.",
+  "snapshot": {
+    "game": {
+      "protocolVersion": 1,
+      "run": {
+        "runId": "b97c7e22-a7fe-47d6-95fd-ebf567b84d74",
+        "turns": 19,
+        "revision": 33,
+        "status": "ACTIVE",
+        "mode": "STANDARD"
+      },
+      "canWrite": true,
+      "carry": {
+        "enabled": false,
+        "strength": 12,
+        "weight": "0",
+        "bulk": "0",
+        "weightCapacity": null,
+        "bulkCapacity": null,
+        "unmeasuredItems": 2,
+        "state": "UNCONFIGURED",
+        "penalties": {
+          "stealth": 0,
+          "mobility": 0,
+          "initiative": 0
+        },
+        "sources": [],
+        "baseCapacity": null,
+        "strengthBonus": null,
+        "thresholds": null
+      },
+      "activeEncounter": null,
+      "latestEncounter": null,
+      "adventures": [
+        {
+          "id": "encounter.history-finale",
+          "name": "Test campaign finale",
+          "description": {},
+          "turnCost": 1,
+          "failure": {
+            "turnCost": 2,
+            "destination": "HOME",
+            "recoveryHealth": 5
+          }
+        },
+        {
+          "id": "encounter.tactical",
+          "name": "Tactical",
+          "description": {},
+          "turnCost": 1,
+          "failure": {
+            "turnCost": 2,
+            "destination": "HOME",
+            "recoveryHealth": 5
+          }
+        }
+      ],
+      "inventory": [
+        {
+          "id": "2c756219-aa62-4db9-9cf2-69ce6aeb6eb0",
+          "name": "Shield",
+          "quantity": "1",
+          "binding": "TRADEABLE"
+        },
+        {
+          "id": "a5d73a45-76d7-42e4-87f3-7eb660abf68d",
+          "name": "Sword",
+          "quantity": "1",
+          "binding": "TRADEABLE"
+        }
+      ],
+      "hasMoreAdventures": false,
+      "hasMoreItems": false,
+      "equipment": {
+        "slots": [
+          {
+            "set": "A",
+            "slot": "MAIN_HAND",
+            "itemId": "a5d73a45-76d7-42e4-87f3-7eb660abf68d"
+          },
+          {
+            "set": "A",
+            "slot": "OFF_HAND",
+            "itemId": "2c756219-aa62-4db9-9cf2-69ce6aeb6eb0"
+          }
+        ],
+        "activeSet": "A"
+      },
+      "gear": [
+        {
+          "id": "2c756219-aa62-4db9-9cf2-69ce6aeb6eb0",
+          "name": "Shield",
+          "binding": "TRADEABLE",
+          "artwork": null,
+          "icon": null,
+          "qualityLabel": "Unassessed",
+          "numericQuality": "1.0000",
+          "slots": [
+            "OFF_HAND"
+          ],
+          "unitWeight": null,
+          "unitBulk": null,
+          "knownStats": {
+            "armor": 1
+          },
+          "knownEffects": {
+            "heal": false,
+            "guard": true,
+            "capacity": null,
+            "immuneTags": [
+              "poison"
+            ],
+            "techniques": [],
+            "resistances": {
+              "fire": 2500
+            },
+            "minimumLevel": 0,
+            "durationReductionBps": {}
+          },
+          "hands": 1,
+          "minimumLevel": 1,
+          "bindingPolicy": "PRESERVE",
+          "eligible": true,
+          "proficiencyMet": true,
+          "manualLocked": false,
+          "protectedLoadouts": [],
+          "condition": null,
+          "maximumCondition": null
+        },
+        {
+          "id": "a5d73a45-76d7-42e4-87f3-7eb660abf68d",
+          "name": "Sword",
+          "binding": "TRADEABLE",
+          "artwork": null,
+          "icon": null,
+          "qualityLabel": "Unassessed",
+          "numericQuality": "1.0000",
+          "slots": [
+            "MAIN_HAND"
+          ],
+          "unitWeight": null,
+          "unitBulk": null,
+          "knownStats": {
+            "attackMax": 2,
+            "attackMin": 2
+          },
+          "knownEffects": {
+            "heal": null,
+            "guard": null,
+            "capacity": null,
+            "immuneTags": null,
+            "techniques": [],
+            "resistances": null,
+            "minimumLevel": null,
+            "durationReductionBps": null
+          },
+          "hands": 1,
+          "minimumLevel": 1,
+          "bindingPolicy": "PRESERVE",
+          "eligible": true,
+          "proficiencyMet": true,
+          "manualLocked": false,
+          "protectedLoadouts": [],
+          "condition": null,
+          "maximumCondition": null
+        }
+      ],
+      "loadouts": []
+    },
+    "progression": {
+      "runId": "b97c7e22-a7fe-47d6-95fd-ebf567b84d74",
+      "revision": 33,
+      "campaignState": "ACTIVE",
+      "xp": "2400",
+      "level": 25,
+      "curveId": "curve.build",
+      "curveRevision": 1,
+      "build": {
+        "mode": "CONFIGURED",
+        "level": 25,
+        "rules": {
+          "id": "rules.build",
+          "curveId": "curve.build",
+          "revision": 1,
+          "releaseId": "a245ae63-f57c-4722-a666-01af7184f646",
+          "curveRevision": 1
+        },
+        "classes": [
+          {
+            "classId": "class.one",
+            "nativeLevel": 20
+          },
+          {
+            "classId": "class.two",
+            "nativeLevel": 5
+          }
+        ],
+        "presetKey": "balanced",
+        "attributes": {
+          "luck": 12,
+          "wisdom": 8,
+          "charisma": 7,
+          "strength": 12,
+          "dexterity": 11,
+          "constitution": 10,
+          "intelligence": 9
+        }
+      },
+      "readiness": {
+        "xp": "2400",
+        "level": 25,
+        "readyThroughLevel": 25,
+        "pendingLevels": 0,
+        "nextThreshold": null
+      },
+      "xpProgress": {
+        "earnedThreshold": "2400",
+        "maximumLevel": 25
+      }
+    },
+    "options": {
+      "classes": [
+        {
+          "classId": "class.locked",
+          "revision": 1,
+          "name": "Known restricted class",
+          "rulesId": "rules.build",
+          "maximumNativeLevel": 20
+        },
+        {
+          "classId": "class.one",
+          "revision": 1,
+          "name": "Warden",
+          "rulesId": "rules.build",
+          "maximumNativeLevel": 20
+        },
+        {
+          "classId": "class.three",
+          "revision": 1,
+          "name": "Arcanist",
+          "rulesId": "rules.build",
+          "maximumNativeLevel": 2
+        },
+        {
+          "classId": "class.two",
+          "revision": 1,
+          "name": "Wayfarer",
+          "rulesId": "rules.build",
+          "maximumNativeLevel": 20
+        }
+      ],
+      "rules": [
+        {
+          "rulesId": "rules.build",
+          "revision": 1,
+          "curveId": "curve.build",
+          "presets": [
+            {
+              "key": "balanced",
+              "attributes": {
+                "luck": 10,
+                "wisdom": 8,
+                "charisma": 7,
+                "strength": 12,
+                "dexterity": 11,
+                "constitution": 10,
+                "intelligence": 9
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "battle": null
+  },
+  "inventory": {
+    "automation": {
+      "keep": []
+    },
+    "views": [],
+    "workspacePreferences": {
+      "layout": "STANDARD"
+    },
+    "displayPreferences": {
+      "healthyPercent": 70,
+      "wornPercent": 25,
+      "showSingleQuantity": true
+    },
+    "revision": 33,
+    "runId": "b97c7e22-a7fe-47d6-95fd-ebf567b84d74",
+    "items": [
+      {
+        "collectionProtected": false,
+        "favorite": false,
+        "inspectionToken": "",
+        "isNew": true,
+        "id": "2c756219-aa62-4db9-9cf2-69ce6aeb6eb0",
+        "definitionId": "item.shield",
+        "containerId": "a92da468-e9d3-4881-b357-0ebf0093d89f",
+        "kind": "CARRIED",
+        "name": "Shield",
+        "artwork": null,
+        "icon": null,
+        "quantity": "1",
+        "binding": "TRADEABLE",
+        "category": "EQUIPMENT",
+        "rarity": "UNKNOWN",
+        "description": "",
+        "family": "",
+        "qualityLabel": "Unassessed",
+        "numericQuality": "1.0000",
+        "unitWeight": null,
+        "unitBulk": null,
+        "totalWeight": null,
+        "totalBulk": null,
+        "useKind": null,
+        "equipment": {
+          "hands": 1,
+          "slots": [
+            "OFF_HAND"
+          ],
+          "version": 1,
+          "minimumLevel": 1,
+          "bindingPolicy": "PRESERVE"
+        },
+        "eligible": true,
+        "proficiencyMet": true,
+        "knownStats": {
+          "armor": 1
+        },
+        "knownEffects": {
+          "heal": false,
+          "guard": true,
+          "capacity": null,
+          "immuneTags": [
+            "poison"
+          ],
+          "techniques": [],
+          "resistances": {
+            "fire": 2500
+          },
+          "minimumLevel": 0,
+          "durationReductionBps": {}
+        },
+        "storageMode": "INSTANCE",
+        "locked": false,
+        "equipped": true,
+        "loadouts": [],
+        "protected": true,
+        "accessible": true,
+        "condition": null,
+        "maximumCondition": null,
+        "groupFavoriteCount": 0,
+        "groupNewCount": 1,
+        "copies": 1,
+        "multipleLocations": false,
+        "groupQuantity": "1",
+        "groupWeight": null,
+        "groupBulk": null
+      },
+      {
+        "collectionProtected": false,
+        "favorite": false,
+        "inspectionToken": "",
+        "isNew": true,
+        "id": "a5d73a45-76d7-42e4-87f3-7eb660abf68d",
+        "definitionId": "item.sword",
+        "containerId": "a92da468-e9d3-4881-b357-0ebf0093d89f",
+        "kind": "CARRIED",
+        "name": "Sword",
+        "artwork": null,
+        "icon": null,
+        "quantity": "1",
+        "binding": "TRADEABLE",
+        "category": "EQUIPMENT",
+        "rarity": "UNKNOWN",
+        "description": "",
+        "family": "",
+        "qualityLabel": "Unassessed",
+        "numericQuality": "1.0000",
+        "unitWeight": null,
+        "unitBulk": null,
+        "totalWeight": null,
+        "totalBulk": null,
+        "useKind": null,
+        "equipment": {
+          "hands": 1,
+          "slots": [
+            "MAIN_HAND"
+          ],
+          "version": 1,
+          "minimumLevel": 1,
+          "bindingPolicy": "PRESERVE"
+        },
+        "eligible": true,
+        "proficiencyMet": true,
+        "knownStats": {
+          "attackMax": 2,
+          "attackMin": 2
+        },
+        "knownEffects": {
+          "heal": null,
+          "guard": null,
+          "capacity": null,
+          "immuneTags": null,
+          "techniques": [],
+          "resistances": null,
+          "minimumLevel": null,
+          "durationReductionBps": null
+        },
+        "storageMode": "INSTANCE",
+        "locked": false,
+        "equipped": true,
+        "loadouts": [],
+        "protected": true,
+        "accessible": true,
+        "condition": null,
+        "maximumCondition": null,
+        "groupFavoriteCount": 0,
+        "groupNewCount": 1,
+        "copies": 1,
+        "multipleLocations": false,
+        "groupQuantity": "1",
+        "groupWeight": null,
+        "groupBulk": null
+      }
+    ],
+    "total": 2,
+    "offset": 0,
+    "pageSize": 48,
+    "containers": [
+      {
+        "id": "a92da468-e9d3-4881-b357-0ebf0093d89f",
+        "kind": "CARRIED",
+        "label": "",
+        "lifecycle": "ACTIVE",
+        "accessible": true,
+        "archived": false,
+        "count": 2
+      }
+    ],
+    "hasMoreContainers": false,
+    "carry": {
+      "enabled": false,
+      "strength": 12,
+      "weight": "0",
+      "bulk": "0",
+      "weightCapacity": null,
+      "bulkCapacity": null,
+      "unmeasuredItems": 2,
+      "state": "UNCONFIGURED",
+      "penalties": {
+        "stealth": 0,
+        "mobility": 0,
+        "initiative": 0
+      },
+      "sources": [],
+      "baseCapacity": null,
+      "strengthBonus": null,
+      "thresholds": null
+    },
+    "preferences": {
+      "autoStoreMaterials": false,
+      "autoOverflow": false
+    }
+  },
+  "advancement": {
+    "runId": "b97c7e22-a7fe-47d6-95fd-ebf567b84d74",
+    "revision": 33,
+    "activeInstance": false,
+    "classes": [
+      {
+        "classId": "class.locked",
+        "revision": 1,
+        "name": "Known restricted class",
+        "rulesId": "rules.build",
+        "maximumNativeLevel": 20,
+        "nativeLevel": 0,
+        "nextNativeLevel": 1,
+        "eligibility": "PREREQUISITES_NOT_MET"
+      },
+      {
+        "classId": "class.one",
+        "revision": 1,
+        "name": "Warden",
+        "rulesId": "rules.build",
+        "maximumNativeLevel": 20,
+        "nativeLevel": 20,
+        "nextNativeLevel": 21,
+        "eligibility": "NATIVE_CLASS_LEVEL_LIMIT"
+      },
+      {
+        "classId": "class.three",
+        "revision": 1,
+        "name": "Arcanist",
+        "rulesId": "rules.build",
+        "maximumNativeLevel": 2,
+        "nativeLevel": 0,
+        "nextNativeLevel": 1,
+        "eligibility": "CLASS_LIMIT"
+      },
+      {
+        "classId": "class.two",
+        "revision": 1,
+        "name": "Wayfarer",
+        "rulesId": "rules.build",
+        "maximumNativeLevel": 20,
+        "nativeLevel": 5,
+        "nextNativeLevel": 6,
+        "eligibility": "LEVEL_NOT_READY"
+      }
+    ],
+    "subclasses": {
+      "runId": "b97c7e22-a7fe-47d6-95fd-ebf567b84d74",
+      "revision": 33,
+      "activeInstance": false,
+      "selected": [
+        {
+          "classId": "class.one",
+          "subclassId": "subclass.first",
+          "subclassRevision": 1,
+          "name": "Sentinel"
+        }
+      ],
+      "options": [
+        {
+          "subclassId": "subclass.first",
+          "subclassRevision": 1,
+          "name": "Sentinel",
+          "classId": "class.one",
+          "nativeLevel": 20,
+          "unlockNativeLevel": 5,
+          "description": "A discovered specialization for its native class.",
+          "effects": null,
+          "eligibility": "ALREADY_CHOSEN"
+        },
+        {
+          "subclassId": "subclass.guard",
+          "subclassRevision": 1,
+          "name": "Guard subclass",
+          "classId": "class.one",
+          "nativeLevel": 20,
+          "unlockNativeLevel": 5,
+          "description": null,
+          "effects": null,
+          "eligibility": "ALREADY_CHOSEN"
+        },
+        {
+          "subclassId": "subclass.other",
+          "subclassRevision": 1,
+          "name": "Vanguard",
+          "classId": "class.one",
+          "nativeLevel": 20,
+          "unlockNativeLevel": 5,
+          "description": "A discovered specialization for its native class.",
+          "effects": null,
+          "eligibility": "ALREADY_CHOSEN"
+        },
+        {
+          "subclassId": "subclass.second",
+          "subclassRevision": 1,
+          "name": "Pathfinder",
+          "classId": "class.two",
+          "nativeLevel": 5,
+          "unlockNativeLevel": 5,
+          "description": "A discovered specialization for its native class.",
+          "effects": null,
+          "eligibility": "AVAILABLE"
+        }
+      ]
+    },
+    "feats": {
+      "runId": "b97c7e22-a7fe-47d6-95fd-ebf567b84d74",
+      "revision": 33,
+      "activeInstance": false,
+      "selected": [
+        {
+          "featId": "feat.root",
+          "featRevision": 1,
+          "milestone": 2,
+          "name": "Steady footing"
+        }
+      ],
+      "options": [
+        {
+          "featId": "feat.child",
+          "featRevision": 1,
+          "name": "Veteran footing",
+          "rulesId": "rules.feats",
+          "description": "A known feat for explicit advancement choices.",
+          "effects": null,
+          "availableMilestones": [
+            4,
+            6
+          ],
+          "eligibility": "ELIGIBLE"
+        },
+        {
+          "featId": "feat.other",
+          "featRevision": 1,
+          "name": "Keen observer",
+          "rulesId": "rules.feats",
+          "description": "A known feat for explicit advancement choices.",
+          "effects": null,
+          "availableMilestones": [
+            4,
+            6
+          ],
+          "eligibility": "ELIGIBLE"
+        },
+        {
+          "featId": "feat.root",
+          "featRevision": 1,
+          "name": "Steady footing",
+          "rulesId": "rules.feats",
+          "description": "A known feat for explicit advancement choices.",
+          "effects": null,
+          "availableMilestones": [
+            4,
+            6
+          ],
+          "eligibility": "ALREADY_CHOSEN"
+        },
+        {
+          "featId": "feat.trained",
+          "featRevision": 1,
+          "name": "Practiced technique",
+          "rulesId": "rules.feats",
+          "description": "A known feat for explicit advancement choices.",
+          "effects": null,
+          "availableMilestones": [
+            4,
+            6
+          ],
+          "eligibility": "PROFICIENCY_NOT_MET"
+        },
+        {
+          "featId": "feat.vigor",
+          "featRevision": 1,
+          "name": "Vigor",
+          "rulesId": "rules.feats",
+          "description": null,
+          "effects": null,
+          "availableMilestones": [
+            4,
+            6
+          ],
+          "eligibility": "ELIGIBLE"
+        }
+      ]
+    },
+    "attributes": {
+      "runId": "b97c7e22-a7fe-47d6-95fd-ebf567b84d74",
+      "revision": 33,
+      "activeInstance": false,
+      "explanation": "Starting build scores plus committed attribute milestone allocations. Equipment and temporary effects are not included.",
+      "attributes": {
+        "luck": 12,
+        "wisdom": 8,
+        "charisma": 7,
+        "strength": 12,
+        "dexterity": 11,
+        "constitution": 10,
+        "intelligence": 9
+      },
+      "choices": [
+        {
+          "milestone": 2,
+          "allocation": {
+            "luck": 2
+          },
+          "rulesId": "rules.attributes",
+          "rulesRevision": 1
+        }
+      ],
+      "rules": [
+        {
+          "rulesId": "rules.attributes",
+          "rulesRevision": 1,
+          "maximumScores": {
+            "luck": 12,
+            "wisdom": 14,
+            "charisma": 14,
+            "strength": 13,
+            "dexterity": 14,
+            "constitution": 14,
+            "intelligence": 14
+          },
+          "name": "Fixture attribute schedule",
+          "availableMilestones": [
+            {
+              "level": 4,
+              "points": 1,
+              "allowedAttributes": [
+                "luck",
+                "constitution"
+              ]
+            },
+            {
+              "level": 8,
+              "points": 1,
+              "allowedAttributes": [
+                "strength"
+              ]
+            }
+          ],
+          "blockedByInstance": false
+        }
+      ]
+    },
+    "proficiencies": {
+      "runId": "b97c7e22-a7fe-47d6-95fd-ebf567b84d74",
+      "revision": 33,
+      "activeInstance": false,
+      "selected": [
+        {
+          "skillId": "skill.fixture",
+          "skillRevision": 1,
+          "rank": "NOVICE",
+          "name": "Fixture skill",
+          "family": "PHYSICAL",
+          "defaultAttribute": "strength"
+        }
+      ],
+      "choices": [
+        {
+          "skillId": "skill.fixture",
+          "milestone": 1,
+          "choiceNumber": 1,
+          "beforeRank": "UNTRAINED",
+          "afterRank": "NOVICE"
+        }
+      ],
+      "options": [
+        {
+          "rulesId": "rules.skills",
+          "skillId": "skill.fixture",
+          "skillRevision": 1,
+          "name": "Fixture skill",
+          "family": "PHYSICAL",
+          "defaultAttribute": "strength",
+          "rank": "NOVICE",
+          "maximumRank": "LEGENDARY",
+          "availableMilestones": [
+            2,
+            3,
+            6,
+            8
+          ],
+          "blockedByInstance": false,
+          "eligibility": "ELIGIBLE"
+        }
+      ]
+    },
+    "milestones": {
+      "runId": "b97c7e22-a7fe-47d6-95fd-ebf567b84d74",
+      "revision": 33,
+      "activeInstance": false,
+      "milestones": [
+        {
+          "category": "PROFICIENCY",
+          "contractId": "rules.skills",
+          "contractRevision": 1,
+          "level": 1,
+          "basis": "CHARACTER",
+          "name": null,
+          "state": "COMPLETED",
+          "details": null
+        },
+        {
+          "category": "ATTRIBUTE",
+          "contractId": "rules.attributes",
+          "contractRevision": 1,
+          "level": 2,
+          "basis": "CHARACTER",
+          "name": null,
+          "state": "COMPLETED",
+          "details": {
+            "points": 2,
+            "allowedAttributes": [
+              "strength",
+              "dexterity",
+              "luck"
+            ]
+          }
+        },
+        {
+          "category": "FEAT",
+          "contractId": "rules.feats",
+          "contractRevision": 1,
+          "level": 2,
+          "basis": "CHARACTER",
+          "name": null,
+          "state": "COMPLETED",
+          "details": null
+        },
+        {
+          "category": "PROFICIENCY",
+          "contractId": "rules.skills",
+          "contractRevision": 1,
+          "level": 2,
+          "basis": "CHARACTER",
+          "name": null,
+          "state": "EARNED",
+          "details": null
+        },
+        {
+          "category": "PROFICIENCY",
+          "contractId": "rules.skills",
+          "contractRevision": 1,
+          "level": 3,
+          "basis": "CHARACTER",
+          "name": null,
+          "state": "EARNED",
+          "details": null
+        },
+        {
+          "category": "ATTRIBUTE",
+          "contractId": "rules.attributes",
+          "contractRevision": 1,
+          "level": 4,
+          "basis": "CHARACTER",
+          "name": null,
+          "state": "EARNED",
+          "details": {
+            "points": 1,
+            "allowedAttributes": [
+              "luck",
+              "constitution"
+            ]
+          }
+        },
+        {
+          "category": "FEAT",
+          "contractId": "rules.feats",
+          "contractRevision": 1,
+          "level": 4,
+          "basis": "CHARACTER",
+          "name": null,
+          "state": "EARNED",
+          "details": null
+        },
+        {
+          "category": "SUBCLASS",
+          "contractId": "subclass.first",
+          "contractRevision": 1,
+          "level": 5,
+          "basis": "NATIVE_CLASS",
+          "name": "Sentinel",
+          "state": "COMPLETED",
+          "details": {
+            "selected": true,
+            "className": "Warden",
+            "nativeLevel": 20
+          }
+        },
+        {
+          "category": "SUBCLASS",
+          "contractId": "subclass.guard",
+          "contractRevision": 1,
+          "level": 5,
+          "basis": "NATIVE_CLASS",
+          "name": "Guard subclass",
+          "state": "COMPLETED",
+          "details": {
+            "selected": false,
+            "className": "Warden",
+            "nativeLevel": 20
+          }
+        },
+        {
+          "category": "SUBCLASS",
+          "contractId": "subclass.other",
+          "contractRevision": 1,
+          "level": 5,
+          "basis": "NATIVE_CLASS",
+          "name": "Vanguard",
+          "state": "COMPLETED",
+          "details": {
+            "selected": false,
+            "className": "Warden",
+            "nativeLevel": 20
+          }
+        },
+        {
+          "category": "SUBCLASS",
+          "contractId": "subclass.second",
+          "contractRevision": 1,
+          "level": 5,
+          "basis": "NATIVE_CLASS",
+          "name": "Pathfinder",
+          "state": "EARNED",
+          "details": {
+            "selected": null,
+            "className": "Wayfarer",
+            "nativeLevel": 5
+          }
+        },
+        {
+          "category": "FEAT",
+          "contractId": "rules.feats",
+          "contractRevision": 1,
+          "level": 6,
+          "basis": "CHARACTER",
+          "name": null,
+          "state": "EARNED",
+          "details": null
+        },
+        {
+          "category": "PROFICIENCY",
+          "contractId": "rules.skills",
+          "contractRevision": 1,
+          "level": 6,
+          "basis": "CHARACTER",
+          "name": null,
+          "state": "EARNED",
+          "details": null
+        },
+        {
+          "category": "ATTRIBUTE",
+          "contractId": "rules.attributes",
+          "contractRevision": 1,
+          "level": 8,
+          "basis": "CHARACTER",
+          "name": null,
+          "state": "EARNED",
+          "details": {
+            "points": 1,
+            "allowedAttributes": [
+              "strength"
+            ]
+          }
+        },
+        {
+          "category": "PROFICIENCY",
+          "contractId": "rules.skills",
+          "contractRevision": 1,
+          "level": 8,
+          "basis": "CHARACTER",
+          "name": null,
+          "state": "EARNED",
+          "details": null
+        }
+      ],
+      "truncated": false
+    }
+  },
+  "equipmentPreview": {
+    "runId": "b97c7e22-a7fe-47d6-95fd-ebf567b84d74",
+    "revision": 33,
+    "contexts": [
+      {
+        "id": "encounter.history-finale",
+        "name": "Test campaign finale"
+      },
+      {
+        "id": "encounter.tactical",
+        "name": "Tactical"
+      }
+    ],
+    "contextId": "encounter.history-finale",
+    "current": {
+      "stats": {
+        "armor": 7,
+        "evasion": 10,
+        "maxMana": 6,
+        "accuracy": 21,
+        "attackMax": 8,
+        "attackMin": 8,
+        "maxHealth": 35,
+        "initiative": 7
+      },
+      "breakdown": {
+        "armor": {
+          "base": 2,
+          "attributes": 0,
+          "sources": 5,
+          "carrying": 0
+        },
+        "evasion": {
+          "base": 10,
+          "attributes": 0,
+          "sources": 0,
+          "carrying": 0
+        },
+        "maxMana": {
+          "base": 6,
+          "attributes": 0,
+          "sources": 0,
+          "carrying": 0
+        },
+        "accuracy": {
+          "base": 20,
+          "attributes": 0,
+          "sources": 1,
+          "carrying": 0
+        },
+        "attackMax": {
+          "base": 6,
+          "attributes": 0,
+          "sources": 2,
+          "carrying": 0
+        },
+        "attackMin": {
+          "base": 6,
+          "attributes": 0,
+          "sources": 2,
+          "carrying": 0
+        },
+        "maxHealth": {
+          "base": 30,
+          "attributes": 0,
+          "sources": 5,
+          "carrying": 0
+        },
+        "initiative": {
+          "base": 5,
+          "attributes": 0,
+          "sources": 2,
+          "carrying": 0
+        }
+      },
+      "status": {
+        "version": 2,
+        "immuneTags": [
+          "poison"
+        ],
+        "durationReductionBps": {}
+      },
+      "carry": {
+        "enabled": false,
+        "strength": 12,
+        "weight": "0",
+        "bulk": "0",
+        "weightCapacity": null,
+        "bulkCapacity": null,
+        "unmeasuredItems": 2,
+        "state": "UNCONFIGURED",
+        "penalties": {
+          "stealth": 0,
+          "mobility": 0,
+          "initiative": 0
+        },
+        "sources": [],
+        "baseCapacity": null,
+        "strengthBonus": null,
+        "thresholds": null
+      },
+      "damage": {
+        "version": 1,
+        "attackType": "physical",
+        "penetration": 0,
+        "resistances": {
+          "fire": 2500,
+          "physical": 0
+        }
+      },
+      "capabilities": {
+        "guard": true,
+        "heal": true
+      }
+    },
+    "preview": {
+      "stats": {
+        "armor": 7,
+        "evasion": 10,
+        "maxMana": 6,
+        "accuracy": 21,
+        "attackMax": 8,
+        "attackMin": 8,
+        "maxHealth": 35,
+        "initiative": 7
+      },
+      "breakdown": {
+        "armor": {
+          "base": 2,
+          "attributes": 0,
+          "sources": 5,
+          "carrying": 0
+        },
+        "evasion": {
+          "base": 10,
+          "attributes": 0,
+          "sources": 0,
+          "carrying": 0
+        },
+        "maxMana": {
+          "base": 6,
+          "attributes": 0,
+          "sources": 0,
+          "carrying": 0
+        },
+        "accuracy": {
+          "base": 20,
+          "attributes": 0,
+          "sources": 1,
+          "carrying": 0
+        },
+        "attackMax": {
+          "base": 6,
+          "attributes": 0,
+          "sources": 2,
+          "carrying": 0
+        },
+        "attackMin": {
+          "base": 6,
+          "attributes": 0,
+          "sources": 2,
+          "carrying": 0
+        },
+        "maxHealth": {
+          "base": 30,
+          "attributes": 0,
+          "sources": 5,
+          "carrying": 0
+        },
+        "initiative": {
+          "base": 5,
+          "attributes": 0,
+          "sources": 2,
+          "carrying": 0
+        }
+      },
+      "status": {
+        "version": 2,
+        "immuneTags": [
+          "poison"
+        ],
+        "durationReductionBps": {}
+      },
+      "carry": {
+        "enabled": false,
+        "strength": 12,
+        "weight": "0",
+        "bulk": "0",
+        "weightCapacity": null,
+        "bulkCapacity": null,
+        "unmeasuredItems": 2,
+        "state": "UNCONFIGURED",
+        "penalties": {
+          "stealth": 0,
+          "mobility": 0,
+          "initiative": 0
+        },
+        "sources": [],
+        "baseCapacity": null,
+        "strengthBonus": null,
+        "thresholds": null
+      },
+      "damage": {
+        "version": 1,
+        "attackType": "physical",
+        "penetration": 0,
+        "resistances": {
+          "fire": 2500,
+          "physical": 0
+        }
+      },
+      "capabilities": {
+        "guard": true,
+        "heal": true
+      }
+    },
+    "removed": [],
+    "activeSet": "A",
+    "notes": [
+      "Preparation totals use the selected encounter’s pinned rules. Temporary battle effects, targets, rolls and conditional resistances can change outcomes.",
+      "Equipping does not reduce carried weight; equipment remains in your pack."
+    ]
+  },
+  "characterStats": {
+    "runId": "b97c7e22-a7fe-47d6-95fd-ebf567b84d74",
+    "revision": 33,
+    "contexts": [
+      {
+        "id": "encounter.history-finale",
+        "name": "Test campaign finale"
+      },
+      {
+        "id": "encounter.tactical",
+        "name": "Tactical"
+      }
+    ],
+    "contextId": "encounter.history-finale",
+    "current": {
+      "stats": {
+        "armor": 7,
+        "evasion": 10,
+        "maxMana": 6,
+        "accuracy": 21,
+        "attackMax": 8,
+        "attackMin": 8,
+        "maxHealth": 35,
+        "initiative": 7
+      },
+      "breakdown": {
+        "armor": {
+          "base": 2,
+          "attributes": 0,
+          "sources": 5,
+          "carrying": 0
+        },
+        "evasion": {
+          "base": 10,
+          "attributes": 0,
+          "sources": 0,
+          "carrying": 0
+        },
+        "maxMana": {
+          "base": 6,
+          "attributes": 0,
+          "sources": 0,
+          "carrying": 0
+        },
+        "accuracy": {
+          "base": 20,
+          "attributes": 0,
+          "sources": 1,
+          "carrying": 0
+        },
+        "attackMax": {
+          "base": 6,
+          "attributes": 0,
+          "sources": 2,
+          "carrying": 0
+        },
+        "attackMin": {
+          "base": 6,
+          "attributes": 0,
+          "sources": 2,
+          "carrying": 0
+        },
+        "maxHealth": {
+          "base": 30,
+          "attributes": 0,
+          "sources": 5,
+          "carrying": 0
+        },
+        "initiative": {
+          "base": 5,
+          "attributes": 0,
+          "sources": 2,
+          "carrying": 0
+        }
+      },
+      "status": {
+        "version": 2,
+        "immuneTags": [
+          "poison"
+        ],
+        "durationReductionBps": {}
+      },
+      "carry": {
+        "enabled": false,
+        "strength": 12,
+        "weight": "0",
+        "bulk": "0",
+        "weightCapacity": null,
+        "bulkCapacity": null,
+        "unmeasuredItems": 2,
+        "state": "UNCONFIGURED",
+        "penalties": {
+          "stealth": 0,
+          "mobility": 0,
+          "initiative": 0
+        },
+        "sources": [],
+        "baseCapacity": null,
+        "strengthBonus": null,
+        "thresholds": null
+      },
+      "damage": {
+        "version": 1,
+        "attackType": "physical",
+        "penetration": 0,
+        "resistances": {
+          "fire": 2500,
+          "physical": 0
+        }
+      },
+      "capabilities": {
+        "guard": true,
+        "heal": true
+      }
+    },
+    "preview": {
+      "stats": {
+        "armor": 7,
+        "evasion": 10,
+        "maxMana": 6,
+        "accuracy": 21,
+        "attackMax": 8,
+        "attackMin": 8,
+        "maxHealth": 35,
+        "initiative": 7
+      },
+      "breakdown": {
+        "armor": {
+          "base": 2,
+          "attributes": 0,
+          "sources": 5,
+          "carrying": 0
+        },
+        "evasion": {
+          "base": 10,
+          "attributes": 0,
+          "sources": 0,
+          "carrying": 0
+        },
+        "maxMana": {
+          "base": 6,
+          "attributes": 0,
+          "sources": 0,
+          "carrying": 0
+        },
+        "accuracy": {
+          "base": 20,
+          "attributes": 0,
+          "sources": 1,
+          "carrying": 0
+        },
+        "attackMax": {
+          "base": 6,
+          "attributes": 0,
+          "sources": 2,
+          "carrying": 0
+        },
+        "attackMin": {
+          "base": 6,
+          "attributes": 0,
+          "sources": 2,
+          "carrying": 0
+        },
+        "maxHealth": {
+          "base": 30,
+          "attributes": 0,
+          "sources": 5,
+          "carrying": 0
+        },
+        "initiative": {
+          "base": 5,
+          "attributes": 0,
+          "sources": 2,
+          "carrying": 0
+        }
+      },
+      "status": {
+        "version": 2,
+        "immuneTags": [
+          "poison"
+        ],
+        "durationReductionBps": {}
+      },
+      "carry": {
+        "enabled": false,
+        "strength": 12,
+        "weight": "0",
+        "bulk": "0",
+        "weightCapacity": null,
+        "bulkCapacity": null,
+        "unmeasuredItems": 2,
+        "state": "UNCONFIGURED",
+        "penalties": {
+          "stealth": 0,
+          "mobility": 0,
+          "initiative": 0
+        },
+        "sources": [],
+        "baseCapacity": null,
+        "strengthBonus": null,
+        "thresholds": null
+      },
+      "damage": {
+        "version": 1,
+        "attackType": "physical",
+        "penetration": 0,
+        "resistances": {
+          "fire": 2500,
+          "physical": 0
+        }
+      },
+      "capabilities": {
+        "guard": true,
+        "heal": true
+      }
+    },
+    "removed": [],
+    "activeSet": "A",
+    "notes": [
+      "Preparation totals use the selected encounter’s pinned rules. Temporary battle effects, targets, rolls and conditional resistances can change outcomes.",
+      "Equipping does not reduce carried weight; equipment remains in your pack."
+    ]
+  },
+  "abilityBook": {
+    "runId": "b97c7e22-a7fe-47d6-95fd-ebf567b84d74",
+    "revision": 33,
+    "activeInstance": false,
+    "activeSet": "A",
+    "entries": [
+      {
+        "id": "class.one:technique:future",
+        "name": "Warden · future",
+        "category": "UTILITY",
+        "source": {
+          "name": "Warden",
+          "kind": "CLASS",
+          "nativeLevel": 20
+        },
+        "action": "QUICK",
+        "costs": [
+          {
+            "name": "Mana",
+            "amount": 1,
+            "clock": null
+          }
+        ],
+        "cooldownRounds": 0,
+        "effects": [
+          "HEAL: 4–8."
+        ],
+        "restrictions": [
+          "Requires the owning source in the committed active setup. Encounter rules, targets, resources and action budgets determine actual availability.",
+          "Range 1; SINGLE area; ALLY targets."
+        ],
+        "duration": "OWNED"
+      },
+      {
+        "id": "class.one:technique:mend",
+        "name": "Warden · mend",
+        "category": "UTILITY",
+        "source": {
+          "name": "Warden",
+          "kind": "CLASS",
+          "nativeLevel": 20
+        },
+        "action": "QUICK",
+        "costs": [
+          {
+            "name": "Mana",
+            "amount": 1,
+            "clock": null
+          }
+        ],
+        "cooldownRounds": 0,
+        "effects": [
+          "HEAL: 2–4."
+        ],
+        "restrictions": [
+          "Requires the owning source in the committed active setup. Encounter rules, targets, resources and action budgets determine actual availability.",
+          "Range 1; SINGLE area; ALLY targets."
+        ],
+        "duration": "OWNED"
+      },
+      {
+        "id": "class.one:technique:riposte",
+        "name": "Warden · riposte",
+        "category": "REACTION",
+        "source": {
+          "name": "Warden",
+          "kind": "CLASS",
+          "nativeLevel": 20
+        },
+        "action": "REACTION",
+        "costs": [
+          {
+            "name": "Mana",
+            "amount": 1,
+            "clock": null
+          },
+          {
+            "name": "focus",
+            "amount": 1,
+            "clock": "ENCOUNTER"
+          }
+        ],
+        "cooldownRounds": 2,
+        "effects": [
+          "3–5 physical damage; 1 armor penetration."
+        ],
+        "restrictions": [
+          "Requires the owning source in the committed active setup. Encounter rules, targets, resources and action budgets determine actual availability.",
+          "Range 0; SINGLE area; ENEMY targets."
+        ],
+        "duration": "OWNED"
+      },
+      {
+        "id": "class.one:basic-heal",
+        "name": "Warden · Basic healing",
+        "category": "UTILITY",
+        "source": {
+          "name": "Warden",
+          "kind": "CLASS",
+          "nativeLevel": 20
+        },
+        "action": "MAIN",
+        "costs": null,
+        "cooldownRounds": null,
+        "effects": [
+          "Grants basic healing. Amount, mana cost and range are set by the encounter rules."
+        ],
+        "restrictions": [
+          "Requires the owning source in the committed active setup. Encounter rules, targets, resources and action budgets determine actual availability."
+        ],
+        "duration": "OWNED"
+      },
+      {
+        "id": "class.one:passive",
+        "name": "Warden · Passive properties",
+        "category": "PASSIVE",
+        "source": {
+          "name": "Warden",
+          "kind": "CLASS",
+          "nativeLevel": 20
+        },
+        "action": null,
+        "costs": null,
+        "cooldownRounds": null,
+        "effects": [
+          "accuracy: +1 in compatible character profiles."
+        ],
+        "restrictions": [
+          "Requires the owning source in the committed active setup. Encounter rules, targets, resources and action budgets determine actual availability."
+        ],
+        "duration": "OWNED"
+      },
+      {
+        "id": "class.two:guard",
+        "name": "Wayfarer · Guard",
+        "category": "ACTIVE",
+        "source": {
+          "name": "Wayfarer",
+          "kind": "CLASS",
+          "nativeLevel": 5
+        },
+        "action": "QUICK",
+        "costs": null,
+        "cooldownRounds": null,
+        "effects": [
+          "Grants the Guard capability. Its armor benefit and action availability depend on encounter rules."
+        ],
+        "restrictions": [
+          "Requires the owning source in the committed active setup. Encounter rules, targets, resources and action budgets determine actual availability."
+        ],
+        "duration": "OWNED"
+      },
+      {
+        "id": "class.two:passive",
+        "name": "Wayfarer · Passive properties",
+        "category": "PASSIVE",
+        "source": {
+          "name": "Wayfarer",
+          "kind": "CLASS",
+          "nativeLevel": 5
+        },
+        "action": null,
+        "costs": null,
+        "cooldownRounds": null,
+        "effects": [
+          "initiative: +2 in compatible character profiles."
+        ],
+        "restrictions": [
+          "Requires the owning source in the committed active setup. Encounter rules, targets, resources and action budgets determine actual availability."
+        ],
+        "duration": "OWNED"
+      },
+      {
+        "id": "feat.root:passive",
+        "name": "Steady footing · Passive properties",
+        "category": "PASSIVE",
+        "source": {
+          "name": "Steady footing",
+          "kind": "FEAT",
+          "nativeLevel": 0
+        },
+        "action": null,
+        "costs": null,
+        "cooldownRounds": null,
+        "effects": [
+          "A known feat for explicit advancement choices.",
+          "maxHealth: +5 in compatible character profiles."
+        ],
+        "restrictions": [
+          "Requires the owning source in the committed active setup. Encounter rules, targets, resources and action budgets determine actual availability."
+        ],
+        "duration": "OWNED"
+      },
+      {
+        "id": "item.shield:guard",
+        "name": "Shield · Guard",
+        "category": "ACTIVE",
+        "source": {
+          "name": "Shield",
+          "kind": "EQUIPMENT",
+          "nativeLevel": 0
+        },
+        "action": "QUICK",
+        "costs": null,
+        "cooldownRounds": null,
+        "effects": [
+          "Grants the Guard capability. Its armor benefit and action availability depend on encounter rules."
+        ],
+        "restrictions": [
+          "Requires the owning source in the committed active setup. Encounter rules, targets, resources and action budgets determine actual availability."
+        ],
+        "duration": "OWNED"
+      },
+      {
+        "id": "item.shield:passive",
+        "name": "Shield · Passive properties",
+        "category": "PASSIVE",
+        "source": {
+          "name": "Shield",
+          "kind": "EQUIPMENT",
+          "nativeLevel": 0
+        },
+        "action": null,
+        "costs": null,
+        "cooldownRounds": null,
+        "effects": [
+          "Per active item: armor: +1 in compatible character profiles.",
+          "Grants damage traits; inspect Statistics in a discovered rules context for authorized totals.",
+          "Grants status defenses; inspect Statistics in a discovered rules context for authorized totals."
+        ],
+        "restrictions": [
+          "Requires the owning source in the committed active setup. Encounter rules, targets, resources and action budgets determine actual availability."
+        ],
+        "duration": "OWNED"
+      },
+      {
+        "id": "item.sword:passive",
+        "name": "Sword · Passive properties",
+        "category": "PASSIVE",
+        "source": {
+          "name": "Sword",
+          "kind": "EQUIPMENT",
+          "nativeLevel": 0
+        },
+        "action": null,
+        "costs": null,
+        "cooldownRounds": null,
+        "effects": [
+          "Per active item: attackMin: +2 in compatible character profiles.",
+          "Per active item: attackMax: +2 in compatible character profiles."
+        ],
+        "restrictions": [
+          "Requires the owning source in the committed active setup. Encounter rules, targets, resources and action budgets determine actual availability."
+        ],
+        "duration": "OWNED"
+      },
+      {
+        "id": "subclass.first:passive",
+        "name": "Sentinel · Passive properties",
+        "category": "PASSIVE",
+        "source": {
+          "name": "Sentinel",
+          "kind": "SUBCLASS",
+          "nativeLevel": 0
+        },
+        "action": null,
+        "costs": null,
+        "cooldownRounds": null,
+        "effects": [
+          "A discovered specialization for its native class.",
+          "armor: +4 in compatible character profiles."
+        ],
+        "restrictions": [
+          "Requires the owning source in the committed active setup. Encounter rules, targets, resources and action budgets determine actual availability."
+        ],
+        "duration": "OWNED"
+      }
+    ],
+    "truncated": false,
+    "notes": [
+      "Only assessed (Advanced) owned sources are included. Unassessed or undiscovered capabilities are not exposed.",
+      "Prepared inactive weapon sets and uncommitted equipment drafts do not grant entries.",
+      "This book describes owned capabilities, not encounter action legality. Temporary encounter effects are excluded; inspect the battle view for those.",
+      "Mastery is not yet supported."
+    ]
+  },
+  "characterHistory": {
+    "runId": "b97c7e22-a7fe-47d6-95fd-ebf567b84d74",
+    "revision": 33,
+    "activeInstance": false,
+    "entries": [
+      {
+        "id": "START_BUILD:7d224951-1b40-4f39-8ef4-12eb3a25a1e4",
+        "category": "START_BUILD",
+        "name": "Warden",
+        "level": 1,
+        "milestone": null,
+        "recordedAt": "2026-10-18T21:13:44.410525-05:00",
+        "changes": [
+          {
+            "name": "Native class level",
+            "before": null,
+            "after": 1
+          },
+          {
+            "name": "Starting preset",
+            "before": null,
+            "after": "balanced"
+          },
+          {
+            "name": "strength",
+            "before": null,
+            "after": 12
+          },
+          {
+            "name": "dexterity",
+            "before": null,
+            "after": 11
+          },
+          {
+            "name": "constitution",
+            "before": null,
+            "after": 10
+          },
+          {
+            "name": "intelligence",
+            "before": null,
+            "after": 9
+          },
+          {
+            "name": "wisdom",
+            "before": null,
+            "after": 8
+          },
+          {
+            "name": "charisma",
+            "before": null,
+            "after": 7
+          },
+          {
+            "name": "luck",
+            "before": null,
+            "after": 10
+          }
+        ]
+      },
+      {
+        "id": "LEVEL_UP:7b884bb1-6451-4b93-b1b3-b9d70132074c",
+        "category": "LEVEL_UP",
+        "name": "Warden",
+        "level": 2,
+        "milestone": null,
+        "recordedAt": "2026-10-18T21:13:44.865326-05:00",
+        "changes": [
+          {
+            "name": "Character level",
+            "before": 1,
+            "after": 2
+          },
+          {
+            "name": "Native class level",
+            "before": 1,
+            "after": 2
+          }
+        ]
+      },
+      {
+        "id": "LEVEL_UP:d942d6f7-1a43-4fbd-9308-409b58bbfb88",
+        "category": "LEVEL_UP",
+        "name": "Warden",
+        "level": 3,
+        "milestone": null,
+        "recordedAt": "2026-10-18T21:13:44.973132-05:00",
+        "changes": [
+          {
+            "name": "Character level",
+            "before": 2,
+            "after": 3
+          },
+          {
+            "name": "Native class level",
+            "before": 2,
+            "after": 3
+          }
+        ]
+      },
+      {
+        "id": "LEVEL_UP:234ad772-5929-4eb4-989b-4fb458ee88c1",
+        "category": "LEVEL_UP",
+        "name": "Warden",
+        "level": 4,
+        "milestone": null,
+        "recordedAt": "2026-10-18T21:13:45.069241-05:00",
+        "changes": [
+          {
+            "name": "Character level",
+            "before": 3,
+            "after": 4
+          },
+          {
+            "name": "Native class level",
+            "before": 3,
+            "after": 4
+          }
+        ]
+      },
+      {
+        "id": "LEVEL_UP:7e6e78b1-ed1c-4e17-8cbf-3237fb501ae2",
+        "category": "LEVEL_UP",
+        "name": "Warden",
+        "level": 5,
+        "milestone": null,
+        "recordedAt": "2026-10-18T21:13:45.166395-05:00",
+        "changes": [
+          {
+            "name": "Character level",
+            "before": 4,
+            "after": 5
+          },
+          {
+            "name": "Native class level",
+            "before": 4,
+            "after": 5
+          }
+        ]
+      },
+      {
+        "id": "LEVEL_UP:54b3be3f-2df7-4e1b-a529-8c6515988b5a",
+        "category": "LEVEL_UP",
+        "name": "Warden",
+        "level": 6,
+        "milestone": null,
+        "recordedAt": "2026-10-18T21:13:45.251208-05:00",
+        "changes": [
+          {
+            "name": "Character level",
+            "before": 5,
+            "after": 6
+          },
+          {
+            "name": "Native class level",
+            "before": 5,
+            "after": 6
+          }
+        ]
+      },
+      {
+        "id": "LEVEL_UP:c89baf02-4abf-4a3e-80aa-2c9ee87a7528",
+        "category": "LEVEL_UP",
+        "name": "Warden",
+        "level": 7,
+        "milestone": null,
+        "recordedAt": "2026-10-18T21:13:45.314427-05:00",
+        "changes": [
+          {
+            "name": "Character level",
+            "before": 6,
+            "after": 7
+          },
+          {
+            "name": "Native class level",
+            "before": 6,
+            "after": 7
+          }
+        ]
+      },
+      {
+        "id": "LEVEL_UP:1b691024-6f51-4264-9b43-5561cb20bab6",
+        "category": "LEVEL_UP",
+        "name": "Warden",
+        "level": 8,
+        "milestone": null,
+        "recordedAt": "2026-10-18T21:13:45.349365-05:00",
+        "changes": [
+          {
+            "name": "Character level",
+            "before": 7,
+            "after": 8
+          },
+          {
+            "name": "Native class level",
+            "before": 7,
+            "after": 8
+          }
+        ]
+      },
+      {
+        "id": "LEVEL_UP:7ab5002a-0fa0-4695-b1f6-8e3c5ceb74fa",
+        "category": "LEVEL_UP",
+        "name": "Warden",
+        "level": 9,
+        "milestone": null,
+        "recordedAt": "2026-10-18T21:13:45.374146-05:00",
+        "changes": [
+          {
+            "name": "Character level",
+            "before": 8,
+            "after": 9
+          },
+          {
+            "name": "Native class level",
+            "before": 8,
+            "after": 9
+          }
+        ]
+      },
+      {
+        "id": "LEVEL_UP:3ff8cce3-d0b3-4321-877f-10ed0359c1e9",
+        "category": "LEVEL_UP",
+        "name": "Warden",
+        "level": 10,
+        "milestone": null,
+        "recordedAt": "2026-10-18T21:13:45.394826-05:00",
+        "changes": [
+          {
+            "name": "Character level",
+            "before": 9,
+            "after": 10
+          },
+          {
+            "name": "Native class level",
+            "before": 9,
+            "after": 10
+          }
+        ]
+      },
+      {
+        "id": "LEVEL_UP:837df42f-e079-418e-81e8-213a0096acd3",
+        "category": "LEVEL_UP",
+        "name": "Warden",
+        "level": 11,
+        "milestone": null,
+        "recordedAt": "2026-10-18T21:13:45.42326-05:00",
+        "changes": [
+          {
+            "name": "Character level",
+            "before": 10,
+            "after": 11
+          },
+          {
+            "name": "Native class level",
+            "before": 10,
+            "after": 11
+          }
+        ]
+      },
+      {
+        "id": "LEVEL_UP:1f1757b1-ac51-4512-98d3-223122236bfc",
+        "category": "LEVEL_UP",
+        "name": "Warden",
+        "level": 12,
+        "milestone": null,
+        "recordedAt": "2026-10-18T21:13:45.440816-05:00",
+        "changes": [
+          {
+            "name": "Character level",
+            "before": 11,
+            "after": 12
+          },
+          {
+            "name": "Native class level",
+            "before": 11,
+            "after": 12
+          }
+        ]
+      },
+      {
+        "id": "LEVEL_UP:cfc30f38-08f6-48ce-9402-5a43ccf2c2e1",
+        "category": "LEVEL_UP",
+        "name": "Warden",
+        "level": 13,
+        "milestone": null,
+        "recordedAt": "2026-10-18T21:13:45.462426-05:00",
+        "changes": [
+          {
+            "name": "Character level",
+            "before": 12,
+            "after": 13
+          },
+          {
+            "name": "Native class level",
+            "before": 12,
+            "after": 13
+          }
+        ]
+      },
+      {
+        "id": "LEVEL_UP:23a1c395-6336-40c5-a0e4-343b9de774b9",
+        "category": "LEVEL_UP",
+        "name": "Warden",
+        "level": 14,
+        "milestone": null,
+        "recordedAt": "2026-10-18T21:13:45.480818-05:00",
+        "changes": [
+          {
+            "name": "Character level",
+            "before": 13,
+            "after": 14
+          },
+          {
+            "name": "Native class level",
+            "before": 13,
+            "after": 14
+          }
+        ]
+      },
+      {
+        "id": "LEVEL_UP:e441f951-e69b-40bf-bc16-dda67bf7cb0d",
+        "category": "LEVEL_UP",
+        "name": "Warden",
+        "level": 15,
+        "milestone": null,
+        "recordedAt": "2026-10-18T21:13:45.500833-05:00",
+        "changes": [
+          {
+            "name": "Character level",
+            "before": 14,
+            "after": 15
+          },
+          {
+            "name": "Native class level",
+            "before": 14,
+            "after": 15
+          }
+        ]
+      },
+      {
+        "id": "LEVEL_UP:03df8644-5d5a-44be-84a5-a0985bac2aeb",
+        "category": "LEVEL_UP",
+        "name": "Warden",
+        "level": 16,
+        "milestone": null,
+        "recordedAt": "2026-10-18T21:13:45.527772-05:00",
+        "changes": [
+          {
+            "name": "Character level",
+            "before": 15,
+            "after": 16
+          },
+          {
+            "name": "Native class level",
+            "before": 15,
+            "after": 16
+          }
+        ]
+      },
+      {
+        "id": "LEVEL_UP:354e6fb1-ea40-4992-9e52-fc0c2de3822a",
+        "category": "LEVEL_UP",
+        "name": "Warden",
+        "level": 17,
+        "milestone": null,
+        "recordedAt": "2026-10-18T21:13:45.549341-05:00",
+        "changes": [
+          {
+            "name": "Character level",
+            "before": 16,
+            "after": 17
+          },
+          {
+            "name": "Native class level",
+            "before": 16,
+            "after": 17
+          }
+        ]
+      },
+      {
+        "id": "LEVEL_UP:a46c302d-7656-447a-bbbe-48f0214ce654",
+        "category": "LEVEL_UP",
+        "name": "Warden",
+        "level": 18,
+        "milestone": null,
+        "recordedAt": "2026-10-18T21:13:45.571495-05:00",
+        "changes": [
+          {
+            "name": "Character level",
+            "before": 17,
+            "after": 18
+          },
+          {
+            "name": "Native class level",
+            "before": 17,
+            "after": 18
+          }
+        ]
+      },
+      {
+        "id": "LEVEL_UP:2331ba54-44a2-4e9b-9e28-ad0b311c7de6",
+        "category": "LEVEL_UP",
+        "name": "Warden",
+        "level": 19,
+        "milestone": null,
+        "recordedAt": "2026-10-18T21:13:45.736589-05:00",
+        "changes": [
+          {
+            "name": "Character level",
+            "before": 18,
+            "after": 19
+          },
+          {
+            "name": "Native class level",
+            "before": 18,
+            "after": 19
+          }
+        ]
+      },
+      {
+        "id": "LEVEL_UP:a6e3e9a1-6748-4a67-83bb-d8b3d364b4cd",
+        "category": "LEVEL_UP",
+        "name": "Warden",
+        "level": 20,
+        "milestone": null,
+        "recordedAt": "2026-10-18T21:13:45.757942-05:00",
+        "changes": [
+          {
+            "name": "Character level",
+            "before": 19,
+            "after": 20
+          },
+          {
+            "name": "Native class level",
+            "before": 19,
+            "after": 20
+          }
+        ]
+      },
+      {
+        "id": "LEVEL_UP:b761cf89-fe74-45af-acca-ccdecab736b4",
+        "category": "LEVEL_UP",
+        "name": "Wayfarer",
+        "level": 21,
+        "milestone": null,
+        "recordedAt": "2026-10-18T21:13:45.781439-05:00",
+        "changes": [
+          {
+            "name": "Character level",
+            "before": 20,
+            "after": 21
+          },
+          {
+            "name": "Native class level",
+            "before": null,
+            "after": 1
+          }
+        ]
+      },
+      {
+        "id": "LEVEL_UP:490958d4-729b-4f0c-ac00-bcfd6d5bcf41",
+        "category": "LEVEL_UP",
+        "name": "Wayfarer",
+        "level": 22,
+        "milestone": null,
+        "recordedAt": "2026-10-18T21:13:45.814066-05:00",
+        "changes": [
+          {
+            "name": "Character level",
+            "before": 21,
+            "after": 22
+          },
+          {
+            "name": "Native class level",
+            "before": 1,
+            "after": 2
+          }
+        ]
+      },
+      {
+        "id": "LEVEL_UP:84d2738e-e441-4e90-a148-ab15b184a941",
+        "category": "LEVEL_UP",
+        "name": "Wayfarer",
+        "level": 23,
+        "milestone": null,
+        "recordedAt": "2026-10-18T21:13:45.852101-05:00",
+        "changes": [
+          {
+            "name": "Character level",
+            "before": 22,
+            "after": 23
+          },
+          {
+            "name": "Native class level",
+            "before": 2,
+            "after": 3
+          }
+        ]
+      },
+      {
+        "id": "LEVEL_UP:a4e0ac3a-6e66-4a94-8bd9-3726009d568f",
+        "category": "LEVEL_UP",
+        "name": "Wayfarer",
+        "level": 24,
+        "milestone": null,
+        "recordedAt": "2026-10-18T21:13:45.878274-05:00",
+        "changes": [
+          {
+            "name": "Character level",
+            "before": 23,
+            "after": 24
+          },
+          {
+            "name": "Native class level",
+            "before": 3,
+            "after": 4
+          }
+        ]
+      },
+      {
+        "id": "LEVEL_UP:7fb65078-0a46-4fbc-9424-b1d73e6a4fcd",
+        "category": "LEVEL_UP",
+        "name": "Wayfarer",
+        "level": 25,
+        "milestone": null,
+        "recordedAt": "2026-10-18T21:13:45.905939-05:00",
+        "changes": [
+          {
+            "name": "Character level",
+            "before": 24,
+            "after": 25
+          },
+          {
+            "name": "Native class level",
+            "before": 4,
+            "after": 5
+          }
+        ]
+      }
+    ],
+    "total": 29,
+    "offset": 0,
+    "pageSize": 25,
+    "hasMore": true
+  }
+}

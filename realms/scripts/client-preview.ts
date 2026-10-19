@@ -72,6 +72,7 @@ if(process.env.PLAYTEST_SERVICES==='1'){
 }
 await enrollPassword(db.pool,f.account,'wayfarer','A road worth wandering 47!');
 const app=buildApp(db.pool,{mode:'sessions',throttleKey:randomBytes(32).toString('hex')});
+app.addHook('onSend',async(_request,reply,payload)=>{reply.header('X-Follybound-Fixture','disposable-visual');return payload;});
 try{await app.listen({host:'127.0.0.1',port:3001});}
 catch(error){await app.close();await db.close();throw error;}
 console.log('Disposable Follybound playtest: http://127.0.0.1:3001');

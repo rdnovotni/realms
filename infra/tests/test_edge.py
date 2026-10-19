@@ -59,6 +59,8 @@ class EdgeTests(unittest.TestCase):
   client=INFRA.parent/'realms/client';pattern=e.approved_paths()
   for path in re.findall(r'href="(/assets/[^" ]+\.css)"',(client/'index.html').read_text()):self.assertRegex(path,pattern)
   for source in client.glob('*.ts'):self.assertRegex('/assets/'+source.stem+'.js',pattern)
+  self.assertNotRegex('/assets/dev/visual-reference.js',pattern)
+  self.assertNotRegex('/dev/fixture/pack',pattern)
   for art in (client/'art/items').glob('*.svg'):self.assertRegex('/assets/items/'+art.name,pattern)
   for path in ['/assets/items/authored/test-sword_2.avif','/assets/folio-grain.svg']:self.assertRegex(path,pattern)
   for path in ['/assets/unreviewed.js','/assets/anything.css','/assets/items/authored/a.svg','/assets/items/authored/../private.jpg','/assets/items/authored/'+('a'*81)+'.png','/assets/items/.env','/dev/folio']:self.assertIsNone(re.fullmatch(pattern,path))

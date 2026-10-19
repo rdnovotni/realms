@@ -25,6 +25,7 @@ Current product name: **Follybound**. [Implementation status](implementation-sta
 - [Accounts and sessions](account-sessions.md)
 - [Game client foundation](game-client.md)
 - [The Adventurer's Folio visual design system](adventurers-folio.md)
+- [Visual QA, theme extension and screenshot regression](visual-qa.md)
 - [Adventure, Combat and Journey Journal presentation](campaign-folio.md)
 - [Authenticated application shell and browser fixture](application-shell.md)
 - [Illustrated Character folio and visual fixture](character-folio.md)

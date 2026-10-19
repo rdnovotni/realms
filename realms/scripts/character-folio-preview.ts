@@ -12,6 +12,6 @@ try{
  let account:string;
  if(state==='setup'){const p=historyPackage(),release=await publishContent(db.pool,p),f=await actor(db.pool,release,20);account=f.account;for(const id of ['class.one','class.two'])await db.pool.query("INSERT INTO discoveries(account_id,entity_id,knowledge_level) VALUES($1,$2,'DISCOVERED')",[account,id]);}
  else {const f=await historyFixture(db.pool,state==='multiclass');if(state==='pending')await f.levels('class.one',4);else await f.populate();account=f.account;}
- await enrollPassword(db.pool,account,'wayfarer','A road worth wandering 47!');app=buildApp(db.pool,{mode:'sessions',throttleKey:randomBytes(32).toString('hex')});await app.listen({host:'127.0.0.1',port});console.log('Disposable Character folio preview: http://127.0.0.1:'+port+' · '+state);
+ await enrollPassword(db.pool,account,'wayfarer','A road worth wandering 47!');app=buildApp(db.pool,{mode:'sessions',throttleKey:randomBytes(32).toString('hex')});app.addHook('onSend',async(_request,reply,payload)=>{reply.header('X-Follybound-Fixture','disposable-visual');return payload;});await app.listen({host:'127.0.0.1',port});console.log('Disposable Character folio preview: http://127.0.0.1:'+port+' · '+state);
  let closing=false;const close=async()=>{if(closing)return;closing=true;await app?.close();await db.close();};process.once('SIGINT',()=>void close());process.once('SIGTERM',()=>void close());
 }catch(error){await app?.close();await db.close();throw error;}
