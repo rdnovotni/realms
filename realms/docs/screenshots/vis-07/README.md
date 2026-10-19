@@ -2,7 +2,7 @@
 
 [Visual audit and reproduction](../../visual-qa.md) · [Token reference](../../adventurers-folio.md)
 
-Frozen synthetic public projections; development-only toolbar is intentionally visible. These are post-QA captures, compared against the [VIS-06 baseline](../vis-06/README.md). No production deployment is represented. `browser-contracts.json` records 188 browser checks with the exact source/fixture fingerprint; `css-audit.json` records source byte changes. See the main audit for accessibility/device limits and test results.
+Frozen synthetic public projections; development-only toolbar is intentionally visible. The JPEGs preserve the initial VIS-07 captures (including the subsequently corrected cramped mobile header), compared against the [VIS-06 baseline](../vis-06/README.md). No production deployment is represented. `browser-contracts.json` was recaptured during the October 19 integration and records every required scene/width/preference tuple, with header overlap/overflow checks and the exact updated source/fixture fingerprint; `css-audit.json` records source byte changes. See the main audit for accessibility/device limits and test results.
 
 | Reference | Screenshot |
 |---|---|

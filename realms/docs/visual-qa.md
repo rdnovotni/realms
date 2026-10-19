@@ -4,14 +4,14 @@
 
 ## Final cross-screen audit
 
-The reviewed foundation is VIS-06 (`d738065140510a5b9fd2bb18f8b7dc6d8175538f`), including VIS-03–05 and CHAR-05. Those visual dependencies remain separate PRs; this follow-up does not claim their merge or production activation.
+The integration preserves the exact VIS-03–07 heads, including the three-parent VIS-03–05 reconciliation at `161514f` and VIS-06 at `d738065`. The integration follow-up corrects mobile shell geometry and strengthens the browser evidence contract. Source integration does not establish production activation.
 
 | Area | Findings and resolution |
 |---|---|
 | Character's five chapters | Preserve identity medallion, seven attributes, progression confirmations, compendium, contextual statistics and immutable chronicle. Shared tokens and focus contract remain consistent. |
 | Pack, paperdoll, inspector, comparisons, loadouts | Remove superseded paint declarations; retain rarity, condition, binding and unknown-value labels. Replace absolute tile footers with flex bottom alignment so enlarged metadata cannot overlap condition/weight. Minimum heights scale with text. |
 | Adventure, combat, Journal | Preserve journal/tactical distinctions. Wrap section-header metadata and combat identity at enlarged text; align shared ink icons. |
-| Shell and dialogs | Utility tools wrap rather than widen the page. Coarse-pointer targets remain at least 44px tall. Appearance reuses native dialog/focus restoration. |
+| Shell and dialogs | Mobile branding, connection/tools and navigation have separate rows, preventing Appearance from overlapping the wordmark. Utility tools wrap rather than widen the page. Coarse-pointer targets remain at least 44px tall. Appearance reuses native dialog/focus restoration. |
 | Empty/loading/error/setup and long lists | Explicit states remain understandable; setup comes before equipment. Stress reference exercises 64 public feat/skill rows, long labels and a 120-record inventory. |
 | Palette/controls | Authenticated screen hex paints now use semantic roles. Primary destructive buttons use a contrast-tested foreground/background pair. Forced-color roles use system colors. |
 
@@ -40,14 +40,16 @@ The scene picker includes all five Character chapters, Pack, paperdoll, inspecto
 1. Build and start the frozen preview. Keep the same local fonts and browser configuration for comparisons.
 2. Capture the 18 normal scenes at 320, 375, 768, 1024, 1440 and 1920px, height 1000. Wait for `#visual-audit` to contain its report before capturing.
 3. Capture overview, progression, inventory, inspector, comparison, Adventure, combat and dialog at 320/1440 with modes `motion`, `contrast`, `forced`, `text200`, `coarse`. These deliberately activate CSS branches; they are not OS preference emulation.
-4. Review screenshots and interactions. Export the visible audit reports as one JSON array. Run `npm run visual:check -- --actual /absolute/report.json` (absolute paths are accepted). Resolve overflow, footer collisions, heading skips, unnamed controls, icon semantics, target and sampled contrast failures.
+4. Review screenshots and interactions. Use **Export captured browser reports** to download the current-source captures as one JSON array. The development reference retains reports for each scene/mode/width in optional tab session storage; denied storage still allows current-page export. Run `npm run visual:check -- --actual /absolute/report.json` (absolute paths are accepted). Resolve overflow, header overlap/overflow, footer collisions, heading skips, unnamed controls, icon semantics, target and sampled contrast failures.
 5. Commit reviewed screenshots and `docs/screenshots/vis-07/browser-contracts.json` together. Explain intentional changes. The manifest hashes client CSS/TypeScript, entry HTML, recursive local artwork and all five fixtures; changing visual sources requires fresh evidence.
+
+The validator requires every documented tuple: all 18 scenes at all six widths and all eight preference scenes at both widths in each of five modes. Omitting a tuple fails even if other records are duplicated. Header assertions compare rendered brand text, connection, utility and navigation boxes across groups, including content that paints beyond a compressed grid cell.
 
 CI `npm run visual:check` verifies recorded contracts against the current source fingerprint. It does **not** launch a browser, compare pixels, or establish that the stored screenshots are visually correct. It intentionally fails on stale source evidence. Browser capture and human screenshot review remain required. Do not update a hash without rerunning the matrix.
 
 ## Accessibility results and limits
 
-188 browser contracts pass: 108 normal screen/width cases and 80 preference/text/pointer projections. No document overflow, footer collision, skipped heading level, unnamed control, invalid decorative icon semantics or enabled button below 24px was detected; coarse projections have no enabled button below 44px tall. Sampled opaque rendered text pairs have a minimum 6.59:1 contrast. This sample is not an exhaustive contrast audit of every pixel, illustration, disabled control, checkbox or label hit area. The independent source checker validates 55 semantic contrast pairs (normal text minimum 4.79:1; applicable boundaries/focus at least 3:1).
+188 browser contracts pass: 108 normal screen/width cases and 80 preference/text/pointer projections. No document overflow, header overlap/overflow, footer collision, skipped heading level, unnamed control, invalid decorative icon semantics or enabled button below 24px was detected; coarse projections have no enabled button below 44px tall. Sampled opaque rendered text pairs have a minimum 6.59:1 contrast. This sample is not an exhaustive contrast audit of every pixel, illustration, disabled control, checkbox or label hit area. The independent source checker validates 55 semantic contrast pairs (normal text minimum 4.79:1; applicable boundaries/focus at least 3:1).
 
 Live disposable-client verification confirms Appearance checkbox announcements, Escape dismissal, focus restoration to Appearance, texture off, and retained texture after reload. Reload returns to login under the fixture's existing authentication behavior; texture remains off independently. The mobile equipment toggle opens the shared paperdoll. The comparison dialog opens from the inspector; Escape dismisses it and returns focus to Compare. Native dialog semantics and keyboard controls are preserved. No gameplay action is used by the cosmetic preference.
 
@@ -68,5 +70,7 @@ All art, grain and fonts are local or system resources. Grain is one static sub-
 - Infrastructure: 175 cases, 10 conditional skips, no failures.
 - Styles, documentation navigation, feature registry and visual source contracts: see the PR's final command results.
 - Release build-stage allowlists include the visual-contract unit-test helper; a packaging regression test guards both Docker COPY and context inclusion. No production deployment or release-checkpoint result is implied by local tests.
+
+October 19 integration verification recaptured all 188 required browser cases after the mobile-header correction. The sampled minimum remains 6.59:1; no header collision/overflow was detected. Screenshots from the initial VIS-07 pass are historical and can contain the superseded cramped header.
 
 Rollback is a source revert and rebuild. No migration, public service change, combat/progression formula, ownership rule, discovery gate or persistent gameplay contract is changed.
