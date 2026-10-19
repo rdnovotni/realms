@@ -13,7 +13,14 @@
     "src/**/*.ts",
     "test/**/*.ts",
     "client/**/*.ts",
-    "scripts/client-preview.ts", "scripts/shell-preview.ts", "scripts/welcome-preview.ts",
-    "scripts/advancement-preview.ts", "scripts/character-book-preview.ts", "scripts/character-history-preview.ts"
+    "scripts/client-preview.ts",
+    "scripts/shell-preview.ts",
+    "scripts/welcome-preview.ts",
+    "scripts/advancement-preview.ts",
+    "scripts/character-book-preview.ts",
+    "scripts/character-history-preview.ts",
+    "scripts/character-folio-preview.ts",
+    "scripts/visual-preview.ts",
+    "scripts/capture-visual-fixtures.ts"
   ]
 }

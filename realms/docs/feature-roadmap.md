@@ -13,7 +13,7 @@ Complete reusable game features before ordinary content authoring. Use only a fe
 
 ## 1. Complete progression and run setup
 
-Finish training/practice with journaled meaningful check evidence; rank and capability changes; safe respec; species/background and special-start rules; and account Mastery/Legacy. Resolve remaining initiation, Ascension eligibility/rewards and mode/path contracts from their owning design entries. Use current class/XP journals, `src/rules/` and field lifetimes, not parallel progression state.
+Finish training/practice with journaled meaningful check evidence; rank and capability changes; safe respec; species/heritage, optional narrative origins and special-start rules; and account Mastery/Legacy. Resolve remaining initiation, Ascension eligibility/rewards and mode/path contracts from their owning design entries. Use current class/XP journals, `src/rules/` and field lifetimes, not parallel progression state.
 
 Finish when a small life proves earned growth, legal choices and respec, campaign completion, preview, exact carryover and a second build; duplicated, stale, revoked and interrupted actions reconcile. Noncombat progress must award a principal obstacle budget once, with no alternative-approach double claim. Breaking content changes need explicit compatibility contracts.
 
@@ -25,11 +25,11 @@ Finish when combat and a peaceful approach solve the same small objective, claim
 
 ## Inventory checkpoint completed in source
 
-Migration 032 adds the [inventory grid, personal storage and carrying framework](inventory-grid.md): paging, search/sort/filter/grouping, stack/history/protection controls, weight/bulk bands and optional future-loot routing. Production measurement catalogs, Legacy Allowance, destructive economy actions, repair and advanced crafting remain separate.
+Migrations 032–036 provide the [inventory grid, personal storage and carrying framework](inventory-grid.md): paging, search/sort/filter/grouping, stack/history/protection controls, weight/bulk bands and optional future-loot routing. Protected item use/opening, priced repair, saved views and structured comparison also exist. Production measurement catalogs, Legacy Allowance, destructive economy actions, item modification and advanced crafting remain separate.
 
 ## 3. Items and crafting lifecycle
 
-Extend routine recipes into profession/station eligibility, quality and capacity; delayed work and recovery; durability/repair; upgrades and commissions. Integrate item protections and binding with every destructive action and custody transition.
+Extend routine recipes into profession/station eligibility, quality and capacity; delayed work and recovery; the remaining durability lifecycle around existing wear/repair; upgrades and commissions. Integrate item protections and binding with every destructive action and custody transition.
 
 Finish when a tiny gather → process → craft → equip → wear/repair → store/commission loop conserves inputs, outputs and currency under retries, interruption and Ascension. Synthetic recipes come before production catalogs.
 

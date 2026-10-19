@@ -1,0 +1,211 @@
+{
+  "chapters": [
+    {
+      "overflowing": [],
+      "scroll": 305,
+      "section": "Character overview",
+      "viewport": 305,
+      "width": 320
+    },
+    {
+      "overflowing": [],
+      "scroll": 360,
+      "section": "Character overview",
+      "viewport": 360,
+      "width": 375
+    },
+    {
+      "overflowing": [],
+      "scroll": 753,
+      "section": "Character overview",
+      "viewport": 753,
+      "width": 768
+    },
+    {
+      "overflowing": [],
+      "scroll": 1009,
+      "section": "Character overview",
+      "viewport": 1009,
+      "width": 1024
+    },
+    {
+      "overflowing": [],
+      "scroll": 1425,
+      "section": "Character overview",
+      "viewport": 1425,
+      "width": 1440
+    },
+    {
+      "overflowing": [],
+      "scroll": 305,
+      "section": "Character progression",
+      "viewport": 305,
+      "width": 320
+    },
+    {
+      "overflowing": [],
+      "scroll": 360,
+      "section": "Character progression",
+      "viewport": 360,
+      "width": 375
+    },
+    {
+      "overflowing": [],
+      "scroll": 753,
+      "section": "Character progression",
+      "viewport": 753,
+      "width": 768
+    },
+    {
+      "overflowing": [],
+      "scroll": 1009,
+      "section": "Character progression",
+      "viewport": 1009,
+      "width": 1024
+    },
+    {
+      "overflowing": [],
+      "scroll": 1425,
+      "section": "Character progression",
+      "viewport": 1425,
+      "width": 1440
+    },
+    {
+      "overflowing": [],
+      "scroll": 305,
+      "section": "Character abilities",
+      "viewport": 305,
+      "width": 320
+    },
+    {
+      "overflowing": [],
+      "scroll": 360,
+      "section": "Character abilities",
+      "viewport": 360,
+      "width": 375
+    },
+    {
+      "overflowing": [],
+      "scroll": 753,
+      "section": "Character abilities",
+      "viewport": 753,
+      "width": 768
+    },
+    {
+      "overflowing": [],
+      "scroll": 1009,
+      "section": "Character abilities",
+      "viewport": 1009,
+      "width": 1024
+    },
+    {
+      "overflowing": [],
+      "scroll": 1425,
+      "section": "Character abilities",
+      "viewport": 1425,
+      "width": 1440
+    },
+    {
+      "overflowing": [],
+      "scroll": 305,
+      "section": "Character statistics",
+      "viewport": 305,
+      "width": 320
+    },
+    {
+      "overflowing": [],
+      "scroll": 360,
+      "section": "Character statistics",
+      "viewport": 360,
+      "width": 375
+    },
+    {
+      "overflowing": [],
+      "scroll": 753,
+      "section": "Character statistics",
+      "viewport": 753,
+      "width": 768
+    },
+    {
+      "overflowing": [],
+      "scroll": 1009,
+      "section": "Character statistics",
+      "viewport": 1009,
+      "width": 1024
+    },
+    {
+      "overflowing": [],
+      "scroll": 1425,
+      "section": "Character statistics",
+      "viewport": 1425,
+      "width": 1440
+    },
+    {
+      "overflowing": [],
+      "scroll": 305,
+      "section": "Character history",
+      "viewport": 305,
+      "width": 320
+    },
+    {
+      "overflowing": [],
+      "scroll": 360,
+      "section": "Character history",
+      "viewport": 360,
+      "width": 375
+    },
+    {
+      "overflowing": [],
+      "scroll": 753,
+      "section": "Character history",
+      "viewport": 753,
+      "width": 768
+    },
+    {
+      "overflowing": [],
+      "scroll": 1009,
+      "section": "Character history",
+      "viewport": 1009,
+      "width": 1024
+    },
+    {
+      "overflowing": [],
+      "scroll": 1425,
+      "section": "Character history",
+      "viewport": 1425,
+      "width": 1440
+    }
+  ],
+  "staged": [
+    {
+      "scroll": 305,
+      "table": 229,
+      "viewport": 305,
+      "width": 320
+    },
+    {
+      "scroll": 360,
+      "table": 284,
+      "viewport": 360,
+      "width": 375
+    },
+    {
+      "scroll": 753,
+      "table": 651.21875,
+      "viewport": 753,
+      "width": 768
+    },
+    {
+      "scroll": 1009,
+      "table": 895.96875,
+      "viewport": 1009,
+      "width": 1024
+    },
+    {
+      "scroll": 1425,
+      "table": 1261.65625,
+      "viewport": 1425,
+      "width": 1440
+    }
+  ]
+}

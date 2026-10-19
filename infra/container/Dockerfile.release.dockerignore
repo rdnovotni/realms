@@ -31,3 +31,6 @@
 !realms/content/**
 !realms/scripts/content-check.ts
 !realms/.env.example
+
+# Unit-test helper required only by the release build/verification stages.
+!realms/scripts/visual-contract.mjs

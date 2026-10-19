@@ -25,7 +25,10 @@ Current product name: **Follybound**. [Implementation status](implementation-sta
 - [Accounts and sessions](account-sessions.md)
 - [Game client foundation](game-client.md)
 - [The Adventurer's Folio visual design system](adventurers-folio.md)
+- [Visual QA, theme extension and screenshot regression](visual-qa.md)
+- [Adventure, Combat and Journey Journal presentation](campaign-folio.md)
 - [Authenticated application shell and browser fixture](application-shell.md)
+- [Illustrated Character folio and visual fixture](character-folio.md)
 - [Privacy notice: evidence and launch decisions](privacy-policy.md)
 - [Public monetization policy](monetization-policy.md)
 
@@ -43,6 +46,7 @@ Current product name: **Follybound**. [Implementation status](implementation-sta
 
 ## Items and crafting
 
+- [Inventory equipment ledger presentation and visual verification](inventory-folio.md)
 - [Inventory grid, personal storage and carrying rules](inventory-grid.md)
 - [Repair, item-use services and inventory workspace](inventory-services.md)
 - [Inventory accounting](inventory-accounting.md)
@@ -71,3 +75,5 @@ Current product name: **Follybound**. [Implementation status](implementation-sta
 - [Tactical resistance reduction and immunity bypass](tactical-resistance-counterplay.md)
 
 Original art and asset provenance: [client art](../client/art/README.md). Current names and compatibility rules are documented separately from historical design/provenance text.
+
+- [Shared Folio icons and interactions](folio-interactions.md) — reusable SVG, notes, review and dialog conventions.

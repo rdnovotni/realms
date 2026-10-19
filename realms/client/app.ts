@@ -1,3 +1,5 @@
+import { applyAppearance } from './appearance.js';
+applyAppearance();
 import { GameSession } from './session.js';
 import { render,type Screen } from './views.js';
 const root=document.getElementById('app');if(!root)throw new Error('Missing client root');

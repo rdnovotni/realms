@@ -1,5 +1,7 @@
 # Game client foundation
 
+Character presentation and visual playtests: [illustrated Character folio](character-folio.md).
+
 Shared authenticated styling and the populated shell fixture: [application shell](application-shell.md).
 
 Current inventory UI and optional carrying policy: [inventory grid, storage and measurements](inventory-grid.md).
@@ -435,3 +437,7 @@ with no data migration or history edits to reverse.
 ## Shared visual foundation (VIS-01)
 
 The [Adventurer's Folio](adventurers-folio.md) defines semantic theme tokens, shared surfaces, typography, controls, icons and accessibility states. `folio.css` loads before the screen layout styles; compatibility aliases keep existing modules working. The foundation changes presentation only. Authored item art, the public tavern illustration, equipment drafts and authoritative progression/combat projections remain intact. The development-only component reference is available through `npm run preview:welcome` at `/dev/folio`, never on the game server.
+
+## Appearance
+
+Use **Appearance** in the game header to turn paper grain on or off. Parchment is the supported theme. The choice stays in the current browser tab when session storage is available and never changes your character or run. Device contrast and motion preferences still apply. Developer visual verification is documented in [Visual QA](visual-qa.md).

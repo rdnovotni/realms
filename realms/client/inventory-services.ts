@@ -1,8 +1,9 @@
+import { mountDialog } from './interactions.js';
 import type { GameSession } from './session.js';
 import type { InventoryItem } from './types.js';
 import { errorMessage } from './api.js';
 const el=<K extends keyof HTMLElementTagNameMap>(tag:K,text='',className='')=>{const n=document.createElement(tag);n.textContent=text;n.className=className;return n;};
-function dialog(title:string){const box=el('dialog','','inventory-service-dialog'),heading=el('h2',title),close=el('button','Cancel');close.type='button';box.append(heading);document.body.append(box);close.addEventListener('click',()=>box.close());box.addEventListener('close',()=>box.remove());box.showModal();return {box,close};}
+function dialog(title:string){const box=el('dialog','','inventory-service-dialog'),heading=el('h2',title),close=el('button','Cancel');close.type='button';box.setAttribute('aria-label',title);box.append(heading);close.addEventListener('click',()=>box.close());box.addEventListener('close',()=>box.remove());mountDialog(box);return {box,close};}
 function ready(session:GameSession,runId:string,revision:number){return session.snapshot?.game.run.runId===runId&&session.snapshot.game.run.revision===revision&&!session.busy&&!session.pending&&!session.needsRefresh&&session.snapshot.game.canWrite;}
 export async function openRepair(session:GameSession,ids:string[]|null){
  const s=session.snapshot;if(!s||session.busy)return;const {box,close}=dialog(ids?'Repair selected gear':'Repair all available gear');box.append(el('p','Repairs cover gear carried or stored at Home in this life, outside encounters. Prices come from each item’s authored repair policy.','help'),el('p','Preparing quote…'),close);
@@ -14,7 +15,7 @@ export async function openRepair(session:GameSession,ids:string[]|null){
   box.append(el('p',`Total: ${BigInt(quote.total).toLocaleString()} Gold · Available: ${BigInt(quote.balance).toLocaleString()} Gold.`,quote.affordable?'':'cost'));
   if(!quote.items.length)box.append(el('p','No repairable damage in this selection.'));
   const confirm=el('button','Pay & repair','primary');confirm.disabled=!quote.items.length||!quote.affordable||!ready(session,quote.runId,quote.revision);confirm.addEventListener('click',()=>{if(!ready(session,quote.runId,quote.revision)){box.append(el('p','Your game changed. Close this quote and request a new one.','cost'));confirm.disabled=true;return;}box.close();void session.action('/api/v1/inventory/repair','REPAIR_ITEMS',{itemIds:ids,token:quote.token});});box.append(close,confirm);close.focus();
- }catch(e){if(box.isConnected)box.replaceChildren(el('h2','Repair unavailable'),el('p',errorMessage(e),'cost'),close);}
+ }catch(e){if(box.isConnected){box.replaceChildren(el('h2','Repair unavailable'),el('p',errorMessage(e),'cost'),close);close.focus();}}
 }
 export async function openItemUse(session:GameSession,item:InventoryItem){
  const s=session.snapshot;if(!s||session.busy)return;const {box,close}=dialog(item.useKind==='OPEN'?'Open item':'Use item');box.append(el('p','Checking this item…'),close);
@@ -25,5 +26,5 @@ export async function openItemUse(session:GameSession,item:InventoryItem){
   if(!quote.eligible)box.append(el('p','This item is protected as a collection copy, by a lock, equipment assignment or saved loadout. Release that protection first.','cost'));
   const ack=el('input');ack.type='checkbox';if(quote.protection.favorite){const field=el('label','','binding-ack');field.append(ack,el('span','Consume this favorited item anyway.'));box.append(field);}
   const commit=el('button',quote.kind==='OPEN'?'Confirm open':'Confirm use','primary');const update=()=>commit.disabled=!quote.eligible||!ready(session,quote.runId,quote.revision)||quote.protection.favorite&&!ack.checked;ack.addEventListener('change',update);update();commit.addEventListener('click',()=>{if(!ready(session,quote.runId,quote.revision)){commit.disabled=true;box.append(el('p','Your game changed. Request a fresh preview.','cost'));return;}box.close();void session.action('/api/v1/inventory/use','USE_ITEM',{itemId:item.id,token:quote.token,allowFavorite:ack.checked});});box.append(close,commit);close.focus();
- }catch(e){if(box.isConnected)box.replaceChildren(el('h2','Item action unavailable'),el('p',errorMessage(e),'cost'),close);}
+ }catch(e){if(box.isConnected){box.replaceChildren(el('h2','Item action unavailable'),el('p',errorMessage(e),'cost'),close);close.focus();}}
 }

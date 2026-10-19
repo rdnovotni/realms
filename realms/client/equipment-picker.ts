@@ -1,3 +1,4 @@
+import { mountDialog } from './interactions.js';
 import type { Gear,InventoryItem,Snapshot } from './types.js';
 import type { GameSession } from './session.js';
 import { renderItemArt } from './item-art.js';
@@ -26,5 +27,5 @@ export function openEquipmentPicker(origin:HTMLElement,snapshot:Snapshot,session
  }
  search.addEventListener('input',()=>{if(timer)clearTimeout(timer);generation++;list.replaceChildren();pages.replaceChildren();info.textContent='Finding equipment…';timer=setTimeout(()=>void load(),180);});
  dialog.addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();dialog.close();}});
- dialog.showModal();search.focus();void load();
+ mountDialog(dialog,{origin,initialFocus:search,restore:false});void load();
 }

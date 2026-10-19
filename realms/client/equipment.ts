@@ -9,12 +9,6 @@ const title=equipmentSlotTitle;
 function node<K extends keyof HTMLElementTagNameMap>(tag:K,text='',className=''){const n=document.createElement(tag);n.textContent=text;n.className=className;return n;}
 function btn(text:string,run:()=>void,disabled:boolean){const n=node('button',text,'small');n.type='button';n.dataset.focus=text;n.disabled=disabled;n.addEventListener('click',run);return n;}
 
-function requestConfirmation(card:HTMLElement,message:string,accept:()=>void){
- card.querySelector('.loadout-confirmation')?.remove();
- const box=node('div','','loadout-confirmation');box.setAttribute('role','group');box.setAttribute('aria-label','Confirm loadout change');
- const cancel=btn('Cancel change',()=>box.remove(),false),commit=btn('Confirm change',accept,false);
- box.append(node('p',message),cancel,commit);card.append(box);cancel.focus();
-}
 
 /** Preparation hints only. The revision-checked server decides equipment legality. */
 export function equipmentProblems(plan:EquipmentPlan,gear:Gear[],level:number){

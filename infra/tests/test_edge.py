@@ -55,6 +55,40 @@ class EdgeTests(unittest.TestCase):
   pattern=e.approved_paths()
   for path in ['/api/v1/state','/api/v1/tactical/test','/assets/app.js']:self.assertRegex(path,pattern)
   for path in ['/health/ready','/admin','/api/v1/admin','/api/v1/future-route','/metrics','/.env','/ws']:self.assertIsNone(re.fullmatch(pattern,path))
+ def test_all_client_entry_styles_modules_and_item_art_are_reviewed(self):
+  client=INFRA.parent/'realms/client';pattern=e.approved_paths()
+  for path in re.findall(r'href="(/assets/[^" ]+\.css)"',(client/'index.html').read_text()):self.assertRegex(path,pattern)
+  for source in client.glob('*.ts'):self.assertRegex('/assets/'+source.stem+'.js',pattern)
+  self.assertNotRegex('/assets/dev/visual-reference.js',pattern)
+  self.assertNotRegex('/dev/fixture/pack',pattern)
+  for art in (client/'art/items').glob('*.svg'):self.assertRegex('/assets/items/'+art.name,pattern)
+  for path in ['/assets/items/authored/test-sword_2.avif','/assets/folio-grain.svg']:self.assertRegex(path,pattern)
+  for path in ['/assets/unreviewed.js','/assets/anything.css','/assets/items/authored/a.svg','/assets/items/authored/../private.jpg','/assets/items/authored/'+('a'*81)+'.png','/assets/items/.env','/dev/folio']:self.assertIsNone(re.fullmatch(pattern,path))
+ def test_client_asset_refresh_is_inert_idempotent_and_rolls_back_failed_validation(self):
+  import hashlib
+  original_write=e.write
+  def root_write(path,text,mode=0o444):
+   # The operator command requires root; emulate overwriting its read-only files.
+   if path.exists():path.chmod(0o600)
+   original_write(path,text,mode)
+  with tempfile.TemporaryDirectory() as directory:
+   root=Path(directory);old=e.render('game.example.com','a'*64).replace(e.approved_paths(),r'^(/|/assets/app\.js)$')
+   files={'Caddyfile':old,'compose.yaml':'fixture compose','tunnel.json':'fixture connector','settings.json':'fixture settings','.env':'fixture environment'}
+   for name,text in files.items():(root/name).write_text(text)
+   record=json.dumps({n:hashlib.sha256((root/n).read_bytes()).hexdigest() for n in files});(root/'managed.json').write_text(record)
+   with patch.object(e,'ROOT',root),patch.object(e,'write',side_effect=root_write),patch.object(e,'compose',side_effect=RuntimeError('invalid candidate')) as command:
+    with self.assertRaisesRegex(RuntimeError,'invalid candidate'):e.refresh_client_assets()
+    self.assertEqual((root/'Caddyfile').read_text(),old);self.assertEqual((root/'managed.json').read_text(),record);e.managed()
+   with patch.object(e,'ROOT',root),patch.object(e,'write',side_effect=root_write),patch.object(e,'compose') as command:
+    e.refresh_client_assets();e.managed();self.assertEqual((root/'Caddyfile').read_text(),e.render('game.example.com','a'*64))
+    self.assertEqual(command.call_count,1);self.assertEqual(command.call_args.args[:5],('run','--rm','--no-deps','caddy','caddy'))
+    self.assertNotIn('up',command.call_args.args);self.assertNotIn('restart',command.call_args.args)
+    for name,text in files.items():
+     if name!='Caddyfile':self.assertEqual((root/name).read_text(),text)
+    self.assertTrue(list(root.glob('Caddyfile.before-client-assets-*')))
+    e.refresh_client_assets();self.assertEqual(command.call_count,1)
+    (root/'Caddyfile').chmod(0o600);(root/'Caddyfile').write_text('operator customization')
+    with self.assertRaisesRegex(RuntimeError,'Customized'):e.refresh_client_assets()
  def test_template_has_no_public_listener_or_general_forwarded_trust(self):
   rendered=e.render('game.example.com','a'*64)
   self.assertEqual(rendered.count('bind 127.0.0.1'),2);self.assertIn('admin off',rendered)

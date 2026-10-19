@@ -1,4 +1,4 @@
-# The Adventurer's Folio (VIS-01)
+# The Adventurer's Folio
 
 [Documentation map](README.md) · [Game client](game-client.md) · [Identity and artwork](branding-and-pages.md)
 
@@ -8,7 +8,7 @@ This is a reusable visual foundation, not a screen redesign or a new design-bibl
 
 ## Existing-style audit
 
-The baseline main branch was `8719f1062e0d2539662612e6f7cd71388076c7bd` (through CHAR-04). CHAR-05 remains an independent PR; its History components can use these same primitives and aliases.
+The baseline main branch was `8719f1062e0d2539662612e6f7cd71388076c7bd` (through CHAR-04). At the VIS-01 baseline, CHAR-05 was an independent PR. It is now merged; the [illustrated Character folio](character-folio.md) applies these same primitives to all five Character chapters.
 
 | Finding | Foundation response |
 |---|---|
@@ -39,13 +39,13 @@ Canonical definitions live in `client/folio.css`. Use semantic roles rather than
 | Surfaces | `page`, `surface`, `surface-raised`, `surface-inset`, `nav`, `nav-hover` | Paper → vellum → raised card; inset facts; dark framing |
 | Text | `text`, `text-secondary`, `text-muted`, `on-dark`, `on-dark-muted`, `brass-ink` | Distinct readable roles; brass itself is decorative |
 | Boundaries | `border`, `border-interactive`, `focus`, `focus-halo` | Quiet decoration versus recognizable control/focus edges |
-| Actions | `action`, `action-hover`, `on-action`, `selected`, `hover` | Primary actions and selection |
+| Actions | `action`, `action-hover`, `on-action`, `on-danger`, `danger-hover`, `selected`, `hover`, `control-highlight` | Primary actions and selection |
 | Feedback | `success`, `success-surface`, `warning`, `warning-surface`, `danger`, `danger-surface`, `disabled`, `disabled-surface` | Paired text/surface colors |
 | Elevation | `shadow`, `shadow-raised`, `shadow-dialog`, `backdrop` | Quiet panels, floating surfaces, modal separation |
 | Shape | `radius-sm` (2px), `radius` (4px), `radius-panel` (5px) | Avoid dashboard-like pill cards; circles remain for circular motifs/meters |
 | Spacing | `space-1`…`space-7` (.25, .5, .75, 1, 1.5, 2, 3rem) | Reusable rhythm; existing compact screen geometry may use intermediate values |
 | Typography | `font-heading`, `font-body`, `font-narrative`, `type-small`, `type-label`, `type-body`, `type-card`, `type-section`, `type-title`, `leading`, `leading-heading` | Roles described below |
-| Motion/texture | `duration` (120ms), `ease`, `paper-texture` | Restrained interaction feedback and optional grain |
+| Motion/texture | `duration` (120ms), `ease`, `texture-source`, `paper-texture` | Restrained interaction feedback and optional grain |
 
 Compatibility aliases: `--paper`, `--ink`, `--muted`, `--accent`, `--line`, `--gold`, `--danger`. Do not introduce another root palette in a screen stylesheet. The offline checker resolves references and rejects missing tokens.
 
@@ -111,9 +111,9 @@ Primary controls target 44px; compact established interfaces can retain smaller 
 
 `folio-grain.svg` is a 128px original procedural SVG tile under 1KB: static, near-transparent, no script, external resource or animation. It is used only on page/welcome backgrounds, not over body text. Clean cards provide quiet reading surfaces. Header illustration overlays remain for legibility, not as a general gradient style.
 
-Set `--folio-paper-texture: none`, or `data-folio-texture="off"` on the root, to disable grain. No new player settings persistence is introduced. `prefers-contrast: more` disables grain and deepens text/borders. `forced-colors: active` uses system colors, removes decoration and keeps explicit selected outlines. Default forced-color adjustment stays enabled. `prefers-reduced-motion` removes transitions/animations, tile translation and illustration filters.
+Set `--folio-paper-texture: none`, or `data-folio-texture="off"` on the root, to disable grain. The Appearance dialog retains this cosmetic preference in the current tab using guarded session storage; no database state is introduced. `prefers-contrast: more` disables grain and deepens text/borders. `forced-colors: active` uses system colors, removes decoration and keeps explicit selected outlines. Default forced-color adjustment stays enabled. `prefers-reduced-motion` removes transitions/animations, tile translation and illustration filters.
 
-The style checker covers 53 opaque semantic pairs: normal text ≥4.5:1; control boundaries and focus ≥3:1. Decorative brass/borders are not used as small-text colors. The two-tone focus ring remains visible against both walnut and vellum. Source checks are not a substitute for checking rendered text over illustration or future component-specific colors.
+The style checker covers 55 opaque semantic pairs: normal text ≥4.5:1; control boundaries and focus ≥3:1. Decorative brass/borders are not used as small-text colors. The two-tone focus ring remains visible against both walnut and vellum. Source checks are not a substitute for checking rendered text over illustration or future component-specific colors.
 
 ## Ink icon conventions
 
@@ -123,7 +123,7 @@ Decorative icons beside text use `aria-hidden="true"`. Icon-only controls need a
 
 ## Authenticated framing
 
-The [VIS-02 application shell](application-shell.md) applies this contract to shared navigation, page layers, sidebars, notices and overlays. `shell.css` owns this framing and replaces older header/dialog paint rather than creating a parallel theme. The token inventory now includes three derived alpha treatments for page edge, page glow and leather stitching (75 tokens total).
+The [VIS-02 application shell](application-shell.md) applies this contract to shared navigation, page layers, sidebars, notices and overlays. `shell.css` owns this framing and replaces older header/dialog paint rather than creating a parallel theme. The token inventory now includes three derived alpha treatments for page edge, page glow and leather stitching (81 tokens total after VIS-07, including rarity accents and separate texture/control roles).
 
 ## Reference and verification
 
@@ -146,3 +146,7 @@ Open `http://127.0.0.1:3010/dev/folio` for the internal component reference. It 
 For authenticated regression screenshots, use the existing disposable Character preview documented in [the client guide](game-client.md). Check welcome/login, Adventure, Character Overview/Progression/Abilities/Statistics, Pack grid/paperdoll/inspector, equipment picker and confirmation dialog. Test 320, 375, 768px and desktop, keyboard Tab/Enter/Escape, wrapping and unchanged operations. Manually check OS high-contrast/forced colors and reduced motion where available; do not claim preference emulation if the browser tooling cannot enable it.
 
 Keep before/after screenshots outside synced reference material. The PR records the checked screens, results and remaining limitations. This ticket does not claim production activation or a comprehensive screen redesign. Remaining incremental work includes legacy compact item metadata, unrelated illustration palettes and screen-specific responsive blocks; reuse these tokens during later VIS tickets instead of overriding whole screens again.
+
+## Final QA and theme extension
+
+See [VIS-07 visual QA](visual-qa.md) for cross-screen findings, theme extension rules, responsive conventions, performance limits and the frozen screenshot regression process. Inventory footers use flex bottom alignment and text-relative minimum heights; shared headers/tools wrap under text enlargement. New authenticated screen paint must use semantic tokens; the style checker rejects hex palette drift. Future themes must supply paired surface/foreground roles and pass the same matrix before being exposed.

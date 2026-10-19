@@ -1,0 +1,54 @@
+{
+  "baseline": "d738065140510a5b9fd2bb18f8b7dc6d8175538f",
+  "styles": [
+    {
+      "file": "realms/client/folio.css",
+      "before": 11628,
+      "after": 13261,
+      "delta": 1633
+    },
+    {
+      "file": "realms/client/styles.css",
+      "before": 5678,
+      "after": 4840,
+      "delta": -838
+    },
+    {
+      "file": "realms/client/welcome.css",
+      "before": 15771,
+      "after": 15842,
+      "delta": 71
+    },
+    {
+      "file": "realms/client/shell.css",
+      "before": 10292,
+      "after": 10839,
+      "delta": 547
+    },
+    {
+      "file": "realms/client/character-folio.css",
+      "before": 25289,
+      "after": 25289,
+      "delta": 0
+    },
+    {
+      "file": "realms/client/inventory-folio.css",
+      "before": 43170,
+      "after": 40218,
+      "delta": -2952
+    },
+    {
+      "file": "realms/client/campaign-folio.css",
+      "before": 12220,
+      "after": 12273,
+      "delta": 53
+    },
+    {
+      "file": "realms/client/interactions.css",
+      "before": 2768,
+      "after": 2918,
+      "delta": 150
+    }
+  ],
+  "netBytes": -1336
+}

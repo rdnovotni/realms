@@ -1,0 +1,287 @@
+
+.inventory-layout .right-column{display:none}
+.inventory-layout main{min-width:0}
+.carry-panel{margin-bottom:20px;border-top:3px solid var(--folio-border)}
+.carry-heading,.carry-line{display:flex;align-items:center;justify-content:space-between;gap:var(--folio-space-4);margin:10px 0}
+.carry-state{font-size:.85rem;letter-spacing:.07em;text-transform:uppercase}
+.carry-line{font-size:.8rem}
+.carry-meter{height:7px;border-radius:var(--folio-radius);}
+.carry-meter>span{height:100%;display:block}
+.carry-sources,.inventory-details dl{display:grid;grid-template-columns:minmax(90px,1fr) minmax(0,1fr);gap:8px 14px;font-size:.8rem;margin:16px 0}
+.carry-sources dd,.inventory-details dd{margin:0;overflow-wrap:anywhere}
+.inventory-toolbar{display:flex;flex-wrap:wrap;align-items:end;gap:10px;margin:18px 0}
+.inventory-toolbar label{display:flex;flex-direction:column;gap:5px;font-size:.72rem;min-width:120px;flex:1}
+.inventory-toolbar label:first-child{flex:2;min-width:180px}
+.inventory-toolbar input,.inventory-toolbar select{min-height:40px;width:100%;margin:0}
+.inventory-check{display:flex!important;flex-direction:row!important;align-items:center;gap:8px!important;font-size:.8rem;min-width:170px}
+.inventory-check input{width:18px!important;min-height:18px;height:18px;flex:none}
+.inventory-workbench{display:grid;grid-template-columns:minmax(0,1fr) minmax(240px,30%);gap:20px;align-items:start}
+.inventory-grid{display:grid;align-content:start;min-height:160px}
+.inventory-tile{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;width:100%;text-align:center}
+
+.inventory-tile svg{fill:none;stroke:currentColor;width:42px;height:42px;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;margin:2px 0 5px}
+.inventory-tile .inventory-quantity{position:absolute;overflow-wrap:anywhere;padding:1px 4px;}
+.inventory-item-name{font-size:.78rem;line-height:1.3;overflow-wrap:anywhere}
+.inventory-tile small,.inventory-protection{font-size:.6rem;line-height:1.3}
+.inventory-protection{padding:2px 5px;border-radius:3px}
+.inventory-details{border:1px solid var(--folio-border);border-radius:var(--folio-radius);padding:18px;min-width:0;position:sticky;top:16px}
+.inventory-details h3{margin-top:0}.inventory-details p{font-size:.8rem;line-height:1.6}
+.inventory-details .small{margin:4px 3px 4px 0;min-height:38px;white-space:normal}
+.inventory-actions{display:flex;flex-wrap:wrap;margin:12px 0}
+.inventory-split{display:flex;flex-wrap:wrap;gap:var(--folio-space-2);align-items:end;margin:14px 0}
+.inventory-split label{font-size:.75rem;max-width:120px}.inventory-split input{width:100%;margin-top:5px}.inventory-split .help{flex-basis:100%;margin:0}
+.inventory-confirmation{border:1px solid var(--folio-border);padding:var(--folio-space-3);margin:12px 0;border-radius:4px}
+.inventory-pagination{display:flex;align-items:center;justify-content:space-between;margin:20px 0;font-size:.8rem}
+.inventory-settings{margin-top:var(--folio-space-4);border-top:1px solid var(--folio-border);padding-top:14px}.inventory-settings label{margin:14px 0;min-height:32px}
+.inventory-empty{grid-column:1/-1;padding:25px 10px}
+.inventory-merge-note{padding:var(--folio-space-3);}
+@media(max-width:1100px){.layout.inventory-layout{grid-template-columns:1fr}.inventory-layout .left-column{display:none}.inventory-workbench{grid-template-columns:minmax(0,1fr) 260px}}
+@media(max-width:650px){.inventory-workbench{grid-template-columns:1fr}.inventory-details{position:static}.inventory-tile{padding-inline:6px}.inventory-toolbar{gap:var(--folio-space-2)}.carry-line{align-items:start}.carry-line strong{text-align:right}.inventory-panel{padding:14px}.inventory-pagination{justify-content:center}}
+.inventory-comparison{border-top:1px solid var(--folio-border);margin-top:var(--folio-space-3);padding-top:10px}
+.inventory-comparison h4{font-size:.8rem;margin:6px 0}
+.inventory-history{padding-left:18px;font-size:.75rem;max-height:280px;overflow:auto}
+.inventory-history li{margin:10px 0}.inventory-history small{display:block;margin-top:3px}
+.inventory-details select{width:100%;min-height:40px}
+
+.inventory-destinations{display:flex;flex-wrap:wrap;gap:10px;margin:16px 0}
+.inventory-drop-zone{flex:1;min-width:110px;padding:11px 12px;border:1px dashed var(--folio-border);border-radius:4px;text-align:center}
+.inventory-drop-zone strong,.inventory-drop-zone small{display:block}.inventory-drop-zone strong{font-size:.78rem}.inventory-drop-zone small{font-size:.65rem;margin-top:4px}
+.inventory-drop-zone.drag-over{border:2px solid var(--folio-border)}
+
+.inventory-item-meta{display:flex;flex-direction:column;gap:3px;align-items:center;max-width:100%;overflow-wrap:anywhere}
+.inventory-item-meta .inventory-requirement-unmet{font-weight:600}.inventory-tile .inventory-item-name{font-weight:600}
+.inventory-details{scroll-margin-top:20px}
+@media(max-width:650px){.inventory-item-meta{font-size:.65rem}}
+
+/* Equipment sits above the pack, with a quiet anatomical map and explicit weapon banks. */
+.inventory-overview{display:grid;grid-template-columns:minmax(0,2fr) minmax(230px,1fr);gap:18px;align-items:start;margin-bottom:18px}
+.inventory-overview .carry-panel{margin:0}.paperdoll-panel{min-width:0;overflow:hidden}
+.paperdoll-body{position:relative;display:grid;grid-template-columns:minmax(0,1fr) 80px minmax(0,1fr);grid-template-rows:repeat(6,minmax(58px,auto));gap:7px;isolation:isolate;margin:18px 0}
+.paperdoll-figure{position:absolute;inset:0 15%;z-index:-1;display:flex;justify-content:center;pointer-events:none}
+.paperdoll-silhouette{height:100%;width:100%;stroke-linejoin:round}
+.paperdoll-slot{min-width:0;text-align:left;padding:7px 9px;display:flex;flex-direction:column;gap:3px;overflow-wrap:anywhere;font-size:.75rem}
+.paperdoll-slot-label{text-transform:uppercase;}.paperdoll-slot small{font-size:.6rem}.paperdoll-slot.compatible{outline:2px solid var(--folio-border);outline-offset:1px}
+.slot-head{grid-area:1/1}.slot-neck{grid-area:1/3}.slot-shoulders{grid-area:2/1}.slot-chest{grid-area:2/3}.slot-hands{grid-area:3/1}.slot-waist{grid-area:3/3}.slot-legs{grid-area:4/1}.slot-feet{grid-area:4/3}.slot-ring_1{grid-area:5/1}.slot-ring_2{grid-area:5/3}.slot-trinket{grid-area:6/1}.slot-tool{grid-area:6/3}
+.paperdoll-weapons{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:12px 0}.paperdoll-weapons h3{grid-column:1/-1;font-size:.75rem;margin:0}.paperdoll-inspector:not(:empty){margin-top:var(--folio-space-3);padding:var(--folio-space-3);border:1px solid var(--folio-border);border-radius:var(--folio-radius)}.paperdoll-inspector button{margin:4px 6px 0 0}.paperdoll-inspector h3{font-size:.9rem}
+.inventory-tile{padding-bottom:30px}.inventory-weight{position:absolute;right:7px;bottom:6px;display:flex;align-items:center;justify-content:flex-end;gap:3px;max-width:calc(100% - 14px);font-size:.6rem}.inventory-weight span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.inventory-tile .inventory-weight svg{width:12px;height:12px;flex-shrink:0;margin:0;stroke-width:1.5}
+@media(max-width:1000px){.inventory-overview{grid-template-columns:1fr}.paperdoll-body{grid-template-columns:minmax(0,1fr) minmax(50px,100px) minmax(0,1fr)}}
+@media(max-width:450px){.paperdoll-panel{padding:14px}.paperdoll-body{grid-template-columns:minmax(0,1fr) 42px minmax(0,1fr);gap:6px}.paperdoll-slot{padding:6px;font-size:.68rem}}
+
+.equipment-planner{margin:20px 0}.equipment-planner>summary{padding:14px 18px;border:1px solid var(--folio-border);border-radius:var(--folio-radius);cursor:pointer;font-weight:600}
+
+/* Flex footers align at each row bottom and grow with enlarged text. */
+.inventory-grid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr));align-items:stretch;gap:var(--folio-space-3)}.inventory-cell{display:flex;min-width:0}
+.inventory-tile{height:100%;padding:31px 10px 8px;gap:var(--folio-space-2);box-sizing:border-box;overflow:hidden}
+
+.inventory-tile .inventory-quantity{top:7px;right:7px;max-width:46%;white-space:nowrap;text-overflow:ellipsis;overflow:hidden;font-size:.68rem;font-weight:600}
+.inventory-statuses{position:absolute;left:7px;top:8px;display:flex;}.inventory-status{display:inline-flex}.inventory-tile .inventory-status svg{width:13px;height:13px;margin:0;stroke-width:1.8}
+.inventory-art{display:flex;justify-content:center;align-items:center;width:100%}.inventory-tile .inventory-art svg{height:54px;width:54px;margin:0}
+.inventory-tile .inventory-item-name{font-size:.8rem;overflow-wrap:anywhere}.inventory-item-meta{line-height:1.35;font-size:.65rem}.inventory-location{order:4;font-size:.55rem!important}
+.inventory-tile-footer{position:static;margin-top:auto;align-self:stretch;display:flex;justify-content:space-between;align-items:flex-end;gap:var(--folio-space-2);min-width:0;font-size:.61rem;text-align:left}
+.inventory-durability{display:grid;grid-template-columns:12px minmax(0,1fr);gap:2px 3px;min-width:0;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}.inventory-durability .condition-label{grid-column:1/-1;font-size:.52rem;font-weight:600}
+.inventory-tile .inventory-durability svg,.inventory-tile .inventory-weight svg{width:12px;height:12px;margin:0;flex-shrink:0;stroke-width:1.6}
+.inventory-tile .inventory-weight{position:static;margin-left:auto;max-width:48%;font-size:.62rem;flex-shrink:0}.inventory-weight span{font-variant-numeric:tabular-nums}
+.inventory-display-settings{margin:8px 0 16px;font-size:.78rem}.inventory-display-settings summary{cursor:pointer}.inventory-condition-settings{display:flex;flex-wrap:wrap;gap:var(--folio-space-3);align-items:end;margin:12px 0}.inventory-condition-settings label{display:flex;flex-direction:column;gap:5px}.inventory-condition-settings input{width:95px;min-height:36px}
+@media(max-width:650px){.inventory-grid{grid-template-columns:repeat(auto-fill,minmax(125px,1fr));gap:10px}.inventory-tile{padding:30px 8px 8px}.inventory-tile-footer{left:6px;right:6px;gap:4px}.inventory-tile .inventory-item-name{font-size:.76rem}}
+
+/* Shared item illustrations and bounded equipment search. */
+.item-illustration{display:block;object-fit:contain;max-width:100%;filter:none}
+.inventory-art{height:80px}.inventory-art .item-illustration{width:86px;height:80px}
+.paperdoll-slot{position:relative;padding-right:44px;}.paperdoll-slot>.item-illustration{position:absolute;right:6px;top:18px;width:34px;height:38px}.paperdoll-slot .paperdoll-slot-label{white-space:normal}
+.paperdoll-panel .drag-over,.inventory-grid.drag-over{outline:3px dashed var(--folio-border);outline-offset:3px}
+.equipment-return-zone{display:flex;flex-direction:column;gap:3px;margin:14px 0 0;padding:13px 15px;border:1px dashed var(--folio-border);border-radius:var(--folio-radius);font-size:.8rem}.equipment-return-zone small{font-size:.7rem}
+.equipment-picker{width:min(640px,calc(100% - 24px));max-width:calc(100% - 24px);max-height:min(85dvh,780px);padding:20px;}
+.equipment-picker[open]{display:flex;flex-direction:column;gap:var(--folio-space-3)}.equipment-picker h2,.equipment-picker p{margin:0}.equipment-picker input{min-height:44px;flex-shrink:0}.equipment-picker-list{overflow:auto;min-height:80px;display:grid;gap:var(--folio-space-2);overscroll-behavior:contain}.equipment-picker-list:empty{display:none}
+.equipment-choice{display:flex;width:100%;align-items:center;gap:var(--folio-space-3);text-align:left;min-height:64px;padding:10px 12px;font-size:.85rem}.equipment-choice>img,.equipment-choice>svg{width:48px;height:48px;flex-shrink:0}.equipment-choice>span{min-width:0;overflow-wrap:anywhere}.equipment-picker nav{display:flex;justify-content:space-between;flex-wrap:wrap;gap:var(--folio-space-2)}.equipment-picker button{min-height:44px;flex-shrink:0}
+.equipment-grid label>button{white-space:normal;min-height:40px}.equipment-grid select{min-width:0;max-width:100%}
+@media(max-width:650px){.equipment-picker{padding:var(--folio-space-4);max-height:90dvh}.equipment-picker h2{font-size:1.25rem}.equipment-picker input{font-size:16px}.equipment-picker nav button{font-size:.75rem;flex:1}.equipment-choice{padding:9px;font-size:.8rem}.inventory-art{height:72px}.inventory-art .item-illustration{width:76px;height:72px}.inventory-tile{min-height:max(246px,15.375rem)}.paperdoll-slot{padding-right:33px}.paperdoll-slot>.item-illustration{width:27px;height:32px;right:3px;top:22px}.inventory-toolbar label{min-width:0;flex-basis:calc(50% - 10px)}.inventory-toolbar label:first-child{min-width:0;flex-basis:100%}.inventory-pagination button{min-height:44px}.inventory-details{scroll-margin-top:12px}.inventory-details button{min-height:40px}}
+@media(max-width:360px){.paperdoll-body{grid-template-columns:minmax(0,1fr) 24px minmax(0,1fr)}.paperdoll-slot{font-size:.65rem;padding-right:6px}.paperdoll-slot>.item-illustration{display:none}.inventory-panel{padding:10px}.inventory-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.inventory-condition-settings label{flex:1;min-width:100px}.inventory-condition-settings button{width:100%}}
+
+.paperdoll-loadouts{display:grid;gap:.6rem;margin:1rem 0}.paperdoll-loadouts form{display:flex;flex-wrap:wrap;gap:.5rem}.paperdoll-loadouts input{flex:1;min-width:0}.equipment-stat-preview{border-top:1px solid var(--folio-border);margin-top:var(--folio-space-4);padding-top:var(--folio-space-4);min-width:0}.equipment-stat-preview>button{margin:0 .5rem .7rem 0}.equipment-stat-preview label{display:grid;gap:.4rem}.equipment-stat-table{width:100%;border-collapse:collapse;font-size:.85rem}.equipment-stat-table th,.equipment-stat-table td{text-align:left;padding:.45rem .25rem;border-bottom:1px solid var(--folio-border);overflow-wrap:anywhere}.equipment-stat-table td{font-variant-numeric:tabular-nums}.item-context-menu{width:min(24rem,calc(100vw - 2rem));max-height:80dvh;overflow:auto;padding:var(--folio-space-4)}.item-context-menu button{display:block;width:100%;text-align:left;min-height:44px;margin:.3rem 0}.paperdoll-slot .item-illustration{width:44px;height:44px;object-fit:contain}
+@media(max-width:360px){.paperdoll-slot .item-illustration{display:block;width:28px;height:28px}.equipment-stat-table{font-size:.75rem}.paperdoll-slot strong{font-size:.68rem}}
+
+.inventory-bulk{border:1px solid var(--folio-border);border-radius:var(--folio-radius);margin:.7rem 0}.inventory-bulk button,.inventory-bulk select{margin:.25rem;min-height:40px}.inventory-selection-check{display:flex;gap:.4rem;align-items:center;font-size:.75rem;min-height:32px}.inventory-selection-check input{width:20px;height:20px;margin:0}.inventory-cell-selected{outline-offset:3px;border-radius:var(--folio-radius)}
+@media(max-width:650px){.inventory-bulk button,.inventory-bulk select{min-height:44px;max-width:100%}.inventory-selection-check{min-height:44px}}
+.inventory-cell{flex-direction:column;align-items:stretch}.inventory-cell .inventory-tile{height:auto;flex:1}.inventory-selection-check{height:44px;flex:0 0 44px;margin:0;overflow:hidden}
+/* Keep the pack and equipped gear within one workspace. */
+.inventory-workspace{display:grid;grid-template-columns:minmax(290px,35fr) minmax(0,65fr);gap:18px;align-items:start}
+.inventory-workspace .inventory-overview{display:flex;flex-direction:column;gap:14px;min-width:0;margin:0;position:sticky;top:14px;max-height:calc(100dvh - 28px);overflow-y:auto;scrollbar-gutter:stable}
+.inventory-workspace .inventory-overview>*{flex-shrink:0;width:100%;box-sizing:border-box}.inventory-workspace .inventory-panel{min-width:0}
+.inventory-workspace .paperdoll-body{grid-template-columns:minmax(0,1fr) 34px minmax(0,1fr);gap:5px}.inventory-workspace .paperdoll-slot{padding-right:30px}.inventory-workspace .paperdoll-slot>.item-illustration{width:26px;right:3px}.inventory-workspace .paperdoll-panel{padding:14px}
+.inventory-mode-compact{grid-template-columns:repeat(auto-fill,minmax(105px,1fr));gap:var(--folio-space-2)}.inventory-mode-compact .inventory-tile{padding:28px 7px 8px}.inventory-mode-compact .inventory-art{height:46px}.inventory-mode-compact .inventory-art .item-illustration{width:52px;height:46px}.inventory-mode-compact .inventory-item-meta{font-size:.6rem}
+.inventory-mode-detailed{grid-template-columns:repeat(auto-fill,minmax(230px,1fr))}.inventory-detailed-description{font-size:.69rem;line-height:1.5;overflow-wrap:anywhere}.inventory-mode-detailed .inventory-art{height:90px}
+.inventory-service-dialog,.inventory-comparison-dialog{width:min(800px,calc(100vw - 32px));max-width:calc(100vw - 32px);max-height:88dvh;overflow:auto;box-sizing:border-box;padding:var(--folio-space-5);}.inventory-service-dialog table,.inventory-comparison-dialog table{width:100%;table-layout:fixed;border-collapse:collapse;margin:14px 0;font-size:.8rem}.inventory-service-dialog th,.inventory-service-dialog td,.inventory-comparison-dialog th,.inventory-comparison-dialog td{padding:var(--folio-space-2);text-align:left;vertical-align:top;border-bottom:1px solid var(--folio-border);overflow-wrap:anywhere}.inventory-service-dialog button,.inventory-comparison-dialog button{margin:8px 8px 0 0;min-height:44px}.comparison-cards{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:var(--folio-space-4)}.comparison-cards section{display:flex;flex-direction:column;align-items:center;text-align:center;padding:14px;min-width:0}.comparison-cards .item-illustration{height:95px;width:100px}.comparison-cards strong{overflow-wrap:anywhere}
+.loadout-manager{min-width:0;margin-top:var(--folio-space-4)}.loadout-manager input{box-sizing:border-box;max-width:100%;width:100%}.loadout-manager>div{max-height:330px;overflow:auto;scrollbar-gutter:stable}.loadout-card{border-bottom:1px solid var(--folio-border)}.loadout-card h4{margin:0 0 6px}.loadout-card button{margin:5px 5px 0 0;min-height:40px}.loadout-manager form{display:flex;flex-wrap:wrap;gap:var(--folio-space-2);margin-top:var(--folio-space-3)}.loadout-manager form input{min-width:0;flex:1 1 120px}.loadout-card[hidden]{display:none}
+
+@media(max-width:650px){.inventory-service-dialog,.inventory-comparison-dialog{padding:14px}.inventory-mode-compact{grid-template-columns:repeat(auto-fill,minmax(100px,1fr))}.inventory-mode-detailed{grid-template-columns:minmax(0,1fr)}.inventory-workspace .paperdoll-body{grid-template-columns:minmax(0,1fr) 24px minmax(0,1fr)}.comparison-cards{gap:var(--folio-space-2)}.comparison-cards section{padding:var(--folio-space-2)}.inventory-service-dialog table,.inventory-comparison-dialog table{font-size:.7rem}.inventory-service-dialog td,.inventory-service-dialog th,.inventory-comparison-dialog td,.inventory-comparison-dialog th{padding:5px}}
+
+.inventory-advanced-filters{margin:4px 0 14px}.inventory-advanced-filters summary{cursor:pointer;font-weight:600;padding:8px 0}.inventory-advanced-filters .inventory-toolbar{margin-top:var(--folio-space-3)}.inventory-workspace .inventory-workbench{gap:14px}.inventory-workspace .inventory-details{overflow:auto;scrollbar-gutter:stable}
+@media(max-width:650px){.inventory-workspace .inventory-workbench{grid-template-columns:minmax(0,1fr)}.inventory-workspace .inventory-details{max-height:none;overflow:visible}.inventory-workspace .inventory-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.inventory-workspace .inventory-mode-detailed{grid-template-columns:minmax(0,1fr)}}
+
+/* A single pack: equipment never replaces the item grid. */
+.layout.inventory-layout{grid-template-columns:minmax(0,1fr)}.inventory-layout .left-column{display:none}
+.inventory-overview{border:1px solid var(--folio-border);border-radius:var(--folio-radius);padding:var(--folio-space-3)}
+.inventory-carry-summary{line-height:1.5;margin:0;font-variant-numeric:tabular-nums}
+.inventory-equipment-content{min-width:0}.inventory-equipment-content .paperdoll-panel{margin:0;border:0;padding:0}.inventory-equipment-content .paperdoll-panel>h2{font-size:1.35rem}.inventory-workspace .paperdoll-body{grid-template-rows:repeat(6,minmax(48px,auto));margin:10px 0}
+.equipment-toggle,.inventory-equipment-shortcut{display:none}.inventory-carry-details{margin-top:var(--folio-space-3)}.inventory-carry-details>summary,.paperdoll-loadout-section>summary,.paperdoll-stat-section>summary{cursor:pointer;padding:11px 5px;font-size:.85rem;font-weight:600}.inventory-carry-details .carry-panel{padding:10px;border:0}.paperdoll-loadout-section,.paperdoll-stat-section{margin-top:10px;}.paperdoll-weapon-bank{display:grid;gap:var(--folio-space-2)}.paperdoll-weapon-bank .paperdoll-weapons{margin:0}.inventory-workspace .paperdoll-weapon-bank{position:sticky;top:0;z-index:2;padding:6px 0}
+.inventory-workspace .inventory-workbench{grid-template-columns:minmax(0,1fr)}.inventory-workspace .inventory-details{position:static;max-height:40dvh;width:100%}.inventory-workspace .inventory-grid{grid-template-columns:repeat(auto-fill,minmax(130px,1fr));max-height:65dvh;overflow-y:auto;scrollbar-gutter:stable;padding:3px}.inventory-workspace .inventory-mode-compact{grid-template-columns:repeat(auto-fill,minmax(100px,1fr))}.inventory-workspace .inventory-mode-detailed{grid-template-columns:repeat(auto-fill,minmax(230px,1fr))}
+@media(max-width:900px){.inventory-workspace{grid-template-columns:minmax(0,1fr)}.inventory-workspace .inventory-overview{position:static;max-height:none;overflow:visible;scrollbar-gutter:auto}.equipment-toggle{display:flex;justify-content:space-between;align-items:center;min-height:44px;scroll-margin-top:12px}.equipment-collapsed .inventory-equipment-content{display:none}.inventory-workspace .paperdoll-weapon-bank{position:static}.inventory-equipment-shortcut{display:block;position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom));z-index:6;min-height:44px}.inventory-layout main{padding-bottom:76px}.inventory-workspace .inventory-details{position:static;max-height:none;overflow:visible}.inventory-workspace .inventory-grid{max-height:none;overflow:visible;padding:0;scrollbar-gutter:auto}.inventory-workspace .paperdoll-body{grid-template-columns:minmax(0,1fr) minmax(24px,90px) minmax(0,1fr)}}
+@media(max-width:450px){.inventory-workspace .paperdoll-body{grid-template-columns:minmax(0,1fr) 24px minmax(0,1fr)}.inventory-workspace .inventory-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.inventory-workspace .inventory-mode-detailed{grid-template-columns:minmax(0,1fr)}}.inventory-storage-section>summary{font-weight:600}.inventory-storage-section>label{margin-top:10px;max-width:400px}
+
+.inventory-equipment-shortcut[hidden]{display:none}
+
+/* Inventory intelligence: readable status cues accompany every color. */
+.inventory-view-presets{display:flex;gap:.4rem;flex-wrap:wrap;margin-block:.75rem}
+.inventory-view-presets form{display:flex;gap:.35rem;flex-wrap:wrap;flex-basis:100%}
+.inventory-details>h4,.item-effects h4{margin:1.15rem 0 .45rem;border-bottom:1px solid var(--folio-border);padding-bottom:.35rem}
+.inventory-details>.item-illustration,.inventory-details>svg{display:block;width:5rem;height:5rem;object-fit:contain;margin:.6rem auto}
+.inventory-details form{display:flex;gap:.4rem;flex-wrap:wrap;margin-block:.6rem}
+.inventory-details form input{width:7rem;min-width:0}
+.inventory-details dl{overflow-wrap:anywhere}
+.carry-meter{position:relative;overflow:visible}
+.carry-threshold{position:absolute;top:-3px;bottom:-3px;border-left:2px solid var(--folio-border);pointer-events:none}
+.slot-condition{border-radius:.25rem;padding:.1rem .25rem;border:1px solid currentColor}
+.inventory-comparison-dialog{overflow-wrap:anywhere}.inventory-comparison-dialog>input,.inventory-comparison-dialog>select{max-width:100%;margin-block:.4rem}
+/* Compact controls and bounded names preserve the aligned tile footer. */
+.inventory-tile .inventory-item-name{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;line-height:1.35;flex-shrink:0}
+.inventory-detailed-description{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden}
+.inventory-filter-panel{margin:12px 0;border:1px solid var(--folio-border);border-radius:var(--folio-radius);padding:0 12px}
+.inventory-filter-panel>summary{cursor:pointer;padding:12px 0;font-size:.85rem;font-weight:600}
+.inventory-filter-panel h3{font-size:.85rem}.inventory-panel>label:has(input[type=search]){display:block;margin:10px 0;font-size:.8rem}.inventory-panel>label>input[type=search]{width:100%;min-height:42px;margin-top:4px}
+.inventory-storage-nav{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}.inventory-storage-nav button{flex:1;min-height:42px;white-space:normal}
+.inventory-storage-section{margin:8px 0}.inventory-storage-section>summary{cursor:pointer;font-size:.8rem;padding:6px 0}.inventory-storage-section select{max-width:100%;min-height:40px}
+.item-action-icon{width:16px;height:16px;vertical-align:-3px;margin-right:6px;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+@media(max-width:400px){.inventory-storage-nav{gap:4px}.inventory-storage-nav button{font-size:.72rem;padding:7px 6px}.inventory-filter-panel{padding-inline:8px}.inventory-view-presets button{white-space:normal}.inventory-view-presets input{min-width:0;max-width:100%}}
+
+/* Unified Pack refinements: place frequent controls together and keep content readable. */
+.inventory-panel{position:relative}
+.inventory-panel>h2{padding-right:180px;min-height:44px;margin-bottom:10px}
+.inventory-layout-control{position:absolute;right:24px;top:24px;display:flex;align-items:center;gap:var(--folio-space-2);font-size:.76rem}
+.inventory-layout-control select{width:130px;min-height:38px;margin:0}
+.inventory-workspace .paperdoll-weapons.active-set{padding:var(--folio-space-2);border-radius:var(--folio-radius)}
+.inventory-details>h3{line-height:1.3;overflow-wrap:anywhere}
+.inventory-details form{align-items:end}
+.inventory-details form label{font-size:.78rem;line-height:1.5}
+.inventory-actions{gap:6px}
+.inventory-actions .small{margin:0}
+.inventory-pagination{gap:var(--folio-space-2);flex-wrap:wrap;font-variant-numeric:tabular-nums}
+.inventory-grid,.inventory-details,.inventory-overview{overscroll-behavior-y:contain}
+
+@media(max-width:900px){.inventory-grid,.inventory-details,.inventory-overview{overscroll-behavior-y:auto}.inventory-panel>h2{padding-right:160px}.inventory-layout-control{right:18px;top:18px}.inventory-layout-control select{width:110px}.inventory-equipment-shortcut{opacity:.94}}
+@media(max-width:400px){.inventory-layout-control{position:static;justify-content:space-between;margin-bottom:12px}.inventory-panel>h2{padding-right:0;min-height:0}.inventory-layout-control select{width:150px}}
+
+.inventory-bulk{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;padding:10px}
+.inventory-bulk>.help{flex:1 1 220px;margin:0;font-size:.72rem}
+.inventory-bulk>strong{font-size:.8rem;white-space:nowrap}
+.inventory-bulk>.inventory-confirmation{flex-basis:100%}
+.inventory-workspace .inventory-destinations{gap:6px;margin:8px 0}
+.inventory-workspace .inventory-drop-zone{min-width:0;padding:7px 5px}
+.inventory-workspace .inventory-drop-zone small{font-size:.6rem}
+.inventory-workspace .inventory-display-settings{margin:8px 0}
+@media(pointer:coarse){.inventory-destinations{display:none}}
+
+@media(max-width:650px){.inventory-workspace .inventory-destinations{display:none}}
+
+/* Equipment ledger — Folio surface and state contract. Geometry above remains
+   independent of presentation: 35/65 desktop, single page flow below 900px. */
+.inventory-overview,.inventory-panel,.inventory-details,.loadout-card,.paperdoll-weapons{color:var(--folio-text);background:var(--folio-surface);border:1px solid var(--folio-border);border-radius:var(--folio-radius-sm)}
+.inventory-overview{border-top:3px solid var(--folio-brass);background:var(--folio-surface-inset)}
+.inventory-panel{border-top:3px solid var(--folio-border-interactive)}
+.inventory-carry-summary{padding:var(--folio-space-2);border-bottom:1px solid var(--folio-border);color:var(--folio-text-secondary);font-size:.78rem}
+.inventory-panel>h2,.paperdoll-panel>h2{font-family:var(--folio-font-heading);letter-spacing:.015em}
+.inventory-panel>h2::before,.paperdoll-panel>h2::before{content:'';display:inline-block;width:.4em;height:.4em;border:1px solid var(--folio-brass-ink);transform:rotate(45deg);margin-right:.6em;vertical-align:middle}
+.inventory-filter-panel,.inventory-bulk,.inventory-drop-zone{background:var(--folio-surface-inset);color:var(--folio-text);border-color:var(--folio-border)}
+.inventory-drop-zone{border-style:dashed}.inventory-drop-zone small,.inventory-item-meta,.inventory-location,.inventory-detailed-description,.inventory-quantity,.inventory-protection{color:var(--folio-text-muted)}
+.inventory-storage-nav{padding-bottom:var(--folio-space-3);border-bottom:1px solid var(--folio-border)}
+.inventory-storage-nav button[aria-pressed=true]{background:var(--folio-action);color:var(--folio-on-action);border-color:var(--folio-action);text-decoration:underline;text-underline-offset:4px}
+.inventory-workspace .paperdoll-weapon-bank{background:var(--folio-surface-inset);padding-block:var(--folio-space-2)}
+.paperdoll-weapons{padding:var(--folio-space-2);border-style:dashed}
+.paperdoll-weapons h3{font:600 .8rem var(--folio-font-heading);padding-bottom:var(--folio-space-2);color:var(--folio-text-secondary)}
+.paperdoll-weapons.active-set{border:2px solid var(--folio-brass);background:var(--folio-surface-raised)}
+.paperdoll-weapons.active-set h3{color:var(--folio-brass-ink)}
+.paperdoll-weapons.active-set h3::before{content:'';display:inline-block;width:.4em;height:.4em;background:var(--folio-brass-ink);transform:rotate(45deg);margin-right:.5em}
+.paperdoll-body{border-block:1px solid var(--folio-border);padding-block:var(--folio-space-3)}
+.paperdoll-silhouette{fill:var(--folio-page-edge);stroke:var(--folio-border-interactive);stroke-width:1.2;opacity:.55}
+.paperdoll-silhouette ellipse,.paperdoll-silhouette>path:first-of-type{fill:none;stroke:var(--folio-brass);stroke-dasharray:2 6}
+.paperdoll-slot{border:1px dashed var(--folio-border-interactive);background:var(--folio-surface);color:var(--folio-text);border-radius:var(--folio-radius-sm);line-height:1.4;min-height:76px}
+.paperdoll-slot.occupied{border:1px solid var(--folio-brass);border-left:3px solid var(--folio-brass);background:var(--folio-surface-raised)}
+.paperdoll-slot.empty strong{font-family:var(--folio-font-heading);font-style:italic;color:var(--folio-text-muted)}
+.paperdoll-slot-label{color:var(--folio-text-muted);font-size:.62rem;letter-spacing:.06em}
+.paperdoll-slot strong{font-family:var(--folio-font-heading);font-size:.83rem;font-weight:600}
+.paperdoll-slot-hint{font-size:.6rem;color:var(--folio-text-muted)}
+.paperdoll-slot>.item-illustration,.paperdoll-empty-icon{object-fit:contain;position:absolute;right:4px;top:22px;width:28px;height:32px}
+.paperdoll-empty-icon{fill:none;stroke:var(--folio-border-interactive);stroke-width:1.4;stroke-linejoin:round;stroke-linecap:round;opacity:.65}
+.paperdoll-slot.compatible{border:2px dashed var(--folio-action);background:var(--folio-success-surface)}
+.paperdoll-slot.incompatible .paperdoll-slot-hint{font-style:italic}
+.paperdoll-slot[aria-expanded=true]{background:var(--folio-selected);border:2px solid var(--folio-action)}
+.paperdoll-slot[aria-expanded=true] .paperdoll-slot-label{text-decoration:underline;text-underline-offset:3px}
+.paperdoll-slot.changes-locked{background:var(--folio-disabled-surface);border-style:dotted}
+.paperdoll-slot.damaged,.paperdoll-slot.broken{border-bottom:3px double var(--folio-warning)}
+.paperdoll-slot.broken{border-bottom-color:var(--folio-danger)}
+.slot-condition{font-size:.62rem;width:fit-content;max-width:100%;box-sizing:border-box;color:var(--folio-success);border-color:currentColor;background:var(--folio-surface)}
+.slot-condition.worn{color:var(--folio-warning)}.slot-condition.critical{color:var(--folio-danger)}
+.paperdoll-slot:hover{background:var(--folio-hover);border-color:var(--folio-border-interactive)}
+.paperdoll-inspector:not(:empty),.inventory-confirmation,.loadout-confirmation{background:var(--folio-warning-surface);border:1px solid var(--folio-border-interactive);color:var(--folio-text)}
+.paperdoll-draft-label{font-size:.7em;color:var(--folio-warning)}
+.paperdoll-loadout-section,.paperdoll-stat-section{border-top:1px solid var(--folio-border)}
+.equipment-return-zone{color:var(--folio-text-secondary);background:var(--folio-surface);border-color:var(--folio-border-interactive)}
+.paperdoll-panel .drag-over,.inventory-grid.drag-over,.inventory-drop-zone.drag-over{outline:3px dashed var(--folio-focus);outline-offset:2px;background:var(--folio-warning-surface)}
+.inventory-tile{border:1px solid var(--folio-border);border-top:3px solid var(--folio-border-interactive);border-radius:var(--folio-radius-sm);background:var(--folio-surface-raised);color:var(--folio-text);box-shadow:none;min-height:max(262px,16.375rem);transition:background-color var(--folio-duration)}
+.inventory-tile:hover{background:var(--folio-hover)}
+.inventory-tile[aria-pressed=true]{background:var(--folio-selected);outline:2px solid var(--folio-action);outline-offset:1px}
+.inventory-tile.rarity-uncommon{border-top-color:var(--folio-forest)}
+.inventory-tile.rarity-rare{border-top-style:double;border-top-width:4px;border-top-color:var(--folio-rarity-rare)}
+.inventory-tile.rarity-very_rare{border-top-style:double;border-top-width:4px;border-top-color:var(--folio-rarity-exceptional)}
+.inventory-tile.rarity-legendary{border-top-color:var(--folio-brass);border-top-width:5px}
+.inventory-tile.rarity-mythic,.inventory-tile.rarity-ultra_ultra_rare{border-top:5px double var(--folio-burgundy)}
+.inventory-rarity{font:italic .68rem var(--folio-font-heading);color:var(--folio-text-secondary)}
+.inventory-rarity::before{content:'';display:inline-block;width:.3em;height:.3em;border:1px solid currentColor;transform:rotate(45deg);margin-right:.5em;vertical-align:middle}
+.inventory-art{background:none;position:relative}
+.inventory-art::before{content:'';position:absolute;width:60px;height:60px;border:1px solid var(--folio-border);border-radius:50%;opacity:.35;z-index:0}
+.inventory-art .item-illustration{position:relative;z-index:1;object-fit:contain}
+.inventory-art svg{fill:none;stroke:var(--folio-text-secondary)}
+.inventory-tile .inventory-item-name{font:600 .9rem/1.35 var(--folio-font-heading);min-height:2.7em;max-height:2.7em}
+.inventory-tile .inventory-quantity{background:var(--folio-surface-inset);color:var(--folio-text);border-radius:var(--folio-radius-sm);font-variant-numeric:tabular-nums}
+.inventory-status{color:var(--folio-text-secondary)}
+.inventory-status[aria-label="Favorite"]{color:var(--folio-brass-ink)}.inventory-status[aria-label^="New"]{color:var(--folio-action)}
+.inventory-tile .inventory-status svg{fill:none;stroke:currentColor}
+.inventory-tile-footer{border-top:1px solid var(--folio-border);padding-top:5px}
+.inventory-durability.condition-healthy{color:var(--folio-success)}.inventory-durability.condition-worn{color:var(--folio-warning)}.inventory-durability.condition-critical{color:var(--folio-danger)}
+.inventory-tile .inventory-weight{color:var(--folio-text-secondary)}
+.inventory-mode-compact .inventory-tile{min-height:max(224px,14.0rem)}.inventory-mode-compact .inventory-item-name{font-size:.78rem}.inventory-mode-compact .inventory-rarity{font-size:.62rem}.inventory-mode-compact .inventory-art::before{display:none}
+.inventory-mode-detailed .inventory-tile{align-items:start;text-align:left;padding-inline:var(--folio-space-4);min-height:max(330px,20.625rem)}
+.inventory-mode-detailed .inventory-art{justify-content:flex-start}.inventory-mode-detailed .inventory-art::before{left:12px}.inventory-mode-detailed .inventory-item-meta{align-items:start}
+.inventory-selection-check{color:var(--folio-text-muted)}.inventory-cell-selected{outline:2px dashed var(--folio-action)}
+.inventory-workspace .inventory-details{border:1px solid var(--folio-border);border-top:3px double var(--folio-brass);background:var(--folio-surface-raised);padding:var(--folio-space-4)}
+.inventory-details>h3{font:1.5rem/1.25 var(--folio-font-heading);margin-bottom:var(--folio-space-3)}
+.inventory-details>h4,.item-effects h4{font:600 .8rem var(--folio-font-heading);letter-spacing:.07em;text-transform:uppercase;color:var(--folio-brass-ink);border-color:var(--folio-border)}
+.inventory-details>p{max-width:68ch}.inventory-details dl{grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:0;font-size:.8rem}.inventory-details dt,.inventory-details dd{padding:7px 4px;border-bottom:1px solid var(--folio-border)}
+.inventory-details dd{font-variant-numeric:tabular-nums}.inventory-details dt{color:var(--folio-text-muted)}
+.item-art-caption{display:block;text-align:center;font-size:.68rem;color:var(--folio-text-muted)}
+.inventory-details>.item-illustration{width:6rem;height:6rem;border-bottom:1px solid var(--folio-border);padding:var(--folio-space-2)}
+.inventory-actions{padding-block:var(--folio-space-2)}
+.inventory-merge-note{background:var(--folio-success-surface);border-left:3px solid var(--folio-action)}
+.comparison-cards section{background:var(--folio-surface);border:1px solid var(--folio-border);border-top:3px double var(--folio-brass);border-radius:var(--folio-radius-sm)}
+.comparison-cards h3{font:600 .85rem var(--folio-font-heading);color:var(--folio-text-muted)}
+.inventory-comparison-dialog table,.inventory-service-dialog table,.equipment-stat-table{color:var(--folio-text);font-variant-numeric:tabular-nums}
+.inventory-comparison-dialog td,.inventory-service-dialog td,.equipment-stat-table td{text-align:right}
+.inventory-comparison-dialog thead,.inventory-service-dialog thead{background:var(--folio-surface-inset)}
+.inventory-comparison-dialog th,.inventory-comparison-dialog td,.inventory-service-dialog th,.inventory-service-dialog td{border-color:var(--folio-border)}
+.comparison-increase .comparison-delta{color:var(--folio-success)}.comparison-decrease .comparison-delta{color:var(--folio-danger)}
+.loadout-card{margin-block:var(--folio-space-3);padding:var(--folio-space-3);border-left:3px solid var(--folio-warning)}
+.loadout-card[data-ready=true]{border-left-color:var(--folio-action)}.loadout-card h4{font:600 1.05rem var(--folio-font-heading)}.loadout-ready{color:var(--folio-success)}
+.loadout-card button.danger{color:var(--folio-danger);border-color:var(--folio-danger)}
+.inventory-history li{border-left:1px solid var(--folio-brass);padding-left:var(--folio-space-3)}
+.inventory-history small{color:var(--folio-text-muted)}
+.inventory-equipment-shortcut{background:var(--folio-action);color:var(--folio-on-action);border-color:var(--folio-border-interactive)}
+@media(max-width:900px){.inventory-workspace .paperdoll-slot{padding-right:36px}.inventory-overview{padding:var(--folio-space-3)}.inventory-workspace .paperdoll-weapon-bank{background:transparent}}
+@media(max-width:450px){.inventory-workspace .paperdoll-slot{padding-right:30px}.paperdoll-slot strong{font-size:.76rem}.paperdoll-slot-label{font-size:.6rem}.paperdoll-slot-hint{font-size:.58rem}.paperdoll-empty-icon{width:23px}.inventory-tile .inventory-item-name{font-size:.85rem}.inventory-workspace .inventory-mode-compact .inventory-tile{min-height:max(224px,14.0rem)}.inventory-mode-detailed .inventory-tile{min-height:max(330px,20.625rem)}}
+@media(forced-colors:active){.inventory-tile,.paperdoll-slot,.paperdoll-weapons,.loadout-card{border-color:ButtonText}.paperdoll-slot[aria-expanded=true],.inventory-tile[aria-pressed=true]{outline:2px solid Highlight}.inventory-art::before{display:none}.paperdoll-slot.compatible{border:2px dashed Highlight}.paperdoll-silhouette{stroke:CanvasText}.inventory-equipment-shortcut{background:ButtonFace;color:ButtonText}}
+/* Shared ink marks and capacity meters retain their non-color labels. */
+.item-action-icon{fill:none;stroke:currentColor}
+.carry-meter{background:var(--folio-surface-inset)}.carry-meter>span{background:var(--folio-success)}
+.carry-burdened .carry-meter>span{background:var(--folio-warning)}.carry-encumbered .carry-meter>span,.carry-overloaded .carry-meter>span{background:var(--folio-danger)}
+.carry-threshold{background:var(--folio-text)}
+
+.inventory-statuses{max-width:calc(100% - 42px);flex-wrap:wrap;gap:3px}
+.inventory-tile,.inventory-mode-compact .inventory-tile{padding-top:40px}

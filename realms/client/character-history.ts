@@ -1,3 +1,4 @@
+import { characterIcon,type CharacterMotif } from './character-icons.js';
 import type { GameSession } from './session.js';
 import { node,section,button } from './advancement-controls.js';
 import { titleCase } from './advancement-model.js';
@@ -15,7 +16,7 @@ export function renderCharacterHistory(parent:HTMLElement,session:GameSession){
  const last=Math.floor((history.total-1)/history.pageSize)*history.pageSize;
  const jumps=node('div','','sheet-history-controls');jumps.append(button('Show earliest history',()=>page(0),history.offset===0),button('Show newest history',()=>page(last),history.offset===last));box.append(jumps);
  const list=node('ol','','sheet-history');list.start=history.offset+1;list.setAttribute('aria-label','Committed advancements');
- for(const entry of history.entries){const item=node('li','','sheet-history-entry'),head=node('div','','sheet-history-entry-header');head.append(node('span',historyCategories[entry.category]??'Advancement','sheet-history-category'),node('h3',entry.name));const time=historyTime(entry.recordedAt);if(time){const at=node('time',time.label);at.dateTime=time.iso;at.title='Recorded event time: '+time.iso;head.append(at);}else head.append(node('span','Recorded time unavailable','help'));item.append(head);
+ for(const entry of history.entries){const item=node('li','','sheet-history-entry'),head=node('div','','sheet-history-entry-header');item.dataset.category=entry.category;const motif:CharacterMotif=entry.category==='ATTRIBUTE'?'milestone':entry.category==='PROFICIENCY'?'proficiency':entry.category==='FEAT'?'feat':entry.category==='SUBCLASS'?'subclass':'class',marker=node('span','','chronicle-marker');marker.append(characterIcon(motif));item.append(marker);head.append(node('span',historyCategories[entry.category]??'Advancement','sheet-history-category'),node('h3',entry.name));const time=historyTime(entry.recordedAt);if(time){const at=node('time',time.label);at.dateTime=time.iso;at.title='Recorded event time: '+time.iso;head.append(at);}else head.append(node('span','Recorded time unavailable','help'));item.append(head);
   const context=[entry.level!==null?`Character level ${entry.level}`:'',entry.milestone!==null?`Milestone ${entry.milestone}`:''].filter(Boolean).join(' · ');if(context)item.append(node('p',context,'help'));
   if(entry.changes.length){const changes=node('dl','','sheet-history-changes');for(const change of entry.changes){const row=node('div'),value=(v:number|string|null)=>v===null?'Unavailable':typeof v==='number'?String(v):titleCase(v);row.append(node('dt',titleCase(change.name)),node('dd',change.before===null?value(change.after):`${value(change.before)} → ${value(change.after)}`));changes.append(row);}item.append(changes);}list.append(item);
  }box.append(list);
