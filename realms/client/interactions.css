@@ -18,7 +18,7 @@
  .game-shell .inventory-tile:hover:enabled { transform:translateY(-1px); }
 }
 @media (pointer:coarse) {
- .game-shell button,dialog button,.game-shell summary { min-height:44px; }
+ :root .game-shell button,:root dialog button,:root .game-shell summary { min-height:44px; }
  .game-shell label:has(>input:is([type=checkbox],[type=radio])),dialog label:has(>input:is([type=checkbox],[type=radio])) { min-height:44px; }
 }
 @media (prefers-reduced-motion:reduce) {
