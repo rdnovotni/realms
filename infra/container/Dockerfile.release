@@ -9,7 +9,7 @@ COPY realms/tsconfig*.json ./
 COPY realms/src ./src
 COPY realms/client ./client
 COPY realms/test ./test
-COPY realms/scripts/runtime-config.mjs realms/scripts/client-preview.ts realms/scripts/content-check.ts ./scripts/
+COPY realms/scripts/runtime-config.mjs realms/scripts/client-preview.ts realms/scripts/content-check.ts realms/scripts/visual-contract.mjs ./scripts/
 COPY realms/migrations ./migrations
 COPY realms/content ./content
 RUN npm run typecheck && npm test && npm run content:check && npm run build

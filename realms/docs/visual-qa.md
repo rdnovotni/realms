@@ -65,8 +65,8 @@ All art, grain and fonts are local or system resources. Grain is one static sub-
 - Unit/client: 218 passed, zero skipped.
 - Integration: 389 passed, zero skipped, disposable PostgreSQL.
 - Worker/runtime: 7 and 3 passed, zero skipped.
-- Infrastructure: 174 cases, 10 conditional skips, no failures.
+- Infrastructure: 175 cases, 10 conditional skips, no failures.
 - Styles, documentation navigation, feature registry and visual source contracts: see the PR's final command results.
-- No production deployment or release-checkpoint result is implied by local tests.
+- Release build-stage allowlists include the visual-contract unit-test helper; a packaging regression test guards both Docker COPY and context inclusion. No production deployment or release-checkpoint result is implied by local tests.
 
 Rollback is a source revert and rebuild. No migration, public service change, combat/progression formula, ownership rule, discovery gate or persistent gameplay contract is changed.

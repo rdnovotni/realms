@@ -13,6 +13,12 @@ class VerificationTests(unittest.TestCase):
   self.assertTrue(styles)
   self.assertFalse(styles-copied,'Production image omits page stylesheets: '+str(sorted(styles-copied)))
   for style in styles:self.assertTrue((ROOT/'realms/client'/style).is_file())
+ def test_visual_contract_helper_is_available_to_build_tests(self):
+  docker=(ROOT/'infra/container/Dockerfile.release').read_text()
+  build,production=docker.split('FROM build AS verification',1)[0],docker.rsplit('\nFROM ',1)[1]
+  self.assertIn('realms/scripts/visual-contract.mjs',build)
+  self.assertIn('!realms/scripts/visual-contract.mjs',(ROOT/'infra/container/Dockerfile.release.dockerignore').read_text().splitlines())
+  self.assertNotIn('visual-contract.mjs',production)
  def record(self):return {'source_commit':'a'*40,'image':'sha256:'+'b'*64,'schema':[{'name':'001.sql','checksum':'c'}],'verification':{'status':'passed','source_commit':'a'*40,'image':'sha256:'+'b'*64,'schema':[{'name':'001.sql','checksum':'c'}],'checks':v.CHECKS.copy()}}
  def test_receipt_requires_same_commit_image_schema_and_complete_checks(self):
   v.require_verification(self.record())
