@@ -1,3 +1,4 @@
+import { iconCatalog } from '../client/icons.js';
 import { knownSpecializations,abilityCostText } from '../client/character-presentation-model.js';
 import { equipmentSlotPresentation } from '../client/equipment-presentation.js';
 import { adventureAvailability,combatTurn,canOpenJourneyRecord } from '../client/campaign-model.js';
@@ -25,6 +26,7 @@ test('public preview marks account access unavailable and serves only approved s
   const config=await app.inject({url:'/api/v1/client/config'});assert.deepEqual(config.json(),{protocolVersion:1,authMode:'sessions',previewOnly:true});assert.ok(!config.body.includes('must-never-be-public'));
   const art=await app.inject({url:'/assets/realms-tavern.webp'});assert.equal(art.statusCode,200);assert.match(art.headers['content-type']!,/^image\/webp/);assert.equal(art.rawPayload.subarray(0,4).toString(),'RIFF');assert.match(art.headers['content-security-policy']!,/img-src 'self'/);assert.equal(art.headers['cache-control'],'no-store');
   const css=await app.inject({url:'/assets/welcome.css'});assert.equal(css.statusCode,200);assert.match(css.headers['content-type']!,/^text\/css/);
+  for(const name of ['interactions.css']){const style=await app.inject({url:'/assets/'+name});assert.equal(style.statusCode,200);assert.match(style.body,/prefers-reduced-motion/);assert.match(style.body,/forced-colors/);}
   const characterStyle=await app.inject({url:'/assets/character-folio.css'});assert.equal(characterStyle.statusCode,200);assert.match(characterStyle.body,/\.character-sheet/);
   const shellStyle=await app.inject({url:'/assets/shell.css'});assert.equal(shellStyle.statusCode,200);assert.match(shellStyle.headers['content-type']!,/^text\/css/);assert.match(shellStyle.body,/\.game-shell/);
   const ledger=await app.inject({url:'/assets/inventory-folio.css'});assert.equal(ledger.statusCode,200);assert.match(ledger.headers['content-type']!,/^text\/css/);assert.match(ledger.body,/\.paperdoll-slot/);
@@ -492,4 +494,14 @@ test('combat turn presentation distinguishes manual companions, server turns, re
 test('journey links never open an active fight on behalf of an older recorded outcome',()=>{
  const s={battle:{instanceId:'active-fight'}} as Snapshot;
  assert.equal(canOpenJourneyRecord(s,'older-record'),false);assert.equal(canOpenJourneyRecord(s,'active-fight'),true);assert.equal(canOpenJourneyRecord({...s,battle:null},'older-record'),false);
+});
+
+test('shared ink motifs remain bounded local vector paths across all feature families',()=>{
+ for(const [family,icons]of Object.entries(iconCatalog)){
+  assert.ok(Object.keys(icons).length>=9,family);
+  for(const [name,path]of Object.entries(icons)){assert.ok(path.length>5&&path.length<700,family+':'+name);assert.match(path,/^[Mm]/);assert.doesNotMatch(path,/[<>]|url|https|data:/i);}
+ }
+ for(const attr of ['strength','dexterity','constitution','intelligence','wisdom','charisma','luck'])assert.ok(Object.hasOwn(iconCatalog.character,attr));
+ for(const status of ['favorite','new','locked','equipped','durability','collection'])assert.ok(Object.hasOwn(iconCatalog.status,status));
+ for(const name of ['health','mana','warning','success','error','weight','journal'])assert.ok(Object.hasOwn(iconCatalog.common,name));
 });

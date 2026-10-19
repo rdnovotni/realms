@@ -1,3 +1,4 @@
+import { folioIcon } from './icons.js';
 import type { GameSession } from './session.js';
 import type { Command,Snapshot } from './types.js';
 import type { Screen } from './views.js';
@@ -7,10 +8,7 @@ function add(node:HTMLElement,...children:(HTMLElement|SVGElement|null)[]){for(c
 function button(text:string,action:()=>void,disabled=false,className=''){const b=el('button',text,className);b.type='button';b.dataset.focus=text;b.disabled=disabled;b.addEventListener('click',action);return b;}
 function heading(text:string){const h=el('h1',text);h.tabIndex=-1;return h;}
 function section(title:string){return add(el('section','','panel'),el('h2',title));}
-function icon(kind:'road'|'battle'|'journal'|'result'){
- const paths={road:'M4 28h24M7 28l7-25h5l-2 10 6 15M16 4l-1 5m-1 5-1 5m-1 5-1 4M2 13l5-5 4 5M23 8l4-5 4 5',battle:'m7 3 5 2 10 15-4 3-9-16ZM3 22l10-8M4 28l5-7M25 3l-5 2-4 7m6 7 7 6M19 18l9 9',journal:'M6 4h21v25H6q-5 0-3-5V7q0-3 3-3ZM7 4v25M11 10h12M11 15h12M11 20h8',result:'M6 4h20v14l-10 11L6 18ZM11 15l4 4 7-9'};
- const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('viewBox','0 0 32 32');svg.setAttribute('aria-hidden','true');svg.setAttribute('focusable','false');svg.classList.add('campaign-icon');const path=document.createElementNS(svg.namespaceURI,'path');path.setAttribute('d',paths[kind]);svg.append(path);return svg;
-}
+const icon=(kind:'road'|'battle'|'journal'|'result')=>folioIcon(kind,'common','campaign-icon');
 function renderAscension(main:HTMLElement,session:GameSession,disabled:boolean){
  const panel=section('Between lives');add(panel,el('p','This campaign is complete. Continue in Aftercore, or review a fresh start.'));
  const preview=session.ascension;
@@ -72,7 +70,7 @@ export function renderCombat(main:HTMLElement,s:Snapshot,disabled:boolean,send:(
 function renderUnit(u:import('./types.js').Unit,current:string|null){
  const card=el('article','',`unit ${u.side.toLowerCase()} ${u.id===current?'current':''}`);card.dataset.unit=u.id;card.setAttribute('aria-label',`${label(u.id)} · ${u.side==='PARTY'?'Party':'Opponent'}${u.id===current?' · Current actor':''}`);
  add(card,el('span',u.id===current?'Current actor':u.side==='PARTY'?'Party':'Opponent','unit-role'),el('strong',label(u.id)),el('span',label(u.state),'unit-state'));
- const meter=(name:string,value:number,max:number)=>{const group=el('div','','unit-resource'),line=add(el('p'),el('span',name),el('strong',`${value} / ${max}`)),bar=el('div','',`meter ${name.toLowerCase()}`),filled=el('span'),missing=el('span','','missing');bar.setAttribute('role','meter');bar.setAttribute('aria-label',label(u.id)+' '+name);bar.setAttribute('aria-valuemin','0');bar.setAttribute('aria-valuemax',String(max));bar.setAttribute('aria-valuenow',String(value));bar.setAttribute('aria-valuetext',`${value} of ${max} ${name.toLowerCase()}`);filled.style.flexGrow=String(value);missing.style.flexGrow=String(Math.max(0,max-value));add(group,line,add(bar,filled,missing));return group;};
+ const meter=(name:string,value:number,max:number)=>{const group=el('div','','unit-resource'),line=add(el('p'),add(el('span',name),folioIcon(name.toLowerCase())),el('strong',`${value} / ${max}`)),bar=el('div','',`meter ${name.toLowerCase()}`),filled=el('span'),missing=el('span','','missing');bar.setAttribute('role','meter');bar.setAttribute('aria-label',label(u.id)+' '+name);bar.setAttribute('aria-valuemin','0');bar.setAttribute('aria-valuemax',String(max));bar.setAttribute('aria-valuenow',String(value));bar.setAttribute('aria-valuetext',`${value} of ${max} ${name.toLowerCase()}`);filled.style.flexGrow=String(value);missing.style.flexGrow=String(Math.max(0,max-value));add(group,line,add(bar,filled,missing));return group;};
  card.append(meter('Health',u.health,u.maxHealth));if(u.maxMana>0||u.mana>0)card.append(meter('Mana',u.mana,u.maxMana));
  if(u.effects?.length){const effects=el('ul','','unit-effects');for(const e of u.effects){const entry=el('li',`${label(e.family)} · ${e.remaining} ${label(e.clock)}`);entry.dataset.polarity=e.polarity.toLowerCase();effects.append(entry);}card.append(effects);}return card;
 }

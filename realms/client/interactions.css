@@ -1,0 +1,35 @@
+/* Shared ink marks and tactile states; no gameplay-specific colors or formulas. */
+:root .folio-icon { fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round; }
+:root .folio-icon path { vector-effect:non-scaling-stroke;stroke-width:1.6px; }
+.portrait>.folio-icon { width:2rem;height:2rem; }
+.game-shell :is(button,a,summary),dialog :is(button,a,summary) { touch-action:manipulation; }
+.game-shell button:active:enabled,dialog button:active:enabled { box-shadow:inset 0 2px 0 var(--folio-border-interactive); }
+.game-shell button:is([aria-pressed=true],[aria-selected=true]),.game-shell button[aria-current=page] { text-decoration:underline;text-underline-offset:.25em; }
+.game-shell [aria-busy=true] { cursor:progress; }
+.game-shell :is(.loadout-confirmation,.inventory-confirmation),dialog { overflow-wrap:anywhere; }
+:root dialog { box-sizing:border-box;max-width:calc(100vw - 24px);max-height:calc(100dvh - 24px);overflow:auto;scrollbar-gutter:stable; }
+:root dialog :is(input,select,textarea) { max-width:100%;min-width:0; }
+:root dialog button { white-space:normal;overflow-wrap:anywhere; }
+.folio-note { position:fixed;z-index:100;box-sizing:border-box;max-width:calc(100vw - 24px);max-height:calc(100dvh - 24px);overflow:auto;padding:var(--folio-space-3);border:1px solid var(--folio-border-interactive);border-left:3px solid var(--folio-brass);background:var(--folio-surface-raised);color:var(--folio-text);box-shadow:var(--folio-shadow);font-size:var(--folio-type-small);line-height:1.5;overflow-wrap:anywhere; }
+.folio-note strong { display:block;font-family:var(--folio-font-heading);font-weight:600; }
+.folio-note p { margin:.4rem 0 0; }
+@media (hover:hover) and (prefers-reduced-motion:no-preference) {
+ .game-shell .inventory-tile { transition:transform var(--folio-duration) var(--folio-ease),background-color var(--folio-duration) var(--folio-ease); }
+ .game-shell .inventory-tile:hover:enabled { transform:translateY(-1px); }
+}
+@media (pointer:coarse) {
+ .game-shell button,dialog button,.game-shell summary { min-height:44px; }
+ .game-shell label:has(>input:is([type=checkbox],[type=radio])),dialog label:has(>input:is([type=checkbox],[type=radio])) { min-height:44px; }
+}
+@media (prefers-reduced-motion:reduce) {
+ :root .inventory-tile:hover { transform:none; }
+}
+@media (prefers-contrast:more) {
+ .folio-note { box-shadow:none;border-width:2px; }
+}
+@media (forced-colors:active) {
+ .folio-note { color:CanvasText;background:Canvas;border:2px solid CanvasText;box-shadow:none; }
+ :root .folio-icon { color:inherit; }
+ .game-shell button:active:enabled,dialog button:active:enabled { outline:2px solid Highlight;box-shadow:none; }
+ .game-shell .paperdoll-slot.occupied { border-style:double;border-width:3px; }
+}

@@ -74,3 +74,5 @@ Current product name: **Follybound**. [Implementation status](implementation-sta
 - [Tactical resistance reduction and immunity bypass](tactical-resistance-counterplay.md)
 
 Original art and asset provenance: [client art](../client/art/README.md). Current names and compatibility rules are documented separately from historical design/provenance text.
+
+- [Shared Folio icons and interactions](folio-interactions.md) — reusable SVG, notes, review and dialog conventions.

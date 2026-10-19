@@ -1,0 +1,317 @@
+[
+  {
+    "actual": 320,
+    "overflow": false,
+    "requested": 320,
+    "screen": "Pack COMPACT",
+    "tiles": 48
+  },
+  {
+    "actual": 375,
+    "overflow": false,
+    "requested": 375,
+    "screen": "Pack COMPACT",
+    "tiles": 48
+  },
+  {
+    "actual": 768,
+    "overflow": false,
+    "requested": 768,
+    "screen": "Pack COMPACT",
+    "tiles": 48
+  },
+  {
+    "actual": 1024,
+    "overflow": false,
+    "requested": 1024,
+    "screen": "Pack COMPACT",
+    "tiles": 48
+  },
+  {
+    "actual": 1440,
+    "overflow": false,
+    "requested": 1440,
+    "screen": "Pack COMPACT",
+    "tiles": 48
+  },
+  {
+    "actual": 320,
+    "overflow": false,
+    "requested": 320,
+    "screen": "Pack STANDARD",
+    "tiles": 48
+  },
+  {
+    "actual": 375,
+    "overflow": false,
+    "requested": 375,
+    "screen": "Pack STANDARD",
+    "tiles": 48
+  },
+  {
+    "actual": 768,
+    "overflow": false,
+    "requested": 768,
+    "screen": "Pack STANDARD",
+    "tiles": 48
+  },
+  {
+    "actual": 1024,
+    "overflow": false,
+    "requested": 1024,
+    "screen": "Pack STANDARD",
+    "tiles": 48
+  },
+  {
+    "actual": 1440,
+    "overflow": false,
+    "requested": 1440,
+    "screen": "Pack STANDARD",
+    "tiles": 48
+  },
+  {
+    "actual": 320,
+    "overflow": false,
+    "requested": 320,
+    "screen": "Pack DETAILED",
+    "tiles": 48
+  },
+  {
+    "actual": 375,
+    "overflow": false,
+    "requested": 375,
+    "screen": "Pack DETAILED",
+    "tiles": 48
+  },
+  {
+    "actual": 768,
+    "overflow": false,
+    "requested": 768,
+    "screen": "Pack DETAILED",
+    "tiles": 48
+  },
+  {
+    "actual": 1024,
+    "overflow": false,
+    "requested": 1024,
+    "screen": "Pack DETAILED",
+    "tiles": 48
+  },
+  {
+    "actual": 1440,
+    "overflow": false,
+    "requested": 1440,
+    "screen": "Pack DETAILED",
+    "tiles": 48
+  },
+  {
+    "actual": 320,
+    "overflow": false,
+    "requested": 320,
+    "screen": "Overview"
+  },
+  {
+    "actual": 320,
+    "overflow": false,
+    "requested": 320,
+    "screen": "Progression"
+  },
+  {
+    "actual": 320,
+    "overflow": false,
+    "requested": 320,
+    "screen": "Abilities"
+  },
+  {
+    "actual": 320,
+    "overflow": false,
+    "requested": 320,
+    "screen": "Statistics"
+  },
+  {
+    "actual": 320,
+    "overflow": false,
+    "requested": 320,
+    "screen": "History"
+  },
+  {
+    "actual": 375,
+    "overflow": false,
+    "requested": 375,
+    "screen": "Overview"
+  },
+  {
+    "actual": 375,
+    "overflow": false,
+    "requested": 375,
+    "screen": "Progression"
+  },
+  {
+    "actual": 375,
+    "overflow": false,
+    "requested": 375,
+    "screen": "Abilities"
+  },
+  {
+    "actual": 375,
+    "overflow": false,
+    "requested": 375,
+    "screen": "Statistics"
+  },
+  {
+    "actual": 375,
+    "overflow": false,
+    "requested": 375,
+    "screen": "History"
+  },
+  {
+    "actual": 768,
+    "overflow": false,
+    "requested": 768,
+    "screen": "Overview"
+  },
+  {
+    "actual": 768,
+    "overflow": false,
+    "requested": 768,
+    "screen": "Progression"
+  },
+  {
+    "actual": 768,
+    "overflow": false,
+    "requested": 768,
+    "screen": "Abilities"
+  },
+  {
+    "actual": 768,
+    "overflow": false,
+    "requested": 768,
+    "screen": "Statistics"
+  },
+  {
+    "actual": 768,
+    "overflow": false,
+    "requested": 768,
+    "screen": "History"
+  },
+  {
+    "actual": 1024,
+    "overflow": false,
+    "requested": 1024,
+    "screen": "Overview"
+  },
+  {
+    "actual": 1024,
+    "overflow": false,
+    "requested": 1024,
+    "screen": "Progression"
+  },
+  {
+    "actual": 1024,
+    "overflow": false,
+    "requested": 1024,
+    "screen": "Abilities"
+  },
+  {
+    "actual": 1024,
+    "overflow": false,
+    "requested": 1024,
+    "screen": "Statistics"
+  },
+  {
+    "actual": 1024,
+    "overflow": false,
+    "requested": 1024,
+    "screen": "History"
+  },
+  {
+    "actual": 1440,
+    "overflow": false,
+    "requested": 1440,
+    "screen": "Overview"
+  },
+  {
+    "actual": 1440,
+    "overflow": false,
+    "requested": 1440,
+    "screen": "Progression"
+  },
+  {
+    "actual": 1440,
+    "overflow": false,
+    "requested": 1440,
+    "screen": "Abilities"
+  },
+  {
+    "actual": 1440,
+    "overflow": false,
+    "requested": 1440,
+    "screen": "Statistics"
+  },
+  {
+    "actual": 1440,
+    "overflow": false,
+    "requested": 1440,
+    "screen": "History"
+  },
+  {
+    "actual": 320,
+    "overflow": false,
+    "requested": 320,
+    "screen": "Combat"
+  },
+  {
+    "actual": 320,
+    "overflow": false,
+    "requested": 320,
+    "screen": "Adventure saved encounter"
+  },
+  {
+    "actual": 375,
+    "overflow": false,
+    "requested": 375,
+    "screen": "Combat"
+  },
+  {
+    "actual": 375,
+    "overflow": false,
+    "requested": 375,
+    "screen": "Adventure saved encounter"
+  },
+  {
+    "actual": 768,
+    "overflow": false,
+    "requested": 768,
+    "screen": "Combat"
+  },
+  {
+    "actual": 768,
+    "overflow": false,
+    "requested": 768,
+    "screen": "Adventure saved encounter"
+  },
+  {
+    "actual": 1024,
+    "overflow": false,
+    "requested": 1024,
+    "screen": "Combat"
+  },
+  {
+    "actual": 1024,
+    "overflow": false,
+    "requested": 1024,
+    "screen": "Adventure saved encounter"
+  },
+  {
+    "actual": 1440,
+    "overflow": false,
+    "requested": 1440,
+    "screen": "Combat"
+  },
+  {
+    "actual": 1440,
+    "overflow": false,
+    "requested": 1440,
+    "screen": "Adventure saved encounter"
+  }
+]
