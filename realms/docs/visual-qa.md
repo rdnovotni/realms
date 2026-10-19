@@ -41,7 +41,7 @@ The scene picker includes all five Character chapters, Pack, paperdoll, inspecto
 2. Capture the 18 normal scenes at 320, 375, 768, 1024, 1440 and 1920px, height 1000. Wait for `#visual-audit` to contain its report before capturing.
 3. Capture overview, progression, inventory, inspector, comparison, Adventure, combat and dialog at 320/1440 with modes `motion`, `contrast`, `forced`, `text200`, `coarse`. These deliberately activate CSS branches; they are not OS preference emulation.
 4. Review screenshots and interactions. Export the visible audit reports as one JSON array. Run `npm run visual:check -- --actual /absolute/report.json` (absolute paths are accepted). Resolve overflow, footer collisions, heading skips, unnamed controls, icon semantics, target and sampled contrast failures.
-5. Commit reviewed screenshots and `docs/screenshots/vis-07/browser-contracts.json` together. Explain intentional changes. The manifest hashes client CSS/TypeScript and all five fixtures; changing visual sources requires fresh evidence.
+5. Commit reviewed screenshots and `docs/screenshots/vis-07/browser-contracts.json` together. Explain intentional changes. The manifest hashes client CSS/TypeScript, entry HTML, recursive local artwork and all five fixtures; changing visual sources requires fresh evidence.
 
 CI `npm run visual:check` verifies recorded contracts against the current source fingerprint. It does **not** launch a browser, compare pixels, or establish that the stored screenshots are visually correct. It intentionally fails on stale source evidence. Browser capture and human screenshot review remain required. Do not update a hash without rerunning the matrix.
 
@@ -62,7 +62,7 @@ All art, grain and fonts are local or system resources. Grain is one static sub-
 ## Validation record
 
 - TypeScript typecheck and client/server build: passed.
-- Unit/client: 218 passed, zero skipped.
+- Unit/client: 219 passed, zero skipped.
 - Integration: 389 passed, zero skipped, disposable PostgreSQL.
 - Worker/runtime: 7 and 3 passed, zero skipped.
 - Infrastructure: 175 cases, 10 conditional skips, no failures.
