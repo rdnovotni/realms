@@ -1,5 +1,7 @@
 # Game client foundation
 
+Turns, protected reserves, daily allowances, rollover forecasts, rests and repeat-plan UI: [Turns and rollover](turns-rollover.md).
+
 Character presentation and visual playtests: [illustrated Character folio](character-folio.md).
 
 Shared authenticated styling and the populated shell fixture: [application shell](application-shell.md).

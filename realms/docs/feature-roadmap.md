@@ -35,7 +35,7 @@ Finish when a tiny gather → process → craft → equip → wear/repair → st
 
 ## 4. Daily, rest and Home systems
 
-Configure authored Turn/banking policy, consumption, rest recovery, Home production and due-work settlement. Connect owned systems to durable rollover/scheduler and shared clocks. Never invent real-time tactical pressure; only explicit permitted event/shared-instance windows use wall time.
+The [Turns slice](turns-rollover.md) now supplies typed Turn/banking policy, finite daily charges, paid/free rest recovery, reserve/ledger/planner UI and bounded repeat plans. Next connect actual consumption rewards, Home production, training and due-work settlement to these contracts. Connect owned systems to durable rollover/scheduler and shared clocks. Never invent real-time tactical pressure; only explicit permitted event/shared-instance windows use wall time.
 
 Finish when downtime and repeated jobs produce exactly one entitlement, overcap and carryover behavior is correct, combat postponement is safe, and rest/effect expiration reconciles across boundaries and new lives.
 

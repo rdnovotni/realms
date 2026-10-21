@@ -1,6 +1,6 @@
 # Follybound implementation status
 
-Reconciled October 19, 2026 through CHAR-05, migrations 001–036, and the VIS-03–07 integration with mobile-header and visual-contract corrections. This is a repository inventory. Runtime activation and the current state of installed services require separate operator evidence. Dated audit/restore/deployment records remain historical.
+Reconciled October 19, 2026 through CHAR-05, migrations 001–041, and the VIS-03–07 integration with mobile-header and visual-contract corrections. This is a repository inventory. Runtime activation and the current state of installed services require separate operator evidence. Dated audit/restore/deployment records remain historical.
 
 ## Verified foundations and their limits
 
@@ -14,7 +14,8 @@ Reconciled October 19, 2026 through CHAR-05, migrations 001–036, and the VIS-0
 | Items | Paged grid/search/filter/sort/grouping, carrying weight/bulk, personal storage, stack actions/history, optional loot routing, locks, binding, two-set equipment, saved loadouts, protected item use/opening, priced repair and routine batches; [grid and carrying](inventory-grid.md); [inventory](inventory-accounting.md), [crafting](routine-crafting.md) | Advanced production, stations, quality, commissions, upgrades and complete durability lifecycle |
 | Folio client | Character’s five chapters, unified Pack/equipment ledger, Adventure/combat/Journal presentation, shared icons/dialogs and tab-local texture preference; [visual QA](visual-qa.md) | Parchment is the only theme; native zoom, screen-reader speech and physical touch still need device verification |
 | Shared rules | `src/rules/`, migration 031; combat and interaction adapters reuse checks, prerequisites, effects and settlement; [contract](shared-rules.md) | `shared.rules` disabled by default; adapters are not a full quest/dialogue/travel engine; top-level ABILITY prerequisites rejected until enforced |
-| Clocks and controls | Typed clock/effect/retry policies, audited flags, emergency disable/drain, reviewed sealed-release adoption | Real-time only for explicitly permitted nonmechanical windows; full daily/Home systems, breaking hotfix/multiple engines remain separate |
+| Turns and daily planning | Protected reserve/confirmation, banked account charges, safe autocollection, forecast/history UI, bounded repeat plans, paid/free rest provenance, v3 free/extended encounter costs and release-pinned rollover policies/events; [Turns contract](turns-rollover.md) | Production policy/content activation, Home/food/training/Path/Guild/Raid owning workflows and Studio authoring |
+| Clocks and controls | Typed clock/effect/retry policies, audited flags, emergency disable/drain, reviewed sealed-release adoption | Real-time only for explicitly permitted nonmechanical windows; Home/weekly/Path integration, breaking hotfix/multiple engines remain separate |
 | Operations | Immutable build/release workflow, staging isolation, console/studio, supervised worker/scheduler, encrypted USB backups and protected monitoring; [operations](../../infra/docs/README.md) | Independent-machine recovery, PITR, verified alert delivery, load/failure/migration rehearsals and current live verification |
 | Public pages | Follybound identity, factual information pages and funding/privacy development notices; [pages](branding-and-pages.md) | Source copy is not a hosted rollout; signup/newsletter/payments/community channels remain closed |
 
@@ -30,6 +31,8 @@ Historical PR #39 repository CI and frozen release checks passed: 132 unit, 353 
 
 The integrated visual source passes 219 unit/client tests, 188 freshly captured responsive/preference contracts, 55 source contrast pairs, and local infrastructure validation (175 cases, 10 conditional skips). Complete database and frozen-image verification must be read from the exact integration commit’s CI receipt; local presentation checks are not a deployment claim.
 
-Do not infer runtime migration 030–036 or flag activation from merge. Read the recorded deployed image, its source commit, migration checksums and readiness before claiming a particular feature is available. The [release checklist](release-readiness.md) remains open for public launch.
+Do not infer runtime migration 030–041 or flag activation from merge. Read the recorded deployed image, its source commit, migration checksums and readiness before claiming a particular feature is available. The [release checklist](release-readiness.md) remains open for public launch.
 
 Inventory P2 source pass (migration 036): exact future-grant Keep-N routing, collection identity protection, account saved filter/sort views, structured inspection and owned-item comparison, known capability summaries, slot condition indicators and uncapped capacity visualization. See [inventory grid](inventory-grid.md). Item modification/affix journals remain future domain work; no production deployment is implied.
+
+The Turns slice extends source scope through migration 041. Its checks and player workflows are documented in [Turns and rollover](turns-rollover.md); the earlier 188-case visual count is historical. See the updated visual QA matrix for the current planner cases. No production activation is implied.

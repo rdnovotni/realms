@@ -1,3 +1,4 @@
+import type { TurnPlanner } from './types.js';
 import { readCharacterView,saveCharacterView,clearCharacterView } from './character-preferences.js';
 import { canChooseAdvancement,advancementSuccess } from './advancement-model.js';
 import type { Advancement,AdvancementChoice,AdvancementClass,AdvancementScope,SubclassCatalog,FeatCatalog,FeatFilter,AttributeCatalog,ProficiencyCatalog,MilestoneCatalog,AttributeDraft } from './types.js';
@@ -7,6 +8,40 @@ import { ApiClient,ApiError,errorMessage } from './api.js';
 import type { Config,GameView,Progression,BuildOptions,Tactical,Snapshot,Notice,AscensionPreview,InventoryPage,InventoryQuery,InventoryItem,InventoryHistory,EquipmentPlan,Gear,EquipmentPreview,AbilityBook,CharacterSection,AdvancementHistory } from './types.js';
 const equipmentKey=(p:EquipmentPlan)=>JSON.stringify({activeSet:p.activeSet,slots:[...p.slots].sort((a,b)=>(a.set+a.slot).localeCompare(b.set+b.slot))});
 export class GameSession {
+ turnActivity:{entityId:string;revision:number;eligible:boolean;restReason?:string|null;rest?:{health:number;mana:number;afterHealth:number;afterMana:number;maxHealth:number;maxMana:number}|null;costs:{turns:number}}|null=null;
+ async reviewTurnActivity(id:string){const epoch=this.epoch,generation=++this.turnActivityGeneration,revision=this.snapshot?.game.run.revision;this.turnActivity=null;
+  try{const preview=await this.api.request<NonNullable<GameSession['turnActivity']>>('/api/v1/rules/'+encodeURIComponent(id));if(epoch!==this.epoch||generation!==this.turnActivityGeneration||revision!==this.snapshot?.game.run.revision)return;this.turnActivity=preview;}
+  catch(error){if(epoch===this.epoch)this.handleError(error);}this.notify();
+ }
+ runningTurnPlan:string|null=null;
+ stopRepeatingTurns(){this.runningTurnPlan=null;this.notify();}
+ async runTurnPlan(id:string){if(this.runningTurnPlan||this.busy||this.pending)return;const epoch=this.epoch;this.runningTurnPlan=id;this.notify();
+  try{for(let n=0;n<1000&&this.runningTurnPlan===id&&this.epoch===epoch;n++){
+   const plan=this.turns?.plans.find(p=>p.id===id);if(!plan||plan.status!=='ACTIVE'||this.needsRefresh||this.pending||!this.snapshot?.game.canWrite)break;
+   await this.action('/api/v1/turns/plans/step','STEP_TURN_PLAN',{planId:id});if(this.notice.kind==='error'||this.pending)break;
+  }}finally{if(this.runningTurnPlan===id)this.runningTurnPlan=null;this.notify();}
+ }
+ turnPlanDraft:{runId:string;entityId:string;maxTurns:number;maxActions:number;minHealth:number;targetItemId:string;targetQuantity:number}|null=null;
+ turns:TurnPlanner|null=null;
+ turnsBusy=false;
+ turnsError:string|null=null;
+ private turnsGeneration=0;
+ private turnActivityGeneration=0;
+ private turnsWanted=false;
+ reserveAction:{path:string;type:string;parameters:Record<string,unknown>}|null=null;
+ cancelReserveAction(){this.reserveAction=null;this.notify();}
+ async confirmReserveAction(){const a=this.reserveAction;if(!a)return;this.reserveAction=null;await this.action(a.path,a.type,{...a.parameters,confirmReserve:true});}
+ async loadTurns(historyBefore?:string){
+  const s=this.snapshot;if(!s||this.turnsBusy)return;const epoch=this.epoch,generation=++this.turnsGeneration,runId=s.game.run.runId,revision=s.game.run.revision;
+  this.turnsWanted=true;this.turnsBusy=true;this.turnsError=null;this.notify();
+  try{const view=await this.api.request<TurnPlanner>('/api/v1/turns?expectedRevision='+revision+(historyBefore?'&historyBefore='+encodeURIComponent(historyBefore):''));
+   if(epoch!==this.epoch||generation!==this.turnsGeneration)return;
+   if(view.runId!==runId||view.revision!==revision||this.snapshot?.game.run.runId!==runId||this.snapshot.game.run.revision!==revision)throw new ApiError(409,'STALE_REVISION');this.turns=view;
+  }catch(error){if(epoch===this.epoch&&generation===this.turnsGeneration){this.turns=null;this.turnsError=errorMessage(error);if(error instanceof ApiError&&error.status===401)this.handleError(error);}}
+  finally{if(epoch===this.epoch&&generation===this.turnsGeneration){this.turnsBusy=false;this.notify();}}
+ }
+ private clearTurns(){this.turnActivityGeneration++;this.turnActivity=null;this.turns=null;this.turnsBusy=false;this.turnsError=null;this.turnsGeneration++;}
+
  private selectionPage='';
  inventorySelection=new Set<string>();
  inventorySelectionAnchor:string|null=null;
@@ -186,11 +221,11 @@ export class GameSession {
   if(this.busy)return;this.inventorySelection.clear();this.inventorySelectionAnchor=null;this.inventoryLayout='STANDARD';this.inventoryEquipmentOpen=false;this.inventoryLoadoutsOpen=false;this.inventoryStatsOpen=false;this.tileSettings={...defaultTileSettings};this.equipmentDraft=null;this.equipmentPreview=null;this.equipmentContext=undefined;this.previewGeneration++;this.inventory=null;this.inventoryBusy=false;this.inventoryError=null;this.inventoryHistory=null;this.historyGeneration++;this.inventoryHistoryBusy=false;this.selectedInventoryItem=null;this.selectedInventoryGrouped=false;this.inventoryWanted=false;this.inventoryQuery={sort:'NAME',direction:'ASC',grouped:true,offset:0};this.inventoryGeneration++;this.busy=true;const epoch=++this.epoch;this.notify();
   try{let token=credentials.token;if(this.config?.authMode==='sessions'){const result=await this.api.request<{token:string}>('/api/v1/auth/login',{handle:credentials.handle,password:credentials.password,deviceLabel:'Follybound browser'},false);token=result.token;}
    if(epoch!==this.epoch)return;if(!token)throw new ApiError(401,'UNAUTHORIZED');this.api.setToken(token);await this.load(epoch);this.notice={text:'Connected. Your progress is saved by the server.',kind:'success'};
-  }catch(error){if(epoch===this.epoch){this.clearAdvancement(true);this.advancementWanted=false;this.api.setToken('');this.snapshot=null;this.notice={text:errorMessage(error),kind:'error'};}}
+  }catch(error){if(epoch===this.epoch){this.clearAdvancement(true);this.advancementWanted=false;this.clearTurns();this.turnPlanDraft=null;this.turnsWanted=false;this.runningTurnPlan=null;this.reserveAction=null;this.api.setToken('');this.snapshot=null;this.notice={text:errorMessage(error),kind:'error'};}}
   finally{if(epoch===this.epoch){this.busy=false;this.notify();}}
  }
  private async load(epoch:number,refreshAdvancement=this.advancementWanted){
-  this.ascension=null;this.inventory=null;this.inventoryError=null;this.clearAdvancement();
+  this.clearTurns();this.ascension=null;this.inventory=null;this.inventoryError=null;this.clearAdvancement();
   const game=await this.api.request<GameView>('/api/v1/client/state');if(game.protocolVersion!==1)throw new ApiError(503,'UNSUPPORTED_CLIENT');
   const [progression,options]=await Promise.all([this.api.request<Progression>('/api/v1/progression'),this.api.request<BuildOptions>('/api/v1/progression/options')]);
   const id=game.activeEncounter?.kind==='TACTICAL'?game.activeEncounter.id:!game.activeEncounter?game.latestEncounter?.id:null;
@@ -198,9 +233,9 @@ export class GameSession {
   // These independent projections may cross another window's action. Refuse a
   // mixed revision and let the player explicitly refresh, never write from it.
   if(progression.revision!==game.run.revision||(options.revision!==undefined&&options.revision!==game.run.revision)||(options.runId!==undefined&&options.runId!==game.run.runId)||(battle&&battle.revision!==game.run.revision))throw new ApiError(409,'STALE_REVISION');
-  if(epoch===this.epoch){if(this.snapshot?.game.run.runId!==game.run.runId){const remembered=!this.snapshot?readCharacterView(game.run.runId):null;this.equipmentContext=undefined;this.inventorySearchDraft=null;this.clearAdvancement(true);this.characterSection=remembered?.section??'overview';this.characterHistoryOffset=remembered?.offset??0;}this.equipmentPreviewError=null;this.snapshot={game,progression,options,battle};saveCharacterView(game.run.runId,this.characterSection,this.characterHistoryOffset);this.needsRefresh=false;
+  if(epoch===this.epoch){if(this.snapshot?.game.run.runId!==game.run.runId){this.turnPlanDraft=null;const remembered=!this.snapshot?readCharacterView(game.run.runId):null;this.equipmentContext=undefined;this.inventorySearchDraft=null;this.clearAdvancement(true);this.characterSection=remembered?.section??'overview';this.characterHistoryOffset=remembered?.offset??0;}this.equipmentPreviewError=null;this.snapshot={game,progression,options,battle};saveCharacterView(game.run.runId,this.characterSection,this.characterHistoryOffset);this.needsRefresh=false;
    if(this.equipmentDraft&&(this.equipmentDraft.runId!==game.run.runId||game.equipment&&equipmentKey(this.equipmentDraft.plan)===equipmentKey(game.equipment)))this.equipmentDraft=null;
-   this.equipmentPreview=null;this.previewGeneration++;this.equipmentPreviewBusy=false;if(this.inventoryWanted)await this.browseInventory(this.inventoryQuery);if(refreshAdvancement&&this.advancementWanted&&this.snapshot?.progression.build.mode==='CONFIGURED')await this.loadAdvancement();}
+   this.equipmentPreview=null;this.previewGeneration++;this.equipmentPreviewBusy=false;if(this.inventoryWanted)await this.browseInventory(this.inventoryQuery);if(this.turnsWanted)await this.loadTurns();if(refreshAdvancement&&this.advancementWanted&&this.snapshot?.progression.build.mode==='CONFIGURED')await this.loadAdvancement();}
  }
  selectInventory(item:InventoryItem|null){if(item?.id!==this.selectedInventoryItem?.id)this.inventoryAutomationOpen=false;this.equippedInspectionGeneration++;this.inventoryHistory=null;this.inventoryHistoryBusy=false;this.historyGeneration++;this.selectedInventoryItem=item?structuredClone(item):null;this.selectedInventoryGrouped=!!item&&!!this.inventoryQuery.grouped&&item.copies>1;this.selectedInventoryQuery=JSON.stringify(this.inventoryQuery);this.selectedInventoryRevision=this.snapshot?.game.run.revision??-1;this.notify();}
  private equippedInspectionGeneration=0;
@@ -255,7 +290,7 @@ export class GameSession {
  async refresh(){if(this.busy)return;this.busy=true;const epoch=this.epoch;this.notify();try{await this.load(epoch);if(!this.pending)this.notice={text:'Your saved game is up to date.',kind:'info'};}catch(error){this.needsRefresh=true;this.handleError(error);}finally{if(epoch===this.epoch){this.busy=false;this.notify();}}}
  async action(path:string,actionType:string,parameters:Record<string,unknown>){
   if(this.busy||this.pending||this.needsRefresh||!this.snapshot?.game.canWrite)return;
-  this.pending={path,body:{...structuredClone(parameters),requestId:this.uuid(),actionType,expectedRevision:this.snapshot.game.run.revision}};await this.submit();
+  this.reserveAction=null;this.pending={path,body:{...structuredClone(parameters),requestId:this.uuid(),actionType,expectedRevision:this.snapshot.game.run.revision}};await this.submit();
  }
  async previewAscension(){
   if(this.busy||this.pending||this.needsRefresh||!this.snapshot?.game.canWrite)return;
@@ -274,16 +309,16 @@ export class GameSession {
  private async submit(){
   const pending=this.pending;if(!pending)return;const epoch=this.epoch;this.busy=true;this.notify();
   try{const owned=[...(this.inventory?.items??[]),...(this.selectedInventoryItem?[this.selectedInventoryItem]:[])];const result=await this.api.request<Record<string,unknown>>(pending.path,pending.body);if(epoch!==this.epoch)return;this.pending=null;this.notice={text:advancementSuccess(String(pending.body.actionType),pending.body,result??{},this.advancement)??inventorySuccess(String(pending.body.actionType),pending.body,result??{},owned),kind:'success'};await this.load(epoch,['LEVEL_UP','CHOOSE_SUBCLASS','CHOOSE_FEAT','ALLOCATE_ATTRIBUTES','ADVANCE_PROFICIENCY'].includes(String(pending.body.actionType)));}
-  catch(error){if(epoch!==this.epoch)return;if(!this.pending){this.needsRefresh=true;this.notice={text:'Your action was saved, but the latest view could not be loaded. Refresh to reconnect.',kind:'error'};return;}if(!(error instanceof ApiError)||!error.ambiguous)this.pending=null;this.handleError(error);if(error instanceof ApiError&&error.ambiguous&&this.pending)this.notice.text+=' The action may have completed. Retry the same action to confirm.';if(error instanceof ApiError&&error.status===409){try{await this.load(epoch);}catch{/* Keep the stale snapshot disabled until an explicit refresh succeeds. */this.snapshot=null;}}}
+  catch(error){if(epoch!==this.epoch)return;if(!this.pending){this.needsRefresh=true;this.notice={text:'Your action was saved, but the latest view could not be loaded. Refresh to reconnect.',kind:'error'};return;}if(error instanceof ApiError&&error.code==='TURN_RESERVE_CONFIRMATION_REQUIRED'){const {requestId,actionType,expectedRevision,...parameters}=pending.body;this.reserveAction={path:pending.path,type:String(actionType),parameters};}if(!(error instanceof ApiError)||!error.ambiguous)this.pending=null;this.handleError(error);if(error instanceof ApiError&&error.ambiguous&&this.pending)this.notice.text+=' The action may have completed. Retry the same action to confirm.';if(error instanceof ApiError&&error.status===409){try{await this.load(epoch);}catch{/* Keep the stale snapshot disabled until an explicit refresh succeeds. */this.snapshot=null;}}}
   finally{if(epoch===this.epoch){this.busy=false;this.notify();}}
  }
- private handleError(error:unknown){this.notice={text:errorMessage(error),kind:'error'};if(error instanceof ApiError&&error.status===401){clearCharacterView();this.inventorySelection.clear();this.inventorySelectionAnchor=null;this.inventoryLayout='STANDARD';this.inventoryEquipmentOpen=false;this.inventoryLoadoutsOpen=false;this.inventoryStatsOpen=false;this.tileSettings={...defaultTileSettings};this.equipmentDraft=null;this.equipmentPreview=null;this.equipmentContext=undefined;this.previewGeneration++;this.equipmentPreviewBusy=false;this.clearAdvancement(true);this.advancementWanted=false;this.api.setToken('');this.snapshot=null;this.pending=null;this.inventory=null;this.inventoryHistory=null;this.historyGeneration++;this.inventoryHistoryBusy=false;this.selectedInventoryItem=null;this.selectedInventoryGrouped=false;this.inventoryWanted=false;this.inventoryBusy=false;this.inventoryGeneration++;}}
+ private handleError(error:unknown){this.notice={text:errorMessage(error),kind:'error'};if(error instanceof ApiError&&error.status===401){clearCharacterView();this.inventorySelection.clear();this.inventorySelectionAnchor=null;this.inventoryLayout='STANDARD';this.inventoryEquipmentOpen=false;this.inventoryLoadoutsOpen=false;this.inventoryStatsOpen=false;this.tileSettings={...defaultTileSettings};this.equipmentDraft=null;this.equipmentPreview=null;this.equipmentContext=undefined;this.previewGeneration++;this.equipmentPreviewBusy=false;this.clearAdvancement(true);this.advancementWanted=false;this.clearTurns();this.turnPlanDraft=null;this.turnsWanted=false;this.runningTurnPlan=null;this.reserveAction=null;this.api.setToken('');this.snapshot=null;this.pending=null;this.inventory=null;this.inventoryHistory=null;this.historyGeneration++;this.inventoryHistoryBusy=false;this.selectedInventoryItem=null;this.selectedInventoryGrouped=false;this.inventoryWanted=false;this.inventoryBusy=false;this.inventoryGeneration++;}}
  async logout(){clearCharacterView();
   if(this.busy||this.pending)return;this.busy=true;this.notify();
   let confirmed=true;
   try{if(this.config?.authMode==='sessions')await this.api.request('/api/v1/auth/logout',{});}
   catch{confirmed=false;}
   // Forget local account data even if revocation succeeded but its reply was lost.
-  ++this.epoch;this.inventorySelection.clear();this.inventorySelectionAnchor=null;this.inventoryLayout='STANDARD';this.inventoryEquipmentOpen=false;this.inventoryLoadoutsOpen=false;this.inventoryStatsOpen=false;this.tileSettings={...defaultTileSettings};this.equipmentDraft=null;this.equipmentPreview=null;this.equipmentContext=undefined;this.previewGeneration++;this.equipmentPreviewBusy=false;this.clearAdvancement(true);this.advancementWanted=false;this.api.setToken('');this.snapshot=null;this.ascension=null;this.pending=null;this.inventory=null;this.selectedInventoryItem=null;this.selectedInventoryGrouped=false;this.inventoryHistory=null;this.inventoryWanted=false;this.inventoryBusy=false;this.inventoryHistoryBusy=false;this.inventoryError=null;this.inventoryGeneration++;this.historyGeneration++;this.inventoryQuery={sort:'NAME',direction:'ASC',grouped:true,offset:0};this.inventorySearchDraft=null;this.characterSection='overview';this.needsRefresh=false;this.busy=false;this.notice={text:confirmed?'Signed out. Your game is saved; sign in to resume.':'Signed out on this device. Server session revocation could not be confirmed.',kind:'info'};this.notify();
+  ++this.epoch;this.inventorySelection.clear();this.inventorySelectionAnchor=null;this.inventoryLayout='STANDARD';this.inventoryEquipmentOpen=false;this.inventoryLoadoutsOpen=false;this.inventoryStatsOpen=false;this.tileSettings={...defaultTileSettings};this.equipmentDraft=null;this.equipmentPreview=null;this.equipmentContext=undefined;this.previewGeneration++;this.equipmentPreviewBusy=false;this.clearAdvancement(true);this.advancementWanted=false;this.clearTurns();this.turnPlanDraft=null;this.turnsWanted=false;this.runningTurnPlan=null;this.reserveAction=null;this.api.setToken('');this.snapshot=null;this.ascension=null;this.pending=null;this.inventory=null;this.selectedInventoryItem=null;this.selectedInventoryGrouped=false;this.inventoryHistory=null;this.inventoryWanted=false;this.inventoryBusy=false;this.inventoryHistoryBusy=false;this.inventoryError=null;this.inventoryGeneration++;this.historyGeneration++;this.inventoryQuery={sort:'NAME',direction:'ASC',grouped:true,offset:0};this.inventorySearchDraft=null;this.characterSection='overview';this.needsRefresh=false;this.busy=false;this.notice={text:confirmed?'Signed out. Your game is saved; sign in to resume.':'Signed out on this device. Server session revocation could not be confirmed.',kind:'info'};this.notify();
  }
 }

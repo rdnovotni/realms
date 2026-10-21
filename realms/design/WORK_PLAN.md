@@ -4,7 +4,7 @@ Generated from `feature-registry.json` and the fingerprinted `source-catalog.jso
 
 47 documents, 2096 section checklists, 13,187 source entries including 11,607 rules. Coverage is a mapping count, **not a feature completion percentage**.
 
-Current section assessments: historical: 37, partial: 23, unassessed: 2036.
+Current section assessments: historical: 37, partial: 40, unassessed: 2019.
 
 Finish reusable feature frameworks with minimal test fixtures before substantial authored content. Keep canonical launch tiers and post-launch/deployment gates visible; do not treat examples as locked catalogs.
 
@@ -167,10 +167,10 @@ Prerequisites: SYS-23
 
 | Scope / fields | Ascension | Rollover |
 |---|---|---|
-| RUN: Turns and protected reserve | Carry remaining Turns and protected reserve into the next run; archive old ledger and retain account/epoch receipts. Never regrant daily budgets on Ascension. | KEEP except explicitly registered RESET_AT_ROLLOVER fields; defer during active encounters |
-| ACCOUNT: rollover receipt and banked daily entitlement | KEEP | KEEP except explicitly registered daily contracts; account/epoch receipt is never reset |
+| RUN: Turns and spend ledger | Carry remaining Turns and protected reserve into the next run; archive old ledger and retain account/epoch receipts. Never regrant daily budgets on Ascension. | KEEP except explicitly registered RESET_AT_ROLLOVER fields; defer during active encounters |
+| ACCOUNT: protected reserve, rollover receipt and banked daily entitlement | KEEP | KEEP except explicitly registered daily contracts; account/epoch receipt is never reset |
 
-**Action families:** Commit encounter cost, apply rollover, configure reserve.
+**Action families:** Commit sealed encounter/activity cost, apply rollover, configure reserve, use daily charges, configure autocollection and execute bounded repeat plans.
 
 **Permissions:** Authenticated owner intent; active-run/revision checks; INSTANCE participant or explicit shared consent; GUILD role and EVENT eligibility where applicable. Author/admin writes require separate least-privilege roles and audit. Queries filter secrets before projection/counting.
 

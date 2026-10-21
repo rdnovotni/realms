@@ -1,3 +1,4 @@
+import { lastRest } from './turn-rests.js';
 import { loadTechniqueProfile,techniqueAvailable,techniqueTargets } from './tactical-techniques.js';
 import { loadCarryEffects,settleCarryEffects } from './tactical-persistence.js';
 import { settleFailureCosts,failureCostsView } from './tactical-failure.js';
@@ -119,7 +120,7 @@ export function startTacticalCombat(pool:pg.Pool,accountId:string,envelope:Envel
   const started=await beginTacticalEncounter(c,definitionId,spec.rules,{id:'hero',zone:spec.playerZone,loadKit:true,...(prior?{health:prior.health as number,mana:prior.mana as number}:{})},units,['hero',...spec.allies.filter(u=>!u.owned||u.manual).map(u=>u.id)],true,spec.allies.filter(u=>u.owned&&!u.manual).map(u=>u.id));
   if(c.run.status==='ACTIVE')await c.client.query("UPDATE runs SET completion_policy='CAMPAIGN' WHERE id=$1",[c.run.id]);
   const record=await encounterCheckpoint(c,started.instanceId);
-  await c.client.query('INSERT INTO tactical_encounter_origins(instance_id,run_id,spec,initial_checkpoint,previous_instance_id) VALUES($1,$2,$3,$4,$5)',[started.instanceId,c.run.id,spec,record.checkpoint,prior?.last_instance_id??null]);
+  await c.client.query('INSERT INTO tactical_encounter_origins(instance_id,run_id,spec,initial_checkpoint,previous_instance_id,rest_event_id) VALUES($1,$2,$3,$4,$5,$6)',[started.instanceId,c.run.id,spec,record.checkpoint,prior?.last_instance_id??null,await lastRest(c.client,c.run.id,prior?.last_instance_id)]);
   const hero=started.state.units[0]!;
   await c.client.query('INSERT INTO tactical_run_state(run_id,health,mana,last_instance_id) VALUES($1,$2,$3,$4) ON CONFLICT(run_id) DO UPDATE SET health=EXCLUDED.health,mana=EXCLUDED.mana,last_instance_id=EXCLUDED.last_instance_id',[c.run.id,hero.health,hero.mana,started.instanceId]);
   // A separate action advances enemy-first fights: start and recovery each retain

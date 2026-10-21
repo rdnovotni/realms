@@ -3,8 +3,12 @@ import type pg from 'pg';
 /** Explicit native-field manifest. Policies document the existing domain handlers;
  * generic scoped fields execute their immutable registered Ascension policy.
  * New tables/columns in the owned-state boundary require a reviewed manifest update. */
-export const lifetimeRoots=["accounts", "characters", "runs", "state_scopes", "state_contracts", "scoped_state", "run_progression", "run_consumption", "inventory_items", "inventory_containers", "wallets", "discoveries", "resource_pools", "effect_instances", "instances", "guilds", "guild_members", "world_events", "worlds", "feature_controls", "feature_control_events", "release_adoptions", "inventory_quantity_order"];
+export const lifetimeRoots=["turn_preferences","daily_allowances","daily_allowance_events","accounts", "characters", "runs", "state_scopes", "state_contracts", "scoped_state", "run_progression", "run_consumption", "inventory_items", "inventory_containers", "wallets", "discoveries", "resource_pools", "effect_instances", "instances", "guilds", "guild_members", "world_events", "worlds", "feature_controls", "feature_control_events", "release_adoptions", "inventory_quantity_order"];
 export const lifetimeFields=[
+{"table": "rollover_policy_receipts", "scope": "RUN", "fields": {"run_id": "ARCHIVE", "epoch": "ARCHIVE", "release_id": "ARCHIVE", "policy": "ARCHIVE"}, "reason": "Each daily grant retains its effective release policy; Ascension cannot edit an old grant or reapply its epoch."},
+{"table": "tactical_rest_events", "scope": "RUN", "fields": {"id": "ARCHIVE", "action_id": "ARCHIVE", "run_id": "ARCHIVE", "after_instance_id": "ARCHIVE", "previous_rest_id": "ARCHIVE", "release_id": "ARCHIVE", "entity_id": "ARCHIVE", "entity_revision": "ARCHIVE", "before_health": "ARCHIVE", "before_mana": "ARCHIVE", "health": "ARCHIVE", "mana": "ARCHIVE", "max_health": "ARCHIVE", "max_mana": "ARCHIVE"}, "reason": "Rest recovery is immutable run evidence; the next life cannot reuse a previous health pool."},
+{"table": "turn_plans", "scope": "RUN", "fields": {"id": "ARCHIVE", "account_id": "ARCHIVE", "run_id": "ARCHIVE", "entity_id": "ARCHIVE", "max_turns": "ARCHIVE", "max_actions": "ARCHIVE", "spent": "ARCHIVE", "completed": "ARCHIVE", "min_health": "ARCHIVE", "target_item_id": "ARCHIVE", "target_quantity": "ARCHIVE", "status": "ARCHIVE", "stop_reason": "ARCHIVE", "created_at": "ARCHIVE"}, "reason": "Bounded plans remain with their run. Ascension cannot continue or replenish an old plan."},
+{"table": "turn_preferences", "scope": "ACCOUNT", "fields": {"account_id": "KEEP", "reserve": "KEEP"}, "reason": "Account daily budgets and their immutable provenance survive Ascension; no life transition grants a refresh."},{"table": "daily_allowances", "scope": "ACCOUNT", "fields": {"account_id": "KEEP", "entity_id": "KEEP", "charges": "KEEP", "auto_collect": "KEEP", "manual_uses": "KEEP"}, "reason": "Account daily budgets and their immutable provenance survive Ascension; no life transition grants a refresh."},{"table": "daily_allowance_events", "scope": "ACCOUNT", "fields": {"ledger_request_id":"KEEP","auto_collect":"KEEP","id": "KEEP", "account_id": "KEEP", "entity_id": "KEEP", "run_id": "KEEP", "release_id": "KEEP", "entity_revision": "KEEP", "epoch": "KEEP", "action_id": "KEEP", "kind": "KEEP", "before_charges": "KEEP", "after_charges": "KEEP", "turn_bonus": "KEEP", "created_at": "KEEP"}, "reason": "Account daily budgets and their immutable provenance survive Ascension; no life transition grants a refresh."},
   {
     "table": "accounts",
     "scope": "ACCOUNT",
@@ -695,6 +699,7 @@ export const lifetimeFields=[
     "table": "shared_tactical_members",
     "scope": "RUN",
     "fields": {
+      "rest_event_id": "ARCHIVE",
       "session_id": "ARCHIVE",
       "run_id": "ARCHIVE",
       "account_id": "ARCHIVE",
@@ -764,6 +769,7 @@ export const lifetimeFields=[
     "table": "tactical_encounter_origins",
     "scope": "RUN",
     "fields": {
+      "rest_event_id": "ARCHIVE",
       "instance_id": "ARCHIVE",
       "run_id": "ARCHIVE",
       "previous_instance_id": "ARCHIVE",

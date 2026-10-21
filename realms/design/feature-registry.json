@@ -180,18 +180,18 @@
       "state": [
         {
           "scope": "RUN",
-          "fields": "Turns and protected reserve",
+          "fields": "Turns and spend ledger",
           "ascension": "Carry remaining Turns and protected reserve into the next run; archive old ledger and retain account/epoch receipts. Never regrant daily budgets on Ascension.",
           "rollover": "KEEP except explicitly registered RESET_AT_ROLLOVER fields; defer during active encounters"
         },
         {
           "scope": "ACCOUNT",
-          "fields": "rollover receipt and banked daily entitlement",
+          "fields": "protected reserve, rollover receipt and banked daily entitlement",
           "ascension": "KEEP",
           "rollover": "KEEP except explicitly registered daily contracts; account/epoch receipt is never reset"
         }
       ],
-      "actions": "Commit encounter cost, apply rollover, configure reserve",
+      "actions": "Commit sealed encounter/activity cost, apply rollover, configure reserve, use daily charges, configure autocollection and execute bounded repeat plans",
       "permissions": "Authenticated owner intent; active-run/revision checks; INSTANCE participant or explicit shared consent; GUILD role and EVENT eligibility where applicable. Author/admin writes require separate least-privilege roles and audit. Queries filter secrets before projection/counting.",
       "authoring": {
         "status": "contract-required",
@@ -3900,9 +3900,18 @@
         "FEAT-0478B72266E999",
         "FEAT-02DA9FBBFEBBCE"
       ],
-      "implementation_status": "unassessed",
+      "implementation_status": "partial",
       "contract": "inherit-system",
-      "evidence": [],
+      "evidence": [
+        {
+          "path": "realms/docs/turns-rollover.md",
+          "finding": "v3 free/extended encounter costs and rest/activity previews are executable; future domain adapters remain."
+        },
+        {
+          "path": "realms/test/turn-planner.test.ts",
+          "finding": "Executable synthetic integration coverage; not a claim of complete source-section or production coverage."
+        }
+      ],
       "rule_assertions": {},
       "verification": null
     },
@@ -3920,9 +3929,18 @@
         "FEAT-B1BF381DD6D0C8",
         "FEAT-00B6E9237CF588"
       ],
-      "implementation_status": "unassessed",
+      "implementation_status": "partial",
       "contract": "inherit-system",
-      "evidence": [],
+      "evidence": [
+        {
+          "path": "realms/docs/turns-rollover.md",
+          "finding": "Entry/charge/ledger commit atomically and active instances block daily use/rest; broader interaction domains remain."
+        },
+        {
+          "path": "realms/test/turn-planner.test.ts",
+          "finding": "Executable synthetic integration coverage; not a claim of complete source-section or production coverage."
+        }
+      ],
       "rule_assertions": {},
       "verification": null
     },
@@ -3943,10 +3961,30 @@
         "FEAT-BAE40034190351",
         "FEAT-6F5FAA25923E37"
       ],
-      "implementation_status": "unassessed",
+      "implementation_status": "partial",
       "contract": "inherit-system",
-      "evidence": [],
-      "rule_assertions": {},
+      "evidence": [
+        {
+          "path": "realms/docs/turns-rollover.md",
+          "finding": "Grant/cap, DST/catch-up, deferral, policy receipts and forecasts are executable; production activation remains separate."
+        },
+        {
+          "path": "realms/test/turn-planner.test.ts",
+          "finding": "Executable synthetic integration coverage; not a claim of complete source-section or production coverage."
+        }
+      ],
+      "rule_assertions": {
+        "FEAT-C65AA66110352B": {
+          "disposition": "active",
+          "reason": "This specific rule has an executable authority/UI integration proof; the enclosing section remains partial.",
+          "assertions": [
+            {
+              "test": "realms/test/turn-planner.test.ts",
+              "name": "100/400 baseline, bonus over cap, chronological catch-up, banking and zero grant resets are durable"
+            }
+          ]
+        }
+      },
       "verification": null
     },
     {
@@ -3964,10 +4002,30 @@
         "FEAT-53DD1D0BD3AD7E",
         "FEAT-428FB6A506E6E1"
       ],
-      "implementation_status": "unassessed",
+      "implementation_status": "partial",
       "contract": "inherit-system",
-      "evidence": [],
-      "rule_assertions": {},
+      "evidence": [
+        {
+          "path": "realms/docs/turns-rollover.md",
+          "finding": "Bank/reset account charges, manual-use unlocking, deterministic autocollection and SQL reconciliation are executable; Home/training/production semantics remain."
+        },
+        {
+          "path": "realms/test/turn-planner.test.ts",
+          "finding": "Executable synthetic integration coverage; not a claim of complete source-section or production coverage."
+        }
+      ],
+      "rule_assertions": {
+        "FEAT-428FB6A506E6E1": {
+          "disposition": "active",
+          "reason": "This specific rule has an executable authority/UI integration proof; the enclosing section remains partial.",
+          "assertions": [
+            {
+              "test": "realms/test/turn-planner.test.ts",
+              "name": "daily use is atomic, finite, receipted and manual discovery is required for autocollection"
+            }
+          ]
+        }
+      },
       "verification": null
     },
     {
@@ -3985,9 +4043,18 @@
         "FEAT-74FB44CE813484",
         "FEAT-451498D4D51B72"
       ],
-      "implementation_status": "unassessed",
+      "implementation_status": "partial",
       "contract": "inherit-system",
-      "evidence": [],
+      "evidence": [
+        {
+          "path": "realms/docs/turns-rollover.md",
+          "finding": "Finite source charges gate free encounter/rest/interaction entry and expose counts/ceilings; competitive catalogs remain."
+        },
+        {
+          "path": "realms/test/turn-planner.test.ts",
+          "finding": "Executable synthetic integration coverage; not a claim of complete source-section or production coverage."
+        }
+      ],
       "rule_assertions": {},
       "verification": null
     },
@@ -4006,9 +4073,18 @@
         "FEAT-C978C32BB0F27D",
         "FEAT-B40991C23F5B47"
       ],
-      "implementation_status": "unassessed",
+      "implementation_status": "partial",
       "contract": "inherit-system",
-      "evidence": [],
+      "evidence": [
+        {
+          "path": "realms/docs/turns-rollover.md",
+          "finding": "Player reserve, forecast, daily balance, paginated ledger and repeat-plan UI are executable; cross-domain planner/Studio remains."
+        },
+        {
+          "path": "realms/test/turn-planner.test.ts",
+          "finding": "Executable synthetic integration coverage; not a claim of complete source-section or production coverage."
+        }
+      ],
       "rule_assertions": {},
       "verification": null
     },
@@ -4022,10 +4098,30 @@
         "FEAT-E9B67015C84AF8",
         "FEAT-223BD7D0CB3B4C"
       ],
-      "implementation_status": "unassessed",
+      "implementation_status": "partial",
       "contract": "inherit-system",
-      "evidence": [],
-      "rule_assertions": {},
+      "evidence": [
+        {
+          "path": "realms/docs/turns-rollover.md",
+          "finding": "Durable budgets, known interaction steps and reserve/HP/quantity/action/failure stops are executable; encounter automation deliberately requires manual attention."
+        },
+        {
+          "path": "realms/test/turn-planner.test.ts",
+          "finding": "Executable synthetic integration coverage; not a claim of complete source-section or production coverage."
+        }
+      ],
+      "rule_assertions": {
+        "FEAT-223BD7D0CB3B4C": {
+          "disposition": "active",
+          "reason": "This specific rule has an executable authority/UI integration proof; the enclosing section remains partial.",
+          "assertions": [
+            {
+              "test": "realms/test/turn-planner.test.ts",
+              "name": "server reserve enforcement rolls back all effects, binds confirmation to request and blocks API/automation bypass"
+            }
+          ]
+        }
+      },
       "verification": null
     },
     {
@@ -4039,9 +4135,18 @@
         "FEAT-371533476120CC",
         "FEAT-92FF51FDE29344"
       ],
-      "implementation_status": "unassessed",
+      "implementation_status": "partial",
       "contract": "inherit-system",
-      "evidence": [],
+      "evidence": [
+        {
+          "path": "realms/docs/turns-rollover.md",
+          "finding": "Paid/free Quick/Full Rest has pinned recovery, clocks and next-encounter replay; housing, companions and legacy duel rests remain."
+        },
+        {
+          "path": "realms/test/turn-planner.test.ts",
+          "finding": "Executable synthetic integration coverage; not a claim of complete source-section or production coverage."
+        }
+      ],
       "rule_assertions": {},
       "verification": null
     },
@@ -4054,9 +4159,18 @@
         "FEAT-9ED60910BE0DAF",
         "FEAT-F23342C5F85230"
       ],
-      "implementation_status": "unassessed",
+      "implementation_status": "partial",
       "contract": "inherit-system",
-      "evidence": [],
+      "evidence": [
+        {
+          "path": "realms/docs/turns-rollover.md",
+          "finding": "Release-pinned multi-day event baseline bonuses and UI forecast are executable; event gameplay remains separate."
+        },
+        {
+          "path": "realms/test/turn-planner.test.ts",
+          "finding": "Executable synthetic integration coverage; not a claim of complete source-section or production coverage."
+        }
+      ],
       "rule_assertions": {},
       "verification": null
     },
@@ -4077,9 +4191,18 @@
         "FEAT-5419E5AADE6FA3",
         "FEAT-1CA8E7428A98CE"
       ],
-      "implementation_status": "unassessed",
+      "implementation_status": "partial",
       "contract": "inherit-system",
-      "evidence": [],
+      "evidence": [
+        {
+          "path": "realms/docs/turns-rollover.md",
+          "finding": "Idempotency, Ascension carryover, overcap, stale/ambiguous requests and encounter deferral have executable proofs; broader domain edge coverage remains."
+        },
+        {
+          "path": "realms/test/turn-planner.test.ts",
+          "finding": "Executable synthetic integration coverage; not a claim of complete source-section or production coverage."
+        }
+      ],
       "rule_assertions": {},
       "verification": null
     },
@@ -4115,9 +4238,18 @@
         "FEAT-E88CAF290525B4",
         "FEAT-F778F9A16ADC24"
       ],
-      "implementation_status": "unassessed",
+      "implementation_status": "partial",
       "contract": "inherit-system",
-      "evidence": [],
+      "evidence": [
+        {
+          "path": "realms/docs/turns-rollover.md",
+          "finding": "Release-pinned grant/cap/weekdays/refresh policies support run variants; active Path selection/borrowing/weekly allocation remain."
+        },
+        {
+          "path": "realms/test/turn-planner.test.ts",
+          "finding": "Executable synthetic integration coverage; not a claim of complete source-section or production coverage."
+        }
+      ],
       "rule_assertions": {},
       "verification": null
     },
@@ -4137,9 +4269,18 @@
         "FEAT-799E89ABE287FD",
         "FEAT-518402D24F1353"
       ],
-      "implementation_status": "unassessed",
+      "implementation_status": "partial",
       "contract": "inherit-system",
-      "evidence": [],
+      "evidence": [
+        {
+          "path": "realms/docs/turns-rollover.md",
+          "finding": "Per-run gain/spend categories, free-use counts and paginated account history exist; full analytics/leaderboards remain."
+        },
+        {
+          "path": "realms/test/turn-planner.test.ts",
+          "finding": "Executable synthetic integration coverage; not a claim of complete source-section or production coverage."
+        }
+      ],
       "rule_assertions": {},
       "verification": null
     },
@@ -4176,9 +4317,18 @@
         "FEAT-2CA9F7BAC1E622",
         "FEAT-6F539B78C89C3C"
       ],
-      "implementation_status": "unassessed",
+      "implementation_status": "partial",
       "contract": "inherit-system",
-      "evidence": [],
+      "evidence": [
+        {
+          "path": "realms/docs/turns-rollover.md",
+          "finding": "Typed allowance, rest, v3 cost and rollover policy/event contracts are validated; complete activity taxonomy/Studio forms remain."
+        },
+        {
+          "path": "realms/test/turn-planner.test.ts",
+          "finding": "Executable synthetic integration coverage; not a claim of complete source-section or production coverage."
+        }
+      ],
       "rule_assertions": {},
       "verification": null
     },
@@ -4196,9 +4346,18 @@
         "FEAT-84BE215672462D",
         "FEAT-A769C44DD3502F"
       ],
-      "implementation_status": "unassessed",
+      "implementation_status": "partial",
       "contract": "inherit-system",
-      "evidence": [],
+      "evidence": [
+        {
+          "path": "realms/docs/turns-rollover.md",
+          "finding": "Player planner, review, reserve confirmation, lifecycle states and global Turn button exist; future domain and Studio workflows remain."
+        },
+        {
+          "path": "realms/test/turn-planner.test.ts",
+          "finding": "Executable synthetic integration coverage; not a claim of complete source-section or production coverage."
+        }
+      ],
       "rule_assertions": {},
       "verification": null
     },
@@ -4227,9 +4386,18 @@
         "FEAT-20F6C103F72AA4",
         "FEAT-17C702CF4F2192"
       ],
-      "implementation_status": "unassessed",
+      "implementation_status": "partial",
       "contract": "inherit-system",
-      "evidence": [],
+      "evidence": [
+        {
+          "path": "realms/docs/turns-rollover.md",
+          "finding": "Finite sources, source/release pins, server budgets and SQL allowance/rest reconciliation are executable; production balancing remains."
+        },
+        {
+          "path": "realms/test/turn-planner.test.ts",
+          "finding": "Executable synthetic integration coverage; not a claim of complete source-section or production coverage."
+        }
+      ],
       "rule_assertions": {},
       "verification": null
     },
@@ -4246,9 +4414,18 @@
         "FEAT-14FC81942C19D3",
         "FEAT-BC8D182AA040E1"
       ],
-      "implementation_status": "unassessed",
+      "implementation_status": "partial",
       "contract": "inherit-system",
-      "evidence": [],
+      "evidence": [
+        {
+          "path": "realms/docs/turns-rollover.md",
+          "finding": "Grant/cap/weekday/charge/bonus configuration is release-pinned and testable; live policy selection and balance simulation remain."
+        },
+        {
+          "path": "realms/test/turn-planner.test.ts",
+          "finding": "Executable synthetic integration coverage; not a claim of complete source-section or production coverage."
+        }
+      ],
       "rule_assertions": {},
       "verification": null
     },
@@ -4270,9 +4447,18 @@
         "FEAT-BD8370A53F00BA",
         "FEAT-3CF4AB542BD6CE"
       ],
-      "implementation_status": "unassessed",
+      "implementation_status": "partial",
       "contract": "inherit-system",
-      "evidence": [],
+      "evidence": [
+        {
+          "path": "realms/docs/turns-rollover.md",
+          "finding": "Shared action/rest/encounter/scheduler/Ascension integrations exist; food/Home/training/Guild/Path owners remain."
+        },
+        {
+          "path": "realms/test/turn-planner.test.ts",
+          "finding": "Executable synthetic integration coverage; not a claim of complete source-section or production coverage."
+        }
+      ],
       "rule_assertions": {},
       "verification": null
     },

@@ -1,3 +1,4 @@
+import { turnFixture } from '../client/dev/turn-fixture.js';
 import { iconCatalog } from '../client/icons.js';
 import { knownSpecializations,abilityCostText } from '../client/character-presentation-model.js';
 import { equipmentSlotPresentation } from '../client/equipment-presentation.js';
@@ -53,12 +54,14 @@ test('public page links support direct loads while unknown routes stay unavailab
  }finally{await app.close();}
 });
 function harness(authMode:'development'|'sessions'='development'){
+ let turnsRead:((path:string)=>Promise<Response>)|null=null;
  let bookRead:((path:string)=>Promise<Response>)|null=null;
  let advancementRead:((path:string)=>Promise<Response>)|null=null;
  let inventoryRead:(path:string)=>Promise<Response>=async()=>json({revision,runId,items:[],total:0,offset:0,pageSize:48,containers:[],hasMoreContainers:false,preferences:{autoStoreMaterials:false,autoOverflow:false}});
  let revision=0,canWrite=true,runId='run',status='ACTIVE',post:(path:string,init:RequestInit)=>Promise<Response>=async(path)=>json(path.endsWith('/login')?{token:'private-token'}:{}),readsFail=false;
  const calls:{path:string;init:RequestInit}[]=[];
  const fetcher:Fetcher=async(path,init={})=>{calls.push({path,init});if(init.method==='POST')return post(path,init);
+  if(turnsRead&&path.startsWith('/api/v1/turns?'))return turnsRead(path);
   if(bookRead&&(path.startsWith('/api/v1/character/')||path.startsWith('/api/v1/equipment/preview')))return bookRead(path);
   if(advancementRead&&path.startsWith('/api/v1/progression/'))return advancementRead(path);
   if(path.startsWith('/api/v1/inventory?'))return inventoryRead(path);
@@ -71,7 +74,7 @@ function harness(authMode:'development'|'sessions'='development'){
   throw Error(`Unexpected request ${path}`);
  };
  const session=new GameSession(new ApiClient(fetcher),()=> '11111111-1111-4111-8111-111111111111');
- return {session,calls,setBookRead:(read:(path:string)=>Promise<Response>)=>{bookRead=read;},setAdvancementRead:(read:(path:string)=>Promise<Response>)=>{advancementRead=read;},setInventoryRead:(read:(path:string)=>Promise<Response>)=>{inventoryRead=read;},setStatus:(s:string)=>{status=s;},setRun:(r:string)=>{runId=r;},setRevision:(n:number)=>{revision=n;},setWrite:(value:boolean)=>{canWrite=value;},setPost:(fn:typeof post)=>{post=fn;},setReadFailure:(value:boolean)=>{readsFail=value;}};
+ return {session,calls,setTurnsRead:(read:(path:string)=>Promise<Response>)=>{turnsRead=read;},setBookRead:(read:(path:string)=>Promise<Response>)=>{bookRead=read;},setAdvancementRead:(read:(path:string)=>Promise<Response>)=>{advancementRead=read;},setInventoryRead:(read:(path:string)=>Promise<Response>)=>{inventoryRead=read;},setStatus:(s:string)=>{status=s;},setRun:(r:string)=>{runId=r;},setRevision:(n:number)=>{revision=n;},setWrite:(value:boolean)=>{canWrite=value;},setPost:(fn:typeof post)=>{post=fn;},setReadFailure:(value:boolean)=>{readsFail=value;}};
 }
 async function connect(h:ReturnType<typeof harness>){await h.session.initialize();await h.session.connect({token:'private-token'});assert.ok(h.session.snapshot);}
 test('transport confines credentials to same-origin headers and normalizes malformed and unreachable responses',async()=>{
@@ -505,4 +508,19 @@ test('shared ink motifs remain bounded local vector paths across all feature fam
  for(const attr of ['strength','dexterity','constitution','intelligence','wisdom','charisma','luck'])assert.ok(Object.hasOwn(iconCatalog.character,attr));
  for(const status of ['favorite','new','locked','equipped','durability','collection'])assert.ok(Object.hasOwn(iconCatalog.status,status));
  for(const name of ['health','mana','warning','success','error','weight','journal'])assert.ok(Object.hasOwn(iconCatalog.common,name));
+});
+
+test('Turns planner rejects mixed revisions and forgets delayed account data after sign out',async()=>{
+ const h=harness();await connect(h);const view=turnFixture(h.session.snapshot!);h.setTurnsRead(async()=>json({...view,revision:1}));await h.session.loadTurns();assert.equal(h.session.turns,null);assert.match(h.session.turnsError!,/game changed/i);
+ let finish!:(r:Response)=>void;h.setTurnsRead(()=>new Promise(r=>finish=r));const pending=h.session.loadTurns();await h.session.logout();finish(json(view));await pending;assert.equal(h.session.turns,null);assert.equal(h.session.turnsBusy,false);assert.equal(h.session.snapshot,null);
+});
+test('reserve warning preserves the original intent and only explicit confirmation adds permission',async()=>{
+ const h=harness();await connect(h);h.setPost(async()=>json({error:'TURN_RESERVE_CONFIRMATION_REQUIRED'},409));await h.session.action('/api/v1/rules/interaction','RESOLVE_RULE_INTERACTION',{entityId:'activity.work'});assert.equal(h.session.pending,null);assert.equal(h.session.reserveAction?.parameters.entityId,'activity.work');assert.equal(h.calls.filter(c=>c.init.method==='POST').length,1);
+ h.setPost(async()=>{h.setRevision(1);return json({revision:1});});await h.session.confirmReserveAction();const body=JSON.parse(String(h.calls.filter(c=>c.init.method==='POST').at(-1)!.init.body));assert.equal(body.confirmReserve,true);assert.equal(body.entityId,'activity.work');assert.equal(body.expectedRevision,0);assert.equal(h.session.reserveAction,null);
+});
+test('repeat plans stop on an uncertain response and retain one exact retry intent',async()=>{
+ const h=harness();await connect(h);const view=turnFixture(h.session.snapshot!);view.plans[0]!.status='ACTIVE';h.setTurnsRead(async()=>json(view));await h.session.loadTurns();h.setPost(async()=>{throw Error('reply lost');});await h.session.runTurnPlan(view.plans[0]!.id);assert.equal(h.calls.filter(c=>c.init.method==='POST').length,1);assert.equal(h.session.runningTurnPlan,null);assert.equal(h.session.pending?.body.actionType,'STEP_TURN_PLAN');assert.equal(h.session.pending?.body.planId,view.plans[0]!.id);assert.match(h.session.notice.text,/may have completed/);
+});
+test('Turns navigation is stable and saved repeat drafts clear between accounts',async()=>{
+ const h=harness();await connect(h);assert.equal(shellChapter('daily'),'Turns & daily planner');assert.equal(shellNavigationPage('daily'),'adventure');h.session.turnPlanDraft={runId:'run',entityId:'activity.work',maxTurns:10,maxActions:5,minHealth:0,targetItemId:'',targetQuantity:1};await h.session.logout();assert.equal(h.session.turnPlanDraft,null);assert.equal(h.session.reserveAction,null);assert.equal(h.session.runningTurnPlan,null);
 });

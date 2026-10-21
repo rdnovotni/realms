@@ -1,3 +1,6 @@
+import { validateTurnPolicies } from './turn-policy.js';
+import { validateTurnRests } from './turn-rests.js';
+import { validateDailyContent } from './daily-content.js';
 import { validateInventoryServices } from './inventory-services-content.js';
 import { validateInventoryContent } from './inventory-rules.js';
 import { validateSharedContent } from '../rules/content.js';
@@ -52,6 +55,9 @@ export function validateContent(input:unknown): asserts input is ContentPackage 
   if (!validate(input)) throw new DomainError(400,'INVALID_CONTENT_PACKAGE');
   const pkg=input as ContentPackage, entities=new Map(pkg.entities.map(e=>[e.id,e]));
   validateSharedContent(entities);
+  validateDailyContent(entities);
+  validateTurnRests(entities);
+  validateTurnPolicies(entities);
   validateInventoryContent(entities);
   validateInventoryServices(entities);
   validateFeatContent(entities);

@@ -46,7 +46,7 @@ export function validateTacticalContent(entity:ContentEntity,entities:Map<string
  }
  if(m?.tacticalUnit!==undefined){if(!['NPC','MONSTER'].includes(entity.kind))throw new DomainError(400,'INVALID_TACTICAL_TEMPLATE_KIND');validateTacticalTemplate(m.tacticalUnit);}
  if(m?.tacticalCombat===undefined)return;
- if(entity.kind!=='ENCOUNTER'||m.combat!==undefined||typeof m.characterProfileId!=='string'||(m.encounter as {version?:number})?.version!==2)throw new DomainError(400,'INVALID_TACTICAL_ENCOUNTER');
+ if(entity.kind!=='ENCOUNTER'||m.combat!==undefined||typeof m.characterProfileId!=='string'||![2,3].includes((m.encounter as {version:number})?.version)||!(m.encounter as {lootTableId?:string})?.lootTableId)throw new DomainError(400,'INVALID_TACTICAL_ENCOUNTER');
  validateTacticalSpec(m.tacticalCombat);const s=m.tacticalCombat;
  const profile=entities.get(m.characterProfileId)?.definition.mechanics?.characterProfile as unknown as {base:CharacterStats};
  if(!profile||s.failure.recoveryHealth>profile.base.maxHealth)throw new DomainError(400,'INVALID_TACTICAL_RECOVERY');

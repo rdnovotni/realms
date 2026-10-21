@@ -48,5 +48,13 @@
   "/api/v1/tactical/shared/:id/invitation",
   "/api/v1/tactical/shared/actions",
   "/api/v1/tactical/shared/create",
-  "/api/v1/tactical/start"
+  "/api/v1/tactical/start",
+  "/api/v1/turns",
+  "/api/v1/turns/daily/auto-collect",
+  "/api/v1/turns/daily/use",
+  "/api/v1/turns/plans",
+  "/api/v1/turns/plans/step",
+  "/api/v1/turns/plans/stop",
+  "/api/v1/turns/reserve",
+  "/api/v1/turns/rollover"
 ]

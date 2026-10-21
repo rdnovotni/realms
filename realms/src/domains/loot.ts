@@ -36,7 +36,7 @@ export function validateLootReferences(entity:ContentEntity,entities:Map<string,
     }
   }
   const encounter=entity.definition.mechanics?.encounter as {version?:number;lootTableId?:string}|undefined;
-  if(entity.kind==='ENCOUNTER' && encounter?.version===2){
+  if(entity.kind==='ENCOUNTER' && (encounter?.version===2||(encounter?.version===3&&encounter.lootTableId!==undefined))){
     const table=entities.get(encounter.lootTableId!);
     if(!table || table.kind!=='LOOT_TABLE' || !entity.definition.dependencies.includes(table.id)) throw new DomainError(400,'INVALID_ENCOUNTER_LOOT_REFERENCE');
     validateLootSpec(table.definition.mechanics?.loot);
@@ -47,7 +47,7 @@ async function definition(context:ActionContext,id:string){
   const checkpoint=await encounterCheckpoint(context,id);
   const row=(await context.client.query(`SELECT e.*,v.definition->'mechanics'->'encounter' AS spec FROM encounter_records e
     JOIN content_versions v ON v.entity_id=e.definition_id AND v.revision=e.definition_revision WHERE e.instance_id=$1`,[id])).rows[0];
-  if(row.spec?.version!==2) throw new DomainError(409,'AUTHORED_LOOT_REQUIRED');
+  if(![2,3].includes(row.spec?.version)||!row.spec?.lootTableId) throw new DomainError(409,'AUTHORED_LOOT_REQUIRED');
   return {...row,checkpoint};
 }
 async function commitLoot(context:ActionContext,id:string){
