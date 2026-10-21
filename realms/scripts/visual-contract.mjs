@@ -24,7 +24,7 @@ export function checkReports(reports,manifest){
  for(const {scene,mode,width} of requiredVisualCases())assert.ok(reports.some(r=>r.scene===scene&&r.mode===mode&&r.viewport.width===width),scene+': missing '+mode+' '+width+'px case');
 }
 if(process.argv[1]===fileURLToPath(import.meta.url)){
- const actualIndex=process.argv.indexOf('--actual'),path=actualIndex>=0?process.argv[actualIndex+1]:'docs/screenshots/vis-07/browser-contracts.json';assert.ok(path,'Supply --actual report.json');
+ const actualIndex=process.argv.indexOf('--actual'),path=actualIndex>=0?process.argv[actualIndex+1]:'docs/screenshots/turns-rollover/browser-contracts.json';assert.ok(path,'Supply --actual report.json');
  const reports=JSON.parse(readFileSync(new URL(path,root),'utf8')),manifest=visualManifest();checkReports(reports,manifest);
  console.log(`Visual contract: ${reports.length} recorded browser checks match ${manifest.files} current visual sources/fixtures. ${actualIndex>=0?'Fresh report validated.':'Stored baseline validated; this command does not launch a browser or compare pixels.'}`);
 }

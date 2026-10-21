@@ -36,7 +36,7 @@ A reserve rejection rolls the entire attempted action back. The UI retains that 
 | Monetization, §18 | No purchase, exchange, premium-collection or player-selected grant endpoint is introduced | Continue the existing policy review as commerce is built |
 | Authoring/interfaces, §§19/23 | Typed validation, immutable releases, cost previews, authority, scoped preferences, reset clocks, append-only ledgers and least-privilege grants | Studio forms and actual Food/Booze/Alchemical Load, Home, training, crafting, Guild and Path integrations |
 
-The focused integration suite is `test/turn-planner.test.ts`; scheduler/DST, Ascension, encounter, loot, tactical/shared and historical-upgrade suites remain regression gates. Browser fixtures include planner normal, deferred rollover, confirmation, loading, error and read-only states in addition to existing screens. Fresh capture of the complete 234-case current-source matrix is a pending merge gate; see [visual QA](visual-qa.md) for its status and device limits.
+The focused integration suite is `test/turn-planner.test.ts`; scheduler/DST, Ascension, encounter, loot, tactical/shared and historical-upgrade suites remain regression gates. Browser fixtures include planner normal, deferred rollover, confirmation, loading, error and read-only states in addition to existing screens. All 234 cases in the complete current-source matrix passed on October 21; see [visual QA](visual-qa.md) for its status and device limits.
 
 ## Authoring contracts
 

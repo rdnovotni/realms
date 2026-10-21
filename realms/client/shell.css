@@ -7,16 +7,16 @@
   padding-bottom: env(safe-area-inset-bottom);
 }
 .game-shell>.topbar { display: block; padding: 0; border-bottom: 3px double var(--folio-brass); box-shadow: 0 3px 12px var(--folio-page-edge); }
-.shell-bar { max-width: 1660px; margin: auto; display: grid; grid-template-columns: auto minmax(0,1fr) auto; align-items: center; gap: var(--folio-space-6); padding: var(--folio-space-4) max(var(--folio-space-5),env(safe-area-inset-right)) var(--folio-space-4) max(var(--folio-space-5),env(safe-area-inset-left)); }
-.shell-brand { display: flex; align-items: center; gap: var(--folio-space-3); min-width: 0; }
+.shell-bar { max-width: 1660px; margin: auto; display: flex; flex-wrap: wrap; align-items: center; gap: var(--folio-space-6); padding: var(--folio-space-4) max(var(--folio-space-5),env(safe-area-inset-right)) var(--folio-space-4) max(var(--folio-space-5),env(safe-area-inset-left)); }
+.shell-brand { flex: 1 1 max-content; display: flex; align-items: center; gap: var(--folio-space-3); min-width: 0; }
 .shell-brand>.shell-icon { width: 38px; height: 38px; color: var(--folio-on-dark-muted); }
 .game-shell .wordmark { font-size: clamp(1.45rem,2.6vw,2rem); line-height: 1.1; letter-spacing: .09em; min-width: 0; overflow-wrap: anywhere; }
 .game-shell .wordmark small { font-size: .6rem; letter-spacing: .16em; margin-top: var(--folio-space-2); }
-.game-shell .topbar .shell-navigation { display: flex; justify-content: center; gap: var(--folio-space-2); flex: initial; min-width: 0; overflow: visible; }
+.game-shell .topbar .shell-navigation { display: flex; justify-content: center; gap: var(--folio-space-2); flex: 1 1 max-content; min-width: 0; overflow: visible; }
 .game-shell .shell-navigation button { position: relative; padding: .65rem 1rem; border-radius: var(--folio-radius-sm); border: 1px solid transparent; font-weight: 600; min-height: 44px; }
 .game-shell .topbar .shell-navigation button[aria-current=page] { background: var(--folio-surface); color: var(--folio-text); border-color: var(--folio-brass); text-decoration: underline; text-underline-offset: .3em; }
 .game-shell .topbar .shell-navigation button:not([aria-current=page]):hover:enabled { color: var(--folio-on-dark); background: var(--folio-nav-hover); border-color: var(--folio-brass); }
-.shell-utility { display: grid; justify-items: end; gap: var(--folio-space-1); min-width: 0; }
+.shell-utility { flex: 1 1 max-content; display: grid; justify-items: end; gap: var(--folio-space-1); min-width: 0; }
 .game-shell .topbar .connection { display: block; font-size: .72rem; color: var(--folio-on-dark-muted); overflow-wrap: anywhere; }
 .game-shell .topbar .connection::before { content: ''; display: inline-block; width: 6px; height: 6px; margin-right: .5rem; border: 1px solid currentColor; transform: rotate(45deg); }
 .game-shell .topbar .shell-readonly { font-weight: 700; text-decoration: underline; text-underline-offset: .2em; }
@@ -58,7 +58,7 @@
   .game-shell .shell-navigation button { padding-inline: .7rem; }
 }
 @media(max-width:1050px) {
-  .shell-bar { grid-template-columns: minmax(0,1fr) auto; gap: var(--folio-space-3); }
+  .shell-bar { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: var(--folio-space-3); }
   .game-shell .topbar .shell-navigation { grid-column: 1/-1; grid-row: 2; justify-content: start; }
   .game-shell .shell-navigation button { min-width: 100px; }
   .game-shell .layout { padding: var(--folio-space-4); gap: var(--folio-space-4); }
