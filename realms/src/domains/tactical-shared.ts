@@ -37,7 +37,8 @@ async function ready(c:ActionContext,id:string,spec:TacticalSpec){
  const initial={engine:'SHARED_READY_V1',rules:spec.rules,state:{units:[unit]}};
  await c.client.query('INSERT INTO shared_tactical_members(session_id,run_id,account_id,instance_id,unit_id,seat,action_id,previous_instance_id,initial_checkpoint,rest_event_id) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)',[id,c.run.id,c.accountId,started.instanceId,unitId,members.length,c.actionId,previous?.last_instance_id??null,initial,await lastRest(c.client,c.run.id,previous?.last_instance_id)]);
  await c.client.query('INSERT INTO tactical_run_state(run_id,health,mana,last_instance_id) VALUES($1,$2,$3,$4) ON CONFLICT(run_id) DO UPDATE SET health=EXCLUDED.health,mana=EXCLUDED.mana,last_instance_id=EXCLUDED.last_instance_id',[c.run.id,unit.health,unit.mana,started.instanceId]);
- return {sessionId:id,instanceId:started.instanceId,unitId,turnCost:1,revision:await advanceRevision(c)};
+ const entry=(await c.client.query('SELECT turn_cost FROM encounter_records WHERE instance_id=$1',[started.instanceId])).rows[0];
+ return {sessionId:id,instanceId:started.instanceId,unitId,turnCost:entry.turn_cost,revision:await advanceRevision(c)};
 }
 /** Readiness spends the disclosed entry Turn and pins personal loot and build.
  * The session id is an invitation; it never authorizes another account's run. */
@@ -123,15 +124,15 @@ export function cancelSharedTactical(pool:pg.Pool,accountId:string,envelope:Enve
  await c.client.query("UPDATE shared_tactical_sessions SET lifecycle='CANCELLED',checkpoint=$2 WHERE id=$1",[id,checkpoint]);return {sessionId:id,outcome:'RETREAT',entryTurnRefund:0,revision:await advanceRevision(c)};
  },key(id));}
 export async function sharedTacticalView(pool:pg.Pool,accountId:string,id:string){
- const s=(await pool.query('SELECT s.*,m.unit_id,m.instance_id,r.revision AS run_revision FROM shared_tactical_sessions s JOIN shared_tactical_members m ON m.session_id=s.id JOIN runs r ON r.id=m.run_id WHERE s.id=$1 AND m.account_id=$2',[id,accountId])).rows[0];if(!s)throw new DomainError(404,'SHARED_TACTICAL_NOT_FOUND');
+ const s=(await pool.query('SELECT s.*,m.unit_id,m.instance_id,e.turn_cost AS entry_turn_cost,r.revision AS run_revision FROM shared_tactical_sessions s JOIN shared_tactical_members m ON m.session_id=s.id JOIN encounter_records e ON e.instance_id=m.instance_id JOIN runs r ON r.id=m.run_id WHERE s.id=$1 AND m.account_id=$2',[id,accountId])).rows[0];if(!s)throw new DomainError(404,'SHARED_TACTICAL_NOT_FOUND');
  const members=(await pool.query('SELECT m.unit_id,m.seat,claims.instance_id IS NOT NULL AS claimed FROM shared_tactical_members m LEFT JOIN shared_tactical_claims claims ON claims.instance_id=m.instance_id WHERE m.session_id=$1 ORDER BY seat',[id])).rows;
  const recovery=(await pool.query('SELECT health,mana,turn_cost,destination FROM tactical_recoveries WHERE instance_id=$1',[s.instance_id])).rows[0];
- return {recovery:recovery?{health:recovery.health,mana:recovery.mana,turnCost:recovery.turn_cost,destination:recovery.destination,...await failureCostsView(pool,s.instance_id)}:null,sessionId:id,instanceId:s.instance_id,unitId:s.unit_id,lifecycle:s.lifecycle,members,revision:s.run_revision,...(s.checkpoint?tacticalPublic(s.checkpoint.state,s.revision,s.spec):{entryTurnCost:1,loot:'PERSONAL',failureContract:s.spec.failure})};
+ return {recovery:recovery?{health:recovery.health,mana:recovery.mana,turnCost:recovery.turn_cost,destination:recovery.destination,...await failureCostsView(pool,s.instance_id)}:null,sessionId:id,instanceId:s.instance_id,unitId:s.unit_id,lifecycle:s.lifecycle,members,revision:s.run_revision,...(s.checkpoint?tacticalPublic(s.checkpoint.state,s.revision,s.spec):{entryTurnCost:s.entry_turn_cost,loot:'PERSONAL',failureContract:s.spec.failure})};
 }
 /** A discovered invitation exposes its commitment before the player spends a
  * Turn or locks a build. It exposes no other player's account or hidden stats. */
 export async function sharedInvitationView(pool:pg.Pool,accountId:string,id:string){
- const s=(await pool.query(`SELECT s.*,r.revision AS run_revision FROM shared_tactical_sessions s JOIN runs r ON r.content_release_id=s.release_id AND r.status IN('ACTIVE','AFTERCORE') JOIN characters c ON c.id=r.character_id AND c.account_id=$2 JOIN discoveries d ON d.account_id=c.account_id AND d.entity_id=s.definition_id WHERE s.id=$1`,[id,accountId])).rows[0];if(!s)throw new DomainError(404,'SHARED_TACTICAL_NOT_FOUND');
+ const s=(await pool.query(`SELECT s.*,(v.definition->'mechanics'->'encounter'->>'turnCost')::integer AS entry_turn_cost,r.revision AS run_revision FROM shared_tactical_sessions s JOIN release_entries e ON e.release_id=s.release_id AND e.entity_id=s.definition_id JOIN content_versions v ON v.entity_id=e.entity_id AND v.revision=e.revision JOIN runs r ON r.content_release_id=s.release_id AND r.status IN('ACTIVE','AFTERCORE') JOIN characters c ON c.id=r.character_id AND c.account_id=$2 JOIN discoveries d ON d.account_id=c.account_id AND d.entity_id=s.definition_id WHERE s.id=$1`,[id,accountId])).rows[0];if(!s)throw new DomainError(404,'SHARED_TACTICAL_NOT_FOUND');
  const count=(await pool.query('SELECT count(*)::integer n FROM shared_tactical_members WHERE session_id=$1',[id])).rows[0].n;
- return {sessionId:id,definitionId:s.definition_id,lifecycle:s.lifecycle,playersReady:count,maximumPlayers:s.spec.sharedCombat.maximumPlayers,entryTurnCost:1,cancellationTurnRefund:0,loot:'PERSONAL',failureContract:s.spec.failure,partyWithdrawal:'CURRENT_ACTOR',harmfulAllyActions:'DISALLOWED',revision:s.run_revision};
+ return {sessionId:id,definitionId:s.definition_id,lifecycle:s.lifecycle,playersReady:count,maximumPlayers:s.spec.sharedCombat.maximumPlayers,entryTurnCost:s.entry_turn_cost,cancellationTurnRefund:0,loot:'PERSONAL',failureContract:s.spec.failure,partyWithdrawal:'CURRENT_ACTOR',harmfulAllyActions:'DISALLOWED',revision:s.run_revision};
 }
