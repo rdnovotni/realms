@@ -22,6 +22,7 @@
     "scripts/character-folio-preview.ts",
     "scripts/visual-preview.ts",
     "scripts/capture-visual-fixtures.ts",
-    "scripts/turns-preview.ts"
+    "scripts/turns-preview.ts",
+    "scripts/consumption-preview.ts"
   ]
 }

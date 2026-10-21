@@ -8,8 +8,9 @@ export function failureSummary(f:Failure){return `Defeat: ${label(f.destination)
 /** Existing entry gates, projected into explicit text; server still validates entry. */
 export function adventureAvailability(s:Snapshot,cost:number,disabled:boolean){
  const carrying=['OVERLOADED','UNMEASURED'].includes(s.game.carry?.state??'');
- const unavailable=carrying||disabled||s.game.run.turns<cost||s.progression.build.mode!=='CONFIGURED';
- return {unavailable,label:!unavailable?'Available':!s.game.canWrite?'View only':carrying?'Carrying restriction':s.progression.build.mode!=='CONFIGURED'?'Starting build required':s.game.run.turns<cost?'Insufficient Turns':'Temporarily unavailable',reason:!unavailable?'Ready to enter.':!s.game.canWrite?'This session is view only.':carrying?'Manage your carrying load in Pack before entering.':s.progression.build.mode!=='CONFIGURED'?'Choose your starting build first.':s.game.run.turns<cost?'You need more Turns.':'Wait for the current action or refresh to reconnect.'};
+ const intoxicated=s.game.overdrunk===true&&cost>0;
+ const unavailable=intoxicated||carrying||disabled||s.game.run.turns<cost||s.progression.build.mode!=='CONFIGURED';
+ return {unavailable,label:!unavailable?'Available':!s.game.canWrite?'View only':carrying?'Carrying restriction':s.progression.build.mode!=='CONFIGURED'?'Starting build required':intoxicated?'Overdrunk':s.game.run.turns<cost?'Insufficient Turns':'Temporarily unavailable',reason:!unavailable?'Ready to enter.':!s.game.canWrite?'This session is view only.':carrying?'Manage your carrying load in Pack before entering.':s.progression.build.mode!=='CONFIGURED'?'Choose your starting build first.':intoxicated?'Wait for Drunkenness to clear before starting a Turn-consuming adventure. Free management remains available.':s.game.run.turns<cost?'You need more Turns.':'Wait for the current action or refresh to reconnect.'};
 }
 export function combatTurn(b:Tactical,readOnly:boolean){
  const actor=b.units.find(u=>u.id===b.currentActor),server=actor?.side==='ENEMY'||b.partyCapabilities.find(c=>c.id===b.currentActor)?.control==='SERVER';

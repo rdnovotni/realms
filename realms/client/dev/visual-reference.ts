@@ -1,3 +1,6 @@
+import { consumptionFixture,nightcapFixture,mealFixture } from './consumption-fixture.js';
+import { openItemUse } from '../inventory-services.js';
+import { reviewMeal } from '../consumption.js';
 import { turnFixture } from './turn-fixture.js';
 /** Development-only frozen public projections. Not served by production registerClient. */
 import { GameSession } from '../session.js';
@@ -7,14 +10,15 @@ import { openItemComparison } from '../item-comparison.js';
 import { openAppearance,applyAppearance } from '../appearance.js';
 import type { Snapshot,InventoryPage,Advancement,EquipmentPreview,AbilityBook,AdvancementHistory,CharacterSection } from '../types.js';
 type Fixture={schemaVersion:number;snapshot:Snapshot;inventory:InventoryPage|null;advancement:Advancement|null;equipmentPreview:EquipmentPreview|null;characterStats:EquipmentPreview|null;abilityBook:AbilityBook|null;characterHistory:AdvancementHistory|null};
-const scenes=['overview','progression','abilities','statistics','history','inventory','paperdoll','inspector','comparison','loadouts','adventure','combat','dialog','empty','loading','error','setup','stress','daily','daily-waiting','daily-confirmation','daily-loading','daily-error','daily-readonly'];
+const scenes=['overview','progression','abilities','statistics','history','inventory','paperdoll','inspector','comparison','loadouts','adventure','combat','dialog','empty','loading','error','setup','stress','daily','daily-waiting','daily-confirmation','daily-loading','daily-error','daily-readonly','consumption','consumption-overdrunk','consumption-empty','consumption-loading','consumption-error','consumption-readonly','consumption-running','consumption-nightcap','consumption-meal','adventure-overdrunk'];
 const url=new URL(location.href),scene=url.searchParams.get('scene')??'overview',mode=url.searchParams.get('mode')??'normal';
-const name=scene==='setup'?'setup':scene==='adventure'?'adventure':['inventory','paperdoll','inspector','comparison','loadouts','empty','loading','error'].includes(scene)?'pack':['adventure','combat','setup'].includes(scene)?'combat':'character';
+const name=scene==='setup'?'setup':scene.startsWith('adventure')?'adventure':['inventory','paperdoll','inspector','comparison','loadouts','empty','loading','error'].includes(scene)?'pack':['adventure','combat','setup'].includes(scene)?'combat':'character';
 const response=await fetch('/dev/fixture/'+name);if(!response.ok)throw Error('Start the frozen visual reference server');const fixture:Fixture=await response.json();
 const manifest=await (await fetch('/dev/manifest')).json() as {sha256:string};
 if(fixture.schemaVersion!==1)throw Error('Unsupported visual fixture');
 const root=document.getElementById('app')!;
 const readModels:Record<string,unknown>={
+ '/api/v1/inventory/use-preview':nightcapFixture(fixture.snapshot),'/api/v1/consumption/meals/preview':mealFixture(fixture.snapshot),
  '/api/v1/client/state':fixture.snapshot.game,'/api/v1/progression':fixture.snapshot.progression,
  '/api/v1/progression/options':fixture.snapshot.options,'/api/v1/inventory':fixture.inventory,
  '/api/v1/equipment/preview':fixture.equipmentPreview,'/api/v1/character/abilities':fixture.abilityBook,'/api/v1/character/history':fixture.characterHistory,
@@ -33,7 +37,15 @@ if(scene==='daily-confirmation')session.reserveAction={path:'/api/v1/rules/inter
 if(scene==='daily-loading'){session.turns=null;session.turnsBusy=true;}
 if(scene==='daily-error'){session.turns=null;session.turnsError='Daily plan could not be loaded. Refresh to reconnect.';}
 if(scene==='daily-readonly'){session.snapshot.game.canWrite=false;session.reserveAction={path:'/api/v1/rules/interaction',type:'RESOLVE_RULE_INTERACTION',parameters:{entityId:'activity.quick'}};}
-let screen:Screen=scene.startsWith('daily')?'daily':['inventory','paperdoll','inspector','comparison','loadouts','empty','loading','error'].includes(scene)?'pack':scene==='adventure'?'adventure':scene==='combat'?'combat':'character';
+if(scene.startsWith('consumption'))session.consumption=consumptionFixture(session.snapshot);
+if(scene==='consumption-overdrunk'){session.snapshot.game.overdrunk=true;session.consumption!.overdrunk=true;session.consumption!.balance.drunkenness=18;session.consumption!.undoEventId='123';}
+if(scene==='consumption-empty'){session.consumption!.items=[];session.consumption!.plans=[];session.consumption!.executions=[];}
+if(scene==='consumption-loading'){session.consumption=null;session.consumptionBusy=true;}
+if(scene==='consumption-error'){session.consumption=null;session.consumptionError='Your consumable planner could not be loaded. Refresh to reconnect.';}
+if(scene==='consumption-readonly')session.snapshot.game.canWrite=false;
+if(scene==='consumption-running'){session.consumption!.executions[0]!.status='ACTIVE';session.consumption!.executions[0]!.stopReason=null;session.runningMeal=session.consumption!.executions[0]!.id;}
+if(scene==='adventure-overdrunk')session.snapshot.game.overdrunk=true;
+let screen:Screen=scene.startsWith('consumption')?'consumption':scene.startsWith('daily')?'daily':['inventory','paperdoll','inspector','comparison','loadouts','empty','loading','error'].includes(scene)?'pack':scene.startsWith('adventure')?'adventure':scene==='combat'?'combat':'character';
 if(['overview','progression','abilities','statistics','history'].includes(scene))session.characterSection=scene as CharacterSection;
 if(scene==='stress'){
  session.characterSection='progression';
@@ -90,5 +102,7 @@ const runAudit=()=>{
 };audit.addEventListener('click',runAudit);const details=document.createElement('details'),summary=document.createElement('summary');summary.textContent='Browser contract report';details.append(summary,output);const exportReports=document.createElement('button');exportReports.type='button';exportReports.textContent='Export captured browser reports';exportReports.addEventListener('click',()=>{const blob=new Blob([JSON.stringify([...captured.values()],null,2)+'\n'],{type:'application/json'}),href=URL.createObjectURL(blob),link=document.createElement('a');link.href=href;link.download='browser-contracts.json';link.click();setTimeout(()=>URL.revokeObjectURL(href),1000);});bar.append(audit,exportReports,details);document.body.insertBefore(bar,root);
 if(scene==='comparison'&&selected)openItemComparison(session,selected);
 if(scene==='dialog')openAppearance();
+if(scene==='consumption-nightcap')await openItemUse(session,{id:'00000000-0000-4000-8000-000000000102',useKind:'USE'});
+if(scene==='consumption-meal')await reviewMeal(session,'00000000-0000-4000-8000-000000000201');
 
 requestAnimationFrame(runAudit);

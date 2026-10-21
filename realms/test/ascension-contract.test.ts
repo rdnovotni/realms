@@ -1,3 +1,4 @@
+import { seedLegacyConsumption } from './helpers.js';
 import { assertLifetimeFields } from '../src/domains/lifetime-fields.js';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -27,7 +28,7 @@ test('campaign → preview → Ascend → rebuild → replay preserves knowledge
     await registerContract(client,{key,ownerModule:'fixtures',scopeKind:'RUN',resetPolicy,ascensionPolicy,schema:integer,defaultValue:0});await writeState(client,'fixtures',scope,key,3,null);
    }
   });
-  await db.pool.query('UPDATE run_consumption SET fullness=6,drunkenness=4,tolerance=2 WHERE run_id=$1',[f.run]);
+  await seedLegacyConsumption(db.pool,f.run,{fullness:6,drunkenness:4,tolerance:2});
   const first=await win(db.pool,f.account,f.revision),final=await win(db.pool,f.account,first.result.revision,'encounter.finale');
   assert.equal((await contentView(db.pool,f.account,f.release,'campaign.tactical')).name,'Campaign');
   assert.equal((await db.pool.query("SELECT first_run_id FROM discoveries WHERE account_id=$1 AND entity_id='campaign.tactical'",[f.account])).rows[0].first_run_id,f.run);
@@ -79,7 +80,7 @@ test('HTTP confirmation is explicit and current, and the same transition receipt
   assert.equal((await app.inject({url:'/api/v1/ascend/preview'})).statusCode,401);
   assert.equal((await app.inject({method:'POST',url:'/api/v1/ascend',headers,payload:envelope(final.result.revision,'ASCEND')})).statusCode,400);
   await assert.rejects(ascend(db.pool,f.account,{...envelope(final.result.revision,'ASCEND'),authorizationSource:'AUTOMATION'},preview.previewToken),/EXPLICIT_ASCENSION_REQUIRED/);
-  await db.pool.query('UPDATE run_consumption SET fullness=8 WHERE run_id=$1',[f.run]);const payload={...envelope(final.result.revision,'ASCEND'),previewToken:preview.previewToken};
+  await seedLegacyConsumption(db.pool,f.run,{fullness:8});const payload={...envelope(final.result.revision,'ASCEND'),previewToken:preview.previewToken};
   const changed=await app.inject({method:'POST',url:'/api/v1/ascend',headers,payload});assert.equal(changed.statusCode,409);assert.equal(changed.json().error,'ASCENSION_PREVIEW_CHANGED');assert.equal((await db.pool.query('SELECT count(*)::int AS n FROM run_history')).rows[0].n,0);
   payload.previewToken=(await app.inject({url:'/api/v1/ascend/preview',headers})).json().previewToken;
   const response=await app.inject({method:'POST',url:'/api/v1/ascend',headers,payload});assert.equal(response.statusCode,200);

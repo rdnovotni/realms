@@ -7,7 +7,7 @@ export type LocalClocks={rounds:number;rests:number;fullRests:number};
 export async function runClocks(c:ActionContext,local:LocalClocks):Promise<ClockValues>{
  const clocks=zeroClocks();
  const row=(await c.client.query(`SELECT
- (SELECT coalesce(sum(-delta),0)::text FROM turn_ledger WHERE run_id=$1 AND delta<0) AS turns,
+ (SELECT coalesce(sum(-delta),0)::text FROM turn_ledger WHERE run_id=$1 AND delta<0 AND reason<>'CONSUMPTION_UNDO') AS turns,
  (SELECT count(*)::text FROM encounter_records WHERE run_id=$1 AND outcome IS NOT NULL) AS encounters,
  (SELECT count(*)::text FROM run_rollovers WHERE run_id=$1) AS rollovers,
  (SELECT world_time::text FROM run_progression WHERE run_id=$1) AS world_time,

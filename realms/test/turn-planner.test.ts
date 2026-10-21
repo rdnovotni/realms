@@ -1,3 +1,4 @@
+import { seedLegacyConsumption } from './helpers.js';
 import { turnsPackage } from './turn-planner-fixture.js';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -26,7 +27,7 @@ test('planner is discovery safe, read only, explicit about absent policy and pro
  }finally{await db.close();}
 });
 test('100/400 baseline, bonus over cap, chronological catch-up, banking and zero grant resets are durable',async()=>{
- const db=await testDatabase();try{const a=await setup(db.pool,280),b=await actor(db.pool,a.release,365),c=await actor(db.pool,a.release,427);await due(db.pool);await db.pool.query('UPDATE run_consumption SET fullness=9');await Promise.all([applyRollover(db.pool,a.account),applyRollover(db.pool,a.account),applyRollover(db.pool,b.account),applyRollover(db.pool,c.account)]);
+ const db=await testDatabase();try{const a=await setup(db.pool,280),b=await actor(db.pool,a.release,365),c=await actor(db.pool,a.release,427);await due(db.pool);for(const owner of [a,b,c])await seedLegacyConsumption(db.pool,owner.run,{fullness:9});await Promise.all([applyRollover(db.pool,a.account),applyRollover(db.pool,a.account),applyRollover(db.pool,b.account),applyRollover(db.pool,c.account)]);
  for(const [f,expected]of [[a,380],[b,400],[c,427]] as const)assert.equal((await turnPlanner(db.pool,f.account)).turns,expected);
  assert.equal((await turnPlanner(db.pool,c.account)).consumption.fullness,0);assert.equal((await db.pool.query('SELECT count(*) FROM run_rollovers')).rows[0].count,'3');assert.equal((await turnPlanner(db.pool,a.account)).daily.find(d=>d.entityId==='activity.garden')!.charges,1);
  await db.pool.query("INSERT INTO rollover_epochs VALUES(2,now()-interval '12 hours',100,400),(3,now()-interval '6 hours',100,400)");await applyRollover(db.pool,a.account);const view=await turnPlanner(db.pool,a.account);assert.equal(view.turns,400);assert.equal(view.daily.find(d=>d.entityId==='activity.garden')!.charges,3);assert.equal(view.daily.find(d=>d.entityId==='activity.strict')!.charges,1);
@@ -44,7 +45,7 @@ test('shared daily checks consume the same bounded account allowance and preview
  }finally{await db.close();}
 });
 test('Ascension carries Turns, reserve, consumption and used account allowances without refreshing',async()=>{
- const db=await testDatabase();try{const f=await setup(db.pool);await useDailyAllowance(db.pool,f.account,env('USE_DAILY_ALLOWANCE',0),'activity.garden');await setTurnReserve(db.pool,f.account,env('SET_TURN_RESERVE',1),200);await db.pool.query("UPDATE runs SET status='AFTERCORE' WHERE id=$1",[f.run]);await db.pool.query('UPDATE run_consumption SET fullness=7 WHERE run_id=$1',[f.run]);const next=await ascend(db.pool,f.account,env('ASCEND',2));const v=await turnPlanner(db.pool,f.account);assert.equal(v.runId,next.runId);assert.equal(v.turns,285);assert.equal(v.reserve,200);assert.equal(v.consumption.fullness,7);assert.equal(v.daily[0]!.charges,0);await assert.rejects(useDailyAllowance(db.pool,f.account,env('USE_DAILY_ALLOWANCE',0),'activity.garden'),/DAILY_CHARGES_EMPTY/);
+ const db=await testDatabase();try{const f=await setup(db.pool);await useDailyAllowance(db.pool,f.account,env('USE_DAILY_ALLOWANCE',0),'activity.garden');await setTurnReserve(db.pool,f.account,env('SET_TURN_RESERVE',1),200);await db.pool.query("UPDATE runs SET status='AFTERCORE' WHERE id=$1",[f.run]);await seedLegacyConsumption(db.pool,f.run,{fullness:7});const next=await ascend(db.pool,f.account,env('ASCEND',2));const v=await turnPlanner(db.pool,f.account);assert.equal(v.runId,next.runId);assert.equal(v.turns,285);assert.equal(v.reserve,200);assert.equal(v.consumption.fullness,7);assert.equal(v.daily[0]!.charges,0);await assert.rejects(useDailyAllowance(db.pool,f.account,env('USE_DAILY_ALLOWANCE',0),'activity.garden'),/DAILY_CHARGES_EMPTY/);
  }finally{await db.close();}
 });
 test('server reserve enforcement rolls back all effects, binds confirmation to request and blocks API/automation bypass',async()=>{

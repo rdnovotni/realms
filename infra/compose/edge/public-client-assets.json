@@ -19,6 +19,7 @@
   "/assets/character-presentation-model.js",
   "/assets/character-presentation.js",
   "/assets/character.js",
+  "/assets/consumption.js",
   "/assets/equipment-drag.js",
   "/assets/equipment-picker.js",
   "/assets/equipment-presentation.js",

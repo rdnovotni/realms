@@ -4,7 +4,7 @@ Generated from `feature-registry.json` and the fingerprinted `source-catalog.jso
 
 47 documents, 2096 section checklists, 13,187 source entries including 11,607 rules. Coverage is a mapping count, **not a feature completion percentage**.
 
-Current section assessments: historical: 37, partial: 40, unassessed: 2019.
+Current section assessments: historical: 37, partial: 56, unassessed: 2003.
 
 Finish reusable feature frameworks with minimal test fixtures before substantial authored content. Keep canonical launch tiers and post-launch/deployment gates visible; do not treat examples as locked catalogs.
 
@@ -189,7 +189,7 @@ Baseline subset: [realms/src/domains/lifecycle.ts](../../realms/src/domains/life
 
 ### SYS-02: Food, Booze, Tolerance & Consumables
 
-Owner: `consumption` · Design tier: Launch Core · Implementation: **planned**
+Owner: `consumption` · Design tier: Launch Core · Implementation: **partial**
 
 Prerequisites: SYS-01, SYS-07
 
@@ -213,7 +213,7 @@ Prerequisites: SYS-01, SYS-07
 
 Apply the shared `framework-done` profile as well as every applicable source-rule assertion.
 
-No complete implementation evidence mapped; planned work remains.
+Baseline subset: [realms/src/domains/consumption.ts](../../realms/src/domains/consumption.ts), [realms/test/consumption.test.ts](../../realms/test/consumption.test.ts). Capacity/yield settlement, immediate onboarding undo, rollover carry, observations and safe meal-plan framework; production catalogs, Studio, feasts, restaurants and class/Path integrations remain open. See realms/docs/consumption.md.
 
 ### SYS-03: Character Progression, Attributes, Classes & Mastery
 

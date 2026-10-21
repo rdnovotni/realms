@@ -20,3 +20,18 @@ export async function actor(pool:ReturnType<typeof poolFor>,release:string|null=
   await pool.query('INSERT INTO run_progression(run_id) VALUES($1)',[run]);
   return {account,character,run};
 }
+
+/** Test-only bootstrap for pre-042 imported counters. It changes only the initial
+ * migration baseline, never a consumption/rollover journal. Real consumption
+ * tests must go through item use. The schema check prevents production use. */
+export async function seedLegacyConsumption(pool:ReturnType<typeof poolFor>,runId:string,values:Partial<{fullness:number;drunkenness:number;tolerance:number}>){
+ const client=await pool.connect();try{await client.query('BEGIN');const schema=(await client.query('SELECT current_schema() AS name')).rows[0].name;if(!/^test_[a-f0-9]{32}$/.test(schema))throw Error('Disposable test schema required');
+ if((await client.query("SELECT 1 FROM consumption_events WHERE run_id=$1 AND kind<>'BASELINE'",[runId])).rowCount)throw Error('Cannot seed after a real consumption or rollover');
+ const prior=(await client.query('SELECT fullness,drunkenness,tolerance FROM run_consumption WHERE run_id=$1 FOR UPDATE',[runId])).rows[0],balance={...prior,...values};
+ if(Object.values(balance).some(v=>!Number.isInteger(v)||Number(v)<0||Number(v)>1000))throw Error('Invalid legacy fixture counters');
+ await client.query('ALTER TABLE consumption_events DISABLE TRIGGER consumption_events_immutable');
+ await client.query("UPDATE consumption_events SET before_balance=$2,after_balance=$2,migrated=true WHERE run_id=$1 AND kind='BASELINE'",[runId,balance]);
+ await client.query('ALTER TABLE consumption_events ENABLE TRIGGER consumption_events_immutable');
+ await client.query('UPDATE run_consumption SET fullness=$2,drunkenness=$3,tolerance=$4 WHERE run_id=$1',[runId,balance.fullness,balance.drunkenness,balance.tolerance]);await client.query('COMMIT');
+ }catch(error){await client.query('ROLLBACK');throw error;}finally{client.release();}
+}

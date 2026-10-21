@@ -56,3 +56,7 @@ Finish when the [release gates](release-readiness.md) have dated evidence for th
 Only after each needed framework and authoring workflow passes, author the actual world, campaign, class/item/recipe catalogs and balance data. Validate references, reachability, discovery, reward budgets, lifetimes and release compatibility. Expand representative content and playtest volumes; verify accessibility, onboarding, recovery and moderation. Seal and rehearse the release, review staging, then explicitly approve activation.
 
 At every step update the implementation guide, API/migration guide, field manifest, registry evidence and public copy when their claims change. Do not silently rewrite historical content or promote test fixtures into launch promises.
+
+## Consumption framework boundary
+
+See [the consumption contract](consumption.md) for implemented routes, player workflows, migration/grants, lifecycle guarantees, remaining ownership boundaries and safe rollout/rollback. Production content adoption remains separate.

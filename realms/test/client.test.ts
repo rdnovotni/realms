@@ -54,6 +54,7 @@ test('public page links support direct loads while unknown routes stay unavailab
  }finally{await app.close();}
 });
 function harness(authMode:'development'|'sessions'='development'){
+ let consumptionRead:((path:string)=>Promise<Response>)|null=null;
  let turnsRead:((path:string)=>Promise<Response>)|null=null;
  let bookRead:((path:string)=>Promise<Response>)|null=null;
  let advancementRead:((path:string)=>Promise<Response>)|null=null;
@@ -61,6 +62,7 @@ function harness(authMode:'development'|'sessions'='development'){
  let revision=0,canWrite=true,runId='run',status='ACTIVE',post:(path:string,init:RequestInit)=>Promise<Response>=async(path)=>json(path.endsWith('/login')?{token:'private-token'}:{}),readsFail=false;
  const calls:{path:string;init:RequestInit}[]=[];
  const fetcher:Fetcher=async(path,init={})=>{calls.push({path,init});if(init.method==='POST')return post(path,init);
+  if(consumptionRead&&path.startsWith('/api/v1/consumption?'))return consumptionRead(path);
   if(turnsRead&&path.startsWith('/api/v1/turns?'))return turnsRead(path);
   if(bookRead&&(path.startsWith('/api/v1/character/')||path.startsWith('/api/v1/equipment/preview')))return bookRead(path);
   if(advancementRead&&path.startsWith('/api/v1/progression/'))return advancementRead(path);
@@ -74,7 +76,7 @@ function harness(authMode:'development'|'sessions'='development'){
   throw Error(`Unexpected request ${path}`);
  };
  const session=new GameSession(new ApiClient(fetcher),()=> '11111111-1111-4111-8111-111111111111');
- return {session,calls,setTurnsRead:(read:(path:string)=>Promise<Response>)=>{turnsRead=read;},setBookRead:(read:(path:string)=>Promise<Response>)=>{bookRead=read;},setAdvancementRead:(read:(path:string)=>Promise<Response>)=>{advancementRead=read;},setInventoryRead:(read:(path:string)=>Promise<Response>)=>{inventoryRead=read;},setStatus:(s:string)=>{status=s;},setRun:(r:string)=>{runId=r;},setRevision:(n:number)=>{revision=n;},setWrite:(value:boolean)=>{canWrite=value;},setPost:(fn:typeof post)=>{post=fn;},setReadFailure:(value:boolean)=>{readsFail=value;}};
+ return {session,calls,setConsumptionRead:(read:(path:string)=>Promise<Response>)=>{consumptionRead=read;},setTurnsRead:(read:(path:string)=>Promise<Response>)=>{turnsRead=read;},setBookRead:(read:(path:string)=>Promise<Response>)=>{bookRead=read;},setAdvancementRead:(read:(path:string)=>Promise<Response>)=>{advancementRead=read;},setInventoryRead:(read:(path:string)=>Promise<Response>)=>{inventoryRead=read;},setStatus:(s:string)=>{status=s;},setRun:(r:string)=>{runId=r;},setRevision:(n:number)=>{revision=n;},setWrite:(value:boolean)=>{canWrite=value;},setPost:(fn:typeof post)=>{post=fn;},setReadFailure:(value:boolean)=>{readsFail=value;}};
 }
 async function connect(h:ReturnType<typeof harness>){await h.session.initialize();await h.session.connect({token:'private-token'});assert.ok(h.session.snapshot);}
 test('transport confines credentials to same-origin headers and normalizes malformed and unreachable responses',async()=>{
@@ -523,4 +525,17 @@ test('repeat plans stop on an uncertain response and retain one exact retry inte
 });
 test('Turns navigation is stable and saved repeat drafts clear between accounts',async()=>{
  const h=harness();await connect(h);assert.equal(shellChapter('daily'),'Turns & daily planner');assert.equal(shellNavigationPage('daily'),'adventure');h.session.turnPlanDraft={runId:'run',entityId:'activity.work',maxTurns:10,maxActions:5,minHealth:0,targetItemId:'',targetQuantity:1};await h.session.logout();assert.equal(h.session.turnPlanDraft,null);assert.equal(h.session.reserveAction,null);assert.equal(h.session.runningTurnPlan,null);
+});
+
+
+test('consumable planner rejects mixed revisions and drops delayed account data after logout',async()=>{
+ const h=harness();await connect(h);h.setConsumptionRead(async()=>json({runId:'run',revision:1}));await h.session.loadConsumption();assert.equal(h.session.consumption,null);assert.match(h.session.consumptionError!,/game changed/i);
+ let finish!:(r:Response)=>void;h.setConsumptionRead(()=>new Promise(r=>finish=r));const request=h.session.loadConsumption();await h.session.logout();finish(json({runId:'run',revision:0}));await request;assert.equal(h.session.consumption,null);assert.equal(h.session.consumptionBusy,false);
+});
+test('meal steps stop on an ambiguous reply and keep only the exact retry intent',async()=>{
+ const h=harness();await connect(h);h.setConsumptionRead(async()=>json({runId:'run',revision:0,executions:[{id:'meal',status:'ACTIVE'}]}));await h.session.loadConsumption();h.setPost(async()=>{throw Error('reply lost');});await h.session.runMeal('meal');assert.equal(h.calls.filter(c=>c.init.method==='POST').length,1);assert.equal(h.session.runningMeal,null);assert.equal(h.session.pending?.body.actionType,'STEP_MEAL_PLAN');assert.equal(h.session.pending?.body.executionId,'meal');
+});
+test('meal drafts stay scoped to the current run and Overdrunk only blocks paid adventure entry',async()=>{
+ const h=harness();await connect(h);h.session.editMealDraft({runId:'run',name:'Meal',lines:[{definitionId:'item.bread',quantity:1,nightcap:false}]});assert.ok(h.session.mealDraft);h.session.editMealDraft({runId:'foreign',name:'Wrong run',lines:[]});assert.equal(h.session.mealDraft,null);h.session.editMealDraft({runId:'run',name:'Meal',lines:[]});await h.session.logout();assert.equal(h.session.mealDraft,null);assert.equal(h.session.runningMeal,null);
+ const s={game:{canWrite:true,overdrunk:true,run:{turns:10},carry:{state:'COMFORTABLE'}},progression:{build:{mode:'CONFIGURED'}}} as Snapshot;assert.equal(adventureAvailability(s,1,false).label,'Overdrunk');assert.equal(adventureAvailability(s,0,false).unavailable,false);assert.equal(adventureAvailability({...s,game:{...s.game,canWrite:false}},1,true).label,'View only');assert.equal(shellChapter('consumption'),'Food, drink & Tolerance');assert.equal(shellNavigationPage('consumption'),'adventure');
 });

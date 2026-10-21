@@ -1,3 +1,4 @@
+import { resetConsumption } from './consumption.js';
 import { rolloverPolicy } from './turn-policy.js';
 import { refreshDailyAllowances } from './daily-allowances.js';
 import { nextRunRelease } from '../rules/releases.js';
@@ -35,7 +36,7 @@ export async function refreshEpoch(client:pg.PoolClient,accountId:string,run:{id
       if(run.content_release_id)await client.query('INSERT INTO rollover_policy_receipts(run_id,epoch,release_id,policy) VALUES($1,$2,$3,$4)',[run.id,epoch.epoch,run.content_release_id,policy]);
       await client.query('UPDATE runs SET turns=turns+$1,revision=revision+1 WHERE id=$2',[grant,run.id]);
       await client.query('INSERT INTO turn_ledger(run_id,request_id,delta,reason) VALUES($1,$2,$3,$4)',[run.id,randomUUID(),grant,`ROLLOVER:${epoch.epoch}`]);
-      await client.query('UPDATE run_consumption SET fullness=0,drunkenness=0,tolerance=0 WHERE run_id=$1',[run.id]);
+      await resetConsumption(client,accountId,run.id,String(epoch.epoch));
       await client.query(`UPDATE scoped_state s SET value=c.default_value,revision=s.revision+1 FROM state_contracts c,state_scopes o
         WHERE s.key=c.key AND s.scope_id=o.id AND c.reset_policy='RESET_AT_ROLLOVER' AND o.lifecycle='ACTIVE'
         AND (o.run_id=$1 OR o.account_id=$2 OR o.character_id=$3)`,[run.id,accountId,run.character_id]);

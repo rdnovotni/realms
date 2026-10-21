@@ -1,3 +1,4 @@
+import { consumptionQuote,publicConsumptionQuote,requireConsumptionConsent,settleConsumption } from './consumption.js';
 import type pg from 'pg';
 import { executeAction,advanceRevision,type ActionContext,type Envelope } from '../foundation/action.js';
 import { transaction } from '../foundation/transaction.js';
@@ -49,29 +50,35 @@ export function repairItems(pool:pg.Pool,accountId:string,envelope:Envelope,ids:
   return {items:quote.items,total:quote.total,revision:await advanceRevision(c)};
  });
 }
-async function usable(c:ActionContext,itemId:string){
+export async function usable(c:ActionContext,itemId:string){
  if(!uuid.test(itemId))throw new DomainError(400,'INVALID_ITEM_ID');await requireInventoryIdle(c);
  const row=(await c.client.query(`SELECT i.*,b.kind,s.run_id,v.definition->>'name' AS name,v.definition->'mechanics'->'itemUse' AS use FROM inventory_items i JOIN inventory_containers b ON b.id=i.container_id JOIN state_scopes s ON s.id=b.scope_id JOIN content_versions v ON v.entity_id=i.definition_id AND v.revision=i.definition_revision WHERE i.id=$1 AND i.quantity>0 FOR UPDATE OF i`,[itemId])).rows[0];
  if(!row)throw new DomainError(404,'ITEM_NOT_FOUND');await lockPersonalContainer(c,row.container_id);
  if(row.kind!=='CARRIED'||row.run_id!==c.run.id||row.release_id!==c.run.content_release_id||row.binding==='SYSTEM_UNTRADEABLE'||row.bound_account_id&&row.bound_account_id!==c.accountId||row.bound_run_id&&row.bound_run_id!==c.run.id)throw new DomainError(409,'ITEM_USE_UNAVAILABLE');
  if(!row.use)throw new DomainError(409,'ITEM_HAS_NO_USE');validateItemUse(row.use);await requireFeature(c.client,'action.USE_ITEM',c.accountId);await requireFeature(c.client,`content.${row.definition_id}`,c.accountId);await requireEntityPrerequisite(c,row.definition_id);
- const protection=(await c.client.query(`SELECT coalesce((SELECT collection_protected FROM inventory_item_annotations WHERE account_id=$1 AND item_id=$2),false) collection,coalesce((SELECT favorite FROM inventory_item_annotations WHERE account_id=$1 AND item_id=$2),false) favorite,EXISTS(SELECT 1 FROM inventory_item_locks WHERE item_id=$2 AND locked) locked,EXISTS(SELECT 1 FROM equipment_loadout_items WHERE item_id=$2) saved,EXISTS(SELECT 1 FROM equipment_slots WHERE item_id=$2) equipped`,[c.accountId,row.id])).rows[0];
- return {row,protection,token:checksum({itemId:row.id,revision:c.run.revision,definitionRevision:row.definition_revision,quantity:row.quantity,use:row.use,protection})};
+ const consumption=await consumptionQuote(c,row);
+ const protection=(await c.client.query(`SELECT coalesce((SELECT collection_protected FROM inventory_item_annotations WHERE account_id=$1 AND item_id=$2),false) collection,coalesce((SELECT favorite FROM inventory_item_annotations WHERE account_id=$1 AND item_id=$2),false) favorite,EXISTS(SELECT 1 FROM inventory_item_locks WHERE item_id=$2 AND locked) locked,EXISTS(SELECT 1 FROM equipment_loadout_items WHERE item_id=$2) saved,EXISTS(SELECT 1 FROM equipment_slots WHERE item_id=$2) equipped,coalesce((SELECT never_auto FROM consumption_item_preferences WHERE item_id=$2 AND account_id=$1),false) AS "neverAuto",coalesce((SELECT nightcap FROM consumption_item_preferences WHERE item_id=$2 AND account_id=$1),false) AS nightcap`,[c.accountId,row.id])).rows[0];
+ return {row,protection,consumption,token:checksum({itemId:row.id,revision:c.run.revision,definitionRevision:row.definition_revision,quantity:row.quantity,use:row.use,protection,...(consumption?{consumption:{before:consumption.before,after:consumption.after,policy:consumption.policy,turns:consumption.turns}}:{})})};
 }
 export function itemUsePreview(pool:pg.Pool,accountId:string,expectedRevision:number,itemId:string){return transaction(pool,async client=>{
- const c=await readContext(client,accountId,expectedRevision),{row,protection,token}=await usable(c,itemId);
+ const c=await readContext(client,accountId,expectedRevision),{row,protection,token,consumption}=await usable(c,itemId);
  const names=(await client.query("SELECT e.entity_id,v.definition->>'name' AS name FROM release_entries e JOIN content_versions v ON v.entity_id=e.entity_id AND v.revision=e.revision JOIN discoveries d ON d.entity_id=e.entity_id AND d.account_id=$2 WHERE e.release_id=$1",[c.run.content_release_id,accountId])).rows;
- return {runId:c.run.id,revision:c.run.revision,itemId:row.id,name:row.name,kind:row.use.kind,quantity:'1',remaining:(BigInt(row.quantity)-1n).toString(),protection,eligible:!protection.collection&&!protection.locked&&!protection.saved&&!protection.equipped,token,
+ return {runId:c.run.id,revision:c.run.revision,itemId:row.id,name:row.name,kind:row.use.kind,quantity:'1',remaining:(BigInt(row.quantity)-1n).toString(),protection,eligible:!protection.collection&&!protection.locked&&!protection.saved&&!protection.equipped&&!(consumption?.reasons.length),token,...(consumption?{consumption:publicConsumptionQuote(consumption)}:{}),
  effects:row.use.effects.map((id:string)=>names.find(n=>n.entity_id===id)?.name??'Unidentified effect'),
  rewards:row.use.rewards.map((r:{kind:string;id:string;quantity:number})=>({kind:r.kind,name:r.kind==='GOLD'?'Gold':names.find(n=>n.entity_id===r.id)?.name??'Unidentified reward',quantity:r.quantity}))};
  });}
-export function useInventoryItem(pool:pg.Pool,accountId:string,envelope:Envelope,itemId:string,token:string,allowFavorite:boolean){
- explicit(envelope,'USE_ITEM');if(typeof token!=='string'||!/^[0-9a-f]{64}$/.test(token)||typeof allowFavorite!=='boolean')throw new DomainError(400,'INVALID_ITEM_USE_CONFIRMATION');
- return executeAction(pool,accountId,envelope,{itemId,token,allowFavorite},async c=>{
-  const {row,protection,token:current}=await usable(c,itemId);if(token!==current)throw new DomainError(409,'ITEM_USE_QUOTE_CHANGED');if(protection.favorite&&!allowFavorite)throw new DomainError(409,'FAVORITE_CONFIRMATION_REQUIRED');
-  const consumed=await consumeItem(c,'inventory.use',row.id,'1','PLAYER_ITEM_USE');
-  const effects=row.use.effects.length?await applyItemEffects(c,row.definition_id,row.definition_revision,row.use.effects):0;
-  const rewards=row.use.rewards.length?await grantRuleRewards(c,row.use.rewards,row.definition_id):[];
-  return {itemId:row.id,kind:row.use.kind,remaining:consumed.remaining,effects,rewards,revision:await advanceRevision(c)};
- });
+export function useInventoryItem(pool:pg.Pool,accountId:string,envelope:Envelope,itemId:string,token:string,allowFavorite:boolean,confirmOverdrink?:boolean){
+ explicit(envelope,'USE_ITEM');if(typeof token!=='string'||!/^[0-9a-f]{64}$/.test(token)||typeof allowFavorite!=='boolean'||confirmOverdrink!==undefined&&typeof confirmOverdrink!=='boolean')throw new DomainError(400,'INVALID_ITEM_USE_CONFIRMATION');
+ return executeAction(pool,accountId,envelope,{itemId,token,allowFavorite,...(confirmOverdrink===undefined?{}:{confirmOverdrink})},async c=>commitItemUse(c,itemId,token,allowFavorite,confirmOverdrink??false,false));
+}
+export async function commitItemUse(c:ActionContext,itemId:string,token:string,allowFavorite:boolean,confirmOverdrink:boolean,automatic:boolean){
+ const {row,protection,token:current,consumption}=await usable(c,itemId);if(token!==current)throw new DomainError(409,'ITEM_USE_QUOTE_CHANGED');
+ if(protection.favorite&&(!allowFavorite||automatic))throw new DomainError(409,'FAVORITE_CONFIRMATION_REQUIRED');
+ if(automatic&&(!consumption||!consumption.spec.automatic))throw new DomainError(409,'MEAL_REQUIRES_MANUAL_ATTENTION');
+ if(consumption)requireConsumptionConsent(consumption,confirmOverdrink,automatic);
+ const consumed=await consumeItem(c,'inventory.use',row.id,'1','PLAYER_ITEM_USE');
+ const effects=row.use.effects.length?await applyItemEffects(c,row.definition_id,row.definition_revision,row.use.effects):0;
+ const rewards=row.use.rewards.length?await grantRuleRewards(c,row.use.rewards,row.definition_id):[];
+ const result=consumption?await settleConsumption(c,row,consumed.operationId,consumption,confirmOverdrink):null;
+ return {itemId:row.id,kind:row.use.kind,remaining:consumed.remaining,effects,rewards,...(result?{consumption:result}:{}),revision:await advanceRevision(c)};
 }

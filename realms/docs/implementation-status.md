@@ -1,6 +1,6 @@
 # Follybound implementation status
 
-Reconciled October 19, 2026 through CHAR-05, migrations 001–041, and the VIS-03–07 integration with mobile-header and visual-contract corrections. This is a repository inventory. Runtime activation and the current state of installed services require separate operator evidence. Dated audit/restore/deployment records remain historical.
+Reconciled October 19, 2026 through CHAR-05, migrations 001–042, and the VIS-03–07 integration with mobile-header and visual-contract corrections. This is a repository inventory. Runtime activation and the current state of installed services require separate operator evidence. Dated audit/restore/deployment records remain historical.
 
 ## Verified foundations and their limits
 
@@ -36,3 +36,5 @@ Do not infer runtime migration 030–041 or flag activation from merge. Read the
 Inventory P2 source pass (migration 036): exact future-grant Keep-N routing, collection identity protection, account saved filter/sort views, structured inspection and owned-item comparison, known capability summaries, slot condition indicators and uncapped capacity visualization. See [inventory grid](inventory-grid.md). Item modification/affix journals remain future domain work; no production deployment is implied.
 
 The Turns slice extends source scope through migration 041. Its checks and player workflows are documented in [Turns and rollover](turns-rollover.md); the earlier 188-case visual count is historical. See the updated visual QA matrix for the current planner cases. No production activation is implied.
+
+Food/booze/Tolerance source now includes migration 042: capacity/yield settlement, nightcaps and paid-adventure guards, immediate account-wide onboarding reversal, observed effects, safe saved meal plans and player UI. [Consumption coverage and remaining boundaries](consumption.md) distinguish this framework from production catalogs, feasts, restaurants, class/Path integrations and Studio. Source completion is not production activation.

@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 import { visualManifest } from './visual-contract.mjs';
 import { registerClient } from '../src/client-assets.js';
 const app=Fastify();registerClient(app,{mode:'sessions',throttleKey:'unused-static-reference'},{previewOnly:true});
-const scenes=['overview','progression','abilities','statistics','history','inventory','paperdoll','inspector','comparison','loadouts','adventure','combat','dialog','empty','loading','error','setup','stress','daily','daily-waiting','daily-confirmation','daily-loading','daily-error','daily-readonly'];
+const scenes=['overview','progression','abilities','statistics','history','inventory','paperdoll','inspector','comparison','loadouts','adventure','combat','dialog','empty','loading','error','setup','stress','daily','daily-waiting','daily-confirmation','daily-loading','daily-error','daily-readonly','consumption','consumption-overdrunk','consumption-empty','consumption-loading','consumption-error','consumption-readonly','consumption-running','consumption-nightcap','consumption-meal','adventure-overdrunk'];
 const modes=['normal','motion','contrast','forced','text200','coarse'];
 const css=['folio','styles','welcome','shell','character-folio','inventory-folio','campaign-folio','interactions'];
 app.get('/dev/manifest',async(_request,reply)=>reply.header('Cache-Control','no-store').send(visualManifest()));
@@ -14,6 +14,7 @@ app.get<{Querystring:{scene?:string;mode?:string;texture?:string}}>('/dev/visual
  if(request.query.texture==='off')html=html.replace('<html lang="en">','<html lang="en" data-folio-texture="off">');
  return reply.header('Cache-Control','no-store').header('Content-Security-Policy',"default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'").type('text/html').send(html);
 });
+app.get('/assets/dev/consumption-fixture.js',async(_request,reply)=>reply.header('Cache-Control','no-store').type('text/javascript').send(await readFile(new URL('../dist/client/dev/consumption-fixture.js',import.meta.url))));
 app.get('/assets/dev/turn-fixture.js',async(_request,reply)=>reply.header('Cache-Control','no-store').type('text/javascript').send(await readFile(new URL('../dist/client/dev/turn-fixture.js',import.meta.url))));
 app.get('/assets/dev/visual-reference.js',async(_request,reply)=>reply.header('Cache-Control','no-store').type('text/javascript').send(await readFile(new URL('../dist/client/dev/visual-reference.js',import.meta.url))));
 app.get<{Params:{name:string};Querystring:{mode?:string}}>('/dev/styles/:name.css',async(request,reply)=>{
