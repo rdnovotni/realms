@@ -103,3 +103,15 @@
 .unit-resource p>span>.folio-icon { margin-inline-start:.3em; }
 /* Enlarged navigation labels stay within their available column. */
 .game-shell .shell-navigation button { white-space:normal;overflow-wrap:anywhere; }
+
+.turn-panel { margin-block:var(--folio-space-4);min-width:0;overflow-wrap:anywhere; }
+.turn-panel form { display:flex;flex-wrap:wrap;align-items:end;gap:var(--folio-space-3); }
+.turn-panel input[type=number] { width:min(100%,12rem); }
+.turn-panel form label { display:grid;gap:var(--folio-space-2); }
+.turn-source { border-top:1px solid var(--folio-border);padding-block:var(--folio-space-3);overflow-wrap:anywhere; }
+.turn-source label { display:flex;gap:var(--folio-space-2);align-items:center; }
+.turn-balance { font-size:1.2rem;font-weight:700; }
+.turn-ledger { padding-inline-start:1.4em; }
+.turn-ledger li { margin-block:var(--folio-space-2);overflow-wrap:anywhere; }
+.reserve-confirmation { border:2px solid var(--folio-ink); }
+.reserve-confirmation button { margin:var(--folio-space-2); }

@@ -1,3 +1,4 @@
+import { turnFixture } from './turn-fixture.js';
 /** Development-only frozen public projections. Not served by production registerClient. */
 import { GameSession } from '../session.js';
 import { ApiClient } from '../api.js';
@@ -6,7 +7,7 @@ import { openItemComparison } from '../item-comparison.js';
 import { openAppearance,applyAppearance } from '../appearance.js';
 import type { Snapshot,InventoryPage,Advancement,EquipmentPreview,AbilityBook,AdvancementHistory,CharacterSection } from '../types.js';
 type Fixture={schemaVersion:number;snapshot:Snapshot;inventory:InventoryPage|null;advancement:Advancement|null;equipmentPreview:EquipmentPreview|null;characterStats:EquipmentPreview|null;abilityBook:AbilityBook|null;characterHistory:AdvancementHistory|null};
-const scenes=['overview','progression','abilities','statistics','history','inventory','paperdoll','inspector','comparison','loadouts','adventure','combat','dialog','empty','loading','error','setup','stress'];
+const scenes=['overview','progression','abilities','statistics','history','inventory','paperdoll','inspector','comparison','loadouts','adventure','combat','dialog','empty','loading','error','setup','stress','daily','daily-waiting','daily-confirmation','daily-loading','daily-error','daily-readonly'];
 const url=new URL(location.href),scene=url.searchParams.get('scene')??'overview',mode=url.searchParams.get('mode')??'normal';
 const name=scene==='setup'?'setup':scene==='adventure'?'adventure':['inventory','paperdoll','inspector','comparison','loadouts','empty','loading','error'].includes(scene)?'pack':['adventure','combat','setup'].includes(scene)?'combat':'character';
 const response=await fetch('/dev/fixture/'+name);if(!response.ok)throw Error('Start the frozen visual reference server');const fixture:Fixture=await response.json();
@@ -26,7 +27,13 @@ const session=new GameSession(new ApiClient(async(path,init)=>{
 }));
 session.snapshot=structuredClone(fixture.snapshot);session.config={protocolVersion:1,authMode:'sessions',previewOnly:true};session.inventory=structuredClone(fixture.inventory);session.inventoryQuery={sort:'NAME',direction:'ASC',grouped:false,offset:0};session.advancement=structuredClone(fixture.advancement);session.equipmentPreview=structuredClone(fixture.equipmentPreview);session.characterStats=structuredClone(fixture.characterStats);session.abilityBook=structuredClone(fixture.abilityBook);session.characterHistory=structuredClone(fixture.characterHistory);session.inventoryEquipmentOpen=true;
 session.notice={kind:'info',text:'Frozen disposable visual fixture · no gameplay writes.'};
-let screen:Screen=['inventory','paperdoll','inspector','comparison','loadouts','empty','loading','error'].includes(scene)?'pack':scene==='adventure'?'adventure':scene==='combat'?'combat':'character';
+if(scene.startsWith('daily'))session.turns=turnFixture(session.snapshot);
+if(scene==='daily-waiting'){session.snapshot.game.rolloverPending=true;session.turns!.rollover.pending=3;session.turns!.rollover.deferred=true;}
+if(scene==='daily-confirmation')session.reserveAction={path:'/api/v1/rules/interaction',type:'RESOLVE_RULE_INTERACTION',parameters:{entityId:'activity.quick'}};
+if(scene==='daily-loading'){session.turns=null;session.turnsBusy=true;}
+if(scene==='daily-error'){session.turns=null;session.turnsError='Daily plan could not be loaded. Refresh to reconnect.';}
+if(scene==='daily-readonly'){session.snapshot.game.canWrite=false;session.reserveAction={path:'/api/v1/rules/interaction',type:'RESOLVE_RULE_INTERACTION',parameters:{entityId:'activity.quick'}};}
+let screen:Screen=scene.startsWith('daily')?'daily':['inventory','paperdoll','inspector','comparison','loadouts','empty','loading','error'].includes(scene)?'pack':scene==='adventure'?'adventure':scene==='combat'?'combat':'character';
 if(['overview','progression','abilities','statistics','history'].includes(scene))session.characterSection=scene as CharacterSection;
 if(scene==='stress'){
  session.characterSection='progression';

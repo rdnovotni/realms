@@ -1,6 +1,6 @@
 # Follybound HTTP API reference
 
-This inventories the implemented routes in `src/app.ts` and `src/client-assets.ts` through migration 035. Route schemas and domain documents define exact parameters and response shapes; this is not a claim of a stable public SDK or a deployed version. Server checks reject extra body fields. There is no generic client write of stats, arbitrary state, roll results, rewards or content definitions.
+This inventories the implemented routes in `src/app.ts` and `src/client-assets.ts` through migration 041. Route schemas and domain documents define exact parameters and response shapes; this is not a claim of a stable public SDK or a deployed version. Server checks reject extra body fields. There is no generic client write of stats, arbitrary state, roll results, rewards or content definitions.
 
 ## Authentication and Action contract
 
@@ -25,6 +25,8 @@ Failures expose bounded error codes, not SQL or secrets. Validation/authenticati
 
 | Group | Routes | Contract |
 |---|---|---|
+| Turns and daily economy | `GET /api/v1/turns`, `POST /api/v1/turns/reserve`, `POST /api/v1/turns/rollover`, `POST /api/v1/turns/daily/use`, `POST /api/v1/turns/daily/auto-collect` | Owned planner/history, reserve, catch-up and finite daily sources; [Turns contract](turns-rollover.md) |
+| Repeat plans | `POST /api/v1/turns/plans`, `POST /api/v1/turns/plans/step`, `POST /api/v1/turns/plans/stop` | Persisted Turn/action budgets and stop conditions; server forces AUTOMATION on steps |
 | Public status | `GET /health/live`, `GET /health/ready`, `GET /api/v1/client/config` | Liveness, exact migration readiness, nonsecret client mode |
 | Account access | `POST /api/v1/auth/login`, `POST /api/v1/auth/recover` | Session-mode password login and one-use offline recovery; no public signup or email reset |
 | Session management | `GET /api/v1/auth/sessions`, `POST /api/v1/auth/logout`, `POST /api/v1/auth/logout-all`, `DELETE /api/v1/auth/sessions/:id`, `POST /api/v1/auth/password` | Scoped account operations, not gameplay Action envelopes; see session schemas |
@@ -166,3 +168,7 @@ run's personal storage and cannot be combined with `container`. Empty locations
 are read-only and do not create storage. Existing explicit container/archived
 custody checks remain unchanged. These semantic locations and durability sort
 are allowed in saved view queries; raw container UUIDs remain excluded.
+
+## Turns, rollover, daily charges and repeat plans
+
+The authenticated query/action contracts, limits, reserve confirmation and automation authority are maintained in [Turns and rollover](turns-rollover.md#api-and-permissions). No endpoint accepts caller-selected grants, healing amounts or daily balances.

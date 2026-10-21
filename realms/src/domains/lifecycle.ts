@@ -1,3 +1,5 @@
+import { rolloverPolicy } from './turn-policy.js';
+import { refreshDailyAllowances } from './daily-allowances.js';
 import { nextRunRelease } from '../rules/releases.js';
 import { transitionRunFields,stateRegistryLock } from './state.js';
 import { transitionPreview,ascensionContract } from './ascension-contract.js';
@@ -20,15 +22,17 @@ export async function applyRollover(pool:pg.Pool,accountId:string){
     if(!run) return {applied:0,deferred:false};
     if(await hasOpenEncounter(client,run.id)) return {applied:0,deferred:true};
     const epochs=await client.query(`SELECT e.* FROM rollover_epochs e WHERE e.effective_at<=now() AND e.effective_at>=$1
-      AND NOT EXISTS(SELECT 1 FROM run_rollovers r WHERE r.account_id=$2 AND r.epoch=e.epoch) ORDER BY e.epoch`,[account.created_at,accountId]);
+      AND NOT EXISTS(SELECT 1 FROM run_rollovers r WHERE r.account_id=$2 AND r.epoch=e.epoch) ORDER BY e.effective_at LIMIT 32`,[account.created_at,accountId]);
     for(const epoch of epochs.rows) await refreshEpoch(client,accountId,run,epoch);
     return {applied:epochs.rows.length,deferred:false};
   });
 }
 
-async function refreshEpoch(client:pg.PoolClient,accountId:string,run:{id:string;character_id:string;turns:number},epoch:{epoch:string;baseline_turns:number;turn_soft_cap:number}){
-      const grant=Math.min(epoch.baseline_turns,Math.max(0,epoch.turn_soft_cap-run.turns));
+export async function refreshEpoch(client:pg.PoolClient,accountId:string,run:{id:string;character_id:string;turns:number;content_release_id:string|null},epoch:{epoch:string;baseline_turns:number;turn_soft_cap:number;effective_at:Date}){
+      const policy=await rolloverPolicy(client,run.content_release_id,String(epoch.epoch),epoch);
+      const grant=Math.min(policy.baselineTurns,Math.max(0,policy.softCap-run.turns));
       await client.query('INSERT INTO run_rollovers(run_id,account_id,epoch,turn_grant) VALUES($1,$2,$3,$4)',[run.id,accountId,epoch.epoch,grant]);
+      if(run.content_release_id)await client.query('INSERT INTO rollover_policy_receipts(run_id,epoch,release_id,policy) VALUES($1,$2,$3,$4)',[run.id,epoch.epoch,run.content_release_id,policy]);
       await client.query('UPDATE runs SET turns=turns+$1,revision=revision+1 WHERE id=$2',[grant,run.id]);
       await client.query('INSERT INTO turn_ledger(run_id,request_id,delta,reason) VALUES($1,$2,$3,$4)',[run.id,randomUUID(),grant,`ROLLOVER:${epoch.epoch}`]);
       await client.query('UPDATE run_consumption SET fullness=0,drunkenness=0,tolerance=0 WHERE run_id=$1',[run.id]);
@@ -37,12 +41,12 @@ async function refreshEpoch(client:pg.PoolClient,accountId:string,run:{id:string
         AND (o.run_id=$1 OR o.account_id=$2 OR o.character_id=$3)`,[run.id,accountId,run.character_id]);
       await client.query(`DELETE FROM effect_instances WHERE clock='ROLLOVER' AND scope_id IN (SELECT id FROM state_scopes WHERE run_id=$1)`,[run.id]);
       await client.query('INSERT INTO audit_events(actor_account_id,category,source,payload) VALUES($1,$2,$3,$4)',[accountId,'ROLLOVER_APPLIED','ROLLOVER',{runId:run.id,epoch:epoch.epoch,grant}]);
-      run.turns+=grant;
+      run.turns+=grant+(policy.dailyRefresh?await refreshDailyAllowances(client,accountId,run,epoch):0);
 }
-// The scheduler holds its period lock; the run lock serializes with game actions.
+// The scheduler holds its period lock; account then run locks match game actions.
 // The existing unique account/epoch receipt also covers Ascension races.
 export async function applyRolloverEpoch(client:pg.PoolClient,accountId:string,epochId:string){
- const account=(await client.query('SELECT * FROM accounts WHERE id=$1',[accountId])).rows[0];
+ const account=(await client.query('SELECT * FROM locked_rollover_account($1)',[accountId])).rows[0];
  if(!account)throw new Error('ACCOUNT_NOT_FOUND');
  const run=(await client.query(`SELECT r.* FROM runs r JOIN characters c ON c.id=r.character_id
   WHERE c.account_id=$1 AND r.status IN ('ACTIVE','AFTERCORE') FOR UPDATE OF r`,[accountId])).rows[0];
@@ -111,4 +115,16 @@ function transition(pool:pg.Pool,accountId:string,envelope:Envelope,previewToken
     await context.client.query('INSERT INTO run_history(run_id,character_id,next_run_id,action_id,summary) VALUES($1,$2,$3,$4,$5)',[context.run.id,context.run.character_id,nextId,context.actionId,{contractVersion:ascensionContract.version,sourceReleaseId:context.run.content_release_id,nextReleaseId:releaseId,initializedFields,turns:context.run.turns,rulesVersion:context.run.rules_version,storedItems:possessions.rows.length,storedGold:currentGold?.balance??'0'}]);
     return {runId:nextId,previousRunId:context.run.id,turns:context.run.turns,revision:0};
   },stateRegistryLock);
+}
+
+/** Explicit, receipted catch-up for a connected client; never refills an open encounter. */
+export function catchUpRollover(pool:pg.Pool,accountId:string,envelope:Envelope){
+ if(envelope.actionType!=='APPLY_ROLLOVER')throw new DomainError(400,'INVALID_ROLLOVER_ACTION');
+ return executeAction(pool,accountId,envelope,{},async c=>{
+  const epochs=(await c.client.query(`SELECT e.* FROM rollover_epochs e JOIN accounts a ON a.id=$1 WHERE e.effective_at<=now() AND e.effective_at>=a.created_at
+   AND NOT EXISTS(SELECT 1 FROM run_rollovers r WHERE r.account_id=a.id AND r.epoch=e.epoch) ORDER BY e.effective_at LIMIT 32`,[accountId])).rows;
+  const deferred=epochs.length>0&&await hasOpenEncounter(c.client,c.run.id);
+  if(!deferred)for(const epoch of epochs)await refreshEpoch(c.client,accountId,c.run,epoch);
+  return {applied:deferred?0:epochs.length,deferred,revision:(await c.client.query('SELECT revision FROM runs WHERE id=$1',[c.run.id])).rows[0].revision};
+ });
 }

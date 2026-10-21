@@ -162,6 +162,7 @@ test('existing prototype receipts remain replayable after migration',async()=>{
     await pool.query('INSERT INTO action_receipts(account_id,request_id,payload_hash,result) VALUES($1,$2,$3,$4)',[user.account,requestId,hash,{runId:user.run,turns:2,revision:1}]);
     await migrate(pool);await assertSchema(pool);
     const result=await spendTurns(pool,user.account,{requestId,actionType:'SPEND_TURNS',amount:1,expectedRevision:0});
+    await assert.rejects(spendTurns(pool,user.account,{requestId,actionType:'SPEND_TURNS',amount:1,expectedRevision:0,confirmReserve:true}),/REQUEST_ID_REUSED/);
     assert.equal(result.replayed,true);assert.equal((await pool.query('SELECT turns FROM runs WHERE id=$1',[user.run])).rows[0].turns,3);
     assert.equal((await pool.query('SELECT count(*)::int AS n FROM state_scopes')).rows[0].n,3);
     await pool.query("UPDATE schema_migrations SET checksum='corrupted' WHERE name='001_foundation.sql'");

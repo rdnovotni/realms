@@ -36,3 +36,7 @@ A source merge does not apply 030/031/032. Applying 031 does not enable `shared.
 ## Recovery
 
 Disable the affected feature through its reviewed control and preserve evidence while fixing forward. Do not automatically restore an old live database over later player actions. Code-only rollback is valid only with exact unchanged-schema compatibility and a retained image. After a schema change, follow the reviewed isolated recovery/forward-fix process; a Git revert does not undo SQL or restore readiness parity.
+
+## Turns slice: migrations 037–041
+
+037 adds account reserves, banked daily allowances/evidence and per-run repeat plans; 038 adds immutable rest recovery and next-encounter pins; 039 permits explicitly bounded v3 free/extended encounter costs; 040 records effective release-pinned rollover policies; 041 reconciles daily projections and bonus ledger legs. Older migration checksums are unchanged. See [Turns and rollover](turns-rollover.md#validation-and-safe-rollout) for source contracts, restricted grants, staging proof and the compatible rollback boundary. No production schedule or content is enabled by these migrations.

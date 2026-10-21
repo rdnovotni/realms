@@ -6,14 +6,14 @@ import { transaction } from './transaction.js';
 import { DomainError } from './errors.js';
 import { authorizeSession,type Principal } from '../auth/sessions.js';
 export type RunState = { id: string; turns: number; revision: number; status: 'ACTIVE' | 'AFTERCORE' | 'ARCHIVED' | 'ABANDONED'; character_id: string; rules_version: string; content_release_id: string | null; mode: string };
-export type ActionContext = { client: pg.PoolClient; accountId: string; actionId: string; requestId: string; run: RunState };
-export type Envelope = { requestId: string; actionType: string; expectedRevision: number; authorizationSource?: 'MANUAL_UI' | 'PARSER' | 'AUTOMATION' | 'API' | 'ADMIN'; principal?:Principal };
+export type ActionContext = { client: pg.PoolClient; accountId: string; actionId: string; requestId: string; run: RunState; authorizationSource?:Envelope['authorizationSource']; automation?:{maxTurnDebit:number} };
+export type Envelope = { requestId: string; actionType: string; expectedRevision: number; authorizationSource?: 'MANUAL_UI' | 'PARSER' | 'AUTOMATION' | 'API' | 'ADMIN'; principal?:Principal; confirmReserve?:boolean };
 export async function executeAction(pool: pg.Pool, accountId: string, envelope: Envelope, parameters: Json,
   handler: (context: ActionContext) => Promise<{ [key: string]: Json }>, serializationKey?:string) {
   if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(envelope.requestId) ||
     !/^[A-Z][A-Z0-9_]{1,79}$/.test(envelope.actionType) || !Number.isInteger(envelope.expectedRevision) || envelope.expectedRevision<0 || envelope.expectedRevision>2147483646 ||
-    !['MANUAL_UI','PARSER','AUTOMATION','API','ADMIN'].includes(envelope.authorizationSource??'MANUAL_UI')) throw new DomainError(400,'INVALID_ACTION_ENVELOPE');
-  const hash = checksum({ type: envelope.actionType, revision: envelope.expectedRevision, parameters, source: envelope.authorizationSource ?? 'MANUAL_UI' });
+    !['MANUAL_UI','PARSER','AUTOMATION','API','ADMIN'].includes(envelope.authorizationSource??'MANUAL_UI') || (envelope.confirmReserve!==undefined&&typeof envelope.confirmReserve!=='boolean')) throw new DomainError(400,'INVALID_ACTION_ENVELOPE');
+  const hash = checksum({ type: envelope.actionType, revision: envelope.expectedRevision, parameters, source: envelope.authorizationSource ?? 'MANUAL_UI',...(envelope.confirmReserve===undefined?{}:{confirmReserve:envelope.confirmReserve}) });
   const actionId = randomUUID();
   return transaction(pool, async client => {
     // Internal coordinators serialize before account/run locks to avoid cross-owner lock inversion.
@@ -27,7 +27,7 @@ export async function executeAction(pool: pg.Pool, accountId: string, envelope: 
     }
     const prior = await client.query('SELECT payload_hash,result,envelope_version FROM action_receipts WHERE account_id=$1 AND request_id=$2', [accountId, envelope.requestId]);
     if (prior.rows.length) {
-      const legacy = prior.rows[0].envelope_version===1 && envelope.actionType==='SPEND_TURNS' && (envelope.authorizationSource??'MANUAL_UI')==='MANUAL_UI';
+      const legacy = prior.rows[0].envelope_version===1 && envelope.actionType==='SPEND_TURNS' && envelope.confirmReserve===undefined && (envelope.authorizationSource??'MANUAL_UI')==='MANUAL_UI';
       const comparison = legacy ? createHash('sha256').update(JSON.stringify([envelope.actionType,(parameters as {amount:Json}).amount,envelope.expectedRevision])).digest('hex') : hash;
       if (prior.rows[0].payload_hash !== comparison) throw new DomainError(409, 'REQUEST_ID_REUSED');
       return { ...prior.rows[0].result, replayed: true };
@@ -38,8 +38,17 @@ export async function executeAction(pool: pg.Pool, accountId: string, envelope: 
     if (!run) throw new DomainError(409, 'NO_RUN');
     if (run.revision !== envelope.expectedRevision) throw new DomainError(409, 'STALE_REVISION');
     await actionControls(client,accountId,envelope.actionType);
-    const context = { client, accountId, actionId, requestId: envelope.requestId, run };
+    const openingTurns=run.turns;
+    const context:ActionContext = { client, accountId, actionId, requestId: envelope.requestId, run,authorizationSource:envelope.authorizationSource??'MANUAL_UI' };
     const result = { ...(await handler(context)), actionId, requestId: envelope.requestId, rulesVersion: run.rules_version };
+    const debit=Number((await client.query('SELECT coalesce(-sum(least(delta,0)),0) AS debit FROM turn_ledger WHERE run_id=$1 AND request_id=$2',[run.id,envelope.requestId])).rows[0].debit);
+    // Historical upgrade fixtures execute old actions before installing new planner tables.
+    if(debit>0&&(await client.query("SELECT to_regclass('turn_preferences') AS table")).rows[0].table){
+      const reserve=(await client.query('SELECT reserve FROM turn_preferences WHERE account_id=$1',[accountId])).rows[0]?.reserve??0;
+      const source=envelope.authorizationSource??'MANUAL_UI';
+      if(source==='AUTOMATION'&&(!context.automation||debit>context.automation.maxTurnDebit))throw new DomainError(403,'TURN_AUTOMATION_BUDGET_REQUIRED');
+      if(openingTurns-debit<reserve&&!(envelope.confirmReserve===true&&source==='MANUAL_UI'))throw new DomainError(409,'TURN_RESERVE_CONFIRMATION_REQUIRED');
+    }
     await client.query(`INSERT INTO action_receipts(account_id,request_id,payload_hash,result,action_id,action_type,rules_version,authorization_source,envelope_version)
       VALUES($1,$2,$3,$4,$5,$6,$7,$8,2)`, [accountId, envelope.requestId, hash, result, actionId, envelope.actionType, run.rules_version, envelope.authorizationSource ?? 'MANUAL_UI']);
     await client.query('INSERT INTO audit_events(action_id,actor_account_id,category,source,payload) VALUES($1,$2,$3,$4,$5)', [actionId, accountId, 'ACTION_COMMITTED', envelope.actionType, { runId: run.id }]);

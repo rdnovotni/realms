@@ -45,7 +45,7 @@ export function validateCombatReferences(entity:ContentEntity,entities:Map<strin
   }
   if(entity.kind==='ENCOUNTER' && mechanics?.combat!==undefined){
     validateCombatSpec(mechanics.combat);const c=mechanics.combat;
-    if((mechanics.encounter as {version?:number}|undefined)?.version!==2) throw new DomainError(400,'COMBAT_REQUIRES_AUTHORED_LOOT');
+    if(![2,3].includes((mechanics.encounter as {version:number})?.version)||!(mechanics.encounter as {lootTableId?:string})?.lootTableId) throw new DomainError(400,'COMBAT_REQUIRES_AUTHORED_LOOT');
     for(const [id,kind,field] of [[c.profileId,'TUNING','combatProfile'],[c.monsterId,'MONSTER','combatMonster']] as const){
       const target=entities.get(id);
       if(target?.kind!==kind || !entity.definition.dependencies.includes(id)) throw new DomainError(400,'INVALID_COMBAT_REFERENCE');

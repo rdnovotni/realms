@@ -21,6 +21,7 @@
     "scripts/character-history-preview.ts",
     "scripts/character-folio-preview.ts",
     "scripts/visual-preview.ts",
-    "scripts/capture-visual-fixtures.ts"
+    "scripts/capture-visual-fixtures.ts",
+    "scripts/turns-preview.ts"
   ]
 }

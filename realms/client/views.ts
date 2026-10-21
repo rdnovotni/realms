@@ -1,3 +1,4 @@
+import { renderTurnPlanner,renderReserveConfirmation } from './turn-planner.js';
 import { folioIcon } from './icons.js';
 import { renderAdventure,renderCombat,renderJourneyJournal } from './campaign.js';
 export { zoneDistance,failureSummary } from './campaign-model.js';
@@ -8,7 +9,7 @@ import { renderInventory } from './inventory.js';
 import { renderLanding } from './landing.js';
 import type { GameSession } from './session.js';
 import type { Command,Snapshot,Failure } from './types.js';
-export type Screen='adventure'|'character'|'pack'|'combat';
+export type Screen='adventure'|'character'|'pack'|'combat'|'daily';
 let retainedFocus:string|null=null;
 export const label=(value:string)=>value==='hero'?'You':value.split(/[._-]/).filter(Boolean).map(w=>w[0]!.toUpperCase()+w.slice(1).toLowerCase()).join(' ');
 function el<K extends keyof HTMLElementTagNameMap>(tag:K,text='',className=''):HTMLElementTagNameMap[K]{const node=document.createElement(tag);node.textContent=text;if(className)node.className=className;return node;}
@@ -28,11 +29,13 @@ export function render(root:HTMLElement,session:GameSession,screen:Screen,naviga
  const snapshot=session.snapshot;
  if(!snapshot){fragment.append(renderLanding(session));
  }else{
-  const layout=el('div','',screen==='pack'||screen==='character'?'layout inventory-layout':'layout'),left=el('aside','','left-column'),character=section('The wayfarer');character.classList.add('character');const cameo=el('div','','portrait');cameo.append(folioIcon('adventurer','character'));character.prepend(cameo);add(character,el('small',snapshot.progression.build.mode==='CONFIGURED'?snapshot.progression.build.classes?.map(c=>`${snapshot.options.classes.find(option=>option.classId===c.classId)?.name??label(c.classId)} ${c.nativeLevel}`).join(' · ')??'Adventurer':'Choose your calling'),add(el('div','','stats'),stat('Level',String(snapshot.progression.level)),stat('Turns',String(snapshot.game.run.turns)),stat('XP',snapshot.progression.xp)),el('div','','rule'),el('p',snapshot.game.run.status==='AFTERCORE'?'Aftercore · A new chapter':'A life still being written','build-list muted'));left.append(character);
-  const help=section('Your next step');add(help,el('p',snapshot.progression.build.mode!=='CONFIGURED'?'Choose a class and starting attributes to shape this life.':snapshot.game.activeEncounter?'Your encounter is saved. Continue from the current turn.':snapshot.progression.readiness?.pendingLevels?'You have earned a level. Choose how your character grows.':'Choose a known adventure. Each entry costs one Turn.','help'),button(snapshot.progression.build.mode!=='CONFIGURED'?'Create your build':'View character',()=>navigate('character'),false,'small'));left.append(help);
+  const layout=el('div','',screen==='pack'||screen==='character'||screen==='daily'?'layout inventory-layout':'layout'),left=el('aside','','left-column'),character=section('The wayfarer');character.classList.add('character');const cameo=el('div','','portrait');cameo.append(folioIcon('adventurer','character'));character.prepend(cameo);add(character,el('small',snapshot.progression.build.mode==='CONFIGURED'?snapshot.progression.build.classes?.map(c=>`${snapshot.options.classes.find(option=>option.classId===c.classId)?.name??label(c.classId)} ${c.nativeLevel}`).join(' · ')??'Adventurer':'Choose your calling'),add(el('div','','stats'),stat('Level',String(snapshot.progression.level)),stat('Turns',String(snapshot.game.run.turns)),stat('XP',snapshot.progression.xp)),el('div','','rule'),el('p',snapshot.game.run.status==='AFTERCORE'?'Aftercore · A new chapter':'A life still being written','build-list muted'));left.append(character);
+  const help=section('Your next step');add(help,el('p',snapshot.progression.build.mode!=='CONFIGURED'?'Choose a class and starting attributes to shape this life.':snapshot.game.activeEncounter?'Your encounter is saved. Continue from the current turn.':snapshot.progression.readiness?.pendingLevels?'You have earned a level. Choose how your character grows.':'Choose a known adventure. Each entry shows its Turn cost.','help'),button(snapshot.progression.build.mode!=='CONFIGURED'?'Create your build':'View character',()=>navigate('character'),false,'small'));left.append(help);
   left.setAttribute('aria-label','Character summary');
   const main=el('main','','folio-page');main.id='main';main.setAttribute('aria-busy',String(session.busy));
-  if(screen==='character')renderCharacter(main,snapshot,session,disabled,()=>navigate('pack'));
+  const reserveConfirmation=renderReserveConfirmation(session);if(reserveConfirmation)main.append(reserveConfirmation);
+  if(screen==='daily')renderTurnPlanner(main,session,disabled);
+  else if(screen==='character')renderCharacter(main,snapshot,session,disabled,()=>navigate('pack'));
   else if(screen==='pack')renderPack(main,snapshot,session,disabled);
   else if(screen==='combat'&&snapshot.battle)renderCombat(main,snapshot,disabled,onCommand,navigate);
   else renderAdventure(main,snapshot,session,disabled,navigate);

@@ -25,7 +25,7 @@ export async function sharedTacticalMismatchCount(client:pg.PoolClient){
   for(const [index,m] of members.entries()){
 
    if(m.seat!==index||m.unit_id!==(index===0?'hero':`player.${index}`)||m.account_id!==m.run_account||m.receipt_owner!==m.account_id||m.start_action_id!==m.action_id||m.content_release_id!==s.release_id||m.action_type!==(index===0?'CREATE_SHARED_TACTICAL':'JOIN_SHARED_TACTICAL'))throw Error('consent');
-   const prior=m.previous_instance_id?(await client.query('SELECT health,mana FROM tactical_recoveries WHERE instance_id=$1',[m.previous_instance_id])).rows[0]:null;if(m.previous_instance_id&&!prior)throw Error('previous recovery');
+   const prior=m.previous_instance_id?((await client.query('SELECT health,mana FROM tactical_rest_events WHERE id=$1 AND run_id=$2 AND after_instance_id=$3',[m.rest_event_id,m.member_run_id,m.previous_instance_id])).rows[0]??(await client.query('SELECT health,mana FROM tactical_recoveries WHERE instance_id=$1',[m.previous_instance_id])).rows[0]):null;if(m.previous_instance_id&&!prior)throw Error('previous recovery');
    const c={client,accountId:m.account_id,run:{...m,id:m.member_run_id}} as ActionContext;
    const unit=await loadTacticalPlayer(c,m.personal_instance,spec.rules,{id:m.unit_id,zone:spec.playerZone,loadKit:true,...(prior?{health:prior.health,mana:prior.mana}:{})},m.previous_instance_id);
    if(!equal(m.initial_checkpoint,{engine:'SHARED_READY_V1',rules:spec.rules,state:{units:[unit]}}))throw Error('ready snapshot');ready.push(unit);

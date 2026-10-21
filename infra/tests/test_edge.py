@@ -53,8 +53,8 @@ class EdgeTests(unittest.TestCase):
   self.assertEqual(e.hostname('game.example.com'),'game.example.com')
  def test_reviewed_routes_exclude_admin_health_and_future_endpoints(self):
   pattern=e.approved_paths()
-  for path in ['/api/v1/state','/api/v1/tactical/test','/assets/app.js']:self.assertRegex(path,pattern)
-  for path in ['/health/ready','/admin','/api/v1/admin','/api/v1/future-route','/metrics','/.env','/ws']:self.assertIsNone(re.fullmatch(pattern,path))
+  for path in ['/api/v1/state','/api/v1/tactical/test','/api/v1/turns','/api/v1/turns/plans/step','/assets/turn-planner.js','/assets/app.js']:self.assertRegex(path,pattern)
+  for path in ['/health/ready','/admin','/api/v1/admin','/api/v1/future-route','/api/v1/turns/unknown','/metrics','/.env','/ws']:self.assertIsNone(re.fullmatch(pattern,path))
  def test_all_client_entry_styles_modules_and_item_art_are_reviewed(self):
   client=INFRA.parent/'realms/client';pattern=e.approved_paths()
   for path in re.findall(r'href="(/assets/[^" ]+\.css)"',(client/'index.html').read_text()):self.assertRegex(path,pattern)

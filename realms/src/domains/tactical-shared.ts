@@ -1,3 +1,4 @@
+import { lastRest } from './turn-rests.js';
 import { failureCostsView } from './tactical-failure.js';
 import { randomUUID } from 'node:crypto';
 import type pg from 'pg';
@@ -34,7 +35,7 @@ async function ready(c:ActionContext,id:string,spec:TacticalSpec){
  const candidate=startTactical(spec.rules,[...members.map(m=>m.initial_checkpoint.state.units[0]),unit,...await spawned(hostContext,spec)]);
  bounded({engine:'TACTICAL_TRANSITION_V1',rules:spec.rules,state:candidate,controlledIds:[...candidate.units.filter(u=>u.side==='PARTY').map(u=>u.id)],serverControlledIds:spec.allies.filter(a=>a.owned&&!a.manual).map(a=>a.id)});
  const initial={engine:'SHARED_READY_V1',rules:spec.rules,state:{units:[unit]}};
- await c.client.query('INSERT INTO shared_tactical_members(session_id,run_id,account_id,instance_id,unit_id,seat,action_id,previous_instance_id,initial_checkpoint) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9)',[id,c.run.id,c.accountId,started.instanceId,unitId,members.length,c.actionId,previous?.last_instance_id??null,initial]);
+ await c.client.query('INSERT INTO shared_tactical_members(session_id,run_id,account_id,instance_id,unit_id,seat,action_id,previous_instance_id,initial_checkpoint,rest_event_id) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)',[id,c.run.id,c.accountId,started.instanceId,unitId,members.length,c.actionId,previous?.last_instance_id??null,initial,await lastRest(c.client,c.run.id,previous?.last_instance_id)]);
  await c.client.query('INSERT INTO tactical_run_state(run_id,health,mana,last_instance_id) VALUES($1,$2,$3,$4) ON CONFLICT(run_id) DO UPDATE SET health=EXCLUDED.health,mana=EXCLUDED.mana,last_instance_id=EXCLUDED.last_instance_id',[c.run.id,unit.health,unit.mana,started.instanceId]);
  return {sessionId:id,instanceId:started.instanceId,unitId,turnCost:1,revision:await advanceRevision(c)};
 }

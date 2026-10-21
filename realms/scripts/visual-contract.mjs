@@ -4,9 +4,9 @@ import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import assert from 'node:assert/strict';
 const root=new URL('../',import.meta.url);
-const scenes=['overview','progression','abilities','statistics','history','inventory','paperdoll','inspector','comparison','loadouts','adventure','combat','dialog','empty','loading','error','setup','stress'];
+const scenes=['overview','progression','abilities','statistics','history','inventory','paperdoll','inspector','comparison','loadouts','adventure','combat','dialog','empty','loading','error','setup','stress','daily','daily-waiting','daily-confirmation','daily-loading','daily-error','daily-readonly'];
 const widths=[320,375,768,1024,1440,1920];
-const preferenceScenes=['overview','progression','inventory','inspector','comparison','adventure','combat','dialog'];
+const preferenceScenes=['overview','progression','inventory','inspector','comparison','adventure','combat','dialog','daily'];
 const preferenceModes=['motion','contrast','forced','text200','coarse'];
 export function requiredVisualCases(){
  return [...scenes.flatMap(scene=>widths.map(width=>({scene,mode:'normal',width}))),...preferenceScenes.flatMap(scene=>[320,1440].flatMap(width=>preferenceModes.map(mode=>({scene,mode,width}))))];
@@ -19,7 +19,7 @@ export function visualManifest(base=root){
  return {schemaVersion:1,sha256:hash.digest('hex'),files:files.length,bytes};
 }
 export function checkReports(reports,manifest){
- assert.ok(Array.isArray(reports)&&reports.length>=188,'Capture the documented responsive and preference matrix');
+ assert.ok(Array.isArray(reports)&&reports.length>=requiredVisualCases().length,'Capture the documented responsive and preference matrix');
  for(const r of reports){assert.equal(r.manifest,manifest.sha256,'Visual sources changed: capture/review fresh browser evidence before updating the baseline');assert.equal(r.horizontalOverflow,false,r.scene+': horizontal overflow');assert.equal(r.unnamedControls,0,r.scene+': unnamed control');assert.equal(r.tileCollisions,0,r.scene+': tile footer collision');assert.equal(r.headerCollisions,0,r.scene+': header collision');assert.equal(r.headerOverflow,0,r.scene+': header overflow');assert.equal(r.decorativeSvgErrors,0,r.scene+': decorative SVG semantics');assert.equal(r.headingSkips,0,r.scene+': skipped heading level');assert.equal(r.smallTargets,0,r.scene+': target smaller than 24px');assert.deepEqual(r.contrastFailures,[],r.scene+': sampled text contrast');assert.equal(r.filteredItemArt,0,r.scene+': per-item visual filter');if(r.mode==='text200')assert.equal(r.bodyFont,'32px','Enlarged-text branch must double root text');if(r.mode==='motion'){assert.equal(r.mainTransition,'0s','Reduced motion must disable main transitions');assert.equal(r.maximumControlTransitionMs,0,'Reduced motion must disable control transitions');}if(['contrast','forced'].includes(r.mode))assert.equal(r.texture,'none','Contrast branches must disable grain');if(r.mode==='coarse')assert.equal(r.coarseSmallTargets,0,r.scene+': coarse target smaller than 44px');assert.ok(r.viewport.width>=320&&r.viewport.height>=600);}
  for(const {scene,mode,width} of requiredVisualCases())assert.ok(reports.some(r=>r.scene===scene&&r.mode===mode&&r.viewport.width===width),scene+': missing '+mode+' '+width+'px case');
 }

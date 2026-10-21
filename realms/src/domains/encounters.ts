@@ -1,3 +1,4 @@
+import { consumeDailyAllowance } from './daily-allowances.js';
 import { requireCarryEntry } from './inventory-load.js';
 import { requireFeature } from '../rules/controls.js';
 import { requireEntityPrerequisite } from '../rules/requirements.js';
@@ -9,13 +10,15 @@ import { checksum,type Json } from '../foundation/json.js';
 import { randomInteger } from '../foundation/rng.js';
 import { captureCharacterSnapshot } from './character-snapshots.js';
 
-export type EncounterSpec={version:1;turnCost:1}|{version:2;turnCost:1;lootTableId:string};
+export type EncounterSpec={version:1;turnCost:1}|{version:2;turnCost:1;lootTableId:string}|{version:3;turnCost:number;lootTableId?:string;freeSource?:string};
 export function validateEncounterSpec(value:unknown): asserts value is EncounterSpec {
   if(!value || typeof value!=='object' || Array.isArray(value)) throw new DomainError(400,'INVALID_ENCOUNTER_SPEC');
   const spec=value as EncounterSpec;
-  const keys=spec.version===2?['version','turnCost','lootTableId']:['version','turnCost'];
-  if(Object.keys(value).some(k=>!keys.includes(k)) || ![1,2].includes(spec.version) || spec.turnCost!==1 ||
-    (spec.version===2 && (typeof spec.lootTableId!=='string' || !/^[a-z][a-z0-9_.-]{2,119}$/.test(spec.lootTableId)))) throw new DomainError(400,'INVALID_ENCOUNTER_SPEC');
+  const keys=spec.version===3?['version','turnCost','lootTableId','freeSource']:spec.version===2?['version','turnCost','lootTableId']:['version','turnCost'];
+  const id=(v:unknown)=>typeof v==='string'&&/^[a-z][a-z0-9_.-]{2,119}$/.test(v);
+  if(Object.keys(value).some(k=>!keys.includes(k)) || ![1,2,3].includes(spec.version) ||
+    (spec.version===3?(!Number.isInteger(spec.turnCost)||spec.turnCost<0||spec.turnCost>10||(spec.turnCost===0?!id(spec.freeSource):spec.freeSource!==undefined)||(spec.lootTableId!==undefined&&!id(spec.lootTableId))):spec.turnCost!==1)||
+    (spec.version===2&&!id(spec.lootTableId)))throw new DomainError(400,'INVALID_ENCOUNTER_SPEC');
 }
 function object(value:Record<string,Json>){
   if(!value || typeof value!=='object' || Array.isArray(value)) throw new DomainError(400,'INVALID_ENCOUNTER_STATE');
@@ -41,6 +44,7 @@ export async function beginEncounter(context:ActionContext,definitionId:string,i
   if((await context.client.query(`SELECT 1 FROM instance_participants p JOIN instances i ON i.id=p.instance_id
     WHERE p.run_id=$1 AND i.lifecycle='ACTIVE' AND i.kind IN('ENCOUNTER','COMBAT')`,[context.run.id])).rows.length) throw new DomainError(409,'ENCOUNTER_ALREADY_OPEN');
   if(context.run.turns<content.spec.turnCost) throw new DomainError(409,'INSUFFICIENT_TURNS');
+  if(content.spec.version===3&&content.spec.freeSource){const source=await consumeDailyAllowance(context,content.spec.freeSource);if(!source?.encounterOnly)throw new DomainError(409,'FREE_ENCOUNTER_SOURCE_UNAVAILABLE');}
   const id=randomUUID();
   await context.client.query("INSERT INTO instances(id,kind,content_release_id,seed) VALUES($1,'ENCOUNTER',$2,$3)",[id,context.run.content_release_id,randomBytes(32)]);
   await context.client.query('INSERT INTO instance_participants(instance_id,run_id) VALUES($1,$2)',[id,context.run.id]);

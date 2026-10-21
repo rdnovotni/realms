@@ -30,11 +30,14 @@ export async function transitionPreview(client:pg.PoolClient,accountId:string,ru
  const gold=(await client.query(`SELECT w.id,w.balance::text FROM wallets w JOIN state_scopes s ON s.id=w.scope_id WHERE s.run_id=$1 AND w.currency_id='GOLD' AND w.purpose='PLAYER' ORDER BY w.id`,[run.id])).rows;
  const contracts=(await client.query(`SELECT c.key,c.ascension_policy,c.reset_policy,c.default_value,s.value,s.revision::text FROM state_contracts c LEFT JOIN state_scopes owner ON owner.run_id=$1 LEFT JOIN scoped_state s ON s.scope_id=owner.id AND s.key=c.key WHERE c.scope_kind='RUN' ORDER BY c.key`,[run.id])).rows;
  const knowledge=(await client.query('SELECT count(*)::int AS n FROM discoveries WHERE account_id=$1',[accountId])).rows[0].n;
- const snapshot={accountId,nextRelease:releaseId,run:{id:run.id,characterId:run.character_id,status:run.status,revision:run.revision,turns:run.turns,release:run.content_release_id,rulesVersion:run.rules_version,mode:run.mode},consumption,possessions,gold,contracts,active,knowledge,contractVersion:ascensionContract.version};
+ const turnTables=(await client.query("SELECT to_regclass('turn_preferences') AS table")).rows[0].table;
+ const turnReserve=turnTables?(await client.query('SELECT reserve FROM turn_preferences WHERE account_id=$1',[accountId])).rows[0]?.reserve??0:0;
+ const dailyAllowances=turnTables?(await client.query('SELECT entity_id,charges,auto_collect,manual_uses FROM daily_allowances WHERE account_id=$1 ORDER BY entity_id',[accountId])).rows:[];
+ const snapshot={turnReserve,dailyAllowances,accountId,nextRelease:releaseId,run:{id:run.id,characterId:run.character_id,status:run.status,revision:run.revision,turns:run.turns,release:run.content_release_id,rulesVersion:run.rules_version,mode:run.mode},consumption,possessions,gold,contracts,active,knowledge,contractVersion:ascensionContract.version};
  const previewToken=createHmac('sha256',previewKey).update(checksum(snapshot as unknown as Json)).digest('hex');
  const ordinary=possessions.filter(i=>['TRADEABLE','ACCOUNT_BOUND'].includes(i.binding));
  return {runId:run.id,revision:run.revision,ready:run.status==='AFTERCORE'&&active===0&&!!run.content_release_id,activeInstances:active,
-  previewToken,contract:ascensionContract,retained:{turns:run.turns,consumption,knowledge,storedItems:ordinary.length,archivedItems:possessions.length-ordinary.length,gold:gold[0]?.balance??'0',carriedFields:contracts.filter(c=>c.ascension_policy==='CARRY').length},next:{releaseId,mode:run.mode,startingLevel:1,startingXP:'0',build:'UNCONFIGURED'}};
+  previewToken,contract:ascensionContract,retained:{turns:run.turns,turnReserve,dailyAllowances:dailyAllowances.length,consumption,knowledge,storedItems:ordinary.length,archivedItems:possessions.length-ordinary.length,gold:gold[0]?.balance??'0',carriedFields:contracts.filter(c=>c.ascension_policy==='CARRY').length},next:{releaseId,mode:run.mode,startingLevel:1,startingXP:'0',build:'UNCONFIGURED'}};
 }
 export function ascensionPreview(pool:pg.Pool,accountId:string,requestedRelease?:string){
  return transaction(pool,async client=>{
