@@ -1,3 +1,7 @@
+import { openSharedBattles,renderSharedState } from './shared-combat.js';
+import { openCombatPreparation,openPreparedItemUse } from './combat-preparation.js';
+import { openMonsterManual,openCombatLog,renderCombatPlan } from './combat-tools.js';
+import { renderCombatTimeline,renderFieldNotes,renderTacticalOptions } from './tactical-controls.js';
 import { folioIcon } from './icons.js';
 import type { GameSession } from './session.js';
 import type { Command,Snapshot } from './types.js';
@@ -23,11 +27,11 @@ function renderAscension(main:HTMLElement,session:GameSession,disabled:boolean){
  main.append(panel);
 }
 export function renderAdventure(main:HTMLElement,s:Snapshot,session:GameSession,disabled:boolean,navigate:(s:Screen)=>void){
- main.classList.add('campaign-adventure');
+ main.classList.add('campaign-adventure');main.append(button('Monster Manual',()=>void openMonsterManual(session)),button('Prepare combat items',()=>void openCombatPreparation(session)),button('Shared battles',()=>void openSharedBattles(session,()=>navigate('combat'))));
  if(s.game.run.status==='AFTERCORE')renderAscension(main,session,disabled);
  add(main,add(el('section','','panel hero'),icon('road'),el('span','Your journey','eyebrow'),heading('Follow the road.'),el('p','A familiar path can still hold an unfamiliar story. Choose where your next Turn takes you.')));
  add(main,add(el('div','','section-header'),el('h2','Known adventures'),el('small',`${s.game.adventures.length} discovered`)));
- if(s.game.activeEncounter){main.append(add(el('section','','panel adventure-resume'),icon('battle'),el('span','Encounter in progress','campaign-state'),el('h3','Your adventure is already underway'),el('p',s.game.activeEncounter.kind==='TACTICAL'?'Return to your saved encounter before beginning another.':'This saved encounter uses controls that are not available in this client yet.'),s.game.activeEncounter.kind==='TACTICAL'?button('Resume encounter',()=>navigate('combat'),false,'primary'):null));return;}
+ if(s.game.activeEncounter){main.append(add(el('section','','panel adventure-resume'),icon('battle'),el('span','Encounter in progress','campaign-state'),el('h3','Your adventure is already underway'),el('p',['TACTICAL','SHARED_TACTICAL'].includes(s.game.activeEncounter.kind)?'Return to your saved encounter before beginning another.':'This saved encounter uses controls that are not available in this client yet.'),['TACTICAL','SHARED_TACTICAL'].includes(s.game.activeEncounter.kind)?button('Resume encounter',()=>navigate('combat'),false,'primary'):null));return;}
  if(!s.game.adventures.length){main.append(el('p','No adventures have been discovered in this run yet. New content will appear here as you discover it.','empty'));return;}
  const cards=el('div','','cards');for(const adventure of s.game.adventures){
   const availability=adventureAvailability(s,adventure.turnCost,disabled||s.game.overdrunk===true&&adventure.turnCost>0||adventure.freeCharges===0||!!adventure.freeSource&&s.game.rolloverPending===true),card=el('article','','panel adventure');card.dataset.availability=availability.unavailable?'unavailable':'available';
@@ -41,11 +45,14 @@ export function renderAdventure(main:HTMLElement,s:Snapshot,session:GameSession,
   const begin=button(`Begin · ${adventure.turnCost} Turn`,()=>{navigate('combat');void session.action('/api/v1/tactical/start','START_TACTICAL',{definitionId:adventure.id});},availability.unavailable,'primary');begin.setAttribute('aria-describedby',explanation.id);add(card,explanation,begin);cards.append(card);
  }main.append(cards);if(s.game.hasMoreAdventures)main.append(el('p','Showing the first 100 discovered adventures.','help'));
 }
-export function renderCombat(main:HTMLElement,s:Snapshot,disabled:boolean,send:(c:Command)=>void,navigate:(s:Screen)=>void){
+export function renderCombat(main:HTMLElement,s:Snapshot,disabled:boolean,send:(c:Command)=>void,navigate:(s:Screen)=>void,session?:GameSession){
  main.classList.add('campaign-combat');const b=s.battle!,flow=combatTurn(b,!s.game.canWrite);
  const round=add(el('div','','combat-round'),el('span','Round'),el('strong',String(b.round))),identity=add(el('div','','combat-identity'),el('span','Tactical encounter','eyebrow'),heading(b.outcome?'An encounter remembered.':'Choose your next move.'));
  const turn=add(el('div','','combat-turn'),el('strong',flow.label),el('span',b.currentActor?label(b.currentActor):'Encounter complete'),el('p',flow.description));turn.setAttribute('role','status');turn.dataset.control=flow.server?'server':'player';
  const jump=el('a',b.outcome?'View result':'Go to turn controls','combat-action-link');jump.href='#combat-controls';if(b.outcome||flow.actor)turn.append(jump);add(main,add(el('div','','battle-top'),round,identity,turn));if(!s.game.canWrite)main.append(el('p','View-only session · you can inspect this saved encounter, but cannot commit actions.','campaign-readonly'));
+ if(session){main.append(button('Combat recap & log',()=>void openCombatLog(session,b.instanceId)));if(!b.shared)renderCombatPlan(main,session,b,disabled);}
+ if(session&&renderSharedState(main,session,b,disabled))return;
+ renderCombatTimeline(main,b);renderFieldNotes(main,b);
  const battlefield=el('div','','battlefield');battlefield.setAttribute('aria-label','Battlefield zones');
  for(const zone of b.battlefield.zones){const box=add(el('section','','zone'),el('h2',label(zone))),sides=el('div','','zone-sides');
   for(const side of ['PARTY','ENEMY']as const){const units=b.units.filter(u=>u.zone===zone&&u.side===side);if(!units.length)continue;const group=add(el('section','',`combat-side ${side.toLowerCase()}`),el('h3',side==='PARTY'?'Party':'Opponents')),cards=el('div','','units');for(const u of units)cards.append(renderUnit(u,b.currentActor));group.append(cards);sides.append(group);}box.append(sides);battlefield.append(box);
@@ -54,8 +61,11 @@ export function renderCombat(main:HTMLElement,s:Snapshot,disabled:boolean,send:(
  const actor=b.units.find(u=>u.id===b.currentActor),cap=b.partyCapabilities.find(c=>c.id===b.currentActor);if(!actor)return;
  const panel=section(actor.side==='ENEMY'||cap?.control==='SERVER'?'The world takes its turn':`${label(actor.id)} · Your turn`);
  panel.classList.add('combat-controls');const title=panel.querySelector('h2')!;title.id='combat-controls';title.tabIndex=-1;
+ if(flow.waiting){panel.append(el('p',flow.description));if(session)panel.append(button('Refresh shared battle',()=>void session.refresh(),session.busy));main.append(panel);return;}
  if(actor.side==='ENEMY'||cap?.control==='SERVER'){panel.classList.add('combat-world-turn');add(panel,el('p','Continue the next saved segment of combat. No actions continue while you are disconnected.'),button('Continue',()=>send({actorId:'hero',kind:'CONTINUE'}),disabled,'primary'));main.append(panel);return;}
  const budget=b.budgets[actor.id];if(!budget){panel.append(el('p','Action budgets are unavailable. Refresh to load the saved encounter.','help'));main.append(panel);return;}
+ if(session&&b.preparationEnabled)panel.append(button('Review prepared combat items',()=>void openPreparedItemUse(session,b,send),disabled));
+ if(renderTacticalOptions(panel,b,disabled,send)){panel.append(el('p',failureSummary(b.failureContract),'tooltip'));main.append(panel);return;}
  const targetLabel=el('label','Choose a target'),target=el('select');target.dataset.focus='combat-target';target.setAttribute('aria-label','Choose a target');for(const u of b.units){const option=el('option',`${label(u.id)} · ${u.health} health · ${label(u.state)}`);option.value=u.id;target.append(option);}target.value=b.units.find(u=>u.side!==actor.side&&u.state==='ACTIVE')?.id??actor.id;targetLabel.append(target);panel.append(targetLabel);
  const budgets=el('dl','','budget');for(const [name,value]of [['Main',budget.main],['Quick',budget.quick],['Reaction',budget.reaction]]as const){const cell=add(el('div'),el('dt',name),el('dd',String(value)));cell.classList.toggle('spent',value===0);budgets.append(cell);}panel.append(budgets,el('p','Targeted actions require the shown action budget, an eligible target in range, and enough resources. Disabled actions cannot be submitted.','combat-action-help'));
  const markTarget=()=>{for(const unit of main.querySelectorAll<HTMLElement>('[data-unit]'))unit.classList.toggle('selected-target',unit.dataset.unit===target.value);};target.addEventListener('change',markTarget);markTarget();

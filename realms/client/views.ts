@@ -39,7 +39,7 @@ export function render(root:HTMLElement,session:GameSession,screen:Screen,naviga
   else if(screen==='consumption')renderConsumption(main,session,disabled,()=>{navigate('daily');void session.loadTurns();});
   else if(screen==='character')renderCharacter(main,snapshot,session,disabled,()=>navigate('pack'));
   else if(screen==='pack')renderPack(main,snapshot,session,disabled);
-  else if(screen==='combat'&&snapshot.battle)renderCombat(main,snapshot,disabled,onCommand,navigate);
+  else if(screen==='combat'&&snapshot.battle)renderCombat(main,snapshot,disabled,onCommand,navigate,session);
   else renderAdventure(main,snapshot,session,disabled,navigate);
   main.prepend(el('p',shellChapter(renderedScreen),'shell-page-label'));
   const right=el('aside','','right-column');right.setAttribute('aria-label','Journey notes');const journal=renderJourneyJournal(snapshot,()=>navigate('combat'));

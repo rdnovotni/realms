@@ -44,3 +44,7 @@ Disable the affected feature through its reviewed control and preserve evidence 
 ## Consumption migration 042
 
 See [the consumption contract](consumption.md) for implemented routes, player workflows, migration/grants, lifecycle guarantees, remaining ownership boundaries and safe rollout/rollback. Production content adoption remains separate.
+
+## Tactical expansion migrations 043–047
+
+043 records bounded run plans; 044 derives resource-only rest eligibility and preserves rest integrity; 045 records append-only account quickslots; 046 proves every prepared equipment swap and permanent binding against its combat step; 047 proves physical item debits. [The tactical expansion contract](combat-completion.md#validation-and-rollout) describes source opt-ins, owner lifetimes, restricted grants, staging verification and the incompatible-engine rollback boundary. No production migration, feature activation or sealed content adoption is implied.

@@ -178,3 +178,7 @@ The authenticated query/action contracts, limits, reserve confirmation and autom
 See [the consumption contract](consumption.md) for implemented routes, player workflows, migration/grants, lifecycle guarantees, remaining ownership boundaries and safe rollout/rollback. Production content adoption remains separate.
 
 The consumption routes are `GET /api/v1/consumption`, `POST /api/v1/consumption/undo`, `POST /api/v1/consumption/preferences`, `POST /api/v1/consumption/meals/save`, `POST /api/v1/consumption/meals/delete`, `GET /api/v1/consumption/meals/preview`, `POST /api/v1/consumption/meals/start`, `POST /api/v1/consumption/meals/step` and `POST /api/v1/consumption/meals/stop`. Their fields and authority are documented in the linked contract.
+
+## Tactical expansion queries and finite plans
+
+`GET /api/v1/monsters`, `GET /api/v1/tactical/:id/log`, `GET /api/v1/tactical/preparation`, `POST /api/v1/tactical/preparation`, `GET /api/v1/tactical/shared`, `POST /api/v1/tactical/plans`, `POST /api/v1/tactical/plans/step` and `POST /api/v1/tactical/plans/stop` are defined in [the tactical expansion contract](combat-completion.md#api-and-player-flows). It also describes the intent-only formation, environment, disengagement, prepared-set and prepared-item additions to the existing combat routes, revisions, pagination, consent and read-only limits.

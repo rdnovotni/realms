@@ -79,3 +79,5 @@ Current product name: **Follybound**. [Implementation status](implementation-sta
 Original art and asset provenance: [client art](../client/art/README.md). Current names and compatibility rules are documented separately from historical design/provenance text.
 
 - [Shared Folio icons and interactions](folio-interactions.md) — reusable SVG, notes, review and dialog conventions.
+
+- [Tactical combat expansion and player workflows](combat-completion.md)

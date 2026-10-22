@@ -16,7 +16,7 @@ export function normalizeEquipment(input:EquipmentPlan):EquipmentPlan{
  return {activeSet:input.activeSet,slots};
 }
 async function snapshot(client:pg.PoolClient,runId:string){return (await client.query('SELECT equipment_snapshot($1) AS state',[runId])).rows[0].state as EquipmentPlan;}
-async function record(c:ActionContext,after:EquipmentPlan,reason:'PLAYER_SETUP'|'ASCENSION_CLEAR'){
+async function record(c:ActionContext,after:EquipmentPlan,reason:'PLAYER_SETUP'|'ASCENSION_CLEAR'|'COMBAT_SWAP'){
  const before=await snapshot(c.client,c.run.id);if(checksum(before)===checksum(after))return false;
  const revision=(await c.client.query('SELECT revision::text FROM run_equipment WHERE run_id=$1',[c.run.id])).rows[0]?.revision??'0';
  if(BigInt(revision)>=9223372036854775807n)throw new DomainError(409,'EQUIPMENT_REVISION_EXHAUSTED');
@@ -50,4 +50,9 @@ export async function clearEquipmentForAscension(c:ActionContext){await record(c
 export async function equipmentView(pool:pg.Pool,accountId:string){
  const row=(await pool.query(`SELECT equipment_snapshot(r.id) AS state,coalesce(e.revision,0)::text AS revision FROM runs r JOIN characters c ON c.id=r.character_id LEFT JOIN run_equipment e ON e.run_id=r.id WHERE c.account_id=$1 AND r.status IN('ACTIVE','AFTERCORE')`,[accountId])).rows[0];
  if(!row)throw new DomainError(409,'NO_RUN');return {...row.state,equipmentRevision:row.revision};
+}
+
+/** Called only after the saved SWAP_SET transition; SQL independently verifies it. */
+export async function recordPreparedSwap(c:ActionContext,set:'A'|'B'){
+ const before=await snapshot(c.client,c.run.id);if(before.activeSet!==set)await record(c,{...before,activeSet:set},'COMBAT_SWAP');
 }

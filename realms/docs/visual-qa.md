@@ -86,3 +86,7 @@ All art, grain and fonts are local or system resources. Grain is one static sub-
 October 19 integration verification recaptured all 188 required browser cases after the mobile-header correction. The sampled minimum remains 6.59:1; no header collision/overflow was detected. Screenshots from the initial VIS-07 pass are historical and can contain the superseded cramped header.
 
 For the historical VIS-07 slice, rollback is a source revert and rebuild. No migration, public service change, combat/progression formula, ownership rule, discovery gate or persistent gameplay contract is changed.
+
+## Tactical expansion checkpoint
+
+The combat expansion extends the required matrix to 410 cases: 45 scenes at six widths (320–1920), plus 14 key scenes in five preference branches at narrow/wide sizes. New scenes cover legal field options/custom formation, committed boss warnings, shared lobby/waiting/personal claim, read-only combat, item setup/review, Manual/log and routine controls. The [captured browser reports](screenshots/combat/browser-contracts.json) are real browser measurements of synthetic public projections. Extra enlarged-text combat samples are retained. `npm run visual:check` rejects stale source fingerprints, missing required cases, overflow, unnamed controls, small targets, header/tile collisions, heading skips and sampled contrast failures. Source contrast checking remains a separate 55-pair gate. Native touch, speech and browser zoom require device verification.

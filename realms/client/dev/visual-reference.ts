@@ -1,3 +1,6 @@
+import { combatFixture,combatPreparationFixture } from './combat-fixture.js';
+import { openCombatPreparation,openPreparedItemUse } from '../combat-preparation.js';
+import { openMonsterManual,openCombatLog } from '../combat-tools.js';
 import { consumptionFixture,nightcapFixture,mealFixture } from './consumption-fixture.js';
 import { openItemUse } from '../inventory-services.js';
 import { reviewMeal } from '../consumption.js';
@@ -10,14 +13,18 @@ import { openItemComparison } from '../item-comparison.js';
 import { openAppearance,applyAppearance } from '../appearance.js';
 import type { Snapshot,InventoryPage,Advancement,EquipmentPreview,AbilityBook,AdvancementHistory,CharacterSection } from '../types.js';
 type Fixture={schemaVersion:number;snapshot:Snapshot;inventory:InventoryPage|null;advancement:Advancement|null;equipmentPreview:EquipmentPreview|null;characterStats:EquipmentPreview|null;abilityBook:AbilityBook|null;characterHistory:AdvancementHistory|null};
-const scenes=['overview','progression','abilities','statistics','history','inventory','paperdoll','inspector','comparison','loadouts','adventure','combat','dialog','empty','loading','error','setup','stress','daily','daily-waiting','daily-confirmation','daily-loading','daily-error','daily-readonly','consumption','consumption-overdrunk','consumption-empty','consumption-loading','consumption-error','consumption-readonly','consumption-running','consumption-nightcap','consumption-meal','adventure-overdrunk'];
+const scenes=['overview','progression','abilities','statistics','history','inventory','paperdoll','inspector','comparison','loadouts','adventure','combat','dialog','empty','loading','error','setup','stress','daily','daily-waiting','daily-confirmation','daily-loading','daily-error','daily-readonly','consumption','consumption-overdrunk','consumption-empty','consumption-loading','consumption-error','consumption-readonly','consumption-running','consumption-nightcap','consumption-meal','adventure-overdrunk','combat-field','combat-boss','combat-shared-lobby','combat-shared-waiting','combat-shared-claim','combat-readonly','combat-preparation','combat-item-review','combat-manual','combat-log','combat-routine'];
 const url=new URL(location.href),scene=url.searchParams.get('scene')??'overview',mode=url.searchParams.get('mode')??'normal';
-const name=scene==='setup'?'setup':scene.startsWith('adventure')?'adventure':['inventory','paperdoll','inspector','comparison','loadouts','empty','loading','error'].includes(scene)?'pack':['adventure','combat','setup'].includes(scene)?'combat':'character';
+const name=scene==='setup'?'setup':scene.startsWith('adventure')?'adventure':['inventory','paperdoll','inspector','comparison','loadouts','empty','loading','error'].includes(scene)?'pack':(['adventure','combat','setup'].includes(scene)||scene.startsWith('combat'))?'combat':'character';
 const response=await fetch('/dev/fixture/'+name);if(!response.ok)throw Error('Start the frozen visual reference server');const fixture:Fixture=await response.json();
 const manifest=await (await fetch('/dev/manifest')).json() as {sha256:string};
 if(fixture.schemaVersion!==1)throw Error('Unsupported visual fixture');
 const root=document.getElementById('app')!;
+if(scene.startsWith('combat-'))fixture.snapshot.battle=combatFixture(fixture.snapshot,scene);
 const readModels:Record<string,unknown>={
+ '/api/v1/tactical/preparation':combatPreparationFixture(fixture.snapshot),
+ '/api/v1/monsters':{entries:[{id:'monster.temple',name:'Temple guardian',knowledge:'OBSERVED',encounters:3,victories:2,description:{description:'An ancient ward protects the ruined hall.'},abilities:['temple.marked_eruption']}],offset:0,hasMore:false},
+ ['/api/v1/tactical/'+fixture.snapshot.battle?.instanceId+'/log']:{round:3,outcome:'VICTORY',entries:[{revision:1,actorId:'hero',kind:'INTERACT',targetId:null,source:'brazier',roll:14,hit:true,damage:8,healing:0,events:[{kind:'COMBO',targetId:'enemy',amount:8},{kind:'BREAK',targetId:'enemy',amount:0}]}],hasMore:false,nextAfter:1},
  '/api/v1/inventory/use-preview':nightcapFixture(fixture.snapshot),'/api/v1/consumption/meals/preview':mealFixture(fixture.snapshot),
  '/api/v1/client/state':fixture.snapshot.game,'/api/v1/progression':fixture.snapshot.progression,
  '/api/v1/progression/options':fixture.snapshot.options,'/api/v1/inventory':fixture.inventory,
@@ -45,7 +52,7 @@ if(scene==='consumption-error'){session.consumption=null;session.consumptionErro
 if(scene==='consumption-readonly')session.snapshot.game.canWrite=false;
 if(scene==='consumption-running'){session.consumption!.executions[0]!.status='ACTIVE';session.consumption!.executions[0]!.stopReason=null;session.runningMeal=session.consumption!.executions[0]!.id;}
 if(scene==='adventure-overdrunk')session.snapshot.game.overdrunk=true;
-let screen:Screen=scene.startsWith('consumption')?'consumption':scene.startsWith('daily')?'daily':['inventory','paperdoll','inspector','comparison','loadouts','empty','loading','error'].includes(scene)?'pack':scene.startsWith('adventure')?'adventure':scene==='combat'?'combat':'character';
+let screen:Screen=scene.startsWith('consumption')?'consumption':scene.startsWith('daily')?'daily':['inventory','paperdoll','inspector','comparison','loadouts','empty','loading','error'].includes(scene)?'pack':scene.startsWith('adventure')?'adventure':scene.startsWith('combat')?'combat':'character';
 if(['overview','progression','abilities','statistics','history'].includes(scene))session.characterSection=scene as CharacterSection;
 if(scene==='stress'){
  session.characterSection='progression';
@@ -105,4 +112,9 @@ if(scene==='dialog')openAppearance();
 if(scene==='consumption-nightcap')await openItemUse(session,{id:'00000000-0000-4000-8000-000000000102',useKind:'USE'});
 if(scene==='consumption-meal')await reviewMeal(session,'00000000-0000-4000-8000-000000000201');
 
+if(scene==='combat-preparation')await openCombatPreparation(session);
+if(scene==='combat-item-review')await openPreparedItemUse(session,session.snapshot.battle!,()=>{});
+if(scene==='combat-manual')await openMonsterManual(session);
+if(scene==='combat-log')await openCombatLog(session,session.snapshot.battle!.instanceId);
+if(scene==='combat-field'||scene==='combat-routine')for(const d of document.querySelectorAll<HTMLDetailsElement>('#app main details'))d.open=true;
 requestAnimationFrame(runAudit);
