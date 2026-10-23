@@ -56,3 +56,24 @@ test('concentration takes ownership of an existing Refresh family and removes it
  const shifted=stepTactical(controlledRules,result.state,1,{actorId:'hero',kind:'TECHNIQUE',abilityId:'class.mage.shift',targetId:'enemy.other',draws:[{targetId:'enemy.other'}]}).state;assert.equal(shifted.units[1]!.effects!.length,0);assert.equal(shifted.units[2]!.effects![0]!.concentrationId,shifted.units[0]!.concentration!.token);
  const down=structuredClone(result.state);down.units[0]!.health=0;down.units[0]!.state='DOWNED';down.cursor=1;const ended=stepTactical(controlledRules,down,1,{actorId:'enemy',kind:'END'}).state;assert.equal(ended.units[1]!.effects!.length,0);assert.equal(ended.units[0]!.concentration,undefined);
 });
+
+
+test('technique previews match all twenty actual attack/save outcomes and disclose source costs without mutation',async()=>{
+ const {tacticalOptions}=await import('../src/domains/tactical-options.js');
+ for(const save of [false,true]){
+  const spec=save?ability({targetSide:'ALLY',area:'SINGLE',effect:{kind:'HEAL',min:4,max:4},check:{mode:'SAVE',attribute:'wisdom',skillId:'skill.magic',modifier:0,difficulty:16}}):ability({area:'SINGLE'});
+  const s=initial([spec]);if(save)s.units[0]!.health=10;
+  const before=structuredClone(s),targetId=save?'hero':'enemy',option=tacticalOptions(rules,s,'hero').find(o=>o.command.kind==='TECHNIQUE'&&o.command.targetId===targetId)!;
+  assert.equal(option.available,true);assert.equal(option.checkKind,save?'SAVE':'HIT');assert.equal(option.area,'SINGLE');assert.deepEqual(option.resourceCost,{'class.mage.focus':1});assert.equal(option.cooldownUntil,0);
+  let successes=0;for(let roll=1;roll<=20;roll++){const result=stepTactical(rules,s,0,{kind:'TECHNIQUE',actorId:'hero',targetId,abilityId:'class.mage.wave',draws:[{targetId,roll,amount:save?4:8}]});const check=result.evidence.technique!.events[0]!.check!;if(save?!check.success:check.success)successes++;}
+  assert.equal(option.hitChance,successes*5);assert.deepEqual(s,before);
+  s.units[0]!.techniqueCooldowns!['class.mage.wave']=4;const locked=tacticalOptions(rules,s,'hero').find(o=>o.command.kind==='TECHNIQUE'&&o.command.targetId===targetId)!;assert.equal(locked.available,false);assert.equal(locked.cooldownUntil,4);assert.equal(locked.hitChance,null);
+ }
+});
+
+
+test('new technique chance metadata preserves the existing battlefield AI ranking',async()=>{
+ const {battlefieldRules}=await import('./tactical-battlefield-fixture.js'),{battlefieldDecision,tacticalOptions}=await import('../src/domains/tactical-options.js');
+ const r={...battlefieldRules(),techniques:{version:1 as const}},hero=unit('hero','PARTY',4),enemy=unit('enemy','ENEMY',5);enemy.stats.accuracy=10;enemy.techniques=profile([ability({area:'SINGLE',check:{mode:'ATTACK',attribute:'intelligence',skillId:'skill.magic',modifier:5,difficulty:10}})]);
+ const s=startTactical(r,[hero,enemy]),options=tacticalOptions(r,s,'enemy');assert.ok(options.find(o=>o.command.kind==='TECHNIQUE')!.hitChance!>options.find(o=>o.command.kind==='ATTACK')!.hitChance!);assert.equal(battlefieldDecision(r,s,'enemy').kind,'ATTACK');
+});
