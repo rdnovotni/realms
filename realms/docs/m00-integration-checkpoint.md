@@ -33,7 +33,7 @@ node --import tsx scripts/checkpoint-rehearsal.mjs \
   --baseline "$baseline/realms" --receipt /tmp/m00-rehearsal.json --confirm-disposable
 ```
 
-For CI, the PostgreSQL client bridge uses only the explicit job service-container ID. It does not use a production container, external network, operator credential or production dump. The ordinary full integration, worker, runtime, infrastructure, content, documentation, registry, visual, type/build and packaged-release gates remain required. A synthetic restore is not proof of actual production backup freshness, independent-machine disaster recovery, real user login or load acceptance.
+For CI, the PostgreSQL client bridge uses only the explicit job service-container ID. It does not use a production container, external network, operator credential or production dump. Review also identified an information-exposure defect in the inherited battlefield projection. The integration removes raw interaction/Stagger/unit profiles and projects only public terrain/hazard fields; solo/shared-context and saved-view regressions enforce that boundary without changing journals or client sources. The ordinary full integration, worker, runtime, infrastructure, content, documentation, registry, visual, type/build and packaged-release gates remain required. A synthetic restore is not proof of actual production backup freshness, independent-machine disaster recovery, real user login or load acceptance.
 
 ## Deployment observations — kept separate
 
