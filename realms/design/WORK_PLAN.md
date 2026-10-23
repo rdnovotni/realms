@@ -4,7 +4,7 @@ Generated from `feature-registry.json` and the fingerprinted `source-catalog.jso
 
 47 documents, 2096 section checklists, 13,187 source entries including 11,607 rules. Coverage is a mapping count, **not a feature completion percentage**.
 
-Current section assessments: historical: 37, partial: 56, unassessed: 2003.
+Current section assessments: historical: 37, partial: 61, unassessed: 1998.
 
 Finish reusable feature frameworks with minimal test fixtures before substantial authored content. Keep canonical launch tiers and post-launch/deployment gates visible; do not treat examples as locked catalogs.
 

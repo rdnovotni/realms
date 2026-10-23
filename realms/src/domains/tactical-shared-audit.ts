@@ -1,3 +1,4 @@
+import { historicalCombatItem,proveCombatItemDebit } from './tactical-combat-items.js';
 import type pg from 'pg';
 import type { ActionContext } from '../foundation/action.js';
 import { checksum,type Json } from '../foundation/json.js';
@@ -35,7 +36,7 @@ export async function sharedTacticalMismatchCount(client:pg.PoolClient){
   if(!origin||origin.account_id!==members[0]!.account_id||origin.action_type!==(s.lifecycle==='CANCELLED'?'CANCEL_SHARED_TACTICAL':'START_SHARED_TACTICAL'))throw Error('host origin');
   const host=members[0]!,c={client,accountId:host.account_id,run:{...host,id:host.member_run_id}} as ActionContext;
   const pins=Object.fromEntries(spec.allies.filter(a=>a.owned).map(a=>[a.id,origin.checkpoint.state.units.find((u:TacticalUnit)=>u.id===a.id)?.companionRecoveryId??null]));
-  const npcs=await spawned(c,spec,pins);let state=startTactical(spec.rules,[...ready,...npcs]);if(s.lifecycle==='CANCELLED')state.outcome='RETREAT';
+  const npcs=await spawned(c,spec,pins,host.created_at);let state=startTactical(spec.rules,[...ready,...npcs]);if(s.lifecycle==='CANCELLED')state.outcome='RETREAT';
   const initial:TacticalCheckpoint={engine:'TACTICAL_TRANSITION_V1',rules:spec.rules,state,controlledIds:[...members.map(m=>m.unit_id),...spec.allies.filter(a=>!a.owned||a.manual).map(a=>a.id)],serverControlledIds:spec.allies.filter(a=>a.owned&&!a.manual).map(a=>a.id)};
   if(!equal(initial,origin.checkpoint))throw Error('initial state');
   const draws=(await client.query('SELECT * FROM shared_tactical_draws WHERE session_id=$1 ORDER BY counter',[s.id])).rows;if(draws.some((d,i)=>BigInt(d.counter)!==BigInt(i)))throw Error('draw sequence');
@@ -44,11 +45,11 @@ export async function sharedTacticalMismatchCount(client:pg.PoolClient){
   try{for(;;){const steps=(await client.query('FETCH FORWARD 32 FROM shared_steps_audit')).rows;if(!steps.length)break;
   for(const step of steps){
    const member=members.find(m=>m.account_id===step.account_id);if(!member||step.revision!==state.revision+1)throw Error('step owner');
-   const intent=step.intent,command={...intent} as Record<string,unknown>;delete command.roll;delete command.rawDamage;if(intent.kind==='USE_HEALING_ABILITY')delete command.amount;if(intent.kind==='TECHNIQUE')delete command.draws;if(intent.kind==='MOVE')delete command.opportunities;
+   const intent=step.intent,command={...intent} as Record<string,unknown>;delete command.roll;delete command.rawDamage;if(intent.kind==='USE_COMBAT_ITEM'){delete command.item;delete command.draws;await proveCombatItemDebit(client,step.action_id,intent.item.itemId);}if(intent.kind==='USE_HEALING_ABILITY')delete command.amount;if(intent.kind==='TECHNIQUE')delete command.draws;if(intent.kind==='MOVE')delete command.opportunities;
    const checkpoint={...initial,state};
    if(step.control==='SERVER'){if(!equal(command,enemyCommand(checkpoint)))throw Error('AI');}
    else if(intent.actorId!==member.unit_id&&!(member.member_run_id===s.host_run_id&&spec.allies.some(a=>a.id===intent.actorId&&(!a.owned||a.manual))))throw Error('foreign control');
-   const expected=await resolveTacticalIntent(checkpoint,command as TacticalCommand,async(key,bound)=>{const d=byKey.get(key);if(!d||d.action_id!==step.action_id||Number(d.bound)!==bound||used.has(key)||Number(d.value)!==randomInteger(host.seed,'shared-tactical',BigInt(d.counter),bound))throw Error('draw');used.add(key);return Number(d.value);});
+   const expected=await resolveTacticalIntent(checkpoint,command as TacticalCommand,async(key,bound)=>{const d=byKey.get(key);if(!d||d.action_id!==step.action_id||Number(d.bound)!==bound||used.has(key)||Number(d.value)!==randomInteger(host.seed,'shared-tactical',BigInt(d.counter),bound))throw Error('draw');used.add(key);return Number(d.value);},intent.kind==='USE_COMBAT_ITEM'?()=>historicalCombatItem(client,s.release_id,intent.item.itemId,spec.rules):undefined);
    if(!equal(expected,intent))throw Error('intent');const result=stepTactical(spec.rules,state,state.revision,intent);assertSharedPartyConsent(state,result.state,intent.actorId,new Map(state.units.filter(u=>u.side==='PARTY').map(u=>[u.id,members.find(m=>m.unit_id===u.id)?.account_id??host.account_id])),command as TacticalCommand);if(!equal(result.evidence,step.evidence)||!equal(result.state,step.state))throw Error('transition');state=result.state;
   }
   }}finally{await client.query('CLOSE shared_steps_audit');}

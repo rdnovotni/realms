@@ -1,0 +1,41 @@
+import { requireEntityPrerequisite } from '../rules/requirements.js';
+import { requireFeature } from '../rules/controls.js';
+import type pg from 'pg';
+import { DomainError } from '../foundation/errors.js';
+import type { ActionContext } from '../foundation/action.js';
+import { validateCombatItem,type CombatItemSpec } from './combat-preparation-content.js';
+import { normalizeEffectGrants,validatePeriodicGrants,applyOnHitEffects,type EffectGrant } from './tactical-effects.js';
+import { useTechnique,techniqueTargets,type Technique,type TechniqueDraw } from './tactical-techniques.js';
+import { fieldDistance } from './tactical-battlefield.js';
+import type { TacticalRules,TacticalState,TacticalUnit } from './tactical-engine.js';
+import type { TacticalCheckpoint } from './tactical-encounters.js';
+export type CombatItemGrant={itemId:string;sourceId:string;sourceRevision:number;spec:CombatItemSpec;grants:EffectGrant[]};
+export type CombatItemCommand={actorId:string;kind:'USE_COMBAT_ITEM';slot:number;targetId:string;allowFavorite:boolean;confirmRare:boolean};
+export type CombatItemIntent=CombatItemCommand&{item:CombatItemGrant;draws:TechniqueDraw[]};
+export function itemTechnique(g:CombatItemGrant):Technique{const d=g.spec.damage!;return {id:g.sourceId+'.combat',key:'combat',sourceId:g.sourceId,sourceRevision:g.sourceRevision,sourceInstanceIds:[g.itemId],minimumNativeLevel:0,delivery:g.spec.delivery,action:g.spec.action,targetSide:g.spec.targetSide,area:g.spec.area,range:g.spec.range,manaCost:0,resourceCost:{},cooldownRounds:0,check:{mode:'ATTACK',attribute:d.attribute,skillId:d.skillId,difficulty:0,modifier:d.modifier},effect:{kind:'DAMAGE',type:d.type,min:d.min,max:d.max,penetration:d.penetration},grants:[]};}
+export async function historicalCombatItem(client:Pick<pg.PoolClient,'query'>,releaseId:string,itemId:string,r:TacticalRules):Promise<CombatItemGrant>{
+ const row=(await client.query("SELECT i.definition_id,i.definition_revision,v.definition->'mechanics'->'combatItem' AS spec FROM inventory_items i JOIN content_versions v ON v.entity_id=i.definition_id AND v.revision=i.definition_revision JOIN release_entries e ON e.release_id=$1 AND e.entity_id=i.definition_id AND e.revision=i.definition_revision WHERE i.id=$2",[releaseId,itemId])).rows[0];validateCombatItem(row?.spec);const spec=row.spec as CombatItemSpec;
+ if(!r.preparation||spec.damage&&!r.typedDamage?.types.includes(spec.damage.type))throw new DomainError(409,'COMBAT_ITEM_RULES_MISMATCH');
+ const grants:EffectGrant[]=[];for(const effectId of spec.effectIds){const e=(await client.query("SELECT e.revision,v.definition->'mechanics'->'tacticalRoundEffect' AS effect FROM release_entries e JOIN content_versions v ON v.entity_id=e.entity_id AND v.revision=e.revision WHERE e.release_id=$1 AND e.entity_id=$2",[releaseId,effectId])).rows[0];if(!e)throw new DomainError(409,'COMBAT_ITEM_EFFECT_NOT_PINNED');grants.push({effectId,effectRevision:e.revision,sourceId:row.definition_id,sourceRevision:row.definition_revision,effect:e.effect});}
+ if(grants.length){if(!r.roundEffects)throw new DomainError(409,'COMBAT_ITEM_EFFECTS_DISABLED');normalizeEffectGrants(grants);validatePeriodicGrants(grants,r.roundEffects.version,r.typedDamage?.types);}
+ return {itemId,sourceId:row.definition_id,sourceRevision:row.definition_revision,spec,grants};
+}
+export async function loadCombatItem(c:ActionContext,cp:TacticalCheckpoint,command:CombatItemCommand){
+ if(c.authorizationSource==='AUTOMATION')throw new DomainError(403,'COMBAT_ITEM_REQUIRES_MANUAL_USE');
+ const actor=cp.state.units.find(u=>u.id===command.actorId),itemId=actor?.prepared?.quickslots.find(s=>s.slot===command.slot)?.itemId;if(!itemId)throw new DomainError(409,'COMBAT_ITEM_NOT_PREPARED');
+ const row=(await c.client.query(`SELECT i.quantity::text,i.container_id,s.run_id,b.kind,coalesce(a.favorite,false) favorite,EXISTS(SELECT 1 FROM inventory_item_locks WHERE item_id=i.id AND locked) locked,EXISTS(SELECT 1 FROM equipment_slots WHERE item_id=i.id) equipped,EXISTS(SELECT 1 FROM equipment_loadout_items WHERE item_id=i.id) saved,EXISTS(SELECT 1 FROM inventory_item_annotations WHERE item_id=i.id AND collection_protected) collection FROM inventory_items i JOIN inventory_containers b ON b.id=i.container_id JOIN state_scopes s ON s.id=b.scope_id LEFT JOIN inventory_item_annotations a ON a.item_id=i.id AND a.account_id=$1 WHERE i.id=$2 FOR SHARE OF i,b,s`,[c.accountId,itemId])).rows[0];
+ if(!row||row.run_id!==c.run.id||row.kind!=='CARRIED')throw new DomainError(403,'COMBAT_ITEM_NOT_OWNED');if(BigInt(row.quantity)<1n)throw new DomainError(409,'COMBAT_ITEM_EMPTY');if(row.locked||row.equipped||row.saved||row.collection)throw new DomainError(409,'COMBAT_ITEM_PROTECTED');if(row.favorite&&!command.allowFavorite)throw new DomainError(409,'FAVORITE_CONFIRMATION_REQUIRED');
+ await requireEntityPrerequisite(c,(await c.client.query('SELECT definition_id FROM inventory_items WHERE id=$1',[itemId])).rows[0].definition_id);
+ const grant=await historicalCombatItem(c.client,c.run.content_release_id!,itemId,cp.rules);await requireFeature(c.client,'action.USE_ITEM',c.accountId);await requireFeature(c.client,`content.${grant.sourceId}`,c.accountId);if(grant.spec.rare&&!command.confirmRare)throw new DomainError(409,'RARE_ITEM_CONFIRMATION_REQUIRED');return grant;
+}
+export function combatItemTargets(r:TacticalRules,s:TacticalState,actor:TacticalUnit,g:CombatItemGrant,targetId:string){const p=g.spec,target=s.units.find(u=>u.id===targetId);if(!target||target.state==='DEFEATED'||(p.targetSide==='ALLY')!==(target.side===actor.side)||fieldDistance(r,actor.zone,target.zone)>p.range)throw new DomainError(409,'ILLEGAL_COMBAT_ITEM_TARGET');return (p.area==='SINGLE'?[target]:s.units.filter(u=>u.zone===target.zone&&u.state!=='DEFEATED'&&(p.targetSide==='ALLY')===(u.side===actor.side))).sort((a,b)=>a.id<b.id?-1:1);}
+export function useCombatItem(r:TacticalRules,s:TacticalState,intent:CombatItemIntent){
+ const actor=s.units.find(u=>u.id===intent.actorId)!,g=intent.item;validateCombatItem(g.spec);if(!r.preparation||!actor.prepared?.quickslots.some(q=>q.slot===intent.slot&&q.itemId===g.itemId)||g.spec.rare&&!intent.confirmRare)throw new DomainError(409,'COMBAT_ITEM_NOT_PREPARED');
+ const controls=new Set((actor.effects??[]).flatMap(e=>e.effect.version===4&&e.effect.control?[e.effect.control]:[]));if(g.spec.delivery==='MAGICAL'&&controls.has('SILENCE')||g.spec.delivery==='MARTIAL'&&controls.has('DISARM'))throw new DomainError(409,'COMBAT_ITEM_SUPPRESSED');
+ const p=g.spec,targets=combatItemTargets(r,s,actor,g,intent.targetId);if(s.budgets[actor.id]![p.action==='MAIN'?'main':'quick']!==1)throw new DomainError(409,'COMBAT_ITEM_ACTION_SPENT');
+ if(p.damage){const original=actor.techniques,hit=actor.onHitEffects,cooldowns=structuredClone(actor.techniqueCooldowns),ability=itemTechnique(g);try{actor.techniques={version:1,maximums:{},abilities:[ability]};actor.onHitEffects=g.grants;return {itemId:g.itemId,slot:intent.slot,technique:useTechnique(r,s,{actorId:actor.id,kind:'TECHNIQUE',abilityId:ability.id,targetId:intent.targetId,draws:intent.draws})};}finally{actor.techniques=original;if(hit===undefined)delete actor.onHitEffects;else actor.onHitEffects=hit;if(cooldowns===undefined)delete actor.techniqueCooldowns;else actor.techniqueCooldowns=cooldowns;}}
+ if(intent.draws.length)throw new DomainError(409,'INVALID_COMBAT_ITEM_DRAWS');s.budgets[actor.id]![p.action==='MAIN'?'main':'quick']=0;
+ const effects=[],restored=[];for(const t of targets){const health=t.health,mana=t.mana??0;t.health=Math.min(t.stats.maxHealth,t.health+p.heal);t.mana=Math.min(t.stats.maxMana,mana+p.mana);if(p.heal&&t.health>0){t.state='ACTIVE';t.strikes=0;t.stabilized=false;}if(g.grants.length)effects.push(...applyOnHitEffects(t,{id:actor.id,onHitEffects:g.grants},s.revision+1));restored.push({targetId:t.id,health:t.health-health,mana:(t.mana??0)-mana});}
+ return {itemId:g.itemId,slot:intent.slot,restored,effects};
+}
+export async function proveCombatItemDebit(client:Pick<pg.PoolClient,'query'>,actionId:string,itemId:string){if(!(await client.query("SELECT 1 FROM inventory_quantity_operations WHERE action_id=$1 AND from_item_id=$2 AND kind='CONSUME' AND quantity=1 AND reason='COMBAT_ITEM_USE'",[actionId,itemId])).rowCount)throw new DomainError(409,'COMBAT_ITEM_DEBIT_MISMATCH');}

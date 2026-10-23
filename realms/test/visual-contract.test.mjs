@@ -11,7 +11,7 @@ test('frozen fixtures contain public, internally consistent scoped read models a
 test('visual source manifest is deterministic and rejects stale or invalid browser evidence',()=>{
  const m=visualManifest();assert.deepEqual(visualManifest(),m);assert.match(m.sha256,/^[a-f0-9]{64}$/);
  const reports=requiredVisualCases().map(({scene,mode,width})=>({scene,mode,manifest:m.sha256,horizontalOverflow:false,unnamedControls:0,tileCollisions:0,headerCollisions:0,headerOverflow:0,decorativeSvgErrors:0,headingSkips:0,smallTargets:0,contrastFailures:[],filteredItemArt:0,viewport:{width,height:1000},bodyFont:mode==='text200'?'32px':'16px',texture:['contrast','forced'].includes(mode)?'none':'grain',mainTransition:'0s',maximumControlTransitionMs:0,coarseSmallTargets:0}));
- assert.equal(reports.length,304);
+ assert.equal(reports.length,410);
  assert.doesNotThrow(()=>checkReports(reports,m));
  for(const [mode,key,value] of [['text200','bodyFont','16px'],['contrast','texture','grain'],['forced','texture','grain'],['motion','maximumControlTransitionMs',120],['coarse','coarseSmallTargets',1]]){const invalid=structuredClone(reports);invalid.find(r=>r.mode===mode)[key]=value;assert.throws(()=>checkReports(invalid,m));}
  const cliDir=mkdtempSync(tmpdir()+'/folio-contract-');try{const path=cliDir+'/reports.json';writeFileSync(path,JSON.stringify(reports));const cli=spawnSync(process.execPath,[fileURLToPath(new URL('../scripts/visual-contract.mjs',import.meta.url)),'--actual',path],{encoding:'utf8'});assert.equal(cli.status,0,cli.stderr);assert.match(cli.stdout,/Fresh report validated/);}finally{rmSync(cliDir,{recursive:true,force:true});}
