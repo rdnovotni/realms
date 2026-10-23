@@ -539,3 +539,11 @@ test('meal drafts stay scoped to the current run and Overdrunk only blocks paid 
  const h=harness();await connect(h);h.session.editMealDraft({runId:'run',name:'Meal',lines:[{definitionId:'item.bread',quantity:1,nightcap:false}]});assert.ok(h.session.mealDraft);h.session.editMealDraft({runId:'foreign',name:'Wrong run',lines:[]});assert.equal(h.session.mealDraft,null);h.session.editMealDraft({runId:'run',name:'Meal',lines:[]});await h.session.logout();assert.equal(h.session.mealDraft,null);assert.equal(h.session.runningMeal,null);
  const s={game:{canWrite:true,overdrunk:true,run:{turns:10},carry:{state:'COMFORTABLE'}},progression:{build:{mode:'CONFIGURED'}}} as Snapshot;assert.equal(adventureAvailability(s,1,false).label,'Overdrunk');assert.equal(adventureAvailability(s,0,false).unavailable,false);assert.equal(adventureAvailability({...s,game:{...s.game,canWrite:false}},1,true).label,'View only');assert.equal(shellChapter('consumption'),'Food, drink & Tolerance');assert.equal(shellNavigationPage('consumption'),'adventure');
 });
+
+
+test('combat option explanations show actual resource deficits, cooldowns and zone targeting',async()=>{
+ const {combatOptionText,combatZoneName}=await import('../client/campaign-model.js');
+ const b={round:2,units:[{id:'hero',mana:1,resources:{focus:0}}],battlefield:{details:[{id:'floor',name:'Temple floor'}]}} as unknown as import('../client/types.js').Tactical;
+ const option={command:{actorId:'hero',kind:'TECHNIQUE'},label:'Wave',action:'MAIN',mana:3,resourceCost:{focus:2},cooldownUntil:0,area:'ZONE',range:0,available:false,reason:'ILLEGAL_TACTICAL_TECHNIQUE',hitChance:null} as const;
+ assert.equal(combatZoneName(b,'floor'),'Temple floor');assert.equal(combatZoneName(b,'balcony'),'Balcony');const text=combatOptionText(b,option);assert.match(text.costs,/3 Mana/);assert.match(text.costs,/2 Focus/);assert.match(text.costs,/Same zone/);assert.match(text.costs,/All eligible targets/);assert.match(text.reason!,/needs 2, 0 available/);assert.match(combatOptionText(b,{...option,cooldownUntil:4}).reason!,/round 4/);
+});

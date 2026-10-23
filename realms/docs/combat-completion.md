@@ -9,7 +9,7 @@ This source slice extends the server-owned tactical transition and the existing 
 | Design area | Current behavior | Boundary |
 |---|---|---|
 | Saved combat | Server-authoritative initiative, costs, seeded rolls, immutable replay, retry receipts and atomic outcomes | Original BASIC_DUEL_V1 and unopted tactical evidence retain their historical contracts |
-| Legal action UI | Target focus, hit previews for basic/named attacks, Main/Quick/Reaction budgets, Mana, resource clocks, disabled reasons, initiative | Technique save/attack percentage previews and predicted damage ranges remain future explanation work; option projection is capped at 256 |
+| Legal action UI | Target focus, hit previews for basic/named attacks, Main/Quick/Reaction budgets, Mana, resource clocks, disabled reasons, initiative | Attack techniques show exact hit chances and save techniques show the chance of a failed save for the focused target; immunity/mitigation can still prevent an effect. Predicted damage ranges remain future explanation work; option projection is capped at 256 |
 | Positioning | Named adjacent zones, cover, elevation, soft Front/Back screening, authored opening presets and bounded custom placement | Opening formation is available at tactical revision zero on a controlled party turn; a preparation stage before enemy-first initiative remains open |
 | Environmental play | Finite-use checked interactions, zone setup/consumption combos, entry and owner-end hazards, armor/type mitigation | No unrestricted simulation, chained explosions, terrain creation editor or arbitrary physics |
 | Break | Damage-based Stagger, growing thresholds, bounded Break/recovery protection, suppressed reactions and lowered evasion | Distinct Boss Resolve catalogs and per-ability Stagger weights remain authoring work |
@@ -64,3 +64,12 @@ For rollback, first stop new opted-in content/plan entry through reviewed contro
 ## Disposable interactive playtest
 
 With the dedicated `TEST_DATABASE_URL` pointing to `realms_test`, `npm run preview:combat` starts a loopback-only server at port 3015 with a fresh synthetic schema, one prepared character, a boss, terrain, two item stacks and a rest-limited technique. The log supplies a fixed **synthetic development token** for this isolated process. It is not a production credential. The process handles termination by closing HTTP and removing only its own test schema. The player can exercise the actual server UI and journals without touching live accounts/content. Do not bind this development bypass publicly.
+
+
+## Combat polish pass
+
+Combat uses a wider command folio with a compact initiative track, prominent committed warnings listing exposed active party members, zone-local terrain/hazards/adjacency and unit-local row, Stagger and concentration. Wide layouts place the battlefield beside turn controls; narrow/enlarged-text layouts stack them. The control panel shows Ready/Spent budgets, target health/location, per-ability Mana/resource/range/area/cooldown costs and explicit unavailable reasons. Unavailable choices stay inspectable in disclosures; retreat/surrender stay separate from ordinary actions and confirm the disclosed recovery costs.
+
+Focusing a unit is cosmetic and does not submit an action. Focus is retained only for the same encounter and falls back when the target is defeated. Prepared-item reviews explain consent, protection, range, control and spent-budget restrictions, and invalidate promptly when the saved combat revision changes. Shared terminal text distinguishes a saved battle outcome from the player's outstanding personal claim.
+
+Technique percentage previews enumerate the same d20 check rules used by resolution, without drawing randomness or changing state. Attack percentages are hit checks; save percentages are explicitly **failed save** probabilities for the focused target, not promises of damage or bypassing immunity. The regression test compares both projections against all twenty actual rolls and checks costs/cooldown metadata. This pass does not change historical combat formulas, migrations, action costs or reward rules.

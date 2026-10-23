@@ -96,7 +96,7 @@ const runAudit=()=>{
  const rgb=(value:string)=>{const numbers=value.match(/[\d.]+/g)?.map(Number);return numbers&&numbers.length>=3&&(numbers[3]??1)===1?numbers.slice(0,3):null;};
  const light=(color:number[])=>color.map(v=>v/255).map(v=>v<=.04045?v/12.92:((v+.055)/1.055)**2.4).reduce((sum,v,i)=>sum+v*[.2126,.7152,.0722][i]!,0);
  const contrasts:{sample:string;ratio:number;minimum:number}[]=[];
- for(const n of document.querySelectorAll<HTMLElement>('#app main>h1,#app .sheet-identity,#app .inventory-details,#app .adventure-cost,#app .combat-turn,#app button.primary,dialog,dialog button.danger')){
+ for(const n of document.querySelectorAll<HTMLElement>('#app main>h1,#app .sheet-identity,#app .inventory-details,#app .adventure-cost,#app .combat-turn,#app .combat-warning,#app .combat-option-cost,#app .combat-option-reason,#app .combat-target-summary,#app .zone-hazard,#app button.primary,dialog,dialog button.danger')){
   if(!visible(n))continue;const style=getComputedStyle(n),foreground=rgb(style.color);let background:number[]|null=null,parent:Element|null=n;
   while(parent&&!background){background=rgb(getComputedStyle(parent).backgroundColor);parent=parent.parentElement;}
   if(foreground&&background){const values=[light(foreground),light(background)].sort((a,b)=>b-a),ratio=(values[0]!+.05)/(values[1]!+.05),large=parseFloat(style.fontSize)>=24||Number(style.fontWeight)>=700&&parseFloat(style.fontSize)>=18.66;contrasts.push({sample:n.tagName+'.'+n.className,ratio:Math.round(ratio*100)/100,minimum:large?3:4.5});}

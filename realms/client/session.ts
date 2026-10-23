@@ -8,6 +8,7 @@ import { ApiClient,ApiError,errorMessage } from './api.js';
 import type { Config,GameView,Progression,BuildOptions,Tactical,Snapshot,Notice,AscensionPreview,InventoryPage,InventoryQuery,InventoryItem,InventoryHistory,EquipmentPlan,Gear,EquipmentPreview,AbilityBook,CharacterSection,AdvancementHistory } from './types.js';
 const equipmentKey=(p:EquipmentPlan)=>JSON.stringify({activeSet:p.activeSet,slots:[...p.slots].sort((a,b)=>(a.set+a.slot).localeCompare(b.set+b.slot))});
 export class GameSession {
+ combatFocus:{instanceId:string;unitId:string}|null=null;
  runningCombatPlan:string|null=null;
  stopRepeatingCombat(){this.runningCombatPlan=null;this.notify();}
  async runCombatPlan(id:string){if(this.runningCombatPlan||this.busy||this.pending)return;const epoch=this.epoch;this.runningCombatPlan=id;this.notify();try{for(let n=0;n<101&&this.runningCombatPlan===id&&epoch===this.epoch;n++){const p=this.snapshot?.battle?.plans?.find(p=>p.id===id);if(!p||p.status!=='ACTIVE'||this.needsRefresh||this.pending||!this.snapshot?.game.canWrite)break;await this.action('/api/v1/tactical/plans/step','STEP_COMBAT_PLAN',{planId:id});if(this.notice.kind==='error'||this.pending)break;}}finally{if(this.runningCombatPlan===id)this.runningCombatPlan=null;this.notify();}}

@@ -17,7 +17,7 @@ export function previewIntent(r:TacticalRules,s:TacticalState,c:TacticalCommand)
  if(c.kind==='MOVE'&&r.techniques)return {...c,opportunities:opportunityAbilities(r,s,actor,c.zone).map(({actor,ability:a})=>{if(a.effect.kind!=='DAMAGE')throw new DomainError(409,'INVALID_TACTICAL_OPPORTUNITY');return {kind:'TECHNIQUE',actorId:actor.id,abilityId:a.id,targetId:c.actorId,draws:[{targetId:c.actorId,roll:10,amount:a.effect.min}]} as TechniqueIntent;})};
  return c as TacticalIntent;
 }
-export type TacticalOption={command:TacticalCommand;available:boolean;reason:string|null;action:'MAIN'|'QUICK'|'FREE';mana:number;hitChance:number|null;range:number|null;label:string};
+export type TacticalOption={command:TacticalCommand;available:boolean;reason:string|null;action:'MAIN'|'QUICK'|'FREE';mana:number;hitChance:number|null;range:number|null;label:string;checkKind?:'HIT'|'SAVE';resourceCost?:Record<string,number>;cooldownUntil?:number;area?:'SINGLE'|'ZONE'};
 export function tacticalOptions(r:TacticalRules,s:TacticalState,actorId:string){
  const actor=s.units.find(u=>u.id===actorId);if(!actor)return [];
  const options:TacticalOption[]=[];
@@ -26,7 +26,13 @@ export function tacticalOptions(r:TacticalRules,s:TacticalState,actorId:string){
   try{stepTactical(r,s,s.revision,previewIntent(r,s,command));}catch(error){if(!(error instanceof DomainError))throw error;reason=error.message;}
   let hitChance:number|null=null;
   if((command.kind==='ATTACK'||command.kind==='USE_ABILITY')&&!reason){const target=s.units.find(u=>u.id===command.targetId)!,a=command.kind==='USE_ABILITY'?actor.attackAbilities?.find(a=>a.id===command.abilityId):undefined,stats=battlefieldStats(r,s,actor);const chance=checkSuccessChance({...r.damage.check,attributeBaseline:1},{attributeScore:1,proficiencyRank:0,situationalModifier:Math.max(-1000000,Math.min(1000000,stats.accuracy+(a?.spec.accuracyModifier??0)+positionAccuracy(r,s,actor,target))),difficulty:battlefieldStats(r,s,target).evasion});hitChance=chance.numerator*5;}
-  options.push({command,label,action,mana,range,available:!reason,reason,hitChance});
+  const technique=command.kind==='TECHNIQUE'?actor.techniques?.abilities.find(a=>a.id===command.abilityId):undefined;
+  let checkKind:TacticalOption['checkKind'];
+  if(command.kind==='TECHNIQUE'&&technique?.check&&!reason){const c=technique.check,target=s.units.find(u=>u.id===command.targetId)!,checked=c.mode==='SAVE'?target:actor;
+   const chance=checkSuccessChance(r.damage.check,{attributeScore:checked.checkAttributes![c.attribute],proficiencyRank:checked.checkSkills?.[c.skillId]??0,situationalModifier:Math.max(-1000000,Math.min(1000000,c.modifier+(c.mode==='ATTACK'?battlefieldStats(r,s,actor).accuracy+positionAccuracy(r,s,actor,target):0))),difficulty:c.mode==='ATTACK'?battlefieldStats(r,s,target).evasion:c.difficulty});
+   hitChance=(c.mode==='SAVE'?20-chance.numerator:chance.numerator)*5;checkKind=c.mode==='SAVE'?'SAVE':'HIT';
+  }
+  options.push({command,label,action,mana,range,available:!reason,reason,hitChance,...(technique?{resourceCost:{...technique.resourceCost},cooldownUntil:actor.techniqueCooldowns?.[technique.id]??0,area:technique.area,...(checkKind?{checkKind}:{})}:{})});
  };
  for(const w of r.battlefield?.bosses?.find(b=>b.unitId===actorId)?.windups??[])for(const zone of r.zones)add({actorId,kind:'BOSS_WINDUP',windupId:w.id,zone},w.name,'MAIN',0,w.range);
  if(actor.prepared)for(const set of ['A','B']as const)add({actorId,kind:'SWAP_SET',set},'Prepared weapon set '+set,'QUICK');
@@ -51,7 +57,8 @@ export function battlefieldDecision(r:TacticalRules,s:TacticalState,actorId:stri
  if(healing[0])return healing[0].command;
  const windup=options.find(o=>{const c=o.command;return c.kind==='BOSS_WINDUP'&&s.units.some(u=>u.side!==actor.side&&u.state==='ACTIVE'&&u.zone===c.zone);});if(windup)return windup.command;
  const attacks=options.filter(o=>['ATTACK','USE_ABILITY'].includes(o.command.kind)||o.command.kind==='TECHNIQUE'&&['DAMAGE','EFFECT'].includes(effect(o)??'')&&target(o)?.side!==actor.side);
- const score=(o:TacticalOption)=>{const u=target(o)!;return (role==='BRUTE'?-(s.battlefield!.rows[u.id]==='FRONT'?10:0):role==='ARTILLERY'?-(s.battlefield!.rows[u.id]==='BACK'?10:0):0)+u.health/u.stats.maxHealth*5-(o.hitChance??50)/100;};
+ // Presentation-only technique probabilities must not alter the pinned role AI ranking.
+ const score=(o:TacticalOption)=>{const u=target(o)!;return (role==='BRUTE'?-(s.battlefield!.rows[u.id]==='FRONT'?10:0):role==='ARTILLERY'?-(s.battlefield!.rows[u.id]==='BACK'?10:0):0)+u.health/u.stats.maxHealth*5-((o.command.kind==='ATTACK'||o.command.kind==='USE_ABILITY')?(o.hitChance??50):50)/100;};
  attacks.sort((a,b)=>score(a)-score(b)||(a.label<b.label?-1:1));if(attacks[0])return attacks[0].command;
  const opponents=s.units.filter(u=>u.side!==actor.side&&u.state==='ACTIVE').sort((a,b)=>a.health/a.stats.maxHealth-b.health/b.stats.maxHealth||(a.id<b.id?-1:1));
  const moves=options.filter(o=>o.command.kind==='MOVE');if(opponents[0]){const d=(o:TacticalOption)=>o.command.kind==='MOVE'?fieldDistance(r,o.command.zone,opponents[0]!.zone):Infinity;moves.sort((a,b)=>d(a)-d(b)||(a.label<b.label?-1:1));if(moves[0]&&d(moves[0])<fieldDistance(r,actor.zone,opponents[0].zone))return moves[0].command;}
