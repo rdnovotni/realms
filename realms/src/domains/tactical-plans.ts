@@ -24,7 +24,7 @@ export function stepCombatPlan(pool:pg.Pool,accountId:string,e:Envelope,planId:s
   const spec=(await c.client.query('SELECT spec FROM tactical_encounter_origins WHERE instance_id=$1',[p.instance_id])).rows[0].spec as TacticalSpec;
   if(!r.battlefield||!['TRIVIAL','STANDARD'].includes(r.battlefield.danger)||!!r.battlefield.bosses?.length)return stop('IMPORTANT_ENCOUNTER');
   if(r.battlefield.zones.some(z=>z.hazard)||r.battlefield.interactions.some(i=>s.battlefield!.uses[i.id]!>0))return stop('BATTLEFIELD_REQUIRES_ATTENTION');
-  for(const enemy of spec.enemies){const known=(await c.client.query("SELECT 1 FROM tactical_encounter_origins o JOIN encounter_records e ON e.instance_id=o.instance_id JOIN runs r ON r.id=o.run_id JOIN characters ch ON ch.id=r.character_id WHERE ch.account_id=$1 AND e.outcome IS NOT NULL AND o.instance_id<>$2 AND EXISTS(SELECT 1 FROM jsonb_array_elements(o.spec->'enemies') x WHERE x->>'definitionId'=$3) LIMIT 1",[accountId,p.instance_id,enemy.definitionId])).rowCount;if(!known)return stop('UNKNOWN_MONSTER');}
+  for(const enemy of spec.enemies){const known=(await c.client.query("SELECT 1 FROM tactical_all_origins o JOIN encounter_records e ON e.instance_id=o.instance_id JOIN runs r ON r.id=o.run_id JOIN characters ch ON ch.id=r.character_id WHERE ch.account_id=$1 AND e.outcome IS NOT NULL AND o.instance_id<>$2 AND EXISTS(SELECT 1 FROM jsonb_array_elements(o.spec->'enemies') x WHERE x->>'definitionId'=$3) LIMIT 1",[accountId,p.instance_id,enemy.definitionId])).rowCount;if(!known)return stop('UNKNOWN_MONSTER');}
   const actor=s.units.find(u=>u.id===s.order[s.cursor])!,party=s.units.filter(u=>u.side==='PARTY');if(party.some(u=>u.state!=='ACTIVE'||u.health*100/u.stats.maxHealth<=p.min_health))return stop('HEALTH_THRESHOLD');
   const beforeMana=party.reduce((n,u)=>n+(u.mana??0),0);let command:TacticalCommand|{actorId:'hero';kind:'CONTINUE'};
   if(actor.side==='ENEMY'||cp.serverControlledIds?.includes(actor.id))command={actorId:'hero',kind:'CONTINUE'};
@@ -33,8 +33,10 @@ export function stepCombatPlan(pool:pg.Pool,accountId:string,e:Envelope,planId:s
    command=heal?.command??attack?.command??{actorId:actor.id,kind:'END'};
    if(!heal&&!attack&&s.budgets[actor.id]!.main===1){const move=options.find(o=>o.command.kind==='MOVE');if(move&&move.command.kind==='MOVE'){if(opportunityAbilities(r,s,actor,move.command.zone).length)return stop('REACTION_REQUIRES_ATTENTION');command=move.command;}}
   }
+  const runBefore={...c.run};await c.client.query('SAVEPOINT combat_plan_step');
   const result=await performTacticalAction(c,p.instance_id,row.revision,s.revision,command),after=(await c.client.query('SELECT checkpoint FROM encounter_records WHERE instance_id=$1',[p.instance_id])).rows[0].checkpoint as TacticalCheckpoint,spent=Math.max(0,beforeMana-after.state.units.filter(u=>u.side==='PARTY').reduce((n,u)=>n+(u.mana??0),0)),finished=after.state.outcome!==null||p.completed+1>=p.max_actions;
-  if(p.spent_mana+spent>p.max_mana)throw new DomainError(409,'COMBAT_MANA_BUDGET');
+  if(p.spent_mana+spent>p.max_mana){await c.client.query('ROLLBACK TO SAVEPOINT combat_plan_step');await c.client.query('RELEASE SAVEPOINT combat_plan_step');Object.assign(c.run,runBefore);return stop('MANA_BUDGET');}
+  await c.client.query('RELEASE SAVEPOINT combat_plan_step');
   await c.client.query("UPDATE tactical_plans SET completed=completed+1,spent_mana=spent_mana+$2,status=$3,stop_reason=$4 WHERE id=$1",[planId,spent,finished?'STOPPED':'ACTIVE',finished?after.state.outcome?'COMPLETE':'ACTION_LIMIT':null]);
   return {...result,revision:result.revision as number,planId,stopped:finished,reason:finished?after.state.outcome?'COMPLETE':'ACTION_LIMIT':null};
  });
