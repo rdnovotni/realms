@@ -1,3 +1,10 @@
+import { historicalCombatItem,loadCombatItem,combatItemTargets,itemTechnique,type CombatItemCommand,type CombatItemGrant } from './tactical-combat-items.js';
+import { consumeItem } from './item-accounting.js';
+import { recordPreparedSwap } from './equipment.js';
+import { prepareCombatLoadouts } from './combat-loadouts.js';
+import type { CharacterInputs } from './character-snapshots.js';
+import type { StatBreakdown } from './character-mechanics.js';
+import { readResourceCarry } from './tactical-recharge.js';
 import { loadTechniqueProfile,loadTechniqueSkills,techniqueTargets,opportunityAbilities,type TechniqueIntent } from './tactical-techniques.js';
 import { loadCarryEffects,readCarryEffects } from './tactical-persistence.js';
 import { loadHealingAbilities } from './tactical-healing-abilities.js';
@@ -15,7 +22,7 @@ import { beginEncounter,encounterCheckpoint,drawEncounter,saveEncounterCheckpoin
 import { readCharacterSnapshot } from './character-snapshots.js';
 import { startTactical,stepTactical,type TacticalRules,type TacticalState,type TacticalUnit,type TacticalIntent } from './tactical-engine.js';
 
-export type TacticalCommand=Omit<TechniqueIntent,'draws'>|{actorId:string;kind:'USE_HEALING_ABILITY';targetId:string;abilityId:string}|{actorId:string;kind:'USE_ABILITY';targetId:string;abilityId:string}|{actorId:string;kind:'CLEANSE';targetId:string;abilityId:string;effectId:string}|{actorId:string;kind:'END'|'GUARD'|'RETREAT'|'DROP_CONCENTRATION'|'SURRENDER'}|{actorId:string;kind:'MOVE';zone:string}|{actorId:string;kind:'ATTACK'|'HEAL';targetId:string};
+export type TacticalCommand={actorId:string;kind:'CUSTOM_FORMATION';positions:{unitId:string;zone:string;row:'FRONT'|'BACK'}[]}|{actorId:string;kind:'BOSS_WINDUP';windupId:string;zone:string}|CombatItemCommand|{actorId:string;kind:'SWAP_SET';set:'A'|'B'}|{actorId:string;kind:'FORMATION';formationId:string}|{actorId:string;kind:'INTERACT';interactionId:string}|{actorId:string;kind:'DISENGAGE'}|Omit<TechniqueIntent,'draws'>|{actorId:string;kind:'USE_HEALING_ABILITY';targetId:string;abilityId:string}|{actorId:string;kind:'USE_ABILITY';targetId:string;abilityId:string}|{actorId:string;kind:'CLEANSE';targetId:string;abilityId:string;effectId:string}|{actorId:string;kind:'END'|'GUARD'|'RETREAT'|'DROP_CONCENTRATION'|'SURRENDER'}|{actorId:string;kind:'MOVE';zone:string}|{actorId:string;kind:'ATTACK'|'HEAL';targetId:string};
 export type TacticalCheckpoint={engine:'TACTICAL_TRANSITION_V1';rules:TacticalRules;state:TacticalState;controlledIds:string[];serverControlledIds?:string[]};
 const json=(value:unknown)=>value as Record<string,Json>;
 /** Internal only: the authored encounter loader must authorize discovery, party
@@ -31,9 +38,9 @@ export async function beginTacticalEncounter(c:ActionContext,definitionId:string
   const saved=await saveEncounterCheckpoint(c,started.instanceId,0,json(checkpoint));
   return {...saved,state:structuredClone(state)};
 }
-export async function loadTacticalPlayer(c:ActionContext,instanceId:string,rules:TacticalRules,player:{id:string;zone:string;health?:number;mana?:number;loadKit?:boolean},previousInstanceId?:string|null):Promise<TacticalUnit>{
+export async function loadTacticalPlayer(c:ActionContext,instanceId:string,rules:TacticalRules,player:{id:string;zone:string;health?:number;mana?:number;loadKit?:boolean},previousInstanceId?:string|null,override?:{inputs:CharacterInputs;derived:StatBreakdown}):Promise<TacticalUnit>{
  const carryEffects=(previousInstanceId===undefined?await loadCarryEffects(c.client,c.run.id):await readCarryEffects(c.client,previousInstanceId)).map(e=>({...e,sourceUnitId:e.sourceUnitId==='hero'?player.id:e.sourceUnitId}));if(carryEffects.length&&rules.roundEffects?.version!==4)throw new DomainError(409,'TACTICAL_PERSISTENT_EFFECTS_DISABLED');
-  const snapshot=await readCharacterSnapshot(c.client,instanceId,c.run.id);
+  const snapshot=override??await readCharacterSnapshot(c.client,instanceId,c.run.id);
   const stats=snapshot.derived.stats;
   let canHeal=false,canGuard=false;
   if(player.loadKit)for(const source of snapshot.inputs.sources){
@@ -41,7 +48,11 @@ export async function loadTacticalPlayer(c:ActionContext,instanceId:string,rules
     const kit=row?.kit as TacticalKit|undefined;
     if(kit&&source.nativeLevel>=kit.minimumNativeLevel){canHeal ||=kit.heal;canGuard ||=kit.guard;}
   }
- return {id:player.id,zone:player.zone,side:'PARTY',stats,health:Math.min(player.health??stats.maxHealth,stats.maxHealth),mana:Math.min(player.mana??stats.maxMana,stats.maxMana),canHeal:player.loadKit?canHeal:true,canGuard,strikes:0,state:'ACTIVE',...(rules.roundEffects?.version===4?{carryEffects}:{}),...(rules.techniques?{techniques:await loadTechniqueProfile(c.client,c.run.content_release_id!,snapshot.inputs.sources),checkAttributes:snapshot.inputs.attributes,checkSkills:await loadTechniqueSkills(c.client,c.run.id,(await c.client.query('SELECT created_at FROM instances WHERE id=$1',[instanceId])).rows[0].created_at)}:{}),...(rules.roundEffects?{onHitEffects:await loadEffectGrants(c.client,c.run.content_release_id,snapshot.inputs.sources)}:{}),...((rules.roundEffects?.version??0)>=2?{onHealEffects:await loadEffectGrants(c.client,c.run.content_release_id,snapshot.inputs.sources,'HEAL')}:{}),...((rules.roundEffects?.version??0)>=3?{cleansingAbilities:await loadCleanseAbilities(c.client,snapshot.inputs.sources)}:{}),...(rules.healingAbilities?{healingAbilities:await loadHealingAbilities(c.client,snapshot.inputs.sources)}:{}),...(rules.abilities?{attackAbilities:await loadAttackAbilities(c.client,rules.typedDamage!,snapshot.inputs.sources)}:{}),...(rules.statusDefense?{statusProfile:await loadStatusProfile(c.client,rules.statusDefense,snapshot.inputs.sources)}:{}),...(rules.typedDamage?{damageProfile:await loadDamageProfile(c.client,rules.typedDamage,snapshot.inputs.sources)}:{})};
+ const techniques=rules.techniques?await loadTechniqueProfile(c.client,c.run.content_release_id!,snapshot.inputs.sources):undefined;
+ const carryResources=rules.recharge&&techniques?await readResourceCarry(c.client,c.run.id,techniques,(await c.client.query('SELECT created_at FROM instances WHERE id=$1',[instanceId])).rows[0].created_at):undefined;
+ const unit:TacticalUnit={id:player.id,zone:player.zone,side:'PARTY',stats,health:Math.min(player.health??stats.maxHealth,stats.maxHealth),mana:Math.min(player.mana??stats.maxMana,stats.maxMana),canHeal:player.loadKit?canHeal:true,canGuard,strikes:0,state:'ACTIVE',...(rules.roundEffects?.version===4?{carryEffects}:{}),...(rules.techniques?{techniques:techniques!,...(carryResources?{carryResources}:{}),checkAttributes:snapshot.inputs.attributes,checkSkills:await loadTechniqueSkills(c.client,c.run.id,(await c.client.query('SELECT created_at FROM instances WHERE id=$1',[instanceId])).rows[0].created_at)}:{}),...(rules.roundEffects?{onHitEffects:await loadEffectGrants(c.client,c.run.content_release_id,snapshot.inputs.sources)}:{}),...((rules.roundEffects?.version??0)>=2?{onHealEffects:await loadEffectGrants(c.client,c.run.content_release_id,snapshot.inputs.sources,'HEAL')}:{}),...((rules.roundEffects?.version??0)>=3?{cleansingAbilities:await loadCleanseAbilities(c.client,snapshot.inputs.sources)}:{}),...(rules.healingAbilities?{healingAbilities:await loadHealingAbilities(c.client,snapshot.inputs.sources)}:{}),...(rules.abilities?{attackAbilities:await loadAttackAbilities(c.client,rules.typedDamage!,snapshot.inputs.sources)}:{}),...(rules.statusDefense?{statusProfile:await loadStatusProfile(c.client,rules.statusDefense,snapshot.inputs.sources)}:{}),...(rules.typedDamage?{damageProfile:await loadDamageProfile(c.client,rules.typedDamage,snapshot.inputs.sources)}:{})};
+ if(rules.preparation&&!override){unit.prepared=await prepareCombatLoadouts(c,instanceId,rules,player,snapshot,previousInstanceId);const carried={...unit.prepared.sets.A.carryResources,...unit.prepared.sets.B.carryResources};if(Object.keys(carried).length)unit.carryResources=carried;}
+ return unit;
 }
 /** Called inside executeAction. Returning evidence in that handler's result pins
  * it in the immutable action receipt. Invalid actions roll back draws and saves.
@@ -56,19 +67,23 @@ export async function executeTacticalCommand(c:ActionContext,instanceId:string,e
   if(checkpoint.state.revision!==expectedTacticalRevision)throw new DomainError(409,'STALE_TACTICAL_REVISION');
   const actor=checkpoint.state.units.find(u=>u.id===command.actorId);
   if(!actor || (serverControlled?actor.side!=='ENEMY'&&!checkpoint.serverControlledIds?.includes(actor.id):!checkpoint.controlledIds.includes(actor.id)))throw new DomainError(403,'TACTICAL_ACTOR_NOT_CONTROLLED');
-  const intent=await resolveTacticalIntent(checkpoint,command,(key,bound)=>drawEncounter(c,instanceId,'tactical',key,bound));
+  const intent=await resolveTacticalIntent(checkpoint,command,(key,bound)=>drawEncounter(c,instanceId,'tactical',key,bound),command.kind==='USE_COMBAT_ITEM'?()=>loadCombatItem(c,checkpoint,command):undefined);
   const result=stepTactical(checkpoint.rules,checkpoint.state,expectedTacticalRevision,intent);
+  if(intent.kind==='USE_COMBAT_ITEM')await consumeItem(c,'tactical.item',intent.item.itemId,'1','COMBAT_ITEM_USE');
   const saved=await saveEncounterCheckpoint(c,instanceId,expectedEncounterRevision,json({...checkpoint,state:result.state}));
   if((await c.client.query('SELECT 1 FROM tactical_encounter_origins WHERE instance_id=$1',[instanceId])).rows.length)
     await c.client.query('INSERT INTO tactical_steps(instance_id,revision,action_id,control,intent,evidence,state) VALUES($1,$2,$3,$4,$5,$6,$7)',[instanceId,result.state.revision,c.actionId,serverControlled?'SERVER':'PLAYER',result.evidence.intent,result.evidence,result.state]);
+  if(command.kind==='SWAP_SET')await recordPreparedSwap(c,command.set);
   // Terminal checkpoints remain open until an authored settlement handler resolves
   // loot, failure costs and recovery atomically. No implicit empty settlement.
   return {...saved,...result};
 }
-export async function resolveTacticalIntent(checkpoint:TacticalCheckpoint,command:TacticalCommand,draw:(key:string,bound:number)=>Promise<number>):Promise<TacticalIntent>{
+export async function resolveTacticalIntent(checkpoint:TacticalCheckpoint,command:TacticalCommand,draw:(key:string,bound:number)=>Promise<number>,itemProvider?:()=>Promise<CombatItemGrant>):Promise<TacticalIntent>{
  const actor=checkpoint.state.units.find(u=>u.id===command.actorId);if(!actor)throw new DomainError(403,'TACTICAL_ACTOR_NOT_CONTROLLED');
   let intent:TacticalIntent;
-  if(command.kind==='MOVE'&&checkpoint.rules.techniques){const opportunities:TechniqueIntent[]=[];for(const [index,{actor:threat,ability:a}] of opportunityAbilities(checkpoint.rules,checkpoint.state,actor,command.zone).entries()){const prefix=`action.${checkpoint.state.revision}.opportunity.${index}`;if(a.effect.kind!=='DAMAGE')throw new DomainError(409,'INVALID_TACTICAL_OPPORTUNITY');opportunities.push({kind:'TECHNIQUE',actorId:threat.id,targetId:actor.id,abilityId:a.id,draws:[{targetId:actor.id,roll:1+await draw(`${prefix}.check`,20),amount:a.effect.min+await draw(`${prefix}.amount`,a.effect.max-a.effect.min+1)}]});}intent={...command,opportunities};
+  if(command.kind==='USE_COMBAT_ITEM'){if(!itemProvider)throw new DomainError(409,'COMBAT_ITEM_NOT_PREPARED');const item=await itemProvider(),draws=[];if(item.spec.damage){const a=itemTechnique(item);for(const [i,target]of combatItemTargets(checkpoint.rules,checkpoint.state,actor,item,command.targetId).entries())draws.push({targetId:target.id,roll:1+await draw(`action.${checkpoint.state.revision}.item.${i}.check`,20),amount:item.spec.damage.min+await draw(`action.${checkpoint.state.revision}.item.${i}.amount`,item.spec.damage.max-item.spec.damage.min+1)});}intent={...command,item,draws};
+  }else if(command.kind==='INTERACT'){intent={...command,roll:1+await draw(`action.${checkpoint.state.revision}.interaction`,20)};
+  }else if(command.kind==='MOVE'&&checkpoint.rules.techniques){const opportunities:TechniqueIntent[]=[];for(const [index,{actor:threat,ability:a}] of opportunityAbilities(checkpoint.rules,checkpoint.state,actor,command.zone).entries()){const prefix=`action.${checkpoint.state.revision}.opportunity.${index}`;if(a.effect.kind!=='DAMAGE')throw new DomainError(409,'INVALID_TACTICAL_OPPORTUNITY');opportunities.push({kind:'TECHNIQUE',actorId:threat.id,targetId:actor.id,abilityId:a.id,draws:[{targetId:actor.id,roll:1+await draw(`${prefix}.check`,20),amount:a.effect.min+await draw(`${prefix}.amount`,a.effect.max-a.effect.min+1)}]});}intent={...command,opportunities};
   }else if(command.kind==='TECHNIQUE'){
     const a=actor.techniques?.abilities.find(a=>a.id===command.abilityId);if(!checkpoint.rules.techniques||!a)throw new DomainError(409,'ILLEGAL_TACTICAL_TECHNIQUE');
     const draws=[];for(const [index,target] of techniqueTargets(checkpoint.rules,checkpoint.state,actor,a,command.targetId).entries()){const prefix=`action.${checkpoint.state.revision}.technique.${index}`;draws.push({targetId:target.id,...(a.check?{roll:1+await draw(`${prefix}.check`,20)}:{}),...('min' in a.effect?{amount:a.effect.min+await draw(`${prefix}.amount`,a.effect.max-a.effect.min+1)}:{})});}intent={...command,draws};

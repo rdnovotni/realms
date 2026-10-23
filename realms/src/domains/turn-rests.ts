@@ -18,7 +18,7 @@ export async function settleTurnRest(c:ActionContext,entityId:string){
  if(!pool)throw new DomainError(409,'REST_HEALTH_UNAVAILABLE');
  const maxHealth=Number(pool.stats.maxHealth),maxMana=Number(pool.stats.maxMana);
  const health=Math.min(maxHealth,pool.health+Math.max(1,Math.floor(maxHealth*rest.healthBps/10000))),mana=Math.min(maxMana,pool.mana+Math.floor(maxMana*rest.manaBps/10000));
- if(health===pool.health&&mana===pool.mana)throw new DomainError(409,'NO_REST_NEEDED');
+ if(health===pool.health&&mana===pool.mana&&!(await c.client.query("SELECT tactical_resource_rest_needed($1,$2,transaction_timestamp()) AS needed",[c.run.id,(await c.client.query("SELECT v.definition->'mechanics'->'sharedAction'->'costs'->>'rest' AS kind FROM release_entries e JOIN content_versions v ON v.entity_id=e.entity_id AND v.revision=e.revision WHERE e.release_id=$1 AND e.entity_id=$2",[c.run.content_release_id,entityId])).rows[0].kind])).rows[0].needed)throw new DomainError(409,'NO_REST_NEEDED');
  const revision=(await c.client.query('SELECT revision FROM release_entries WHERE release_id=$1 AND entity_id=$2',[c.run.content_release_id,entityId])).rows[0].revision;
  const event=(await c.client.query(`INSERT INTO tactical_rest_events(action_id,run_id,after_instance_id,previous_rest_id,release_id,entity_id,entity_revision,before_health,before_mana,health,mana,max_health,max_mana)
  VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING id`,[c.actionId,c.run.id,pool.last_instance_id,await lastRest(c.client,c.run.id,pool.last_instance_id),c.run.content_release_id,entityId,revision,pool.health,pool.mana,health,mana,maxHealth,maxMana])).rows[0];

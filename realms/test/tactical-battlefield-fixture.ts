@@ -1,0 +1,8 @@
+import type { TacticalRules,TacticalUnit } from '../src/domains/tactical-engine.js';
+export function battlefieldRules():TacticalRules{return {
+ damage:{version:1,ruleset:'TACTICAL_DAMAGE_V1',check:{version:1,ruleset:'D20_CHECK_V1',attributeDivisor:2,attributeBaseline:10,proficiencyPerRank:2,natural20:'SUCCESS',natural1:'NORMAL'},criticalOn20:false,criticalMultiplierBps:20000,minimumConnectedDamage:0},
+ zones:['floor','balcony'],edges:[['floor','balcony']],attackRange:1,healRange:1,healAmount:5,roundLimit:10,guardArmorBonus:3,
+ typedDamage:{version:1,types:['physical','fire','lightning'],defaultType:'physical',resistanceStacking:'SUM_CAPPED'},
+ battlefield:{version:1,zones:[{id:'floor',name:'Temple floor',cover:0,elevation:0,tags:['oil']},{id:'balcony',name:'High balcony',cover:2,elevation:1,tags:[]}],units:[{id:'hero',row:'FRONT',role:'BALANCED',staggerThreshold:20},{id:'enemy',row:'FRONT',role:'BRUTE',staggerThreshold:6}],formations:[{id:'defensive',name:'Defensive',positions:[{unitId:'hero',zone:'balcony',row:'BACK'}]}],interactions:[{id:'brazier',name:'Tip the brazier',zone:'floor',targetZone:'floor',action:'MAIN',range:1,uses:1,difficulty:10,damage:4,type:'fire',addTags:['burning'],removeTags:[],friendlyFire:false}],combos:[{id:'ignite',tag:'oil',type:'fire',damageBonusBps:10000,staggerBonus:2,consume:true}],highGroundAccuracy:2,frontlineEvasion:2,stagger:{damageBps:10000,decay:1,thresholdGrowth:6,breakRounds:1,recoveryRounds:2,brokenEvasionPenalty:2},danger:'STANDARD'}
+};}
+export function fieldUnit(id:string,side:TacticalUnit['side'],initiative:number):TacticalUnit{return {id,side,zone:'floor',state:'ACTIVE',health:40,strikes:0,canGuard:true,stats:{maxHealth:40,maxMana:0,accuracy:10,evasion:12,armor:1,initiative,attackMin:4,attackMax:4}};}

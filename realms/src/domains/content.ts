@@ -1,3 +1,4 @@
+import { validateCombatPreparationContent } from './combat-preparation-content.js';
 import { validateConsumptionContent } from './consumption-content.js';
 import { validateTurnPolicies } from './turn-policy.js';
 import { validateTurnRests } from './turn-rests.js';
@@ -78,7 +79,7 @@ export function validateContent(input:unknown): asserts input is ContentPackage 
     validateCharacterProfileReferences(entity,entities);
     validateCompanionContent(entity);
     validateTechniqueContent(entity,entities);
-    validateTacticalContent(entity,entities);
+    validateTacticalContent(entity,entities);validateCombatPreparationContent(entity,entities);
     validateEffectContent(entity,entities);
     validateCleansingContent(entity);
     validateStatusContent(entity);
