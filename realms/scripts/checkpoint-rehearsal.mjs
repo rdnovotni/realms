@@ -6,14 +6,14 @@ import {spawnSync} from 'node:child_process';
 import {pathToFileURL,fileURLToPath} from 'node:url';
 import {join,resolve} from 'node:path';
 import pg from 'pg';
-const arg=name=>process.argv[process.argv.indexOf(name)+1];
+const arg=name=>{const index=process.argv.indexOf(name);assert(index>=2&&process.argv[index+1]&&!process.argv[index+1].startsWith('--'),'Required argument: '+name);return process.argv[index+1];};
 assert(process.argv.includes('--confirm-disposable'),'Explicit disposable confirmation required');
 const connection=process.env.TEST_DATABASE_URL,u=new URL(connection);
 assert.equal(u.hostname,'127.0.0.1');assert.equal(u.pathname,'/realms_test');
-const baseline=resolve(arg('--baseline')),root=fileURLToPath(new URL('../',import.meta.url)),folder=await mkdtemp('/tmp/realms-m00-');
+const baseline=resolve(arg('--baseline')),receipt=resolve(arg('--receipt')),root=fileURLToPath(new URL('../',import.meta.url)),folder=await mkdtemp('/tmp/realms-m00-');
 const load=(base,path)=>import(pathToFileURL(join(base,path)).href),hash=v=>createHash('sha256').update(typeof v==='string'||Buffer.isBuffer(v)?v:JSON.stringify(v)).digest('hex');
 const pool=new pg.Pool({connectionString:connection});
-const evidence={version:1,synthetic:true,baselineCommit:'470b8ae9e6c1cb06c2d49d0e6aed6dc52fc29a7e',candidateTree:process.env.M00_CANDIDATE_TREE??null,postgres:null,checks:[],backups:[]};
+const evidence={version:1,synthetic:true,baselineCommit:'470b8ae9e6c1cb06c2d49d0e6aed6dc52fc29a7e',candidateTree:null,postgres:null,checks:[],backups:[]};
 const check=(name,value=true)=>{assert(value,name);evidence.checks.push(name);};
 const env=(revision,type)=>({requestId:randomUUID(),expectedRevision:revision,actionType:type});
 const cli=(name,args)=>{const result=spawnSync(join(process.env.PG_BINDIR??'',name),args,{encoding:'utf8',env:{...process.env,PGHOST:u.hostname,PGPORT:u.port,PGUSER:decodeURIComponent(u.username),PGPASSWORD:decodeURIComponent(u.password),PGDATABASE:u.pathname.slice(1)},maxBuffer:10*1024*1024});assert.equal(result.status,0,name+': '+result.stderr);return result.stdout;};
@@ -22,6 +22,7 @@ async function backup(label){const file=join(folder,label+'.dump');cli('pg_dump'
 async function restore(file,label,reader=root){const db='m00_restore_'+randomUUID().replaceAll('-','');await pool.query('CREATE DATABASE '+db);const target=new URL(connection);target.pathname='/'+db;let restored;try{cli('pg_restore',['--exit-on-error','--dbname',target.toString(),'--no-owner',file]);restored=new pg.Pool({connectionString:target.toString()});const {integrityReport}=await load(reader,'src/foundation/integrity.ts');const report=await integrityReport(restored);check(label+' restored invariant audit',Object.values(report).every(n=>n===0));return {pool:restored,db};}catch(e){if(restored)await restored.end();await pool.query('DROP DATABASE '+db);throw e;}}
 const restores=[];
 try{
+ const git=(...args)=>{const result=spawnSync('git',args,{cwd:resolve(root,'..'),encoding:'utf8'});assert.equal(result.status,0,'Git checkpoint must be clean and readable');return result.stdout.trim();};git('diff','--quiet','HEAD');evidence.candidateTree=git('rev-parse','HEAD^{tree}');evidence.sourceCommit=git('rev-parse','HEAD');if(process.env.M00_CANDIDATE_TREE)assert.equal(evidence.candidateTree,process.env.M00_CANDIDATE_TREE);
  const baselineTree=spawnSync('git',['ls-tree','-r',evidence.baselineCommit,'--','realms/src','realms/test','realms/migrations'],{cwd:resolve(root,'..'),encoding:'utf8'});assert.equal(baselineTree.status,0);assert(baselineTree.stdout.length>0);
  for(const line of baselineTree.stdout.trim().split('\n')){const [meta,path]=line.split('\t'),expected=meta.split(' ')[2],data=await readFile(join(baseline,path.replace(/^realms\//,'')));assert.equal(createHash('sha1').update('blob '+data.length+'\0').update(data).digest('hex'),expected,'Baseline file differs: '+path);}
  check('baseline source verified against immutable Git objects');
@@ -50,5 +51,5 @@ try{
  const file=await backup('with-consumption-and-combat-048'),beforeRestore=await journal(pool),restored=await restore(file,'048');restores.push(restored);await assertSchema(restored.pool);assert.deepEqual(await journal(restored.pool),beforeRestore);check('048 restore exact journal bytes and checksum parity');
  // Demonstrate checksum drift rejection without changing any source migration file.
  await pool.query("UPDATE schema_migrations SET checksum='m00-drift' WHERE name=$1",[names[0]]);await assert.rejects(migrate(pool),/Applied migration changed/);await pool.query('UPDATE schema_migrations SET checksum=$2 WHERE name=$1',[manifest[0].name,manifest[0].checksum]);await assertSchema(pool);check('immutable checksum drift rejected');
- evidence.status='passed';await writeFile(resolve(arg('--receipt')),JSON.stringify(evidence,null,2)+'\n');console.log(JSON.stringify({status:evidence.status,checks:evidence.checks,migrations:manifest.length,backups:evidence.backups,receipt:resolve(arg('--receipt'))},null,2));
+ evidence.status='passed';await writeFile(receipt,JSON.stringify(evidence,null,2)+'\n');console.log(JSON.stringify({status:evidence.status,checks:evidence.checks,migrations:manifest.length,backups:evidence.backups,receipt:receipt},null,2));
 }finally{for(const r of restores){await r.pool.end();await pool.query('DROP DATABASE '+r.db);}await pool.end();}
