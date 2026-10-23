@@ -10,6 +10,7 @@ Current product name: **Follybound**. [Implementation status](implementation-sta
 - [Feature-first roadmap](feature-roadmap.md)
 - [Server architecture](architecture.md)
 - [Follybound HTTP API reference](api-reference.md)
+- [M00 integration and recovery checkpoint](m00-integration-checkpoint.md)
 - [Database migration map and rollout boundary](migration-guide.md)
 - [Feature fixtures and content authoring](content-authoring.md)
 - [Follybound identity and public pages](branding-and-pages.md)
