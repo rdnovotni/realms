@@ -1,10 +1,11 @@
+import { validateConsumable,type Consumable } from './consumption-content.js';
 import { Ajv } from 'ajv';
 import { DomainError } from '../foundation/errors.js';
 import type { ContentEntity } from './content.js';
 import { validateRewards,type Reward } from '../rules/settlement.js';
-export type ItemUseSpec={version:1;kind:'USE'|'OPEN';effects:string[];rewards:Reward[]};
-const validate=new Ajv({strict:true}).compile({type:'object',additionalProperties:false,required:['version','kind','effects','rewards'],properties:{version:{type:'integer',const:1},kind:{type:'string',enum:['USE','OPEN']},effects:{type:'array',maxItems:8,uniqueItems:true,items:{type:'string',pattern:'^[a-z][a-z0-9_.-]{2,119}$'}},rewards:{type:'array'}}});
-export function validateItemUse(value:unknown):asserts value is ItemUseSpec{if(!validate(value))throw new DomainError(400,'INVALID_ITEM_USE');const s=value as ItemUseSpec;validateRewards(s.rewards);if(!s.effects.length&&!s.rewards.length||s.kind==='OPEN'&&s.effects.length)throw new DomainError(400,'INVALID_ITEM_USE');}
+export type ItemUseSpec={version:1|2;kind:'USE'|'OPEN';effects:string[];rewards:Reward[];consumption?:Consumable};
+const validate=new Ajv({strict:true}).compile({type:'object',additionalProperties:false,required:['version','kind','effects','rewards'],properties:{version:{type:'integer',enum:[1,2]},kind:{type:'string',enum:['USE','OPEN']},effects:{type:'array',maxItems:8,uniqueItems:true,items:{type:'string',pattern:'^[a-z][a-z0-9_.-]{2,119}$'}},rewards:{type:'array'},consumption:{type:'object'}}});
+export function validateItemUse(value:unknown):asserts value is ItemUseSpec{if(!validate(value))throw new DomainError(400,'INVALID_ITEM_USE');const s=value as ItemUseSpec;validateRewards(s.rewards);if(s.version===2){if(!s.consumption)throw new DomainError(400,'INVALID_ITEM_USE');validateConsumable(s.consumption);}else if(s.consumption!==undefined)throw new DomainError(400,'INVALID_ITEM_USE');if(!s.effects.length&&!s.rewards.length&&!s.consumption||s.kind==='OPEN'&&(s.effects.length||s.consumption))throw new DomainError(400,'INVALID_ITEM_USE');}
 export function validateInventoryServices(entities:Map<string,ContentEntity>){
  for(const e of entities.values()){
   const repair=e.definition.mechanics?.repair;

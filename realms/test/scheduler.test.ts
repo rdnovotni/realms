@@ -1,3 +1,4 @@
+import { seedLegacyConsumption } from './helpers.js';
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {actor,testDatabase} from './helpers.js';
@@ -16,7 +17,7 @@ test('civil daily boundaries choose early fold and first valid gap minute withou
 test('bounded catch-up, concurrent planners/workers, daily resets and repeats produce one ledger grant per account/day',async()=>{
  const db=await testDatabase(),p=db.pool;try{
   const users=await Promise.all([actor(p,null,3),actor(p,null,40),actor(p,null,3)]);
-  await p.query("UPDATE accounts SET created_at='2025-12-01'; UPDATE run_consumption SET fullness=4,drunkenness=2,tolerance=1");
+  await p.query("UPDATE accounts SET created_at='2025-12-01'");for(const user of users)await seedLegacyConsumption(p,user.run,{fullness:4,drunkenness:2,tolerance:1});
   await configureSchedule(p,definition);const preview=await dryRun(p,3);assert.equal(preview.periods.length,3);
   assert.equal((await p.query('SELECT count(*) FROM scheduled_periods')).rows[0].count,'0');
   await Promise.all([planSchedules(p,3),planSchedules(p,3)]);

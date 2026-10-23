@@ -1,6 +1,6 @@
 # Follybound HTTP API reference
 
-This inventories the implemented routes in `src/app.ts` and `src/client-assets.ts` through migration 041. Route schemas and domain documents define exact parameters and response shapes; this is not a claim of a stable public SDK or a deployed version. Server checks reject extra body fields. There is no generic client write of stats, arbitrary state, roll results, rewards or content definitions.
+This inventories the implemented routes in `src/app.ts` and `src/client-assets.ts` through migration 042. Route schemas and domain documents define exact parameters and response shapes; this is not a claim of a stable public SDK or a deployed version. Server checks reject extra body fields. There is no generic client write of stats, arbitrary state, roll results, rewards or content definitions.
 
 ## Authentication and Action contract
 
@@ -172,3 +172,9 @@ are allowed in saved view queries; raw container UUIDs remain excluded.
 ## Turns, rollover, daily charges and repeat plans
 
 The authenticated query/action contracts, limits, reserve confirmation and automation authority are maintained in [Turns and rollover](turns-rollover.md#api-and-permissions). No endpoint accepts caller-selected grants, healing amounts or daily balances.
+
+## Consumption API
+
+See [the consumption contract](consumption.md) for implemented routes, player workflows, migration/grants, lifecycle guarantees, remaining ownership boundaries and safe rollout/rollback. Production content adoption remains separate.
+
+The consumption routes are `GET /api/v1/consumption`, `POST /api/v1/consumption/undo`, `POST /api/v1/consumption/preferences`, `POST /api/v1/consumption/meals/save`, `POST /api/v1/consumption/meals/delete`, `GET /api/v1/consumption/meals/preview`, `POST /api/v1/consumption/meals/start`, `POST /api/v1/consumption/meals/step` and `POST /api/v1/consumption/meals/stop`. Their fields and authority are documented in the linked contract.

@@ -443,3 +443,7 @@ The [Adventurer's Folio](adventurers-folio.md) defines semantic theme tokens, sh
 ## Appearance
 
 Use **Appearance** in the game header to turn paper grain on or off. Parchment is the supported theme. The choice stays in the current browser tab when session storage is available and never changes your character or run. Device contrast and motion preferences still apply. Developer visual verification is documented in [Visual QA](visual-qa.md).
+
+## Food, drink and Tolerance
+
+See [the consumption contract](consumption.md) for implemented routes, player workflows, migration/grants, lifecycle guarantees, remaining ownership boundaries and safe rollout/rollback. Production content adoption remains separate.

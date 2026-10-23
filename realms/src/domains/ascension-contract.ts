@@ -8,7 +8,7 @@ import { transaction } from '../foundation/transaction.js';
 import type { RunState,ActionContext } from '../foundation/action.js';
 
 export const ascensionContract={version:1,
- preserve:['Stable character identity','Remaining Turns','Current-day fullness, drunkenness and tolerance','Account discoveries and campaign knowledge','Ordinary items, binding and protection in Home/Material Vault','Current-run Gold moved to account wealth','Guild, event and world state','Daily allowances and uses until rollover'],
+ preserve:['Stable character identity','Remaining Turns','Current-day fullness, drunkenness and tolerance','Account discoveries and campaign knowledge','Ordinary items, binding and protection in Home/Material Vault','Current-run Gold moved to account wealth','Guild, event and world state','Daily allowances and uses until rollover','Saved meal plans, observed consumable knowledge and the account-wide onboarding undo state'],
  reset:['Class, levels, XP and earned choices','Run quests and local consequences','Equipment assignments and run resource pools','Run-specific progress that starts over'],
  archive:['Your old life, completed encounters and choice history','Run-bound and quest items in inaccessible old custody','Past run-specific progress'],
  blockers:['Campaign must be complete','Every active instance must finish','Player must explicitly confirm a current preview']} as const;

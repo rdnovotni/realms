@@ -2,6 +2,10 @@
 
 [Documentation map](README.md) · [Canonical design tokens and components](adventurers-folio.md) · [Screenshot evidence](screenshots/vis-07/README.md)
 
+## Consumption browser verification (October 21)
+
+The current matrix has 304 cases: 34 scenes at six widths and ten scenes at two widths in five preference modes. New consumption, nightcap, meal-preview, execution and blocked-adventure states are covered. The narrow doubled-text pass exposed a native progress-bar grid overflow; the final source constrains the grid track and bars. See the [capture record](screenshots/consumption/README.md) and [browser contracts](screenshots/consumption/browser-contracts.json). The earlier Turns and VIS-07 counts below are historical checkpoints. Native device and assistive-technology checks remain separate.
+
 ## Turns and rollover browser verification (October 21)
 
 The Turns slice expands the required matrix to **234 cases**: 24 scenes at six widths, plus nine scenes at two widths in five preference modes. The six new scenes are daily planner, waiting rollover, reserve confirmation, loading, error and read-only. The daily planner joins the preference matrix. All 234 current-source cases pass; see the [capture record](screenshots/turns-rollover/README.md) and [browser contracts](screenshots/turns-rollover/browser-contracts.json). The source fingerprint is `afbd8c2f93da0fa0467835022e5ed5292a45f316cb962763fc71c6fb0d90dde2`.

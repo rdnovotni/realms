@@ -1,3 +1,4 @@
+import { validateConsumptionContent } from './consumption-content.js';
 import { validateTurnPolicies } from './turn-policy.js';
 import { validateTurnRests } from './turn-rests.js';
 import { validateDailyContent } from './daily-content.js';
@@ -60,6 +61,7 @@ export function validateContent(input:unknown): asserts input is ContentPackage 
   validateTurnPolicies(entities);
   validateInventoryContent(entities);
   validateInventoryServices(entities);
+  validateConsumptionContent(entities);
   validateFeatContent(entities);
   validateEffectFamilies(entities);
   validateProficiencyContent(entities);

@@ -11,7 +11,7 @@ const draw=()=>{
  const active=session.snapshot?.game.activeEncounter;
  if(active?.kind==='TACTICAL'&&active.id!==previousActive)screen='combat';
  previousActive=active?.id??null;
- render(root,session,screen,next=>{if(next!=='daily')session.stopRepeatingTurns();screen=next;draw();root.querySelector<HTMLElement>('main h1')?.focus();},command=>{
+ render(root,session,screen,next=>{if(next!=='daily')session.stopRepeatingTurns();if(next!=='consumption')session.stopRepeatingMeal();screen=next;draw();root.querySelector<HTMLElement>('main h1')?.focus();},command=>{
   const battle=session.snapshot?.battle;if(!battle)return;
   void session.action('/api/v1/tactical/actions','TACTICAL_ACTION',{instanceId:battle.instanceId,expectedEncounterRevision:battle.encounterRevision,expectedTacticalRevision:battle.tacticalRevision,command});
  });

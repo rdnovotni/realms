@@ -40,3 +40,7 @@ Disable the affected feature through its reviewed control and preserve evidence 
 ## Turns slice: migrations 037–041
 
 037 adds account reserves, banked daily allowances/evidence and per-run repeat plans; 038 adds immutable rest recovery and next-encounter pins; 039 permits explicitly bounded v3 free/extended encounter costs; 040 records effective release-pinned rollover policies; 041 reconciles daily projections and bonus ledger legs. Older migration checksums are unchanged. See [Turns and rollover](turns-rollover.md#validation-and-safe-rollout) for source contracts, restricted grants, staging proof and the compatible rollback boundary. No production schedule or content is enabled by these migrations.
+
+## Consumption migration 042
+
+See [the consumption contract](consumption.md) for implemented routes, player workflows, migration/grants, lifecycle guarantees, remaining ownership boundaries and safe rollout/rollback. Production content adoption remains separate.

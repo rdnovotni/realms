@@ -1,3 +1,5 @@
+import { itemUsePreview,useInventoryItem } from '../src/domains/inventory-services.js';
+import { seedLegacyConsumption } from './helpers.js';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { randomUUID,createHash } from 'node:crypto';
@@ -84,7 +86,8 @@ test('currency conservation, concurrent spending, ledger immutability and rollba
 test('inventory custody, encounter privacy, rollover deferral and Ascension lifetimes',async()=>{
   const db=await testDatabase(),pool=db.pool;
   try{
-    const release=await publishContent(pool,packageV1),user=await actor(pool,release,390),other=await actor(pool,release);
+    const mealPackage=structuredClone(packageV1);mealPackage.entities.push({id:'item.fixture_meal',kind:'ITEM',revision:1,schemaVersion:1,definition:{name:'Fixture meal',dependencies:[],public:{},mechanics:{inventory:{version:1,storageMode:'STACK',category:'CONSUMABLE'},itemUse:{version:2,kind:'USE',effects:[],rewards:[],consumption:{version:1,family:'FOOD',costs:{fullness:6,drunkenness:0,tolerance:0},turns:0,quality:{reference:1,softness:100,maximumBonusBps:0},automatic:false,rare:false}}}}});
+    const release=await publishContent(pool,mealPackage),user=await actor(pool,release,390),other=await actor(pool,release);
     // Make the actor eligible for a rollover that is due at the time the test runs.
     await pool.query("UPDATE accounts SET created_at=now()-interval '2 days' WHERE id=$1",[user.account]);
     await pool.query("INSERT INTO rollover_epochs VALUES(1,now()-interval '1 day',100,400)");
@@ -94,7 +97,7 @@ test('inventory custody, encounter privacy, rollover deferral and Ascension life
     await assert.rejects(getInstanceView(pool,other.account,created.instanceId as string),/INSTANCE_NOT_FOUND/);
     assert.deepEqual(await applyRollover(pool,user.account),{applied:0,deferred:true});
     await pool.query("UPDATE instances SET lifecycle='RESOLVED' WHERE id=$1",[created.instanceId]);
-    await pool.query('UPDATE run_consumption SET fullness=5,drunkenness=3 WHERE run_id=$1',[user.run]);
+    await seedLegacyConsumption(pool,user.run,{fullness:5,drunkenness:3});
     assert.deepEqual(await applyRollover(pool,user.account),{applied:1,deferred:false});
     assert.deepEqual(await applyRollover(pool,user.account),{applied:0,deferred:false});
     assert.equal((await pool.query('SELECT turns FROM runs WHERE id=$1',[user.run])).rows[0].turns,400);
@@ -111,12 +114,12 @@ test('inventory custody, encounter privacy, rollover deferral and Ascension life
     const ordinary=granted.ordinary as string;
     await pool.query("INSERT INTO discoveries(account_id,entity_id,knowledge_level) VALUES($1,'item.fixture','LEARNED')",[user.account]);
     await pool.query("UPDATE runs SET status='AFTERCORE' WHERE id=$1",[user.run]);
-    await pool.query('UPDATE run_consumption SET fullness=6 WHERE run_id=$1',[user.run]);
-    const request=envelope('ASCEND',3),next=await ascend(pool,user.account,request);
+    const ration=await executeAction(pool,user.account,envelope('FIXTURE_MEAL',3),{},async c=>({itemId:(await grantItem(c,'meal',{containerId:containers.rows[0].id,definitionId:'item.fixture_meal',quantity:'1',sourceCode:'FIXTURE'},'FIXTURE')).itemId}));const meal=await itemUsePreview(pool,user.account,3,String(ration.itemId));await useInventoryItem(pool,user.account,envelope('USE_ITEM',3),String(ration.itemId),meal.token,false);
+    const request=envelope('ASCEND',4),next=await ascend(pool,user.account,request);
     assert.equal(next.turns,400);assert.equal((await ascend(pool,user.account,request)).replayed,true);
     assert.equal((await pool.query('SELECT lifecycle FROM state_scopes WHERE run_id=$1',[user.run])).rows[0].lifecycle,'ARCHIVED');
     assert.equal((await pool.query('SELECT fullness FROM run_consumption WHERE run_id=$1',[next.runId])).rows[0].fullness,6);
-    assert.equal((await pool.query('SELECT count(*)::int AS n FROM discoveries WHERE account_id=$1',[user.account])).rows[0].n,1);
+    assert.equal((await pool.query('SELECT count(*)::int AS n FROM discoveries WHERE account_id=$1',[user.account])).rows[0].n,2);
     assert.equal((await pool.query(`SELECT s.account_id FROM inventory_items i JOIN inventory_containers c ON c.id=i.container_id JOIN state_scopes s ON s.id=c.scope_id WHERE i.id=$1`,[ordinary])).rows[0].account_id,user.account);
     await assert.rejects(pool.query("UPDATE runs SET rules_version='unexpected' WHERE id=$1",[next.runId]),/immutable/);
     assert.deepEqual(await applyRollover(pool,user.account),{applied:0,deferred:false});

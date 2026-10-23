@@ -39,9 +39,10 @@ export async function executeAction(pool: pg.Pool, accountId: string, envelope: 
     if (run.revision !== envelope.expectedRevision) throw new DomainError(409, 'STALE_REVISION');
     await actionControls(client,accountId,envelope.actionType);
     const openingTurns=run.turns;
+    if(envelope.actionType==='SPEND_TURNS'){const {requireSoberAdventure}=await import('../domains/consumption.js');await requireSoberAdventure({client,run},(parameters as {amount:number}).amount);}
     const context:ActionContext = { client, accountId, actionId, requestId: envelope.requestId, run,authorizationSource:envelope.authorizationSource??'MANUAL_UI' };
     const result = { ...(await handler(context)), actionId, requestId: envelope.requestId, rulesVersion: run.rules_version };
-    const debit=Number((await client.query('SELECT coalesce(-sum(least(delta,0)),0) AS debit FROM turn_ledger WHERE run_id=$1 AND request_id=$2',[run.id,envelope.requestId])).rows[0].debit);
+    const debit=Number((await client.query('SELECT coalesce(-sum(least(delta,0)),0) AS debit FROM turn_ledger WHERE run_id=$1 AND request_id=$2 AND NOT(reason=\'CONSUMPTION_UNDO\' AND $3=\'UNDO_OVERDRINK\')',[run.id,envelope.requestId,envelope.actionType])).rows[0].debit);
     // Historical upgrade fixtures execute old actions before installing new planner tables.
     if(debit>0&&(await client.query("SELECT to_regclass('turn_preferences') AS table")).rows[0].table){
       const reserve=(await client.query('SELECT reserve FROM turn_preferences WHERE account_id=$1',[accountId])).rows[0]?.reserve??0;

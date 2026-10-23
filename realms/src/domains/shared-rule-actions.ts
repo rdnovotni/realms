@@ -1,3 +1,4 @@
+import { requireSoberAdventure } from './consumption.js';
 import { settleTurnRest } from './turn-rests.js';
 import { consumeDailyAllowance } from './daily-allowances.js';
 import { carryLoad } from './inventory-load.js';
@@ -52,6 +53,7 @@ export async function resolveDomain(c:ActionContext,entityId:string,domain:RuleA
  let instanceId:string|null=null;
  if(domain==='COMBAT')instanceId=(await beginEncounter(c,entityId,{sharedRules:true})).instanceId;
  await consumeDailyAllowance(c,entityId);
+ if(['INTERACTION','TRAVEL'].includes(domain)&&spec.costs.rest==='NONE')await requireSoberAdventure(c,spec.costs.turns);
  const costs=await payRuleCosts(c,spec.costs,domain==='COMBAT');
  const rest=await settleTurnRest(c,entityId);
  if(spec.costs.rest!=='NONE')state.local=advanceLocalClocks(state.local,spec.costs.rest);

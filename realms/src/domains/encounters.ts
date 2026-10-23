@@ -1,3 +1,4 @@
+import { requireSoberAdventure } from './consumption.js';
 import { consumeDailyAllowance } from './daily-allowances.js';
 import { requireCarryEntry } from './inventory-load.js';
 import { requireFeature } from '../rules/controls.js';
@@ -43,6 +44,7 @@ export async function beginEncounter(context:ActionContext,definitionId:string,i
   validateEncounterSpec(content.spec);
   if((await context.client.query(`SELECT 1 FROM instance_participants p JOIN instances i ON i.id=p.instance_id
     WHERE p.run_id=$1 AND i.lifecycle='ACTIVE' AND i.kind IN('ENCOUNTER','COMBAT')`,[context.run.id])).rows.length) throw new DomainError(409,'ENCOUNTER_ALREADY_OPEN');
+  await requireSoberAdventure(context,content.spec.turnCost);
   if(context.run.turns<content.spec.turnCost) throw new DomainError(409,'INSUFFICIENT_TURNS');
   if(content.spec.version===3&&content.spec.freeSource){const source=await consumeDailyAllowance(context,content.spec.freeSource);if(!source?.encounterOnly)throw new DomainError(409,'FREE_ENCOUNTER_SOURCE_UNAVAILABLE');}
   const id=randomUUID();

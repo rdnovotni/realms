@@ -17,6 +17,7 @@ test('transactional action: concurrent retries, restart, auth, stale input, roll
     await pool.query('INSERT INTO characters(id,account_id) VALUES($1,$2)', [character, account]);
     const release=await publishContent(pool,{version:'integration-fixture',engineVersion:'foundation-1',entities:[]});
     await pool.query('INSERT INTO runs(id,character_id,turns,content_release_id) VALUES($1,$2,3,$3)', [run, character,release]);
+    await pool.query('INSERT INTO run_consumption(run_id) VALUES($1)',[run]);
     const action = { requestId, actionType: 'SPEND_TURNS', amount: 1, expectedRevision: 0 };
     const post = (payload: Record<string, unknown>) => app.inject({ method: 'POST', url: '/api/v1/actions', headers: { authorization: `Bearer ${token}` }, payload });
     assert.equal((await app.inject({ method: 'POST', url: '/api/v1/actions', payload: action })).statusCode, 401);

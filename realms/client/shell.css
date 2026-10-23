@@ -105,6 +105,8 @@
 .game-shell .shell-navigation button { white-space:normal;overflow-wrap:anywhere; }
 
 .turn-panel { margin-block:var(--folio-space-4);min-width:0;overflow-wrap:anywhere; }
+.turn-panel label:has(progress) { grid-template-columns:minmax(0,1fr); }
+.turn-panel progress { width:100%;max-width:100%;min-width:0; }
 .turn-panel form { display:flex;flex-wrap:wrap;align-items:end;gap:var(--folio-space-3); }
 .turn-panel input[type=number] { width:min(100%,12rem); }
 .turn-panel form label { display:grid;gap:var(--folio-space-2); }

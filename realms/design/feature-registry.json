@@ -262,8 +262,16 @@
         "DEC-002",
         "DEC-003"
       ],
-      "implementation_status": "planned",
-      "baseline_evidence": []
+      "implementation_status": "partial",
+      "baseline_evidence": [
+        {
+          "implementation": "realms/src/domains/consumption.ts",
+          "test": "realms/test/consumption.test.ts",
+          "finding": "Capacity/yield settlement, immediate onboarding undo, rollover carry, observations and safe meal-plan framework; production catalogs, Studio, feasts, restaurants and class/Path integrations remain open. See realms/docs/consumption.md.",
+          "assessment_commit": "48aafb80e507f527fadba0f1d443545be6b35de7",
+          "verification": "Executable synthetic integration coverage; not a claim of complete section coverage or production adoption."
+        }
+      ]
     },
     {
       "id": "SYS-03",
@@ -4567,9 +4575,18 @@
         "FEAT-3B73288EE2E335",
         "FEAT-28039C5A8A8BA5"
       ],
-      "implementation_status": "unassessed",
+      "implementation_status": "partial",
       "contract": "inherit-system",
-      "evidence": [],
+      "evidence": [
+        {
+          "path": "realms/docs/consumption.md",
+          "finding": "Assessed implemented subset and explicit remaining boundaries; no section-wide completion claim."
+        },
+        {
+          "path": "realms/test/consumption.test.ts",
+          "finding": "Executable regression evidence for this framework subset."
+        }
+      ],
       "rule_assertions": {},
       "verification": null
     },
@@ -4590,9 +4607,18 @@
         "FEAT-00C569304A5030",
         "FEAT-CE5D78E8353E5A"
       ],
-      "implementation_status": "unassessed",
+      "implementation_status": "partial",
       "contract": "inherit-system",
-      "evidence": [],
+      "evidence": [
+        {
+          "path": "realms/docs/consumption.md",
+          "finding": "Assessed implemented subset and explicit remaining boundaries; no section-wide completion claim."
+        },
+        {
+          "path": "realms/test/consumption.test.ts",
+          "finding": "Executable regression evidence for this framework subset."
+        }
+      ],
       "rule_assertions": {},
       "verification": null
     },
@@ -4610,9 +4636,18 @@
         "FEAT-8FC1E0F6F511A5",
         "FEAT-B666474FF7F84B"
       ],
-      "implementation_status": "unassessed",
+      "implementation_status": "partial",
       "contract": "inherit-system",
-      "evidence": [],
+      "evidence": [
+        {
+          "path": "realms/docs/consumption.md",
+          "finding": "Assessed implemented subset and explicit remaining boundaries; no section-wide completion claim."
+        },
+        {
+          "path": "realms/test/consumption.test.ts",
+          "finding": "Executable regression evidence for this framework subset."
+        }
+      ],
       "rule_assertions": {},
       "verification": null
     },
@@ -4635,9 +4670,18 @@
         "FEAT-C7DA05EB2341DC",
         "FEAT-92F99D70893ABD"
       ],
-      "implementation_status": "unassessed",
+      "implementation_status": "partial",
       "contract": "inherit-system",
-      "evidence": [],
+      "evidence": [
+        {
+          "path": "realms/docs/consumption.md",
+          "finding": "Assessed implemented subset and explicit remaining boundaries; no section-wide completion claim."
+        },
+        {
+          "path": "realms/test/consumption.test.ts",
+          "finding": "Executable regression evidence for this framework subset."
+        }
+      ],
       "rule_assertions": {},
       "verification": null
     },
@@ -4660,9 +4704,18 @@
         "FEAT-A1F4820591AB31",
         "FEAT-AF7DD54DF679C0"
       ],
-      "implementation_status": "unassessed",
+      "implementation_status": "partial",
       "contract": "inherit-system",
-      "evidence": [],
+      "evidence": [
+        {
+          "path": "realms/docs/consumption.md",
+          "finding": "Assessed implemented subset and explicit remaining boundaries; no section-wide completion claim."
+        },
+        {
+          "path": "realms/test/consumption.test.ts",
+          "finding": "Executable regression evidence for this framework subset."
+        }
+      ],
       "rule_assertions": {},
       "verification": null
     },
@@ -4686,9 +4739,18 @@
         "FEAT-8F7152A87B2345",
         "FEAT-F9542EC2161597"
       ],
-      "implementation_status": "unassessed",
+      "implementation_status": "partial",
       "contract": "inherit-system",
-      "evidence": [],
+      "evidence": [
+        {
+          "path": "realms/docs/consumption.md",
+          "finding": "Assessed implemented subset and explicit remaining boundaries; no section-wide completion claim."
+        },
+        {
+          "path": "realms/test/consumption.test.ts",
+          "finding": "Executable regression evidence for this framework subset."
+        }
+      ],
       "rule_assertions": {},
       "verification": null
     },
@@ -4717,9 +4779,18 @@
         "FEAT-21DEF5B9989D83",
         "FEAT-47F8EC17E47398"
       ],
-      "implementation_status": "unassessed",
+      "implementation_status": "partial",
       "contract": "inherit-system",
-      "evidence": [],
+      "evidence": [
+        {
+          "path": "realms/docs/consumption.md",
+          "finding": "Assessed implemented subset and explicit remaining boundaries; no section-wide completion claim."
+        },
+        {
+          "path": "realms/test/consumption.test.ts",
+          "finding": "Executable regression evidence for this framework subset."
+        }
+      ],
       "rule_assertions": {},
       "verification": null
     },
@@ -4740,9 +4811,18 @@
         "FEAT-DDDA1768ACF4F0",
         "FEAT-A468CE12897FAB"
       ],
-      "implementation_status": "unassessed",
+      "implementation_status": "partial",
       "contract": "inherit-system",
-      "evidence": [],
+      "evidence": [
+        {
+          "path": "realms/docs/consumption.md",
+          "finding": "Assessed implemented subset and explicit remaining boundaries; no section-wide completion claim."
+        },
+        {
+          "path": "realms/test/consumption.test.ts",
+          "finding": "Executable regression evidence for this framework subset."
+        }
+      ],
       "rule_assertions": {},
       "verification": null
     },
@@ -4760,9 +4840,18 @@
         "FEAT-8B2B0629B28559",
         "FEAT-00BCF1FEC7F2BE"
       ],
-      "implementation_status": "unassessed",
+      "implementation_status": "partial",
       "contract": "inherit-system",
-      "evidence": [],
+      "evidence": [
+        {
+          "path": "realms/docs/consumption.md",
+          "finding": "Assessed implemented subset and explicit remaining boundaries; no section-wide completion claim."
+        },
+        {
+          "path": "realms/test/consumption.test.ts",
+          "finding": "Executable regression evidence for this framework subset."
+        }
+      ],
       "rule_assertions": {},
       "verification": null
     },
@@ -4802,9 +4891,18 @@
         "FEAT-406816BA80D5FE",
         "FEAT-6DFEA54E77278E"
       ],
-      "implementation_status": "unassessed",
+      "implementation_status": "partial",
       "contract": "inherit-system",
-      "evidence": [],
+      "evidence": [
+        {
+          "path": "realms/docs/consumption.md",
+          "finding": "Assessed implemented subset and explicit remaining boundaries; no section-wide completion claim."
+        },
+        {
+          "path": "realms/test/consumption.test.ts",
+          "finding": "Executable regression evidence for this framework subset."
+        }
+      ],
       "rule_assertions": {},
       "verification": null
     },
@@ -4830,9 +4928,18 @@
         "FEAT-17F6E32A183C1E",
         "FEAT-58B33137DA599D"
       ],
-      "implementation_status": "unassessed",
+      "implementation_status": "partial",
       "contract": "inherit-system",
-      "evidence": [],
+      "evidence": [
+        {
+          "path": "realms/docs/consumption.md",
+          "finding": "Assessed implemented subset and explicit remaining boundaries; no section-wide completion claim."
+        },
+        {
+          "path": "realms/test/consumption.test.ts",
+          "finding": "Executable regression evidence for this framework subset."
+        }
+      ],
       "rule_assertions": {},
       "verification": null
     },
@@ -4973,9 +5080,18 @@
         "FEAT-1E2011D9E62821",
         "FEAT-B06F1AA45A7FF7"
       ],
-      "implementation_status": "unassessed",
+      "implementation_status": "partial",
       "contract": "inherit-system",
-      "evidence": [],
+      "evidence": [
+        {
+          "path": "realms/docs/consumption.md",
+          "finding": "Assessed implemented subset and explicit remaining boundaries; no section-wide completion claim."
+        },
+        {
+          "path": "realms/test/consumption.test.ts",
+          "finding": "Executable regression evidence for this framework subset."
+        }
+      ],
       "rule_assertions": {},
       "verification": null
     },
@@ -4988,9 +5104,18 @@
         "FEAT-21BD77C02DD203",
         "FEAT-645D3959728219"
       ],
-      "implementation_status": "unassessed",
+      "implementation_status": "partial",
       "contract": "inherit-system",
-      "evidence": [],
+      "evidence": [
+        {
+          "path": "realms/docs/consumption.md",
+          "finding": "Assessed implemented subset and explicit remaining boundaries; no section-wide completion claim."
+        },
+        {
+          "path": "realms/test/consumption.test.ts",
+          "finding": "Executable regression evidence for this framework subset."
+        }
+      ],
       "rule_assertions": {},
       "verification": null
     },
@@ -5019,9 +5144,18 @@
         "FEAT-51C45F63777FF0",
         "FEAT-569D1C2BEBF178"
       ],
-      "implementation_status": "unassessed",
+      "implementation_status": "partial",
       "contract": "inherit-system",
-      "evidence": [],
+      "evidence": [
+        {
+          "path": "realms/docs/consumption.md",
+          "finding": "Assessed implemented subset and explicit remaining boundaries; no section-wide completion claim."
+        },
+        {
+          "path": "realms/test/consumption.test.ts",
+          "finding": "Executable regression evidence for this framework subset."
+        }
+      ],
       "rule_assertions": {},
       "verification": null
     },
@@ -5039,9 +5173,18 @@
         "FEAT-B488888BDEEE4A",
         "FEAT-F80BF3FA422CC5"
       ],
-      "implementation_status": "unassessed",
+      "implementation_status": "partial",
       "contract": "inherit-system",
-      "evidence": [],
+      "evidence": [
+        {
+          "path": "realms/docs/consumption.md",
+          "finding": "Assessed implemented subset and explicit remaining boundaries; no section-wide completion claim."
+        },
+        {
+          "path": "realms/test/consumption.test.ts",
+          "finding": "Executable regression evidence for this framework subset."
+        }
+      ],
       "rule_assertions": {},
       "verification": null
     },
@@ -5065,9 +5208,18 @@
         "FEAT-F3F24917C0A0F3",
         "FEAT-3B4AE4AA657904"
       ],
-      "implementation_status": "unassessed",
+      "implementation_status": "partial",
       "contract": "inherit-system",
-      "evidence": [],
+      "evidence": [
+        {
+          "path": "realms/docs/consumption.md",
+          "finding": "Assessed implemented subset and explicit remaining boundaries; no section-wide completion claim."
+        },
+        {
+          "path": "realms/test/consumption.test.ts",
+          "finding": "Executable regression evidence for this framework subset."
+        }
+      ],
       "rule_assertions": {},
       "verification": null
     },

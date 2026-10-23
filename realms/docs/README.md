@@ -16,6 +16,7 @@ Current product name: **Follybound**. [Implementation status](implementation-sta
 - [Development and playtest troubleshooting](troubleshooting.md)
 - [Database foundation](database-foundation.md)
 - [Turns, rollover and daily planner](turns-rollover.md)
+- [Food, booze, Tolerance and safe meal planning](consumption.md)
 - [Shared rules, clocks and prerequisite services](shared-rules.md)
 - [Field lifetimes and the small Ascension loop](ascension-reset-contracts.md)
 - [Eight passes to release readiness](eight-pass-release-plan.md)
