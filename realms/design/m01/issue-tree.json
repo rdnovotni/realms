@@ -1,0 +1,636 @@
+{
+  "version": "1.0.0",
+  "status": "PROVISIONAL_IMPLEMENTATION_PLAN",
+  "parent": {
+    "id": "M01-SLICE",
+    "title": "The Bell Below Brackenford",
+    "status": "brief-ready; gameplay not implemented by M01"
+  },
+  "basis": {
+    "archive_sha256": "3274e33be64263597af5301b9099012a6357eb87c8cdaf952e1eef4598250c63",
+    "catalog_sha256": "bbb101b37b74f0e85668e18233bd256c18546b14f662c790e574bfba5ba3b18b",
+    "corrections_sha256": "5b94e8fcec8fff004028821b8851857c223279389f50c388f3cd5069310f2fbd",
+    "documents": 47,
+    "systems": 46,
+    "sections": 2096,
+    "entries": 13187,
+    "corrections": 12
+  },
+  "external_gates": {
+    "M00-SOURCE": "Exact candidate verified in PR69; integrate/reverify against main before gameplay PRs.",
+    "M00-OPERATIONS": "FB-006 open; blocks operational readiness/activation, not design or isolated tests."
+  },
+  "mutation_owners": {
+    "quest.objectives_and_terminal_outcome": "quests",
+    "quest.principal_reward_claim": "quests",
+    "run.quest_journal": "quests",
+    "run.gold_and_currency_ledger": "economy",
+    "inventory.custody_quantity_binding": "items",
+    "run.xp_build_proficiency": "progression",
+    "run.food_booze_tolerance": "consumption",
+    "action.check_roll_and_retry_receipt": "checks",
+    "account.learned_fact_unlock": "content-knowledge",
+    "run.known_fact_projection": "content-knowledge",
+    "run.travel_location_and_local_world_consequence": "world",
+    "encounter.initiative_damage_effects_command_journal": "combat",
+    "run.npc_memory_relationship": "npcs",
+    "run.species_heritage_appearance": "identity",
+    "run.companion_recruitment_control": "companions",
+    "action.recipe_input_output_receipt": "crafting",
+    "run.campaign_completion_proof": "campaign",
+    "run.lifecycle_and_ascension_transition": "ascension",
+    "content.definition_revision_release_manifest": "production-tools",
+    "telemetry.sanitized_event_projection": "telemetry",
+    "account.turn_balance_daily_receipts": "turn-economy",
+    "instance.room_graph_seed_checkpoint": "dungeons",
+    "instance.puzzle_mechanism_state": "interactions"
+  },
+  "issues": [
+    {
+      "id": "SL-01",
+      "title": "Objective outcomes, reward ownership and telemetry envelope",
+      "parent": "M01-SLICE",
+      "priority": "P0",
+      "status": "planned",
+      "primary_domain": "quests",
+      "depends_on": [],
+      "soft_dependencies": [],
+      "mutation_keys": [
+        "quest.objectives_and_terminal_outcome",
+        "quest.principal_reward_claim",
+        "run.quest_journal",
+        "action.check_roll_and_retry_receipt",
+        "telemetry.sanitized_event_projection"
+      ],
+      "source_refs": [
+        {
+          "system": "06",
+          "section": "graph",
+          "stable_id": "SEC-89BB26A2D59A"
+        },
+        {
+          "system": "06",
+          "section": "outcomes",
+          "stable_id": "SEC-C7179DE03E81"
+        },
+        {
+          "system": "06",
+          "section": "rewards",
+          "stable_id": "SEC-3AABC279DD47"
+        },
+        {
+          "system": "23",
+          "section": "transactions",
+          "stable_id": "SEC-D40A81E9A7E9"
+        },
+        {
+          "system": "29",
+          "section": "retry",
+          "stable_id": "SEC-0EBDCFD3D064"
+        },
+        {
+          "system": "45",
+          "section": "objective-xp",
+          "stable_id": "SEC-B6310FD8853C"
+        },
+        {
+          "system": "46",
+          "section": "s28-telemetry-philosophy",
+          "stable_id": "SEC-DDF55CBA5A82"
+        }
+      ],
+      "acceptance": [
+        "One fixture objective accepts combat and peaceful proof, awards principal XP/loot once through owning adapters, and preserves resolved outcome after restart.",
+        "Concurrent approaches, stale revisions, retries and abandoned checks cannot double-claim or reroll.",
+        "Emit versioned sanitized objective/check/reward events at commit, with no narrative text or secret mechanics."
+      ],
+      "player_ui": "Journal shows known objectives, next legal actions, costs, failure and retry explanation; event failure never causes reward retry.",
+      "integration_risk": "Do not create a generic reward faucet or copy combat XP into quest settlement.",
+      "decision_status": "PROVISIONAL_IMPLEMENTATION_PLAN"
+    },
+    {
+      "id": "SL-02",
+      "title": "Small region graph, lawful travel and world consequences",
+      "parent": "M01-SLICE",
+      "priority": "P0",
+      "status": "planned",
+      "primary_domain": "world",
+      "depends_on": [
+        "SL-01"
+      ],
+      "soft_dependencies": [],
+      "mutation_keys": [
+        "run.travel_location_and_local_world_consequence",
+        "account.turn_balance_daily_receipts"
+      ],
+      "source_refs": [
+        {
+          "system": "18",
+          "section": "summary",
+          "stable_id": "SEC-D0BE48150A2B"
+        },
+        {
+          "system": "33",
+          "section": "summary",
+          "stable_id": "SEC-EAB288316157"
+        },
+        {
+          "system": "23",
+          "section": "scopes",
+          "stable_id": "SEC-A8B95255B42B"
+        },
+        {
+          "system": "46",
+          "section": "s11-vertical-slice-definition",
+          "stable_id": "SEC-B087FC3D04A7"
+        }
+      ],
+      "acceptance": [
+        "Town, wilderness and dungeon entrance connect with explicit costs, discovered edges and route IDs.",
+        "Travel duplicate/stale/reconnect, rollover and reserve guards compose with existing Turn owner; no real-time trek or field camp."
+      ],
+      "player_ui": "Known map/list routes, cost confirmation, inaccessible-route reasons, return-to-town and resume.",
+      "integration_risk": "A map icon or generic scope table does not establish traversal; local run consequences must not mutate live-world state.",
+      "decision_status": "PROVISIONAL_IMPLEMENTATION_PLAN"
+    },
+    {
+      "id": "SL-03",
+      "title": "Authored dialogue, clues and fail-forward quest routes",
+      "parent": "M01-SLICE",
+      "priority": "P0",
+      "status": "planned",
+      "primary_domain": "npcs",
+      "depends_on": [
+        "SL-01",
+        "SL-02"
+      ],
+      "soft_dependencies": [],
+      "mutation_keys": [
+        "run.npc_memory_relationship",
+        "account.learned_fact_unlock",
+        "run.known_fact_projection"
+      ],
+      "source_refs": [
+        {
+          "system": "34",
+          "section": "authored_dialogue",
+          "stable_id": "SEC-7A5328E82352"
+        },
+        {
+          "system": "34",
+          "section": "conversation_pipeline",
+          "stable_id": "SEC-B35D4CCC3427"
+        },
+        {
+          "system": "38",
+          "section": "summary",
+          "stable_id": "SEC-D9F5E3D6FC14"
+        },
+        {
+          "system": "06",
+          "section": "evidence",
+          "stable_id": "SEC-B4B2EAB5FCDF"
+        },
+        {
+          "system": "29",
+          "section": "knowledge",
+          "stable_id": "SEC-CDBF19BE7CE4"
+        },
+        {
+          "system": "16",
+          "section": "parser",
+          "stable_id": "SEC-D2997A73FD42"
+        }
+      ],
+      "acceptance": [
+        "Q1–Q4 from the brief are reachable with combat and noncombat outcomes; missing NPC/clue never hard-locks the campaign.",
+        "One NPC and one scene map free text to approved intents with preview/confirmation and deterministic authored fallback.",
+        "Undiscovered dialogue choices, clue facts and alternate routes do not leak through queries, counts, logs or AI context."
+      ],
+      "player_ui": "Dialogue choices and safe free-text field, Journal clue recap, explicit intent confirmation, degraded-mode fallback.",
+      "integration_risk": "NPC memory, account knowledge and quest truth use separate owners/scopes. No case-file/theory-graph subsystem.",
+      "decision_status": "PROVISIONAL_IMPLEMENTATION_PLAN"
+    },
+    {
+      "id": "SL-04",
+      "title": "Three native class slices, minimal species setup and companion",
+      "parent": "M01-SLICE",
+      "priority": "P0",
+      "status": "planned",
+      "primary_domain": "progression",
+      "depends_on": [
+        "SL-01"
+      ],
+      "soft_dependencies": [],
+      "mutation_keys": [
+        "run.xp_build_proficiency",
+        "run.species_heritage_appearance",
+        "run.companion_recruitment_control"
+      ],
+      "source_refs": [
+        {
+          "system": "03",
+          "section": "classes",
+          "stable_id": "SEC-DA650EE8C6FE"
+        },
+        {
+          "system": "43",
+          "section": "class-engine",
+          "stable_id": "SEC-F530750275A6"
+        },
+        {
+          "system": "43",
+          "section": "world-facing",
+          "stable_id": "SEC-7C5B880E5F21"
+        },
+        {
+          "system": "43",
+          "section": "subclass-deferred",
+          "stable_id": "SEC-4A15AFE0BE63"
+        },
+        {
+          "system": "37",
+          "section": "roster",
+          "stable_id": "SEC-7C10DEA12E66"
+        },
+        {
+          "system": "37",
+          "section": "species-class",
+          "stable_id": "SEC-86C6F5FF8470"
+        },
+        {
+          "system": "09",
+          "section": "summary",
+          "stable_id": "SEC-236D9A81106B"
+        }
+      ],
+      "acceptance": [
+        "Fighter, Rogue and Wizard each show a distinct native decision loop and world affordance; authored fixture stats are not full launch engines.",
+        "Human and goblin provisional slice records permit all three classes with bounded contextual traits; no separate culture or mechanical Background.",
+        "One recruitable companion supports each solo class without a mandatory trinity; evaluate one Familiar path cost explicitly before final slice gate."
+      ],
+      "player_ui": "Creation comparisons, native-resource explanations, species trait/appearance preview, companion recruitment/control and safe build resume.",
+      "integration_risk": "Do not rename basic attacks into completed class engines, promote example subclasses or make class/species shortcuts mandatory.",
+      "decision_status": "PROVISIONAL_IMPLEMENTATION_PLAN"
+    },
+    {
+      "id": "SL-05",
+      "title": "Compact seeded dungeon, mechanism and two-route boss",
+      "parent": "M01-SLICE",
+      "priority": "P0",
+      "status": "planned",
+      "primary_domain": "dungeons",
+      "depends_on": [
+        "SL-01",
+        "SL-02",
+        "SL-03",
+        "SL-04"
+      ],
+      "soft_dependencies": [],
+      "mutation_keys": [
+        "instance.room_graph_seed_checkpoint",
+        "encounter.initiative_damage_effects_command_journal",
+        "run.campaign_completion_proof",
+        "instance.puzzle_mechanism_state"
+      ],
+      "source_refs": [
+        {
+          "system": "32",
+          "section": "topology",
+          "stable_id": "SEC-E4894EBAB607"
+        },
+        {
+          "system": "32",
+          "section": "filler",
+          "stable_id": "SEC-68B51C729A60"
+        },
+        {
+          "system": "32",
+          "section": "seed",
+          "stable_id": "SEC-AC066BBA2836"
+        },
+        {
+          "system": "32",
+          "section": "puzzle_validation",
+          "stable_id": "SEC-C323A74D58DA"
+        },
+        {
+          "system": "42",
+          "section": "status",
+          "stable_id": "SEC-4DAC37BE9068"
+        },
+        {
+          "system": "44",
+          "section": "ending",
+          "stable_id": "SEC-3DF6D9A8B462"
+        }
+      ],
+      "acceptance": [
+        "One authored five-landmark dungeon plus themed filler variation, meaningful checkpoint and persisted seed.",
+        "Fight the Bellwarden or resolve its mandate through the discovered release ritual; either yields one campaign completion proof via owning domain.",
+        "Boss has two readable mechanics with counterplay, retreat/re-entry and exact restore/reconnect; puzzle failure opens a costed salvage route."
+      ],
+      "player_ui": "Room map/list, known exits, puzzle choices, forecasted boss windup, recover/retreat and final outcome summary.",
+      "integration_risk": "Combat victory is evidence, not permission to write quest/XP/Gold directly; no world-boss or raid expansion.",
+      "decision_status": "PROVISIONAL_IMPLEMENTATION_PLAN"
+    },
+    {
+      "id": "SL-06",
+      "title": "Food, banked Turns, rest and storage in the region loop",
+      "parent": "M01-SLICE",
+      "priority": "P1",
+      "status": "planned",
+      "primary_domain": "turn-economy",
+      "depends_on": [
+        "SL-02",
+        "SL-04"
+      ],
+      "soft_dependencies": [],
+      "mutation_keys": [
+        "run.food_booze_tolerance"
+      ],
+      "source_refs": [
+        {
+          "system": "01",
+          "section": "summary",
+          "stable_id": "SEC-AAF5E8771CD3"
+        },
+        {
+          "system": "02",
+          "section": "summary",
+          "stable_id": "SEC-361F1E9F00FE"
+        },
+        {
+          "system": "19",
+          "section": "summary",
+          "stable_id": "SEC-428E4E8B3F9D"
+        },
+        {
+          "system": "46",
+          "section": "s11-vertical-slice-definition",
+          "stable_id": "SEC-B087FC3D04A7"
+        }
+      ],
+      "acceptance": [
+        "Three small reviewed consumables and one rest/service use existing Turn/consumption rules; expose nightcap, reserve and recovery limitations.",
+        "Simulated rollover during/resuming encounters and Ascension cannot duplicate daily charges, reset undo eligibility or bypass capacity."
+      ],
+      "player_ui": "Food/booze planner, costs/yields, banked Turn state, rest confirmation and personal storage entry from town.",
+      "integration_risk": "Fixture integration does not activate production rollover policy or introduce a new settlement path.",
+      "decision_status": "PROVISIONAL_IMPLEMENTATION_PLAN"
+    },
+    {
+      "id": "SL-07",
+      "title": "Vendor, routine crafting and one repeatable sink/faucet",
+      "parent": "M01-SLICE",
+      "priority": "P1",
+      "status": "planned",
+      "primary_domain": "economy",
+      "depends_on": [
+        "SL-01",
+        "SL-02",
+        "SL-06"
+      ],
+      "soft_dependencies": [],
+      "mutation_keys": [
+        "run.gold_and_currency_ledger",
+        "inventory.custody_quantity_binding",
+        "action.recipe_input_output_receipt"
+      ],
+      "source_refs": [
+        {
+          "system": "11",
+          "section": "summary",
+          "stable_id": "SEC-4978701DE6A0"
+        },
+        {
+          "system": "08",
+          "section": "summary",
+          "stable_id": "SEC-DC35816EF894"
+        },
+        {
+          "system": "07",
+          "section": "summary",
+          "stable_id": "SEC-FD97C738124D"
+        },
+        {
+          "system": "28",
+          "section": "summary",
+          "stable_id": "SEC-49E93FC4B6EF"
+        },
+        {
+          "system": "45",
+          "section": "economy-balance",
+          "stable_id": "SEC-07DA039B7558"
+        }
+      ],
+      "acceptance": [
+        "One town vendor, one routine recipe and explicit reward/service budgets support meaningful equip/store choices.",
+        "Repeatable salvage contract yields budgeted Gold; repair/provisioning consumes Gold/materials. Fixed proposal values live in versioned data, never class/client code.",
+        "Retry/concurrency, overcapacity, locked/bound items and stale prices conserve currency/custody and cannot farm quest principal rewards."
+      ],
+      "player_ui": "Buy/sell only permitted items, price preview, storage/carry reasons, recipe inputs/outputs and repair receipt.",
+      "integration_risk": "Vendor coordinates existing owners; no player market, escrow or commissioning scope.",
+      "decision_status": "PROVISIONAL_IMPLEMENTATION_PLAN"
+    },
+    {
+      "id": "SL-08",
+      "title": "Campaign conclusion, first Ascension knowledge and second route",
+      "parent": "M01-SLICE",
+      "priority": "P0",
+      "status": "planned",
+      "primary_domain": "ascension",
+      "depends_on": [
+        "SL-03",
+        "SL-05",
+        "SL-07"
+      ],
+      "soft_dependencies": [],
+      "mutation_keys": [
+        "run.lifecycle_and_ascension_transition"
+      ],
+      "source_refs": [
+        {
+          "system": "10",
+          "section": "eligibility",
+          "stable_id": "SEC-F760BC55406E"
+        },
+        {
+          "system": "10",
+          "section": "transition",
+          "stable_id": "SEC-1646F347AAD9"
+        },
+        {
+          "system": "10",
+          "section": "persistent",
+          "stable_id": "SEC-9F849430663A"
+        },
+        {
+          "system": "10",
+          "section": "worldstate",
+          "stable_id": "SEC-E7A7D69BC4B1"
+        },
+        {
+          "system": "03",
+          "section": "mastery",
+          "stable_id": "SEC-49E9070156C1"
+        },
+        {
+          "system": "44",
+          "section": "ascension",
+          "stable_id": "SEC-3D46E28A6707"
+        },
+        {
+          "system": "46",
+          "section": "s13-why-ascension-must-arrive-early",
+          "stable_id": "SEC-756DC3D454F6"
+        }
+      ],
+      "acceptance": [
+        "Optional Aftercore → current preview → explicit confirm → new run retains Sluice Survey knowledge but resets local quests/NPC outcomes and class build.",
+        "Life two uses the known culvert to reach the chamber by a different route; knowledge reveals possibility, not an automatically opened door.",
+        "Repeated/stale/interrupted confirmation and rollover cannot duplicate discoveries, rewards or daily entitlement; old history remains readable."
+      ],
+      "player_ui": "Real ending and stay-in-Aftercore choice; preserve/reset/archive review; knowledge entry and second-run route hint.",
+      "integration_risk": "Reuse discovery persistence; no invented numeric Mastery grant, class-engine inheritance, forced Ascension or lore explanation.",
+      "decision_status": "PROVISIONAL_IMPLEMENTATION_PLAN"
+    },
+    {
+      "id": "SL-09",
+      "title": "Typed authoring, broken-package rejection and content review",
+      "parent": "M01-SLICE",
+      "priority": "P1",
+      "status": "planned",
+      "primary_domain": "production-tools",
+      "depends_on": [
+        "SL-03",
+        "SL-04",
+        "SL-05",
+        "SL-07"
+      ],
+      "soft_dependencies": [],
+      "mutation_keys": [
+        "content.definition_revision_release_manifest"
+      ],
+      "source_refs": [
+        {
+          "system": "46",
+          "section": "s16-design-admin-client-core-editors",
+          "stable_id": "SEC-A69101F627D6"
+        },
+        {
+          "system": "46",
+          "section": "s23-automated-validation-catalog",
+          "stable_id": "SEC-216DEF400F05"
+        },
+        {
+          "system": "46",
+          "section": "s25-publishing-pipeline",
+          "stable_id": "SEC-7276C4D524F5"
+        },
+        {
+          "system": "46",
+          "section": "s44-definition-of-done-content",
+          "stable_id": "SEC-C9073FBB868B"
+        }
+      ],
+      "acceptance": [
+        "Designer edits one monster, item, quest, encounter and loot table through Studio without editing source, validates, previews, compares and exports a candidate.",
+        "Intentionally broken references, unreachable victory, reward duplication, missing failure route, hidden-data exposure and invalid budget fail before seal.",
+        "Review records content IDs/revisions, principal budgets, secrets, lifetimes and dependencies; no live adoption in this work."
+      ],
+      "player_ui": "Designer UI with diagnostics linked to fields/nodes and preview of player-visible text.",
+      "integration_risk": "Current Studio is a foundation; mock JSON edits alone do not satisfy the no-code acceptance.",
+      "decision_status": "PROVISIONAL_IMPLEMENTATION_PLAN"
+    },
+    {
+      "id": "SL-10",
+      "title": "Onboarding, second-run playtest and measured slice acceptance",
+      "parent": "M01-SLICE",
+      "priority": "P1",
+      "status": "planned",
+      "primary_domain": "player-client",
+      "depends_on": [
+        "SL-06",
+        "SL-08",
+        "SL-09"
+      ],
+      "soft_dependencies": [],
+      "mutation_keys": [],
+      "source_refs": [
+        {
+          "system": "16",
+          "section": "access",
+          "stable_id": "SEC-2886B151AD2D"
+        },
+        {
+          "system": "16",
+          "section": "tutorials",
+          "stable_id": "SEC-BA0B94DF0BBF"
+        },
+        {
+          "system": "45",
+          "section": "telemetry",
+          "stable_id": "SEC-A56C39368A81"
+        },
+        {
+          "system": "45",
+          "section": "no-personal-scaling",
+          "stable_id": "SEC-6472C3014E59"
+        },
+        {
+          "system": "46",
+          "section": "s12-vertical-slice-success-criteria",
+          "stable_id": "SEC-CE044A67A38F"
+        },
+        {
+          "system": "46",
+          "section": "s60-accessibility-ux-gate",
+          "stable_id": "SEC-1A89E2664689"
+        }
+      ],
+      "acceptance": [
+        "Execute all A-01–A-12 scenarios in the brief with exact source/build/content/configuration evidence.",
+        "Measure two runs per tester; record route/class changes, comprehension, fun/friction and severity defects separately from automated mechanics checks.",
+        "Refresh the eight-axis status matrix, M00 identity gap and release checklist; no production activation implied."
+      ],
+      "player_ui": "Keyboard/phone/reduced-motion/zoom-safe full loop with no external instructions; meaningful error and offline/reconnect recovery.",
+      "integration_risk": "Source CI is not usability, accessibility-device or live readiness evidence.",
+      "decision_status": "PROVISIONAL_IMPLEMENTATION_PLAN"
+    }
+  ],
+  "milestones": [
+    {
+      "id": "S1",
+      "title": "A choice changes the world",
+      "requires": [
+        "SL-01",
+        "SL-02",
+        "SL-03",
+        "SL-04"
+      ],
+      "gate": "Playable two-approach objective, native class difference and disconnect-safe state."
+    },
+    {
+      "id": "S2",
+      "title": "A complete first life",
+      "requires": [
+        "SL-05",
+        "SL-06",
+        "SL-07"
+      ],
+      "gate": "Local crisis concluded, economy/daily loop and recovery are understandable."
+    },
+    {
+      "id": "S3",
+      "title": "A better second life",
+      "requires": [
+        "SL-08",
+        "SL-09",
+        "SL-10"
+      ],
+      "gate": "Knowledge changes route, designer authors content, measured acceptance passes; operations remain separate."
+    }
+  ],
+  "execution_gate": "M00-SOURCE"
+}

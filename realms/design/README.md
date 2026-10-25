@@ -6,6 +6,8 @@ This is the second P1 deliverable: an implementation overlay over the supplied m
 
 Start with [the work plan](WORK_PLAN.md). Finish reusable feature frameworks with a few synthetic fixtures before producing substantial ordinary content. Each work package includes its server, typed Studio controls, player workflow, integration tests and reset/reconnect behavior. Canonical launch tiers remain visible; a framework can be tested before a restricted feature is eligible for activation.
 
+The [M01 canon and vertical-slice contract](m01/README.md) confirms the source fingerprints and launch tiers, separates eight implementation/readiness axes, and specifies a provisional two-life region with a dependency board and ten PR briefs. It does not promote proposed catalogs or activate content.
+
 ## Files and source authority
 
 - `source-catalog.json.gz`: immutable, losslessly compressed snapshot of the supplied Core + Systems 01–46 index. It retains all 13,187 indexed entries, including 11,607 rules, exact source wording/status, 2,096 section anchors, document fingerprints and 12 recorded corrections. It is reference data, excluded from runtime container copies and player assets.
