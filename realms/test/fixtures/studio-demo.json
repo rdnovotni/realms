@@ -1,0 +1,739 @@
+{
+  "version": "studio-demo-v1",
+  "engineVersion": "foundation-1",
+  "entities": [
+    {
+      "id": "curve.build",
+      "kind": "TUNING",
+      "revision": 1,
+      "schemaVersion": 1,
+      "definition": {
+        "name": "Fixture curve",
+        "dependencies": [],
+        "public": {
+          "description": "Synthetic Studio fixture: Fixture curve"
+        },
+        "mechanics": {
+          "xpCurve": {
+            "version": 1,
+            "thresholds": [
+              "0",
+              "100",
+              "200",
+              "300",
+              "400",
+              "500",
+              "600",
+              "700",
+              "800",
+              "900",
+              "1000",
+              "1100",
+              "1200",
+              "1300",
+              "1400",
+              "1500",
+              "1600",
+              "1700",
+              "1800",
+              "1900",
+              "2000",
+              "2100",
+              "2200",
+              "2300",
+              "2400"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "rules.build",
+      "kind": "TUNING",
+      "revision": 1,
+      "schemaVersion": 1,
+      "definition": {
+        "name": "Fixture build rules",
+        "dependencies": [
+          "curve.build"
+        ],
+        "public": {
+          "description": "Synthetic Studio fixture: Fixture build rules"
+        },
+        "mechanics": {
+          "buildRules": {
+            "version": 1,
+            "ruleset": "CLASS_LEVELS_V1",
+            "curveId": "curve.build",
+            "maximumClasses": 2,
+            "startingLuck": 10,
+            "presets": [
+              {
+                "key": "balanced",
+                "attributes": {
+                  "strength": 12,
+                  "dexterity": 11,
+                  "constitution": 10,
+                  "intelligence": 9,
+                  "wisdom": 8,
+                  "charisma": 7,
+                  "luck": 10
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "class.one",
+      "kind": "CLASS",
+      "revision": 1,
+      "schemaVersion": 1,
+      "definition": {
+        "name": "one",
+        "dependencies": [
+          "rules.build"
+        ],
+        "public": {
+          "description": "Synthetic Studio fixture: one"
+        },
+        "mechanics": {
+          "classProgression": {
+            "version": 1,
+            "rulesId": "rules.build",
+            "access": "DISCOVERED",
+            "maximumNativeLevel": 25
+          },
+          "combatModifiers": {
+            "version": 1,
+            "modifiers": [
+              {
+                "stat": "accuracy",
+                "amount": 1,
+                "minimumNativeLevel": 1
+              }
+            ]
+          },
+          "tacticalKit": {
+            "version": 1,
+            "minimumNativeLevel": 1,
+            "heal": true,
+            "guard": false
+          }
+        }
+      }
+    },
+    {
+      "id": "class.two",
+      "kind": "CLASS",
+      "revision": 1,
+      "schemaVersion": 1,
+      "definition": {
+        "name": "two",
+        "dependencies": [
+          "rules.build"
+        ],
+        "public": {
+          "description": "Synthetic Studio fixture: two"
+        },
+        "mechanics": {
+          "classProgression": {
+            "version": 1,
+            "rulesId": "rules.build",
+            "access": "DISCOVERED",
+            "maximumNativeLevel": 2
+          }
+        }
+      }
+    },
+    {
+      "id": "class.three",
+      "kind": "CLASS",
+      "revision": 1,
+      "schemaVersion": 1,
+      "definition": {
+        "name": "three",
+        "dependencies": [
+          "rules.build"
+        ],
+        "public": {
+          "description": "Synthetic Studio fixture: three"
+        },
+        "mechanics": {
+          "classProgression": {
+            "version": 1,
+            "rulesId": "rules.build",
+            "access": "DISCOVERED",
+            "maximumNativeLevel": 2
+          }
+        }
+      }
+    },
+    {
+      "id": "encounter.build",
+      "kind": "ENCOUNTER",
+      "revision": 1,
+      "schemaVersion": 1,
+      "definition": {
+        "name": "Fixture encounter",
+        "dependencies": [
+          "curve.build"
+        ],
+        "public": {
+          "description": "Synthetic Studio fixture: Fixture encounter"
+        },
+        "mechanics": {
+          "encounter": {
+            "version": 1,
+            "turnCost": 1
+          },
+          "resolutionXP": {
+            "version": 1,
+            "amount": "500",
+            "curveId": "curve.build"
+          }
+        }
+      }
+    },
+    {
+      "id": "subclass.guard",
+      "kind": "ABILITY",
+      "revision": 1,
+      "schemaVersion": 1,
+      "definition": {
+        "name": "Guard subclass",
+        "dependencies": [
+          "class.one"
+        ],
+        "public": {
+          "description": "Synthetic Studio fixture: Guard subclass"
+        },
+        "mechanics": {
+          "subclass": {
+            "version": 1,
+            "ruleset": "SUBCLASS_CHOICE_V1",
+            "classId": "class.one",
+            "unlockNativeLevel": 5,
+            "access": "DISCOVERED"
+          },
+          "combatModifiers": {
+            "version": 1,
+            "modifiers": [
+              {
+                "stat": "armor",
+                "amount": 4,
+                "minimumNativeLevel": 0
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "rules.character",
+      "kind": "TUNING",
+      "revision": 1,
+      "schemaVersion": 1,
+      "definition": {
+        "name": "Character",
+        "dependencies": [
+          "rules.build"
+        ],
+        "public": {
+          "description": "Synthetic Studio fixture: Character"
+        },
+        "mechanics": {
+          "characterProfile": {
+            "version": 1,
+            "ruleset": "CHARACTER_STATS_V1",
+            "buildRulesId": "rules.build",
+            "base": {
+              "maxHealth": 30,
+              "maxMana": 6,
+              "accuracy": 20,
+              "evasion": 10,
+              "armor": 2,
+              "initiative": 5,
+              "attackMin": 6,
+              "attackMax": 6
+            },
+            "scaling": []
+          }
+        }
+      }
+    },
+    {
+      "id": "npc.ally",
+      "kind": "NPC",
+      "revision": 1,
+      "schemaVersion": 1,
+      "definition": {
+        "name": "Ally",
+        "dependencies": [],
+        "public": {
+          "description": "Synthetic Studio fixture: Ally"
+        },
+        "mechanics": {
+          "tacticalUnit": {
+            "version": 1,
+            "stats": {
+              "maxHealth": 20,
+              "maxMana": 6,
+              "accuracy": 20,
+              "evasion": 10,
+              "armor": 2,
+              "initiative": 4,
+              "attackMin": 4,
+              "attackMax": 4
+            },
+            "canHeal": true,
+            "canGuard": false
+          }
+        }
+      }
+    },
+    {
+      "id": "monster.tactical",
+      "kind": "MONSTER",
+      "revision": 1,
+      "schemaVersion": 1,
+      "definition": {
+        "name": "Enemy",
+        "dependencies": [],
+        "public": {
+          "description": "Synthetic Studio fixture: Enemy"
+        },
+        "mechanics": {
+          "tacticalUnit": {
+            "version": 1,
+            "stats": {
+              "maxHealth": 12,
+              "maxMana": 6,
+              "accuracy": 20,
+              "evasion": 10,
+              "armor": 0,
+              "initiative": 2,
+              "attackMin": 8,
+              "attackMax": 8
+            },
+            "canHeal": false,
+            "canGuard": false
+          }
+        }
+      }
+    },
+    {
+      "id": "item.ore",
+      "kind": "ITEM",
+      "revision": 1,
+      "schemaVersion": 1,
+      "definition": {
+        "name": "Ore",
+        "dependencies": [],
+        "public": {
+          "description": "Synthetic Studio fixture: Ore"
+        },
+        "mechanics": {
+          "inventory": {
+            "version": 1,
+            "storageMode": "STACK",
+            "category": "MATERIAL"
+          }
+        }
+      }
+    },
+    {
+      "id": "loot.tactical",
+      "kind": "LOOT_TABLE",
+      "revision": 1,
+      "schemaVersion": 1,
+      "definition": {
+        "name": "Loot",
+        "dependencies": [
+          "item.ore"
+        ],
+        "public": {
+          "description": "Synthetic Studio fixture: Loot"
+        },
+        "mechanics": {
+          "loot": {
+            "version": 1,
+            "commitment": "ENCOUNTER_START",
+            "groups": [
+              {
+                "key": "ore",
+                "chance": {
+                  "numerator": 1,
+                  "denominator": 1
+                },
+                "entries": [
+                  {
+                    "itemId": "item.ore",
+                    "weight": 1,
+                    "min": 2,
+                    "max": 2,
+                    "binding": "TRADEABLE",
+                    "quality": "1"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "rules.feats",
+      "kind": "TUNING",
+      "revision": 1,
+      "schemaVersion": 1,
+      "definition": {
+        "name": "Feats",
+        "dependencies": [
+          "rules.build"
+        ],
+        "public": {
+          "description": "Synthetic Studio fixture: Feats"
+        },
+        "mechanics": {
+          "featRules": {
+            "version": 1,
+            "ruleset": "FEAT_CHOICES_V1",
+            "buildRulesId": "rules.build",
+            "milestones": [
+              1
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "feat.vigor",
+      "kind": "ABILITY",
+      "revision": 1,
+      "schemaVersion": 1,
+      "definition": {
+        "name": "Vigor",
+        "dependencies": [
+          "rules.feats"
+        ],
+        "public": {
+          "description": "Synthetic Studio fixture: Vigor"
+        },
+        "mechanics": {
+          "feat": {
+            "version": 1,
+            "rulesId": "rules.feats",
+            "access": "DISCOVERED",
+            "antiTaxReview": "PASS",
+            "prerequisites": {
+              "classes": [],
+              "feats": []
+            }
+          },
+          "combatModifiers": {
+            "version": 1,
+            "modifiers": [
+              {
+                "stat": "maxHealth",
+                "amount": 5,
+                "minimumNativeLevel": 0
+              }
+            ]
+          },
+          "tacticalAttackAbility": {
+            "version": 1,
+            "minimumNativeLevel": 0,
+            "range": 1,
+            "manaCost": 2,
+            "accuracyModifier": 0,
+            "damage": {
+              "type": "physical",
+              "min": 4,
+              "max": 7,
+              "penetration": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "item.sword",
+      "kind": "ITEM",
+      "revision": 1,
+      "schemaVersion": 1,
+      "definition": {
+        "name": "Sword",
+        "dependencies": [],
+        "public": {
+          "description": "Synthetic Studio fixture: Sword"
+        },
+        "mechanics": {
+          "inventory": {
+            "version": 1,
+            "storageMode": "INSTANCE",
+            "category": "EQUIPMENT"
+          },
+          "equipment": {
+            "version": 1,
+            "slots": [
+              "MAIN_HAND"
+            ],
+            "hands": 1,
+            "minimumLevel": 1,
+            "bindingPolicy": "PRESERVE"
+          },
+          "combatModifiers": {
+            "version": 1,
+            "modifiers": [
+              {
+                "stat": "attackMin",
+                "amount": 2,
+                "minimumNativeLevel": 0
+              },
+              {
+                "stat": "attackMax",
+                "amount": 2,
+                "minimumNativeLevel": 0
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "item.shield",
+      "kind": "ITEM",
+      "revision": 1,
+      "schemaVersion": 1,
+      "definition": {
+        "name": "Shield",
+        "dependencies": [],
+        "public": {
+          "description": "Synthetic Studio fixture: Shield"
+        },
+        "mechanics": {
+          "inventory": {
+            "version": 1,
+            "storageMode": "INSTANCE",
+            "category": "EQUIPMENT"
+          },
+          "equipment": {
+            "version": 1,
+            "slots": [
+              "OFF_HAND"
+            ],
+            "hands": 1,
+            "minimumLevel": 1,
+            "bindingPolicy": "PRESERVE"
+          },
+          "combatModifiers": {
+            "version": 1,
+            "modifiers": [
+              {
+                "stat": "armor",
+                "amount": 1,
+                "minimumNativeLevel": 0
+              }
+            ]
+          },
+          "tacticalKit": {
+            "version": 1,
+            "minimumNativeLevel": 0,
+            "heal": false,
+            "guard": true
+          }
+        }
+      }
+    },
+    {
+      "id": "encounter.tactical",
+      "kind": "ENCOUNTER",
+      "revision": 1,
+      "schemaVersion": 1,
+      "definition": {
+        "name": "Tactical",
+        "dependencies": [
+          "rules.character",
+          "npc.ally",
+          "monster.tactical",
+          "loot.tactical",
+          "curve.build"
+        ],
+        "public": {
+          "description": "Synthetic Studio fixture: Tactical"
+        },
+        "mechanics": {
+          "encounter": {
+            "version": 2,
+            "turnCost": 1,
+            "lootTableId": "loot.tactical"
+          },
+          "characterProfileId": "rules.character",
+          "tacticalCombat": {
+            "version": 1,
+            "ruleset": "TACTICAL_ENCOUNTER_V1",
+            "rules": {
+              "damage": {
+                "version": 1,
+                "ruleset": "TACTICAL_DAMAGE_V1",
+                "check": {
+                  "version": 1,
+                  "ruleset": "D20_CHECK_V1",
+                  "attributeDivisor": 2,
+                  "attributeBaseline": 10,
+                  "proficiencyPerRank": 2,
+                  "natural20": "SUCCESS",
+                  "natural1": "NORMAL"
+                },
+                "criticalOn20": false,
+                "criticalMultiplierBps": 20000,
+                "minimumConnectedDamage": 1
+              },
+              "zones": [
+                "floor",
+                "balcony"
+              ],
+              "edges": [
+                [
+                  "floor",
+                  "balcony"
+                ]
+              ],
+              "attackRange": 0,
+              "healRange": 1,
+              "healAmount": 5,
+              "healManaCost": 2,
+              "guardArmorBonus": 5,
+              "retreatDifficulty": 15,
+              "roundLimit": 5
+            },
+            "playerZone": "floor",
+            "allies": [
+              {
+                "id": "ally",
+                "definitionId": "npc.ally",
+                "zone": "floor"
+              }
+            ],
+            "enemies": [
+              {
+                "id": "enemy",
+                "definitionId": "monster.tactical",
+                "zone": "floor"
+              }
+            ],
+            "failure": {
+              "destination": "HOME",
+              "turnCost": 2,
+              "recoveryHealth": 5
+            }
+          },
+          "resolutionXP": {
+            "version": 1,
+            "amount": "100",
+            "curveId": "curve.build"
+          }
+        }
+      }
+    },
+    {
+      "id": "effect.studio_focus",
+      "kind": "EFFECT",
+      "revision": 1,
+      "schemaVersion": 1,
+      "definition": {
+        "name": "Practice focus",
+        "dependencies": [],
+        "public": {
+          "description": "A synthetic sandbox effect."
+        },
+        "mechanics": {
+          "tacticalRoundEffect": {
+            "version": 1,
+            "clock": "ROUNDS",
+            "tick": "OWNER_END",
+            "family": "focus",
+            "stacking": "REFRESH",
+            "rounds": 2,
+            "polarity": "BENEFICIAL",
+            "tags": [
+              "focus"
+            ],
+            "modifiers": [
+              {
+                "stat": "accuracy",
+                "amount": 1
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "quest.studio_cart",
+      "kind": "QUEST",
+      "revision": 1,
+      "schemaVersion": 1,
+      "definition": {
+        "name": "A cart in the reeds",
+        "dependencies": [
+          "encounter.tactical",
+          "loot.tactical"
+        ],
+        "public": {
+          "description": "Recover a training cart through force or a safe detour."
+        },
+        "advanced": {
+          "hint": "The side path avoids the sentry."
+        },
+        "secrets": {
+          "answer": "author-only-secret-marker"
+        },
+        "mechanics": {
+          "questObjectives": {
+            "version": 1,
+            "start": "start",
+            "nodes": [
+              {
+                "id": "start",
+                "name": "Find the stranded cart",
+                "type": "SCENE",
+                "next": [
+                  "recover"
+                ]
+              },
+              {
+                "id": "recover",
+                "name": "Recover the cart",
+                "type": "OBJECTIVE",
+                "rewardKey": "cart.recovered",
+                "encounterId": "encounter.tactical",
+                "lootTableId": "loot.tactical",
+                "next": [
+                  "fight",
+                  "detour"
+                ]
+              },
+              {
+                "id": "fight",
+                "name": "Win the encounter",
+                "type": "OUTCOME",
+                "outcome": "SUCCESS",
+                "next": []
+              },
+              {
+                "id": "detour",
+                "name": "Take the safe detour",
+                "type": "OUTCOME",
+                "outcome": "SUCCESS",
+                "next": []
+              }
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

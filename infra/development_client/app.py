@@ -40,7 +40,7 @@ class Studio:
  def content_page(self):
   f=self.pages['Content library'];row=self.row(f)
   self.search=tk.StringVar();ttk.Label(row,text='Find content').pack(side='left');ttk.Entry(row,textvariable=self.search,width=27).pack(side='left',padx=8);self.search.trace_add('write',lambda *_:self.refresh_library())
-  self.button(row,'New definition',self.new_entity).pack(side='left',padx=5);self.button(row,'Duplicate selected',self.duplicate).pack(side='left',padx=5);self.button(row,'Validate saved package',lambda:self.work('Validate content',lambda:model.validate_package(self.package))).pack(side='left')
+  self.button(row,'Guided production workspace',self.production_workspace).pack(side='left',padx=5);self.button(row,'New definition',self.new_entity).pack(side='left',padx=5);self.button(row,'Duplicate selected',self.duplicate).pack(side='left',padx=5);self.button(row,'Validate saved package',lambda:self.work('Validate content',lambda:model.validate_package(self.package))).pack(side='left')
   panes=ttk.Panedwindow(f,orient='horizontal');panes.pack(fill='both',expand=True,pady=8);left=ttk.Frame(panes);right=ttk.Frame(panes,padding=12);panes.add(left,weight=1);panes.add(right,weight=3)
   self.library=ttk.Treeview(left,columns=('name','kind'),show='headings',height=15);self.library.heading('name',text='Name');self.library.heading('kind',text='Type');self.library.column('name',width=180);self.library.column('kind',width=90);self.library.pack(fill='both',expand=True);self.library.bind('<<TreeviewSelect>>',self.select_entity)
   self.fields={}
@@ -57,6 +57,11 @@ class Studio:
    pane=ttk.Frame(self.definition_tabs,padding=8);self.definition_tabs.add(pane,text=title);self.parts[key]=self.text(pane,8);self.parts[key].bind('<KeyRelease>',self.mark_dirty)
   row=self.row(right);self.button(row,'Save & validate definition',self.save_entity).pack(side='left');self.button(row,'View complete package',self.view_package).pack(side='left',padx=8)
   self.content_note=tk.StringVar();ttk.Label(right,textvariable=self.content_note,wraplength=680).pack(anchor='w',pady=8)
+ def production_workspace(self):
+  if self.dirty:raise ValueError('Save or discard the current definition before opening the independent production workspace.')
+  if getattr(self,'production_process',None) and self.production_process.poll() is None:raise ValueError('The local workspace is already open. Use its browser window or stop that process before reopening.')
+  self.production_process=subprocess.Popen([sys.executable,str(model.ROOT/'infra/development_client/studio_web.py'),'--workspace',str(model.ROOT/'.development/studio-v0'),'--demo','--open'])
+  self.status.set('Guided workspace opened on loopback. Drafts and approvals are local; production is untouched.')
  def refresh_library(self):
   selected=self.library.selection();self.library.delete(*self.library.get_children())
   for entity in self.package['entities']:

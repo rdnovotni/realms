@@ -1,3 +1,5 @@
+import { validateQuestContent,validateQuestRewardOwners } from './quest-content.js';
+import { projectKnownContent } from './content-projection.js';
 import { validateCombatPreparationContent } from './combat-preparation-content.js';
 import { validateConsumptionContent } from './consumption-content.js';
 import { validateTurnPolicies } from './turn-policy.js';
@@ -67,6 +69,7 @@ export function validateContent(input:unknown): asserts input is ContentPackage 
   validateEffectFamilies(entities);
   validateProficiencyContent(entities);
   for(const entity of pkg.entities) {
+    validateQuestContent(entity,entities);
     validateAttributeReferences(entity,entities);
     validateSubclassReferences(entity,entities);
     validateBuildReferences(entity,entities);
@@ -99,6 +102,7 @@ export function validateContent(input:unknown): asserts input is ContentPackage 
     const inventory=entity.definition.mechanics?.inventory;
     if(entity.kind==='ITEM' && inventory!==undefined) validateInventorySpec(inventory);
   }
+  validateQuestRewardOwners(entities);
   validateProficiencyRequirements(entities);
   if (entities.size!==pkg.entities.length) throw new DomainError(400,'DUPLICATE_CONTENT_ID');
   const visiting=new Set<string>(),done=new Set<string>();
@@ -165,5 +169,5 @@ export async function contentView(pool:pg.Pool,accountId:string,releaseId:string
     WHERE e.release_id=$2 AND e.entity_id=$3 AND EXISTS(
       SELECT 1 FROM runs x JOIN characters c ON c.id=x.character_id WHERE c.account_id=$1 AND x.content_release_id=e.release_id)`,[accountId,releaseId,entityId]);
   if(!result.rows.length) throw new DomainError(404,'CONTENT_NOT_KNOWN');
-  return result.rows[0];
+  return projectKnownContent(result.rows[0],result.rows[0].advanced!==null);
 }

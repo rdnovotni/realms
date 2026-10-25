@@ -4,6 +4,8 @@
 
 Development Studio is the desktop authoring app. Server Console remains the operations app. Launch **Follybound Development Studio** from the Ubuntu application menu, or run `bash /srv/Realms/source/infra/scripts/development-studio.sh` as your desktop user.
 
+The [guided production workspace v0](development-studio-v0.md) adds searchable metadata, typed forms, dependency/quest graphs, seeded sandbox, filtered client preview and immutable local candidate/staging/approval/export. Open it from **Content library → Guided production workspace**. Its disposable publication does not call the live-promotion workflow below.
+
 ## One master source
 
 The canonical checkout is `/srv/Realms/source`, with GitHub repository `rdnovotni/realms`, branch `main`. “Master” refers to this authoritative branch; a second `master` branch is not introduced. `realms/` contains the game and `infra/` contains the development and deployment tools. Existing GitHub history is retained, with its former game-root layout moved under `realms/`; its infrastructure guidelines and CI are retained at repository root.
