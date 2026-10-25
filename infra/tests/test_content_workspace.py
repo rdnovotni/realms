@@ -53,6 +53,8 @@ class WorkspaceTests(unittest.TestCase):
    self.publisher.side_effect=None;self.publisher.return_value=proof
    with self.assertRaisesRegex(ValueError,'incomplete'):self.action('stage',candidate=id)
    self.assertEqual(before,self.ws.file.read_bytes())
+ def test_unreleased_tombstone_retains_full_definition_for_recovery_under_new_id(self):
+  original=copy.deepcopy(next(e for e in DEMO['entities'] if e['id']=='effect.studio_focus'));self.action('tombstone',id=original['id']);retired=self.ws.request('read')['retiredEntities'][original['id']];self.assertEqual(retired,original);restored=copy.deepcopy(retired);restored['id']='effect.recovered';self.action('save',entity=restored,original=None);self.assertTrue(self.ws.request('analyze')['valid'])
  def test_referenced_tombstone_is_refused(self):
   with self.assertRaisesRegex(ValueError,'Referenced'):self.action('tombstone',id='item.ore')
  def test_local_emergency_disable_blocks_publication_but_retains_reads_and_drafts(self):

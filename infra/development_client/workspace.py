@@ -56,7 +56,7 @@ class Workspace:
    meta=s['metadata'].get(e['id'],{});matching=next((c for c in reversed(s['candidates']) if any(x==e for x in c['package']['entities'])),None)
    rows.append({'id':e['id'],'kind':e['kind'],'name':e['definition']['name'],'revision':e['revision'],'sourceVersion':s['package']['version'],'tags':meta.get('tags',[]),'dependencies':e['definition']['dependencies'],'author':meta.get('author','Imported'),'status':matching['status'] if matching else 'DRAFT','lastChange':meta.get('at','Imported snapshot')})
   for id,t in s['tombstones'].items():rows.append({'id':id,'kind':t['kind'],'name':t['name'],'revision':t['revision'],'sourceVersion':t['sourceVersion'],'tags':[],'dependencies':[],'author':t['author'],'status':'TOMBSTONE','lastChange':t['at'],'replacement':t.get('replacement')})
-  return {'etag':digest(s),'package':s['package'],'rows':rows,'disabled':s['disabled'],'candidates':[{k:v for k,v in c.items() if k!='package'} for c in s['candidates']],'events':s['events'][-40:]}
+  return {'etag':digest(s),'package':s['package'],'rows':rows,'disabled':s['disabled'],'candidates':[{k:v for k,v in c.items() if k!='package'} for c in s['candidates']],'events':s['events'][-40:],'retiredEntities':{id:t['entity'] for id,t in s['tombstones'].items() if 'entity' in t}}
  def request(self,operation,data=None,expected=None):
   data=data or {};lock=self.path/'edit.lock';require(not lock.is_symlink(),'Invalid workspace lock.')
   with open(lock,'a',opener=lambda p,f:os.open(p,f,0o600)) as stream:
@@ -91,7 +91,7 @@ class Workspace:
    elif operation in ('rename','tombstone'):
     id=data['id'];replacement=data.get('replacement') if operation=='rename' else None;plan=self._rename_plan(s,id,replacement)
     require(replacement is not None or not plan['inbound'],'Referenced definitions cannot be tombstoned; repair their dependencies first.')
-    old=next(e for e in s['package']['entities'] if e['id']==id);s['tombstones'][id]={'kind':old['kind'],'name':old['definition']['name'],'revision':old['revision'],'sourceVersion':s['package']['version'],'replacement':replacement,'author':author,'at':now(),'note':note}
+    old=next(e for e in s['package']['entities'] if e['id']==id);s['tombstones'][id]={'entity':copy.deepcopy(old),'kind':old['kind'],'name':old['definition']['name'],'revision':old['revision'],'sourceVersion':s['package']['version'],'replacement':replacement,'author':author,'at':now(),'note':note}
     s['package']['entities']=[e for e in s['package']['entities'] if e['id']!=id]
     if replacement:
      clone=copy.deepcopy(old);clone.update(id=replacement,revision=1);s['package']['entities'].append(clone)
