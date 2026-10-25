@@ -13538,7 +13538,12 @@
       ],
       "implementation_status": "unassessed",
       "contract": "inherit-system",
-      "evidence": [],
+      "evidence": [
+        {
+          "path": "realms/docs/m02-content-studio.md",
+          "finding": "M02 scoped local authoring: typed ordinary editors, reference/quest lint, immutable candidate/staging/approval/export, discovery projection and seeded disposable publication proof. Quest execution, full editors/catalogs, staff authority and live adoption remain open; no requirement or whole-system promotion."
+        }
+      ],
       "rule_assertions": {},
       "verification": null
     },
@@ -19143,7 +19148,12 @@
       ],
       "implementation_status": "unassessed",
       "contract": "inherit-system",
-      "evidence": [],
+      "evidence": [
+        {
+          "path": "realms/docs/m02-content-studio.md",
+          "finding": "M02 scoped local authoring: typed ordinary editors, reference/quest lint, immutable candidate/staging/approval/export, discovery projection and seeded disposable publication proof. Quest execution, full editors/catalogs, staff authority and live adoption remain open; no requirement or whole-system promotion."
+        }
+      ],
       "rule_assertions": {},
       "verification": null
     },
@@ -41820,7 +41830,12 @@
       ],
       "implementation_status": "unassessed",
       "contract": "inherit-system",
-      "evidence": [],
+      "evidence": [
+        {
+          "path": "realms/docs/m02-content-studio.md",
+          "finding": "M02 scoped local authoring: typed ordinary editors, reference/quest lint, immutable candidate/staging/approval/export, discovery projection and seeded disposable publication proof. Quest execution, full editors/catalogs, staff authority and live adoption remain open; no requirement or whole-system promotion."
+        }
+      ],
       "rule_assertions": {},
       "verification": null
     },
@@ -42750,7 +42765,12 @@
       ],
       "implementation_status": "unassessed",
       "contract": "inherit-system",
-      "evidence": [],
+      "evidence": [
+        {
+          "path": "realms/docs/m02-content-studio.md",
+          "finding": "M02 scoped local authoring: typed ordinary editors, reference/quest lint, immutable candidate/staging/approval/export, discovery projection and seeded disposable publication proof. Quest execution, full editors/catalogs, staff authority and live adoption remain open; no requirement or whole-system promotion."
+        }
+      ],
       "rule_assertions": {},
       "verification": null
     },
@@ -42807,7 +42827,12 @@
       ],
       "implementation_status": "unassessed",
       "contract": "inherit-system",
-      "evidence": [],
+      "evidence": [
+        {
+          "path": "realms/docs/m02-content-studio.md",
+          "finding": "M02 scoped local authoring: typed ordinary editors, reference/quest lint, immutable candidate/staging/approval/export, discovery projection and seeded disposable publication proof. Quest execution, full editors/catalogs, staff authority and live adoption remain open; no requirement or whole-system promotion."
+        }
+      ],
       "rule_assertions": {},
       "verification": null
     },
@@ -42845,7 +42870,12 @@
       ],
       "implementation_status": "unassessed",
       "contract": "inherit-system",
-      "evidence": [],
+      "evidence": [
+        {
+          "path": "realms/docs/m02-content-studio.md",
+          "finding": "M02 scoped local authoring: typed ordinary editors, reference/quest lint, immutable candidate/staging/approval/export, discovery projection and seeded disposable publication proof. Quest execution, full editors/catalogs, staff authority and live adoption remain open; no requirement or whole-system promotion."
+        }
+      ],
       "rule_assertions": {},
       "verification": null
     },
@@ -42888,7 +42918,12 @@
       ],
       "implementation_status": "unassessed",
       "contract": "inherit-system",
-      "evidence": [],
+      "evidence": [
+        {
+          "path": "realms/docs/m02-content-studio.md",
+          "finding": "M02 scoped local authoring: typed ordinary editors, reference/quest lint, immutable candidate/staging/approval/export, discovery projection and seeded disposable publication proof. Quest execution, full editors/catalogs, staff authority and live adoption remain open; no requirement or whole-system promotion."
+        }
+      ],
       "rule_assertions": {},
       "verification": null
     },
@@ -42922,7 +42957,12 @@
       ],
       "implementation_status": "unassessed",
       "contract": "inherit-system",
-      "evidence": [],
+      "evidence": [
+        {
+          "path": "realms/docs/m02-content-studio.md",
+          "finding": "M02 scoped local authoring: typed ordinary editors, reference/quest lint, immutable candidate/staging/approval/export, discovery projection and seeded disposable publication proof. Quest execution, full editors/catalogs, staff authority and live adoption remain open; no requirement or whole-system promotion."
+        }
+      ],
       "rule_assertions": {},
       "verification": null
     },

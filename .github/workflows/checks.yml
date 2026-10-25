@@ -103,8 +103,29 @@ jobs:
           name: m00-checkpoint-rehearsal
           path: ${{ runner.temp }}/m00-rehearsal.json
           if-no-files-found: error
+  studio-authoring:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: realms/package-lock.json
+      - run: npm ci
+        working-directory: realms
+      - name: Validate and publish the UI-authored fixture in a newly owned database
+        run: |
+          python3 -m unittest discover -s infra/tests -p test_content_workspace.py
+          python3 infra/scripts/studio-fixture.py --package realms/test/fixtures/studio-authored.json --receipt "$RUNNER_TEMP/m02-authoring.json" --pg-bin "$(pg_config --bindir)" --confirm-disposable
+      - uses: actions/upload-artifact@v4
+        with:
+          name: m02-studio-authoring
+          path: ${{ runner.temp }}/m02-authoring.json
+          if-no-files-found: error
   release-verification:
-    needs: [server, checkpoint-rehearsal]
+    needs: [server, checkpoint-rehearsal, studio-authoring]
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:

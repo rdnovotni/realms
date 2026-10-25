@@ -14,6 +14,7 @@ Current product name: **Follybound**. [Implementation status](implementation-sta
 - [M01 canon, status matrix and two-life vertical-slice brief](../design/m01/README.md)
 - [Database migration map and rollout boundary](migration-guide.md)
 - [Feature fixtures and content authoring](content-authoring.md)
+- [M02 content production Studio and authoring proof](m02-content-studio.md)
 - [Follybound identity and public pages](branding-and-pages.md)
 - [Development and playtest troubleshooting](troubleshooting.md)
 - [Database foundation](database-foundation.md)

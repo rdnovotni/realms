@@ -10,7 +10,7 @@ import { Ajv } from 'ajv';
 import { DomainError } from '../foundation/errors.js';
 import type { ContentEntity } from './content.js';
 import { validateStats,type CharacterStats } from './character-mechanics.js';
-import { startTactical,validateTacticalRules,type TacticalRules } from './tactical-engine.js';
+import { startTactical,validateTacticalRules,type TacticalRules,type TacticalUnit } from './tactical-engine.js';
 
 export type FailureDestination='HOME'|'CHECKPOINT'|'CAPTURED'|'NPC_RESCUE'|'EJECTED'|'FAILED_FORWARD';
 export type FailureContract={turnCost:number;recoveryHealth:number;injuryEffectId?:string}&({version?:never;destination:'HOME'}|{version:2;destination:FailureDestination;allowSurrender:boolean;goldLossBps:number;goldLossCap:number;durabilityWearBps:number});
@@ -51,6 +51,13 @@ export function validateTacticalContent(entity:ContentEntity,entities:Map<string
  const profile=entities.get(m.characterProfileId)?.definition.mechanics?.characterProfile as unknown as {base:CharacterStats};
  if(!profile||s.failure.recoveryHealth>profile.base.maxHealth)throw new DomainError(400,'INVALID_TACTICAL_RECOVERY');
  if(s.failure.injuryEffectId){const injury=entities.get(s.failure.injuryEffectId);validateRoundEffect(injury?.definition.mechanics?.tacticalRoundEffect);const effect=injury!.definition.mechanics!.tacticalRoundEffect as unknown as import('./tactical-effects.js').RoundEffect;if(s.rules.roundEffects?.version!==4||injury!.kind!=='EFFECT'||!entity.definition.dependencies.includes(injury!.id)||effect.version!==4||effect.clock==='ROUNDS'||effect.polarity!=='HARMFUL'||!effect.tags.includes('injury'))throw new DomainError(400,'INVALID_TACTICAL_INJURY');}
+ startTactical(s.rules,tacticalAuthoringParty(entity,entities));
+}
+
+/** Same immutable party construction used by content validation and the offline author sandbox. */
+export function tacticalAuthoringParty(entity:ContentEntity,entities:Map<string,ContentEntity>):TacticalUnit[]{
+ const s=entity.definition.mechanics!.tacticalCombat as unknown as TacticalSpec;
+ const profile=entities.get(entity.definition.mechanics!.characterProfileId as string)!.definition.mechanics!.characterProfile as unknown as {base:CharacterStats};
  const units=[...s.allies.map(u=>({...u,side:'PARTY' as const})),...s.enemies.map(u=>({...u,side:'ENEMY' as const}))].map(u=>{
   const source=entities.get(u.definitionId);
   if(!source||source.kind!==(u.side==='PARTY'?'NPC':'MONSTER')||!entity.definition.dependencies.includes(source.id))throw new DomainError(400,'INVALID_TACTICAL_UNIT_REFERENCE');
@@ -75,6 +82,5 @@ export function validateTacticalContent(entity:ContentEntity,entities:Map<string
   const cleansingAbilities:CleanseAbility[]|undefined=(s.rules.roundEffects?.version??0)>=3?(cleansing?[{id:source.id,sourceRevision:source.revision,sourceInstanceIds:[],spec:cleansing}]:[]):undefined;
   return {id:u.id,side:u.side,zone:u.zone,stats:t.stats,health:t.stats.maxHealth,strikes:0,state:'ACTIVE' as const,canHeal:t.canHeal,canGuard:t.canGuard,...(s.rules.techniques?{checkAttributes:t.checkAttributes,checkSkills:t.checkSkills??{},techniques:source.definition.mechanics?.tacticalTechniques?techniqueProfile(source,source.definition.mechanics.tacticalTechniques as unknown as TechniquePack,entities):{version:1 as const,abilities:[],maximums:{}}}:{}),...(cleansingAbilities?{cleansingAbilities}:{}),...(onHitEffects?{onHitEffects}:{}),...(onHealEffects?{onHealEffects}:{}),...(s.rules.healingAbilities?{healingAbilities:normalizeHealingAbilities(healingAbility?[{id:source.id,sourceRevision:source.revision,sourceInstanceIds:[],spec:healingAbility as HealingAbilitySpec}]:[])}:{}),...(s.rules.abilities?{attackAbilities:normalizeAttackAbilities(attackAbility?[{id:source.id,sourceRevision:source.revision,sourceInstanceIds:[],spec:attackAbility as AttackAbilitySpec}]:[],s.rules.typedDamage!)}:{}),...(s.rules.statusDefense?{statusProfile:deriveStatusProfile(s.rules.statusDefense,statusTraits?[{traits:statusTraits as StatusTraits,nativeLevel:0}]:[])}:{}),...(s.rules.typedDamage?{damageProfile:deriveDamageProfile(s.rules.typedDamage,t.damageTraits?[{traits:t.damageTraits,nativeLevel:0}]:[])}:{})};
  });
- // Validate the full initial party and reject unbounded/invalid derived stats now.
- startTactical(s.rules,[{id:'hero',side:'PARTY',zone:s.playerZone,stats:profile.base,health:profile.base.maxHealth,...(s.rules.techniques?{checkAttributes:Object.fromEntries(attributes.map(a=>[a,10])) as StartingAttributes,checkSkills:{}}:{}),strikes:0,state:'ACTIVE'},...units]);
+ return [{id:'hero',side:'PARTY',zone:s.playerZone,stats:profile.base,health:profile.base.maxHealth,...(s.rules.techniques?{checkAttributes:Object.fromEntries(attributes.map(a=>[a,10])) as StartingAttributes,checkSkills:{}}:{}),strikes:0,state:'ACTIVE'},...units];
 }

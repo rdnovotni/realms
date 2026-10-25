@@ -10,6 +10,7 @@ Start with [the development baseline](development-baseline.md), [game update gui
 - [INFRA-006: disposable Valkey and durable workers](cache-worker-operations.md)
 - [Authoritative development and verification baseline](development-baseline.md)
 - [Follybound Development Studio](development-studio.md)
+- [Development Studio v0 — guided content production](development-studio-v0.md)
 - [INFRA-004: Docker and multiple projects](docker-operations.md)
 - [Publish a game update from testing to live](game-update-guide.md)
 - [INFRA-001 — Hardware and configuration inventory](hardware-inventory.md)

@@ -54,8 +54,7 @@ async function hit(c:ActionContext,id:string,key:string,chance:Chance){return aw
 async function damage(c:ActionContext,id:string,key:string,attacker:Fighter,target:Fighter,guard=false){
   if(!await hit(c,id,`${key}.hit`,attacker.attack.hit))return 0;
   const raw=attacker.attack.min+await drawEncounter(c,id,'combat',`${key}.damage`,attacker.attack.max-attacker.attack.min+1);
-  const mitigated=Math.max(1,Math.floor(Math.max(1,raw-target.armor)*(10000-target.resistanceBps)/10000));
-  return guard?Math.max(1,Math.floor(mitigated/2)):mitigated;
+  return mitigateDuelDamage(raw,target,guard);
 }
 async function completeCampaign(c:ActionContext,id:string,definitionId:string,spec:CombatSpec){
   if(!spec.campaignId)return;
@@ -118,4 +117,10 @@ export async function combatView(pool:pg.Pool,accountId:string,id:string){
     JOIN encounter_records e ON e.instance_id=combat.instance_id JOIN content_versions rules ON rules.entity_id=e.definition_id AND rules.revision=e.definition_revision
     WHERE combat.instance_id=$1 AND character.account_id=$2`,[id,accountId])).rows[0];
   if(!row)throw new DomainError(404,'COMBAT_NOT_FOUND');return row;
+}
+
+/** Pure existing duel mitigation, shared with the offline author sandbox. */
+export function mitigateDuelDamage(raw:number,target:Pick<Fighter,'armor'|'resistanceBps'>,guard=false){
+ const mitigated=Math.max(1,Math.floor(Math.max(1,raw-target.armor)*(10000-target.resistanceBps)/10000));
+ return guard?Math.max(1,Math.floor(mitigated/2)):mitigated;
 }
