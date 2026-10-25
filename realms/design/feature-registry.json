@@ -5867,11 +5867,26 @@
         "FEAT-261D350454E2D5",
         "FEAT-5B3441A7FE59F0"
       ],
-      "implementation_status": "unassessed",
+      "implementation_status": "partial",
       "contract": "inherit-system",
-      "evidence": [],
+      "evidence": [
+        {
+          "path": "realms/src/domains/tactical-battlefield.ts",
+          "finding": "Named-zone cover/elevation and soft row screening exist. Engaged/Near/Far terminology and complete designer/player preparation flows remain partial."
+        },
+        {
+          "path": "realms/docs/combat-completion.md",
+          "finding": "Player flows, authority/lifetime, source opt-ins, validation and remaining ownership boundaries; no production activation or whole-system completion."
+        }
+      ],
       "rule_assertions": {},
-      "verification": null
+      "verification": null,
+      "contract_review": {
+        "state": "Battlefield/costs are pinned INSTANCE evidence; retained REST resources are RUN history archived by Ascension; quickslot identities are ACCOUNT KEEP with current-custody use checks. See combat-completion.md for field ownership and rollover behavior.",
+        "actions": "Owner/revision/receipt guarded tactical commands, finite plan steps and prepared stock; cooperative personal consent/claims. Source grants, rolls, targets and item debits remain server-owned.",
+        "authoring": "Strict opt-in schemas, bounded references/types/fields, immutable sealed source; Studio authoring and production catalogs remain open.",
+        "client": "Owned legal options, budgets, terrain/Break/boss warnings, prepared items/sets, shared lobby/waiting/claim, observed Manual/log and finite plan UI. Pre-initiative setup and general reaction prompts remain open."
+      }
     },
     {
       "id": "CAP-04-formation",
@@ -5994,11 +6009,47 @@
         "FEAT-211EFE833A3490",
         "FEAT-220EE3465DB82D"
       ],
-      "implementation_status": "unassessed",
+      "implementation_status": "partial",
       "contract": "inherit-system",
-      "evidence": [],
-      "rule_assertions": {},
-      "verification": null
+      "evidence": [
+        {
+          "path": "realms/src/domains/tactical-battlefield.ts",
+          "finding": "Bounded Stagger/Break with growing thresholds, recovery protection and reaction suppression. Catalog weights and separate boss Resolve remain open."
+        },
+        {
+          "path": "realms/docs/combat-completion.md",
+          "finding": "Player flows, authority/lifetime, source opt-ins, validation and remaining ownership boundaries; no production activation or whole-system completion."
+        }
+      ],
+      "rule_assertions": {
+        "FEAT-211EFE833A3490": {
+          "disposition": "active",
+          "reason": "Executable subset evidence for this source rule; section remains partial and other source rules are not implicitly certified.",
+          "assertions": [
+            {
+              "test": "realms/test/tactical-battlefield.test.ts",
+              "name": "Break spends reactions and grants a bounded recovery window with growing threshold"
+            }
+          ]
+        },
+        "FEAT-220EE3465DB82D": {
+          "disposition": "active",
+          "reason": "Executable subset evidence for this source rule; section remains partial and other source rules are not implicitly certified.",
+          "assertions": [
+            {
+              "test": "realms/test/tactical-battlefield.test.ts",
+              "name": "Break spends reactions and grants a bounded recovery window with growing threshold"
+            }
+          ]
+        }
+      },
+      "verification": null,
+      "contract_review": {
+        "state": "Battlefield/costs are pinned INSTANCE evidence; retained REST resources are RUN history archived by Ascension; quickslot identities are ACCOUNT KEEP with current-custody use checks. See combat-completion.md for field ownership and rollover behavior.",
+        "actions": "Owner/revision/receipt guarded tactical commands, finite plan steps and prepared stock; cooperative personal consent/claims. Source grants, rolls, targets and item debits remain server-owned.",
+        "authoring": "Strict opt-in schemas, bounded references/types/fields, immutable sealed source; Studio authoring and production catalogs remain open.",
+        "client": "Owned legal options, budgets, terrain/Break/boss warnings, prepared items/sets, shared lobby/waiting/claim, observed Manual/log and finite plan UI. Pre-initiative setup and general reaction prompts remain open."
+      }
     },
     {
       "id": "CAP-04-resources",
@@ -6012,11 +6063,47 @@
         "FEAT-439125D743B661",
         "FEAT-138FFF29FAE930"
       ],
-      "implementation_status": "unassessed",
+      "implementation_status": "partial",
       "contract": "inherit-system",
-      "evidence": [],
-      "rule_assertions": {},
-      "verification": null
+      "evidence": [
+        {
+          "path": "realms/src/domains/tactical-recharge.ts",
+          "finding": "Versioned ENCOUNTER/ROUND/REST clocks with immutable carry and eligible rest refills. Full class resource catalogs remain open."
+        },
+        {
+          "path": "realms/docs/combat-completion.md",
+          "finding": "Player flows, authority/lifetime, source opt-ins, validation and remaining ownership boundaries; no production activation or whole-system completion."
+        }
+      ],
+      "rule_assertions": {
+        "FEAT-138FFF29FAE930": {
+          "disposition": "active",
+          "reason": "Executable subset evidence for this source rule; section remains partial and other source rules are not implicitly certified.",
+          "assertions": [
+            {
+              "test": "realms/test/tactical-recharge-integration.test.ts",
+              "name": "per-rest pools survive encounters and refill only through an eligible resource-only rest with immutable replay"
+            }
+          ]
+        },
+        "FEAT-9B4A4D8F8D757B": {
+          "disposition": "active",
+          "reason": "Executable subset evidence for this source rule; section remains partial and other source rules are not implicitly certified.",
+          "assertions": [
+            {
+              "test": "realms/test/tactical-battlefield.test.ts",
+              "name": "ROUND pools renew at the next global round while REST pools stay spent under the same action pipeline"
+            }
+          ]
+        }
+      },
+      "verification": null,
+      "contract_review": {
+        "state": "Battlefield/costs are pinned INSTANCE evidence; retained REST resources are RUN history archived by Ascension; quickslot identities are ACCOUNT KEEP with current-custody use checks. See combat-completion.md for field ownership and rollover behavior.",
+        "actions": "Owner/revision/receipt guarded tactical commands, finite plan steps and prepared stock; cooperative personal consent/claims. Source grants, rolls, targets and item debits remain server-owned.",
+        "authoring": "Strict opt-in schemas, bounded references/types/fields, immutable sealed source; Studio authoring and production catalogs remain open.",
+        "client": "Owned legal options, budgets, terrain/Break/boss warnings, prepared items/sets, shared lobby/waiting/claim, observed Manual/log and finite plan UI. Pre-initiative setup and general reaction prompts remain open."
+      }
     },
     {
       "id": "CAP-04-items",
@@ -6030,11 +6117,57 @@
         "FEAT-5A42A3B82A4920",
         "FEAT-AD1E1744B6EF44"
       ],
-      "implementation_status": "unassessed",
+      "implementation_status": "partial",
       "contract": "inherit-system",
-      "evidence": [],
-      "rule_assertions": {},
-      "verification": null
+      "evidence": [
+        {
+          "path": "realms/src/domains/tactical-combat-items.ts",
+          "finding": "Pinned prepared A/B Quick swaps and four physical item slots, real debits and manual rare/favorite consent. Class swap improvements/catalogs remain open."
+        },
+        {
+          "path": "realms/docs/combat-completion.md",
+          "finding": "Player flows, authority/lifetime, source opt-ins, validation and remaining ownership boundaries; no production activation or whole-system completion."
+        }
+      ],
+      "rule_assertions": {
+        "FEAT-E1D8F29D2F6A7F": {
+          "disposition": "active",
+          "reason": "Executable subset evidence for this source rule; section remains partial and other source rules are not implicitly certified.",
+          "assertions": [
+            {
+              "test": "realms/test/tactical-preparation-integration.test.ts",
+              "name": "a prepared potion spends Quick and exactly one owned item with duplicate receipts and immutable replay"
+            }
+          ]
+        },
+        "FEAT-146E851F533E5D": {
+          "disposition": "active",
+          "reason": "Executable subset evidence for this source rule; section remains partial and other source rules are not implicitly certified.",
+          "assertions": [
+            {
+              "test": "realms/test/tactical-preparation-integration.test.ts",
+              "name": "a prepared bomb resolves its own journaled check and damage before atomic victory settlement"
+            }
+          ]
+        },
+        "FEAT-3B43EC11E95531": {
+          "disposition": "active",
+          "reason": "Executable subset evidence for this source rule; section remains partial and other source rules are not implicitly certified.",
+          "assertions": [
+            {
+              "test": "realms/test/tactical-battlefield-integration.test.ts",
+              "name": "prepared weapon swaps derive only the pinned A/B sets, cost Quick and replay without refilling health or Mana"
+            }
+          ]
+        }
+      },
+      "verification": null,
+      "contract_review": {
+        "state": "Battlefield/costs are pinned INSTANCE evidence; retained REST resources are RUN history archived by Ascension; quickslot identities are ACCOUNT KEEP with current-custody use checks. See combat-completion.md for field ownership and rollover behavior.",
+        "actions": "Owner/revision/receipt guarded tactical commands, finite plan steps and prepared stock; cooperative personal consent/claims. Source grants, rolls, targets and item debits remain server-owned.",
+        "authoring": "Strict opt-in schemas, bounded references/types/fields, immutable sealed source; Studio authoring and production catalogs remain open.",
+        "client": "Owned legal options, budgets, terrain/Break/boss warnings, prepared items/sets, shared lobby/waiting/claim, observed Manual/log and finite plan UI. Pre-initiative setup and general reaction prompts remain open."
+      }
     },
     {
       "id": "CAP-04-environment",
@@ -6104,11 +6237,37 @@
         "FEAT-4856664CC7A366",
         "FEAT-7F061C406B7EFF"
       ],
-      "implementation_status": "unassessed",
+      "implementation_status": "partial",
       "contract": "inherit-system",
-      "evidence": [],
-      "rule_assertions": {},
-      "verification": null
+      "evidence": [
+        {
+          "path": "realms/src/domains/tactical-plans.ts",
+          "finding": "Finite known-routine decisions use the real saved action pipeline with budgets and manual stops. Cinematic/Fast modes, weakness knowledge and offline execution remain open."
+        },
+        {
+          "path": "realms/docs/combat-completion.md",
+          "finding": "Player flows, authority/lifetime, source opt-ins, validation and remaining ownership boundaries; no production activation or whole-system completion."
+        }
+      ],
+      "rule_assertions": {
+        "FEAT-8D769A2F3FB44A": {
+          "disposition": "active",
+          "reason": "Executable subset evidence for this source rule; section remains partial and other source rules are not implicitly certified.",
+          "assertions": [
+            {
+              "test": "realms/test/tactical-battlefield-integration.test.ts",
+              "name": "routine plans stop on unknown monsters, then execute real known actions once within explicit budgets"
+            }
+          ]
+        }
+      },
+      "verification": null,
+      "contract_review": {
+        "state": "Battlefield/costs are pinned INSTANCE evidence; retained REST resources are RUN history archived by Ascension; quickslot identities are ACCOUNT KEEP with current-custody use checks. See combat-completion.md for field ownership and rollover behavior.",
+        "actions": "Owner/revision/receipt guarded tactical commands, finite plan steps and prepared stock; cooperative personal consent/claims. Source grants, rolls, targets and item debits remain server-owned.",
+        "authoring": "Strict opt-in schemas, bounded references/types/fields, immutable sealed source; Studio authoring and production catalogs remain open.",
+        "client": "Owned legal options, budgets, terrain/Break/boss warnings, prepared items/sets, shared lobby/waiting/claim, observed Manual/log and finite plan UI. Pre-initiative setup and general reaction prompts remain open."
+      }
     },
     {
       "id": "CAP-04-bosses",
@@ -19015,6 +19174,14 @@
         {
           "path": "realms/docs/shared-rules.md",
           "finding": "Defines versioned services, clock providers, source/eligibility boundaries and remaining owning-domain/Studio work."
+        },
+        {
+          "path": "realms/scripts/checkpoint-rehearsal.mjs",
+          "finding": "M00 sequential 001\u2013048 upgrade, pre-consumption binary journals, checksum drift rejection, restricted grants and isolated 041/048 backup/restores; exact candidate CI receipt remains separate from production activation."
+        },
+        {
+          "path": "realms/docs/m00-integration-checkpoint.md",
+          "finding": "Actual main/stacked PR ancestry, factual deployment identity matrix and repeatable forward-fix/recovery boundary; inaccessible production/staging identities remain explicitly unverified."
         }
       ],
       "rule_assertions": {},
@@ -19219,6 +19386,14 @@
         {
           "path": "realms/docs/shared-rules.md",
           "finding": "Defines versioned services, clock providers, source/eligibility boundaries and remaining owning-domain/Studio work."
+        },
+        {
+          "path": "realms/scripts/checkpoint-rehearsal.mjs",
+          "finding": "M00 sequential 001\u2013048 upgrade, pre-consumption binary journals, checksum drift rejection, restricted grants and isolated 041/048 backup/restores; exact candidate CI receipt remains separate from production activation."
+        },
+        {
+          "path": "realms/docs/m00-integration-checkpoint.md",
+          "finding": "Actual main/stacked PR ancestry, factual deployment identity matrix and repeatable forward-fix/recovery boundary; inaccessible production/staging identities remain explicitly unverified."
         }
       ],
       "rule_assertions": {},
@@ -42777,6 +42952,14 @@
         {
           "path": "realms/docs/shared-rules.md",
           "finding": "Defines versioned services, clock providers, source/eligibility boundaries and remaining owning-domain/Studio work."
+        },
+        {
+          "path": "realms/scripts/checkpoint-rehearsal.mjs",
+          "finding": "M00 sequential 001\u2013048 upgrade, pre-consumption binary journals, checksum drift rejection, restricted grants and isolated 041/048 backup/restores; exact candidate CI receipt remains separate from production activation."
+        },
+        {
+          "path": "realms/docs/m00-integration-checkpoint.md",
+          "finding": "Actual main/stacked PR ancestry, factual deployment identity matrix and repeatable forward-fix/recovery boundary; inaccessible production/staging identities remain explicitly unverified."
         }
       ],
       "rule_assertions": {},
@@ -43236,6 +43419,14 @@
         {
           "path": "realms/docs/shared-rules.md",
           "finding": "Defines versioned services, clock providers, source/eligibility boundaries and remaining owning-domain/Studio work."
+        },
+        {
+          "path": "realms/scripts/checkpoint-rehearsal.mjs",
+          "finding": "M00 sequential 001\u2013048 upgrade, pre-consumption binary journals, checksum drift rejection, restricted grants and isolated 041/048 backup/restores; exact candidate CI receipt remains separate from production activation."
+        },
+        {
+          "path": "realms/docs/m00-integration-checkpoint.md",
+          "finding": "Actual main/stacked PR ancestry, factual deployment identity matrix and repeatable forward-fix/recovery boundary; inaccessible production/staging identities remain explicitly unverified."
         }
       ],
       "rule_assertions": {},
