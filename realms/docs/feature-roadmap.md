@@ -2,6 +2,8 @@
 
 Complete reusable game features before ordinary content authoring. Use only a few test things to prove each acceptance loop. The [design work plan](../design/WORK_PLAN.md) supplies detailed dependency contracts; the [eight-pass plan](eight-pass-release-plan.md) groups release work. Neither makes unimplemented systems complete.
 
+The [M01 slice contract](../design/m01/README.md) turns this direction into a provisional complete first/second-life brief, canonical launch-tier confirmation, eight-axis status matrix and ten dependent PR briefs. Design can proceed while M00 operational evidence remains open. Existing frameworks must prove each needed player/authoring workflow before slice content grows; the launch tiers are not reduced to the slice scope.
+
 ## P1 foundation checkpoints
 
 | Checkpoint | Current state | Next acceptance work |
