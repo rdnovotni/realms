@@ -51,7 +51,8 @@ export class GameSession {
  noncombatCompanion:string|undefined;
  private noncombatGeneration=0;
  private noncombatWanted=false;
- async loadNoncombat(obstacleId=this.noncombatSelected,companionId=this.noncombatCompanion){
+ async loadNoncombat(obstacleId=this.noncombatSelected,...selection:[companionId?:string]){
+  const companionId=selection.length?selection[0]:obstacleId===this.noncombatSelected?this.noncombatCompanion:undefined;
   const s=this.snapshot;if(!s)return;const epoch=this.epoch,generation=++this.noncombatGeneration,runId=s.game.run.runId,revision=s.game.run.revision;this.noncombatWanted=true;this.noncombatBusy=true;this.noncombatError=null;this.noncombatSelected=obstacleId;this.noncombatCompanion=companionId;this.notify();
   const q=new URLSearchParams();if(obstacleId)q.set('obstacleId',obstacleId);if(companionId)q.set('companionId',companionId);
   try{const view=await this.api.request<NoncombatView>('/api/v1/noncombat?'+q);if(epoch!==this.epoch||generation!==this.noncombatGeneration)return;if(view.runId!==runId||view.revision!==revision||this.snapshot?.game.run.runId!==runId||this.snapshot.game.run.revision!==revision)throw new ApiError(409,'STALE_REVISION');this.noncombat=view;}

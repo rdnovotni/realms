@@ -553,3 +553,10 @@ test('noncombat previews reject stale revisions and discard superseded selection
  const first=session.loadNoncombat('activity.first'),second=session.loadNoncombat('activity.second');resolvers[1]!(json({runId:'run-one',revision:3,obstacles:[],selected:{id:'activity.second'}}));await second;resolvers[0]!(json({runId:'run-one',revision:3,obstacles:[],selected:{id:'activity.first'}}));await first;assert.equal(session.noncombat?.selected?.id,'activity.second');
  const stale=session.loadNoncombat('activity.stale');resolvers[2]!(json({runId:'run-one',revision:2,obstacles:[],selected:null}));await stale;assert.equal(session.noncombat,null);assert.ok(session.noncombatError);
 });
+
+test('Attempt alone explicitly clears companion consent while refresh retains it and a new obstacle clears it',async()=>{
+ const paths:string[]=[];const session=new GameSession(new ApiClient(async path=>{paths.push(path);return json({runId:'run-one',revision:3,obstacles:[],selected:null});}));session.snapshot={game:{run:{runId:'run-one',revision:3}}} as any;
+ await session.loadNoncombat('activity.first','npc.ally');assert.equal(session.noncombatCompanion,'npc.ally');await session.loadNoncombat();assert.match(paths.at(-1)!,/companionId=npc.ally/);
+ await session.loadNoncombat('activity.first',undefined);assert.equal(session.noncombatCompanion,undefined);assert.ok(!paths.at(-1)!.includes('companionId'));
+ await session.loadNoncombat('activity.first','npc.ally');await session.loadNoncombat('activity.second');assert.equal(session.noncombatCompanion,undefined);assert.ok(!paths.at(-1)!.includes('companionId'));
+});

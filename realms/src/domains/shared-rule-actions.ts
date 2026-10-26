@@ -17,7 +17,7 @@ import { resolveSharedCheck,sharedCheckChance,contestedChance,type SharedCheck,t
 import { effectTransition,effectContributions,effectCapabilities,type ActiveEffect,type EffectDefinition } from '../rules/effects.js';
 import { runClocks,advanceLocalClocks,type LocalClocks } from '../rules/clocks.js';
 import { validateRuleAction,type RuleAction } from '../rules/content.js';
-import { payRuleCosts,grantRuleRewards } from '../rules/settlement.js';
+import { payRuleCosts,payRuleTurns,grantRuleRewards } from '../rules/settlement.js';
 import { requireFeature,featureAvailable } from '../rules/controls.js';
 import { requireEntityPrerequisite } from '../rules/requirements.js';
 import { beginEncounter,finishEncounter } from './encounters.js';
@@ -60,12 +60,13 @@ export async function resolveDomain(c:ActionContext,entityId:string,domain:RuleA
  if(domain==='COMBAT')instanceId=(await beginEncounter(c,entityId,{sharedRules:true})).instanceId;
  await consumeDailyAllowance(c,entityId);
  if(['INTERACTION','TRAVEL'].includes(domain)&&spec.costs.rest==='NONE')await requireSoberAdventure(c,spec.costs.turns);
- const costs=await payRuleCosts(c,spec.costs,domain==='COMBAT');
+ if(adapter)await payRuleTurns(c,spec.costs.turns+(check.success?0:adapter.failure.costs.turns));
+ const costs=await payRuleCosts(c,spec.costs,domain==='COMBAT'||!!adapter);
  const rest=await settleTurnRest(c,entityId);
  if(spec.costs.rest!=='NONE')state.local=advanceLocalClocks(state.local,spec.costs.rest);
  if(domain==='COMBAT')state.local=advanceLocalClocks(state.local,'ROUND_END');
- const failureCosts=!check.success&&adapter?await payRuleCosts(c,adapter.failure.costs,false,'noncombat.failure'):null;
- const rewards=check.success?await grantRuleRewards(c,spec.rewards,entityId):[];
+ const failureCosts=!check.success&&adapter?await payRuleCosts(c,adapter.failure.costs,true,'noncombat.failure'):null;
+ const rewards=check.success&&!adapter?await grantRuleRewards(c,spec.rewards,entityId):[];
  if(instanceId)await finishEncounter(c,instanceId,0,check.success?'VICTORY':'FAILED_FORWARD',async()=>({sharedRules:true,degree:check.degree}));
  const clocksAfter=await runClocks(c,state.local);
  const advanced=effectTransition(state.effects,definitions,clocksAfter,facts,{kind:'CLOCK'});state.effects=advanced.effects;

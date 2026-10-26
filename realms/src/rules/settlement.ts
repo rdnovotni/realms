@@ -17,6 +17,12 @@ async function wallets(c:ActionContext){
  const faucet=(await c.client.query("SELECT w.id FROM wallets w JOIN state_scopes s ON s.id=w.scope_id WHERE s.kind='WORLD' AND s.lifecycle='ACTIVE' AND w.currency_id='GOLD' AND w.purpose='FAUCET_SINK' ORDER BY w.id LIMIT 2")).rows;
  if(target.length!==1||faucet.length!==1)throw new DomainError(409,'RULE_GOLD_SOURCE_NOT_CONFIGURED');return {target:target[0].id as string,faucet:faucet[0].id as string};
 }
+/** An adapter may combine several disclosed plans into one request-owned ledger
+ * debit. The individual plan evidence is retained separately. */
+export async function payRuleTurns(c:ActionContext,turns:number){
+ if(!Number.isInteger(turns)||turns<0||turns>20)throw new DomainError(400,'INVALID_RULE_TURNS');if(c.run.turns<turns)throw new DomainError(409,'INSUFFICIENT_TURNS');
+ if(turns){await c.client.query('UPDATE runs SET turns=turns-$2 WHERE id=$1',[c.run.id,turns]);c.run.turns-=turns;await c.client.query("INSERT INTO turn_ledger(run_id,request_id,delta,reason) VALUES($1,$2,$3,'SHARED_RULE_COST')",[c.run.id,c.requestId,-turns]);}
+}
 export async function payRuleCosts(c:ActionContext,cost:Costs,turnsAlreadyPaid=false,key='rules.cost'){
  validateCosts(cost);if(!turnsAlreadyPaid&&c.run.turns<cost.turns)throw new DomainError(409,'INSUFFICIENT_TURNS');
  for(const r of [...cost.resources].sort((a,b)=>a.key<b.key?-1:1)){
@@ -24,7 +30,7 @@ export async function payRuleCosts(c:ActionContext,cost:Costs,turnsAlreadyPaid=f
   if(!row)throw new DomainError(409,'INSUFFICIENT_RESOURCE');
  }
  if(cost.gold!=='0'){const w=await wallets(c);await postTransfers(c,[{key,currencyId:'GOLD',from:w.target,to:w.faucet,amount:cost.gold,reason:'SHARED_RULE_COST'}]);}
- if(!turnsAlreadyPaid&&cost.turns){await c.client.query('UPDATE runs SET turns=turns-$2 WHERE id=$1',[c.run.id,cost.turns]);c.run.turns-=cost.turns;await c.client.query("INSERT INTO turn_ledger(run_id,request_id,delta,reason) VALUES($1,$2,$3,'SHARED_RULE_COST')",[c.run.id,c.requestId,-cost.turns]);}
+ if(!turnsAlreadyPaid)await payRuleTurns(c,cost.turns);
  if(cost.worldTime)await c.client.query('UPDATE run_progression SET world_time=world_time+$2 WHERE run_id=$1',[c.run.id,cost.worldTime]);
  return structuredClone(cost);
 }
