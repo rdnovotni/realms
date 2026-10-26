@@ -547,3 +547,9 @@ test('combat option explanations show actual resource deficits, cooldowns and zo
  const option={command:{actorId:'hero',kind:'TECHNIQUE'},label:'Wave',action:'MAIN',mana:3,resourceCost:{focus:2},cooldownUntil:0,area:'ZONE',range:0,available:false,reason:'ILLEGAL_TACTICAL_TECHNIQUE',hitChance:null} as const;
  assert.equal(combatZoneName(b,'floor'),'Temple floor');assert.equal(combatZoneName(b,'balcony'),'Balcony');const text=combatOptionText(b,option);assert.match(text.costs,/3 Mana/);assert.match(text.costs,/2 Focus/);assert.match(text.costs,/Same zone/);assert.match(text.costs,/All eligible targets/);assert.match(text.reason!,/needs 2, 0 available/);assert.match(combatOptionText(b,{...option,cooldownUntil:4}).reason!,/round 4/);
 });
+
+test('noncombat previews reject stale revisions and discard superseded selections',async()=>{
+ const resolvers:((response:Response)=>void)[]=[];const session=new GameSession(new ApiClient(async()=>new Promise<Response>(resolve=>resolvers.push(resolve))));session.snapshot={game:{run:{runId:'run-one',revision:3}}} as any;
+ const first=session.loadNoncombat('activity.first'),second=session.loadNoncombat('activity.second');resolvers[1]!(json({runId:'run-one',revision:3,obstacles:[],selected:{id:'activity.second'}}));await second;resolvers[0]!(json({runId:'run-one',revision:3,obstacles:[],selected:{id:'activity.first'}}));await first;assert.equal(session.noncombat?.selected?.id,'activity.second');
+ const stale=session.loadNoncombat('activity.stale');resolvers[2]!(json({runId:'run-one',revision:2,obstacles:[],selected:null}));await stale;assert.equal(session.noncombat,null);assert.ok(session.noncombatError);
+});

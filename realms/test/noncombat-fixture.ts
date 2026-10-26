@@ -1,0 +1,19 @@
+import type { ContentEntity,ContentPackage } from '../src/domains/content.js';
+import type { ObstacleSpec,Approach } from '../src/rules/noncombat.js';
+import { check } from './shared-rules-fixture.js';
+export const noCost={turns:0,worldTime:0,gold:'0',resources:[],rest:'NONE' as const};
+export const approach=(id:string,intent:Approach['intent']='INTERACT'):Approach=>({id,actionId:'activity.'+id,intent,itemId:null,ability:null,contest:null,assistance:[]});
+export function noncombatPackage():ContentPackage{
+ const actions=['lever','magic','observe','contest','tool','skill'];
+ const entities:ContentEntity[]=[{id:'lore.sluice',kind:'LORE',revision:1,schemaVersion:1,definition:{name:'The hidden sluice route',dependencies:[],public:{description:'A safe way through the marsh.'},secrets:{password:'never-reveal-secret'}}},
+ {id:'class.engineer',kind:'CLASS',revision:1,schemaVersion:1,definition:{name:'Synthetic engineer',dependencies:[],public:{}}},
+ {id:'ability.unseal',kind:'ABILITY',revision:1,schemaVersion:1,definition:{name:'Unseal',dependencies:['class.engineer'],public:{},mechanics:{noncombatAbility:{version:1,classId:'class.engineer',minimumNativeLevel:1}}}},
+ {id:'item.wedge',kind:'ITEM',revision:1,schemaVersion:1,definition:{name:'Wedge',dependencies:[],public:{},mechanics:{inventory:{version:1,storageMode:'STACK',category:'MATERIAL'}}}},
+ {id:'skill.mechanisms',kind:'SKILL',revision:1,schemaVersion:1,definition:{name:'Mechanisms',dependencies:[],public:{},mechanics:{skill:{version:1,family:'KNOWLEDGE',defaultAttribute:'intelligence',maximumRank:5,access:'DISCOVERED'}}}},
+ {id:'npc.keeper',kind:'NPC',revision:1,schemaVersion:1,definition:{name:'Keeper',dependencies:[],public:{}}}];
+ for(const id of actions)entities.push({id:'activity.'+id,kind:'ACTIVITY',revision:1,schemaVersion:1,definition:{name:({lever:'Raise the counterweight',magic:'Unseal with magic',observe:'Study the mechanism',contest:'Distract the keeper',tool:'Jam the gate with a wedge',skill:'Pick the release'} as Record<string,string>)[id]!,dependencies:id==='skill'?['skill.mechanisms']:[],public:{description:'Synthetic M03 approach'},mechanics:{noncombatApproach:{version:1,obstacleId:'activity.sluice'},sharedAction:{version:1,domain:'INTERACTION',prerequisite:{op:'FACT',key:'level',test:'GTE',value:1},check:{...check,possibility:id==='contest'||id==='skill'?'ROLL':'AUTOMATIC',naturalShift:false,mode:id==='observe'?'PASSIVE':'ACTIVE',...(id==='skill'?{skill:'skill.skill.mechanisms',minimumRank:1}:{}),difficulty:10},costs:{...noCost,turns:1,worldTime:2},rewards:[],effects:[],retry:'NEVER',retryTime:0,remove:null}}}});
+ const methods=actions.map(id=>approach(id,id==='magic'?'ABILITY_USE':id==='tool'?'ITEM_USE':id==='observe'?'OBSERVE':id==='contest'?'CONTESTED_CHECK':id==='skill'?'SKILL_CHECK':'INTERACT'));
+ methods.find(a=>a.id==='magic')!.ability={id:'ability.unseal',classId:'class.engineer',minimumLevel:1};methods.find(a=>a.id==='tool')!.itemId='item.wedge';methods.find(a=>a.id==='contest')!.contest={targetId:'npc.keeper',check:{...check,naturalShift:false},actor:{attributeScore:10,rank:0,modifiers:[],canAttempt:true}};
+ const obstacle:ObstacleSpec={version:1,steps:[{id:'release',name:'Open the sluice',approaches:methods,failure:{advance:true,alert:2,flag:'sluice.alerted',costs:noCost,effects:[],text:'The keeper hears you. Take the longer reed path.'}}],rewards:[{kind:'KNOWLEDGE',id:'lore.sluice',quantity:1}]};
+ entities.push({id:'activity.sluice',kind:'ACTIVITY',revision:1,schemaVersion:1,definition:{name:'The old sluice gate',dependencies:[...actions.map(x=>'activity.'+x),'lore.sluice','ability.unseal','class.engineer','item.wedge','npc.keeper'],public:{description:'A gate separates you from the reed road.'},mechanics:{noncombatObstacle:obstacle as any}}});return {version:'noncombat-fixture-v1',engineVersion:'foundation-1',entities};
+}

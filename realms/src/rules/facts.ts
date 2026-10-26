@@ -16,5 +16,7 @@ export async function runFacts(c:Pick<ActionContext,'client'|'run'|'accountId'>)
  // this list and prevent a missing secret definition from becoming a fabricated fact.
  for(const r of (await c.client.query('SELECT entity_id FROM release_entries WHERE release_id=$1',[c.run.content_release_id])).rows){for(const prefix of ['class','skill','known','item','quest']){const key=`${prefix}.${r.entity_id}`;if(!Object.hasOwn(facts,key))facts[key]=prefix==='known'?false:prefix==='quest'?'NONE':0;}}
  if((await c.client.query("SELECT to_regclass('feature_controls') AS table")).rows[0].table)for(const r of (await c.client.query('SELECT key,mode,cohort_percent FROM feature_controls')).rows){const bucket=createHash('sha256').update(JSON.stringify([r.key,c.accountId])).digest().readUInt32BE(0)%100;facts[`flag.${r.key}`]=r.mode==='ENABLED'&&bucket<r.cohort_percent;}
+ const obstacles=(await c.client.query("SELECT state->'obstacles' AS obstacles FROM shared_rules_state WHERE run_id=$1",[c.run.id])).rows[0]?.obstacles??{};
+ for(const r of (await c.client.query("SELECT e.entity_id FROM release_entries e JOIN content_versions v ON v.entity_id=e.entity_id AND v.revision=e.revision WHERE e.release_id=$1 AND v.definition->'mechanics'->'noncombatObstacle' IS NOT NULL",[c.run.content_release_id])).rows){const state=obstacles[r.entity_id];facts[`obstacle.${r.entity_id}.complete`]=state?.complete??false;facts[`obstacle.${r.entity_id}.failed`]=state?.failed??false;facts[`obstacle.${r.entity_id}.alert`]=state?.alert??0;}
  return facts;
 }

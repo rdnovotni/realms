@@ -1,6 +1,6 @@
 # Follybound HTTP API reference
 
-This inventories the implemented routes in `src/app.ts` and `src/client-assets.ts` through migration 048. Route schemas and domain documents define exact parameters and response shapes; this is not a claim of a stable public SDK or a deployed version. Server checks reject extra body fields. There is no generic client write of stats, arbitrary state, roll results, rewards or content definitions.
+This inventories the implemented routes in `src/app.ts` and `src/client-assets.ts` through migration 049. Route schemas and domain documents define exact parameters and response shapes; this is not a claim of a stable public SDK or a deployed version. Server checks reject extra body fields. There is no generic client write of stats, arbitrary state, roll results, rewards or content definitions.
 
 ## Authentication and Action contract
 
@@ -45,6 +45,7 @@ Failures expose bounded error codes, not SQL or secrets. Validation/authenticati
 | Item protection | `GET /api/v1/inventory/:id/binding`, `GET /api/v1/inventory/:id/lock`, `GET /api/v1/inventory/:id/protection`, `POST /api/v1/inventory/lock` | Owned item binding/lock/loadout protection; no arbitrary custody API |
 | Equipment | `GET /api/v1/equipment`, `POST /api/v1/equipment` | Complete legal preparation snapshot; [equipment](equipment-persistence.md) |
 | Loadouts | `GET /api/v1/equipment/loadouts`, `POST /api/v1/equipment/loadouts/save`, `POST /api/v1/equipment/loadouts/:key/apply`, `POST /api/v1/equipment/loadouts/:key/protection`, `POST /api/v1/equipment/loadouts/:key/delete` | Owned persistent templates and explicit protection; [loadouts](saved-loadouts.md) |
+| Noncombat obstacles | `GET /api/v1/noncombat`, `POST /api/v1/noncombat/resolve` | Discovered multi-step previews and exactly-once principal resolution; [M03 contract](noncombat-pipeline.md) |
 | Shared rules | `GET /api/v1/rules/:entityId`, `POST /api/v1/rules/combat`, `POST /api/v1/rules/interaction` | Discovered eligibility/cost/chance/effect preview and server-only resolution; `shared.rules` disabled by default |
 | Ascension | `GET /api/v1/ascend/preview`, `POST /api/v1/ascend` | Current keyed confirmation, optional reviewed `nextReleaseId`; [lifetimes](ascension-reset-contracts.md), [release policies](shared-rules.md) |
 | Prototype pipeline | `POST /api/v1/actions` | `SPEND_TURNS` proof only; not a completed adventure |

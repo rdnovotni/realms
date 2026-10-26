@@ -2,7 +2,7 @@
 
 Migrations are ordered, append-only SQL with recorded checksums. `src/migrate.ts` applies them; readiness compares the exact expected version/checksums. Never rename or rewrite a deployed migration to rebrand the game. Runtime uses restricted `realms_app`; administration and migration credentials are private and separate. See [database foundation](database-foundation.md) and [backend deployment](../../infra/docs/backend-deployment.md).
 
-## Source migrations through 032
+## Source migrations through 049
 
 | Migration | Purpose and guide |
 |---|---|
@@ -22,6 +22,11 @@ Migrations are ordered, append-only SQL with recorded checksums. `src/migrate.ts
 | 030 | Generic Ascension lifetime policies and terminal-scope freezing; [reset contracts](ascension-reset-contracts.md) |
 | 032 | Inventory preference contract, protected quantity ordering, carrying policy/entry guards and immutable load evidence; [inventory grid](inventory-grid.md) |
 | 031 | Shared-rule state/events, feature-control history and reviewed release adoption; [shared rules](shared-rules.md) |
+| 033–036 | Trinkets, inventory presentation, services and intelligence; [inventory](inventory-grid.md) |
+| 037–041 | Turn plans, rests, encounter budgets, rollover and daily integrity; [Turns](turns-rollover.md) |
+| 042 | Consumption history and bounded daily capacity; [consumption](consumption.md) |
+| 043–048 | Combat plans, resource rests, quickslots, weapon swaps, item debit and shared battlefield projections; [tactical expansion](tactical-first-pass-expansion.md) |
+| 049 | Coordinated noncombat principal/receipt guards and disabled entry flag; [M03](noncombat-pipeline.md) |
 
 Use `migrations/` for exact filenames and SQL. Historical per-feature table counts describe their migration checkpoint; the 465-field/62-table native lifetime manifest is a selected ownership inventory, not the total schema count. Do not infer the installed schema from this map.
 
@@ -51,3 +56,5 @@ See [the consumption contract](consumption.md) for implemented routes, player wo
 
 
 048 aligns cooperative personal claims with battlefield identity projection, preserving existing grants and unopted state. [M00](m00-integration-checkpoint.md) records the sequential 001–048 upgrade, immutable hashes, restricted grants and pre-/post-adoption synthetic backup/restore evidence. Production and staging schema identities must still be read separately before activation.
+
+Migration **049** adds the disabled `noncombat.pipeline` flag and coordinated principal/receipt guards on existing shared-rule events. It adds no owned columns and preserves all 001–048 checksums. See [M03 operation and rollback](noncombat-pipeline.md).

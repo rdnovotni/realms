@@ -40,6 +40,8 @@
   "/api/v1/inventory/:id/protection",
   "/api/v1/inventory/lock",
   "/api/v1/monsters",
+  "/api/v1/noncombat",
+  "/api/v1/noncombat/resolve",
   "/api/v1/progression",
   "/api/v1/progression/attributes",
   "/api/v1/progression/feats",

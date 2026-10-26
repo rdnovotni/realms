@@ -1,3 +1,4 @@
+import { validateNoncombatContent } from '../rules/noncombat.js';
 import { validateQuestContent,validateQuestRewardOwners } from './quest-content.js';
 import { projectKnownContent } from './content-projection.js';
 import { validateCombatPreparationContent } from './combat-preparation-content.js';
@@ -59,6 +60,7 @@ export function validateContent(input:unknown): asserts input is ContentPackage 
   if (!validate(input)) throw new DomainError(400,'INVALID_CONTENT_PACKAGE');
   const pkg=input as ContentPackage, entities=new Map(pkg.entities.map(e=>[e.id,e]));
   validateSharedContent(entities);
+  validateNoncombatContent(entities);
   validateDailyContent(entities);
   validateTurnRests(entities);
   validateTurnPolicies(entities);
