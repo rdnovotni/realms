@@ -2,7 +2,7 @@ import { DomainError } from '../foundation/errors.js';
 export type Fact=string|number|boolean;
 export type Facts=Record<string,Fact>;
 export type Prerequisite={op:'ALL'|'ANY';args:Prerequisite[]}|{op:'NOT';arg:Prerequisite}|{op:'FACT';key:string;test:'EQ'|'GTE'|'LTE';value:Fact};
-export const factKey=/^(level|mode|attribute\.(strength|dexterity|constitution|intelligence|wisdom|charisma|luck)|(?:class|skill|known|item|quest|capability|flag)\.[a-z][a-z0-9_.-]{0,119})$/;
+export const factKey=/^(level|mode|attribute\.(strength|dexterity|constitution|intelligence|wisdom|charisma|luck)|(?:class|skill|known|item|quest|capability|flag|obstacle)\.[a-z][a-z0-9_.-]{0,119})$/;
 export function validatePrerequisite(value:unknown):asserts value is Prerequisite {
  let count=0;
  const walk=(v:unknown,depth:number)=>{

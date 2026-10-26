@@ -34,3 +34,11 @@ export function groupCheck(mode:'BEST'|'LEADER_ASSIST'|'MAJORITY'|'CUMULATIVE'|'
  const total=mode==='BEST'?Math.max(...totals):mode==='WEAKEST'?Math.min(...totals):mode==='LEADER_ASSIST'?totals[leader]!+assist:mode==='CUMULATIVE'?totals.reduce((s,n)=>s+n,0):totals.filter(n=>n>=difficulty).length;
  return {total,success:mode==='MAJORITY'?total>totals.length/2:total>=difficulty};
 }
+
+/** Uses the same v2 resolver for both actors. Defender wins ties. No second dice engine. */
+export function contestedChance(check:SharedCheck,actor:CheckActor,defender:SharedCheck,target:CheckActor){
+ const outcomes=(c:SharedCheck,a:CheckActor)=>{const deterministic=!a.canAttempt||a.rank<c.minimumRank||c.mode==='PASSIVE'||c.possibility!=='ROLL';const values:{total:number;count:number}[]=[];const counts=new Map<number,number>();if(deterministic)counts.set(resolveSharedCheck(c,a,[]).total,1);else for(let x=1;x<=20;x++)for(let y=1;y<=(c.advantage!==c.disadvantage?20:1);y++){const total=resolveSharedCheck(c,a,c.advantage!==c.disadvantage?[x,y]:[x]).total;counts.set(total,(counts.get(total)??0)+1);}for(const [total,count] of counts)values.push({total,count});return values;};
+ let numerator=0,denominator=0;
+ for(const d of outcomes(defender,target)){const chance=sharedCheckChance({...check,difficulty:d.total+1},actor);numerator+=d.count*chance.numerator;denominator+=d.count*chance.denominator;}
+ return {numerator,denominator};
+}

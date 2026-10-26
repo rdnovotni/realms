@@ -77,3 +77,8 @@ small,.muted{color:var(--muted)}
 .advancement-confirmation{max-width:min(540px,calc(100vw - 28px));max-height:85dvh;overflow:auto;padding:var(--folio-space-5)}
 .advancement-confirmation button{margin:6px 8px 0 0;min-height:44px}.advancement-confirmation p{overflow-wrap:anywhere}
 @media(max-width:650px){.advancement-confirmation{padding:18px}}
+
+/* Noncombat choices remain readable at narrow widths and 200% text. */
+.noncombat-page :is(h1,h2,h3,p,label,summary,pre) { overflow-wrap:anywhere; }
+.noncombat-page pre { white-space:pre-wrap; max-width:100%; }
+.noncombat-page :is(select,input,button) { min-width:0; max-width:100%; }
