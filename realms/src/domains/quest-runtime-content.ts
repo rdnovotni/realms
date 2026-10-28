@@ -37,14 +37,14 @@ export function validateRuntimeQuests(entities:Map<string,ContentEntity>){
  // A repeat contract consumes fresh finished encounters. It cannot recycle one-shot obstacle state.
  if(q.repeat&&(!entities.has(q.repeat.sourceId)||entities.get(q.repeat.sourceId)!.kind!=='ENCOUNTER'||!entity.definition.dependencies.includes(q.repeat.sourceId)))throw new DomainError(400,'QUEST_CONTRACT_SOURCE');
  // Contradictory requirements in a conjunction are impossible by construction.
- for(const list of [q.availability,...q.nodes.flatMap(n=>n.edges.map(e=>e.requires))]){const seen=new Map<string,string>();for(const r of list){const key=r.kind+':'+r.id;if(seen.has(key)&&seen.get(key)!==r.outcome)throw new DomainError(400,'QUEST_IMPOSSIBLE_PREREQUISITE');seen.set(key,r.outcome);if(r.kind==='QUEST'&&r.id===entity.id)throw new DomainError(400,'QUEST_SELF_PREREQUISITE');}}
+ for(const list of [q.availability,...q.nodes.flatMap(n=>n.edges.map(e=>e.requires))]){const seen=new Map<string,string>();for(const r of list){const key=r.kind+':'+r.id;if(seen.has(key))throw new DomainError(400,seen.get(key)!==r.outcome?'QUEST_IMPOSSIBLE_PREREQUISITE':'QUEST_DUPLICATE_REQUIREMENT');seen.set(key,r.outcome);if(r.kind==='QUEST'&&r.id===entity.id)throw new DomainError(400,'QUEST_SELF_PREREQUISITE');}}
  }
  // An obstacle has one immutable outcome. Check whole routes, not only each edge.
  for(const entity of entities.values()){
   const q=entity.definition.mechanics?.questRuntime as unknown as RuntimeQuest|undefined;if(!q)continue;
-  const queue:{id:string;facts:Record<string,string>}[]=[{id:q.start,facts:Object.fromEntries(q.availability.filter(r=>r.kind==='OBSTACLE').map(r=>[r.id,r.outcome]))}],reachable=new Set<string>(),edges=new Set<string>(),seen=new Set<string>();
-  for(const state of queue){const key=state.id+JSON.stringify(Object.entries(state.facts).sort());if(seen.has(key))continue;if(seen.size>=4096)throw new DomainError(400,'QUEST_GRAPH_ANALYSIS_LIMIT');seen.add(key);reachable.add(state.id);
-   for(const edge of q.nodes.find(n=>n.id===state.id)!.edges){const facts={...state.facts};let possible=true;for(const r of edge.requires)if(r.kind==='OBSTACLE'){if(facts[r.id]&&facts[r.id]!==r.outcome)possible=false;facts[r.id]=r.outcome;}if(possible){edges.add(state.id+':'+edge.id);queue.push({id:edge.to,facts});}}
+  const queue:{id:string;facts:Record<string,string>;used:string[]}[]=[{id:q.start,used:[],facts:Object.fromEntries(q.availability.filter(r=>r.kind==='OBSTACLE').map(r=>[r.id,r.outcome]))}],reachable=new Set<string>(),edges=new Set<string>(),seen=new Set<string>();
+  for(const state of queue){const key=state.id+JSON.stringify(Object.entries(state.facts).sort())+JSON.stringify([...state.used].sort());if(seen.has(key))continue;if(seen.size>=4096)throw new DomainError(400,'QUEST_GRAPH_ANALYSIS_LIMIT');seen.add(key);reachable.add(state.id);
+   for(const edge of q.nodes.find(n=>n.id===state.id)!.edges){const facts={...state.facts},used=[...state.used];let possible=true;for(const r of edge.requires)if(r.kind==='OBSTACLE'){if(facts[r.id]&&facts[r.id]!==r.outcome||used.includes(r.id))possible=false;facts[r.id]=r.outcome;used.push(r.id);}if(possible){edges.add(state.id+':'+edge.id);queue.push({id:edge.to,facts,used});}}
   }
   if(q.nodes.some(n=>!reachable.has(n.id)||n.edges.some(e=>!edges.has(n.id+':'+e.id))))throw new DomainError(400,'QUEST_IMPOSSIBLE_ROUTE');
  }

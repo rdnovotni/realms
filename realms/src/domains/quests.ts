@@ -43,7 +43,7 @@ export function questCommand(pool:pg.Pool,accountId:string,envelope:Envelope,inp
  after.lifecycle=next.outcome==='SUCCESS'?'RESOLVED':'FAILED_FORWARD';
  // The principal is claimed for every terminal route, including noncombat and partial failure.
  if((await c.client.query('SELECT 1 FROM quest_outcome_claims WHERE run_id=$1 AND principal_id=$2 AND cycle=$3',[c.run.id,q.spec.principalId,after.cycle])).rowCount)throw new DomainError(409,'QUEST_OUTCOME_ALREADY_CLAIMED');
- earned=await grantRuleRewards(c,q.spec.rewards,input.questId);
+ earned=q.spec.rewards.length?await grantRuleRewards(c,q.spec.rewards,input.questId):[];
  }
  }
  }

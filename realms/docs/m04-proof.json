@@ -28,11 +28,12 @@
     "screenshot": "screenshots/m04/journal-completed.png"
   },
   "tests": {
-    "unit": 269,
-    "focusedPostgres": 25,
+    "unit": 271,
+    "focusedPostgres": 26,
     "infrastructureRun": 193,
     "infrastructurePassed": 183,
-    "infrastructureSkipped": 10
+    "infrastructureSkipped": 10,
+    "affectedIntegrationFilesRerunPassed": 89
   },
   "migration": {
     "file": "050_quests_journal.sql",
@@ -44,5 +45,9 @@
     "Journal shows latest bounded entries with hasMore; immutable history retained",
     "append-only personal notes; full history search/export and note editing deferred",
     "M02 and M03 remain open dependencies; no PR merge or deployment performed"
+  ],
+  "reviewFixes": [
+    "Reject duplicate source requirements and repeated one-shot obstacle consumption along a route.",
+    "Reward-free stories settle without consulting reward faucet gates."
   ]
 }
