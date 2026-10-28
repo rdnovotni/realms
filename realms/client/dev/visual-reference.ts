@@ -1,3 +1,4 @@
+import { journalFixture } from './journal-fixture.js';
 import { noncombatFixture } from './noncombat-fixture.js';
 import { combatFixture,combatPreparationFixture } from './combat-fixture.js';
 import { openCombatPreparation,openPreparedItemUse } from '../combat-preparation.js';
@@ -14,7 +15,7 @@ import { openItemComparison } from '../item-comparison.js';
 import { openAppearance,applyAppearance } from '../appearance.js';
 import type { Snapshot,InventoryPage,Advancement,EquipmentPreview,AbilityBook,AdvancementHistory,CharacterSection } from '../types.js';
 type Fixture={schemaVersion:number;snapshot:Snapshot;inventory:InventoryPage|null;advancement:Advancement|null;equipmentPreview:EquipmentPreview|null;characterStats:EquipmentPreview|null;abilityBook:AbilityBook|null;characterHistory:AdvancementHistory|null};
-const scenes=['overview','progression','abilities','statistics','history','inventory','paperdoll','inspector','comparison','loadouts','adventure','combat','dialog','empty','loading','error','setup','stress','daily','daily-waiting','daily-confirmation','daily-loading','daily-error','daily-readonly','consumption','consumption-overdrunk','consumption-empty','consumption-loading','consumption-error','consumption-readonly','consumption-running','consumption-nightcap','consumption-meal','adventure-overdrunk','combat-field','combat-boss','combat-shared-lobby','combat-shared-waiting','combat-shared-claim','combat-readonly','combat-preparation','combat-item-review','combat-manual','combat-log','combat-routine','noncombat','noncombat-empty','noncombat-loading','noncombat-error','noncombat-readonly','noncombat-resolved'];
+const scenes=['overview','progression','abilities','statistics','history','inventory','paperdoll','inspector','comparison','loadouts','adventure','combat','dialog','empty','loading','error','setup','stress','daily','daily-waiting','daily-confirmation','daily-loading','daily-error','daily-readonly','consumption','consumption-overdrunk','consumption-empty','consumption-loading','consumption-error','consumption-readonly','consumption-running','consumption-nightcap','consumption-meal','adventure-overdrunk','combat-field','combat-boss','combat-shared-lobby','combat-shared-waiting','combat-shared-claim','combat-readonly','combat-preparation','combat-item-review','combat-manual','combat-log','combat-routine','noncombat','noncombat-empty','noncombat-loading','noncombat-error','noncombat-readonly','noncombat-resolved','journal','journal-empty','journal-loading','journal-error','journal-readonly','journal-resolved','journal-partial'];
 const url=new URL(location.href),scene=url.searchParams.get('scene')??'overview',mode=url.searchParams.get('mode')??'normal';
 const name=scene==='setup'?'setup':scene.startsWith('adventure')?'adventure':['inventory','paperdoll','inspector','comparison','loadouts','empty','loading','error'].includes(scene)?'pack':(['adventure','combat','setup'].includes(scene)||scene.startsWith('combat'))?'combat':'character';
 const response=await fetch('/dev/fixture/'+name);if(!response.ok)throw Error('Start the frozen visual reference server');const fixture:Fixture=await response.json();
@@ -39,6 +40,10 @@ const session=new GameSession(new ApiClient(async(path,init)=>{
 }));
 session.snapshot=structuredClone(fixture.snapshot);session.config={protocolVersion:1,authMode:'sessions',previewOnly:true};session.inventory=structuredClone(fixture.inventory);session.inventoryQuery={sort:'NAME',direction:'ASC',grouped:false,offset:0};session.advancement=structuredClone(fixture.advancement);session.equipmentPreview=structuredClone(fixture.equipmentPreview);session.characterStats=structuredClone(fixture.characterStats);session.abilityBook=structuredClone(fixture.abilityBook);session.characterHistory=structuredClone(fixture.characterHistory);session.inventoryEquipmentOpen=true;
 session.notice={kind:'info',text:'Frozen disposable visual fixture · no gameplay writes.'};
+if(scene.startsWith('journal'))session.journal=journalFixture(session.snapshot,scene);
+if(scene==='journal-loading'){session.journal=null;session.journalBusy=true;}
+if(scene==='journal-error'){session.journal=null;session.journalError='Could not load your saved Journal. Retry when connected.';}
+if(scene==='journal-readonly')session.snapshot.game.canWrite=false;
 if(scene.startsWith('daily'))session.turns=turnFixture(session.snapshot);
 if(scene==='daily-waiting'){session.snapshot.game.rolloverPending=true;session.turns!.rollover.pending=3;session.turns!.rollover.deferred=true;}
 if(scene==='daily-confirmation')session.reserveAction={path:'/api/v1/rules/interaction',type:'RESOLVE_RULE_INTERACTION',parameters:{entityId:'activity.quick'}};
@@ -53,7 +58,7 @@ if(scene==='consumption-error'){session.consumption=null;session.consumptionErro
 if(scene==='consumption-readonly')session.snapshot.game.canWrite=false;
 if(scene==='consumption-running'){session.consumption!.executions[0]!.status='ACTIVE';session.consumption!.executions[0]!.stopReason=null;session.runningMeal=session.consumption!.executions[0]!.id;}
 if(scene==='adventure-overdrunk')session.snapshot.game.overdrunk=true;
-let screen:Screen=scene.startsWith('consumption')?'consumption':scene.startsWith('daily')?'daily':['inventory','paperdoll','inspector','comparison','loadouts','empty','loading','error'].includes(scene)?'pack':scene.startsWith('adventure')?'adventure':scene.startsWith('combat')?'combat':'character';
+let screen:Screen=scene.startsWith('journal')?'journal':scene.startsWith('consumption')?'consumption':scene.startsWith('daily')?'daily':['inventory','paperdoll','inspector','comparison','loadouts','empty','loading','error'].includes(scene)?'pack':scene.startsWith('adventure')?'adventure':scene.startsWith('combat')?'combat':'character';
 if(['overview','progression','abilities','statistics','history'].includes(scene))session.characterSection=scene as CharacterSection;
 if(scene==='stress'){
  session.characterSection='progression';

@@ -186,3 +186,11 @@ The consumption routes are `GET /api/v1/consumption`, `POST /api/v1/consumption/
 
 
 M00 reconciles these routes onto current main without adding an API family. See the [exact integration/recovery checkpoint](m00-integration-checkpoint.md) for source versus deployment evidence.
+
+## M04 quest and Journal reader
+
+- `GET /api/v1/journal` — discovered runtime quests, saved decisions, earned hints/rumors, notes and completed stories. Optional `worldId` filters personal world memory.
+- `POST /api/v1/quests/command` — `QUEST_COMMAND` envelope, questId, ACCEPT/ADVANCE/ABANDON and ADVANCE-only edgeId. Server evidence and a single principal claim own rewards.
+- `POST /api/v1/journal/notes` — `JOURNAL_NOTE` envelope and 1–1,500 character text; append-only account memory.
+
+See [M04 quest ownership, validation and lifetime rules](quests-journal.md). These routes require compatible migration 050; writes require separately enabled `quests.journal`.

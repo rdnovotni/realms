@@ -1,0 +1,48 @@
+{
+  "milestone": "M04",
+  "scope": "SOURCE_AND_DISPOSABLE_VERIFICATION_ONLY",
+  "basePR": 72,
+  "baseRemoteHead": "4ab5e2853dedef6e0abf177a8e9629d53c3a6613",
+  "baseTree": "2bef62bad16576b6b5a5c078c053f9528360fe44",
+  "productionActivated": false,
+  "deploymentReconciled": false,
+  "featureGate": {
+    "key": "quests.journal",
+    "migrationDefault": "DISABLED"
+  },
+  "browser": {
+    "contracts": 509,
+    "requiredCases": 508,
+    "manifest": "01c1e79977f9a1d1cf7b2353b39f92e87cfc79ff411559f41d5d4c4bb128a53d",
+    "realGameFlow": [
+      "accept quest",
+      "investigate lead",
+      "read sourced qualitative rumor",
+      "discover account hint",
+      "save personal note",
+      "resolve shared obstacle with owned class ability",
+      "claim earned terminal route",
+      "reconnect same account",
+      "read completed story with one principal reward"
+    ],
+    "screenshot": "screenshots/m04/journal-completed.png"
+  },
+  "tests": {
+    "unit": 269,
+    "focusedPostgres": 25,
+    "infrastructureRun": 193,
+    "infrastructurePassed": 183,
+    "infrastructureSkipped": 10
+  },
+  "migration": {
+    "file": "050_quests_journal.sql",
+    "sha256": "dcedb7cfa2b1db0aaf1f4fa8b25ae14573f6e92a34e491bedef8be6492365496"
+  },
+  "limits": [
+    "bounded authored contract only; no full bounty economy",
+    "RUN/ACCOUNT/WORLD information is personal memory, not global truth mutation",
+    "Journal shows latest bounded entries with hasMore; immutable history retained",
+    "append-only personal notes; full history search/export and note editing deferred",
+    "M02 and M03 remain open dependencies; no PR merge or deployment performed"
+  ]
+}

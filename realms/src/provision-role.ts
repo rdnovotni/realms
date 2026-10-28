@@ -24,6 +24,7 @@ export async function provisionRole(client: pg.PoolClient, password: string, opt
     GRANT INSERT ON rollover_policy_receipts TO realms_app;
     GRANT INSERT ON tactical_rest_events TO realms_app;
     GRANT INSERT ON inventory_repairs TO realms_app;
+    GRANT INSERT ON quest_events,quest_outcome_claims,quest_source_claims,journal_records TO realms_app;
     GRANT INSERT ON shared_rules_events TO realms_app;
     GRANT INSERT,UPDATE ON shared_rules_state TO realms_app;
     GRANT INSERT ON action_receipts,turn_ledger,currency_transfers,inventory_movements,inventory_quantity_operations,run_history,audit_events,run_rollovers TO realms_app;

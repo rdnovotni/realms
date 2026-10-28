@@ -1,3 +1,4 @@
+import { validateRuntimeQuests } from './quest-runtime-content.js';
 import { validateNoncombatContent } from '../rules/noncombat.js';
 import { validateQuestContent,validateQuestRewardOwners } from './quest-content.js';
 import { projectKnownContent } from './content-projection.js';
@@ -61,6 +62,7 @@ export function validateContent(input:unknown): asserts input is ContentPackage 
   const pkg=input as ContentPackage, entities=new Map(pkg.entities.map(e=>[e.id,e]));
   validateSharedContent(entities);
   validateNoncombatContent(entities);
+  validateRuntimeQuests(entities);
   validateDailyContent(entities);
   validateTurnRests(entities);
   validateTurnPolicies(entities);
@@ -130,6 +132,8 @@ export async function publishContent(pool:pg.Pool,input:unknown) {
     await client.query('SELECT pg_advisory_xact_lock(73180422)');
     const prior=(await client.query('SELECT id,checksum,sealed FROM content_releases WHERE version=$1',[pkg.version])).rows[0];
     if(prior){if(prior.checksum!==digest || !prior.sealed) throw new DomainError(409,'CONTENT_VERSION_REUSED');return prior.id as string;}
+    const worldIds=new Set<string>();for(const entity of entities){const q=entity.definition.mechanics?.questRuntime as unknown as import('./quest-runtime-content.js').RuntimeQuest|undefined;if(!q)continue;for(const record of [...q.availability,...q.nodes.flatMap(n=>n.edges.flatMap(e=>[...e.requires,...e.information]))])if(record.worldId)worldIds.add(record.worldId);}
+    if(worldIds.size&&(await client.query('SELECT id FROM worlds WHERE id=ANY($1::uuid[])',[[...worldIds]])).rowCount!==worldIds.size)throw new DomainError(400,'QUEST_WORLD_NOT_CONFIGURED');
     for(const entity of entities){
       const identity=(await client.query('SELECT kind,retired_at FROM content_entities WHERE id=$1',[entity.id])).rows[0];
       if(identity && (identity.kind!==entity.kind || identity.retired_at)) throw new DomainError(409,'CONTENT_ID_REUSED');
