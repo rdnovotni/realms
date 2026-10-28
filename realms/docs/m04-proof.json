@@ -28,7 +28,7 @@
     "screenshot": "screenshots/m04/journal-completed.png"
   },
   "tests": {
-    "unit": 271,
+    "unit": 272,
     "focusedPostgres": 26,
     "infrastructureRun": 193,
     "infrastructurePassed": 183,
@@ -48,6 +48,7 @@
   ],
   "reviewFixes": [
     "Reject duplicate source requirements and repeated one-shot obstacle consumption along a route.",
-    "Reward-free stories settle without consulting reward faucet gates."
+    "Reward-free stories settle without consulting reward faucet gates.",
+    "Reject competing consuming quest owners for a one-shot obstacle; availability references remain non-consuming."
   ]
 }

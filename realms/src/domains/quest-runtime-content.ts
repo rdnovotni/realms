@@ -27,10 +27,11 @@ export function runtimeQuestDiagnostics(value:unknown){
 function allPathsHaveSource(q:RuntimeQuest,source:string,target:string){const queue=[{id:q.start,source:false}],seen=new Set<string>();for(const s of queue){const key=s.id+String(s.source);if(seen.has(key))continue;seen.add(key);if(s.id===target&&!s.source)return false;for(const e of q.nodes.find(n=>n.id===s.id)?.edges??[])queue.push({id:e.to,source:s.source||e.requires.some(r=>source==='*'?['OBSTACLE','ENCOUNTER','QUEST'].includes(r.kind):r.kind==='ENCOUNTER'&&r.id===source)});}return true;}
 /** Additive reader: legacy M02 questObjectives v1 stays unchanged. */
 export function validateRuntimeQuests(entities:Map<string,ContentEntity>){
- const owners=new Set<string>(),dependencies=new Map<string,string[]>();
+ const owners=new Set<string>(),dependencies=new Map<string,string[]>(),obstacleOwners=new Map<string,string>();
  for(const entity of entities.values()){
  const value=entity.definition.mechanics?.questRuntime;if(value===undefined)continue;if(entity.kind!=='QUEST')throw new DomainError(400,'QUEST_RUNTIME_KIND');const errors=runtimeQuestDiagnostics(value);if(errors.length)throw new DomainError(400,errors[0]!);const q=value as unknown as RuntimeQuest;
  if(owners.has(q.principalId))throw new DomainError(400,'QUEST_PRINCIPAL_DUPLICATE');owners.add(q.principalId);
+ for(const r of q.nodes.flatMap(n=>n.edges.flatMap(e=>e.requires)))if(r.kind==='OBSTACLE'){const owner=obstacleOwners.get(r.id);if(owner&&owner!==entity.id)throw new DomainError(400,'QUEST_SOURCE_OWNER_CONFLICT');obstacleOwners.set(r.id,entity.id);}
  const refs=[...q.availability,...q.nodes.flatMap(n=>n.edges.flatMap(e=>e.requires))];dependencies.set(entity.id,refs.filter(r=>r.kind==='QUEST').map(r=>r.id));
  for(const r of refs){if(r.kind==='KNOWLEDGE')continue;const target=entities.get(r.id);if(!target||!entity.definition.dependencies.includes(r.id)||target.kind!==({OBSTACLE:'ACTIVITY',ENCOUNTER:'ENCOUNTER',QUEST:'QUEST'}[r.kind]))throw new DomainError(400,'QUEST_RUNTIME_REFERENCE');if(r.kind==='OBSTACLE'&&!target.definition.mechanics?.noncombatObstacle||r.kind==='QUEST'&&!target.definition.mechanics?.questRuntime)throw new DomainError(400,'QUEST_RUNTIME_REFERENCE');}
  for(const r of q.rewards)if(r.kind!=='GOLD'&&(!entity.definition.dependencies.includes(r.id)||!entities.has(r.id)||r.kind==='ITEM'&&entities.get(r.id)!.kind!=='ITEM'))throw new DomainError(400,'QUEST_REWARD_REFERENCE');
