@@ -560,3 +560,8 @@ test('Attempt alone explicitly clears companion consent while refresh retains it
  await session.loadNoncombat('activity.first',undefined);assert.equal(session.noncombatCompanion,undefined);assert.ok(!paths.at(-1)!.includes('companionId'));
  await session.loadNoncombat('activity.first','npc.ally');await session.loadNoncombat('activity.second');assert.equal(session.noncombatCompanion,undefined);assert.ok(!paths.at(-1)!.includes('companionId'));
 });
+
+test('Journal projection rejects stale and cross-run reads and refreshes only the latest requested generation',async()=>{
+ const {journalFixture}=await import('../client/dev/journal-fixture.js');const {readFile}=await import('node:fs/promises');const f=JSON.parse(await readFile(new URL('./visual-fixtures/character.json',import.meta.url),'utf8'));const queue:((r:Response)=>void)[]=[];const s=new GameSession(new ApiClient(async()=>new Promise<Response>(resolve=>queue.push(resolve))));s.snapshot=f.snapshot;
+ const first=s.loadJournal(),second=s.loadJournal();const view=journalFixture(f.snapshot,'journal');queue[1]!(json(view));await second;queue[0]!(json({...view,runId:'foreign-run'}));await first;assert.equal(s.journal?.runId,f.snapshot.game.run.runId);const stale=s.loadJournal();queue[2]!(json({...view,revision:view.revision+1}));await stale;assert.equal(s.journal,null);assert.ok(s.journalError);
+});

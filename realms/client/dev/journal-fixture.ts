@@ -1,0 +1,11 @@
+import type { JournalView } from '../journal.js';
+import type { Snapshot } from '../types.js';
+export function journalFixture(snapshot:Snapshot,scene:string):JournalView{
+ const resolved=scene==='journal-resolved'||scene==='journal-partial',partial=scene==='journal-partial';
+ const base:JournalView={runId:snapshot.game.run.runId,revision:snapshot.game.run.revision,enabled:true,hasMore:false,quests:[],information:[],completed:[]};
+ if(scene==='journal-empty')return base;
+ const decisions=[{nodeId:'lead',edgeId:'investigate',grade:'SUCCESS',consequence:'The keeper marks a safe route through the marsh.'},...(resolved?[{nodeId:'gate',edgeId:partial?'reed':'report',grade:partial?'FAIL_FORWARD':'SUCCESS',consequence:partial?'The keeper heard the mechanism. The town is safe, but the smugglers escaped.':'The road opens and the town can trade again.'}]:[])];
+ base.quests=[{id:'quest.marsh-road',name:'The Marsh Road',lifecycle:resolved?partial?'FAILED_FORWARD':'RESOLVED':'ACTIVE',cycle:1,maximumCycles:1,acceptReason:null,canAccept:false,canAbandon:!resolved,node:{name:'Find a route through the marsh',optional:false},decisions,edges:resolved?[]:[{id:'report',label:'Report the open sluice',eligible:false,reason:'Continue adventuring to earn this outcome.'},{id:'reed',label:'Follow the reed path',eligible:false,reason:'Continue adventuring to earn this outcome.'}]}];
+ base.information=[{id:'rumor',kind:'RUMOR',subjectId:'rumor.sluice',text:'The keeper says the sluice hides a smuggling route.',source:'Keeper, over a borrowed ale',credibility:'QUESTIONABLE',scope:'RUN',worldId:null,createdAt:'2026-10-27T00:00:00Z'},{id:'hint',kind:'HINT',subjectId:'hint.reeds',text:'The reeds hide a second way through.',source:'Your investigation',credibility:'CORROBORATED',scope:'ACCOUNT',worldId:null,createdAt:'2026-10-27T00:00:00Z'},{id:'note',kind:'NOTE',subjectId:'note',text:'Try the reed route in my next life.',source:'Personal note',credibility:'PERSONAL',scope:'ACCOUNT',worldId:null,createdAt:'2026-10-27T00:00:00Z'}];
+ if(resolved)base.completed=[{questId:'quest.marsh-road',name:'The Marsh Road',runId:base.runId,lifecycle:partial?'FAILED_FORWARD':'RESOLVED',decisions,rewards:[{kind:'KNOWLEDGE',id:'lore.sluice',quantity:1}],createdAt:'2026-10-27T00:00:00Z'}];return base;
+}

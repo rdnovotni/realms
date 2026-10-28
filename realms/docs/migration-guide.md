@@ -58,3 +58,7 @@ See [the consumption contract](consumption.md) for implemented routes, player wo
 048 aligns cooperative personal claims with battlefield identity projection, preserving existing grants and unopted state. [M00](m00-integration-checkpoint.md) records the sequential 001–048 upgrade, immutable hashes, restricted grants and pre-/post-adoption synthetic backup/restore evidence. Production and staging schema identities must still be read separately before activation.
 
 Migration **049** adds the disabled `noncombat.pipeline` flag and coordinated principal/receipt guards on existing shared-rule events. It adds no owned columns and preserves all 001–048 checksums. See [M03 operation and rollback](noncombat-pipeline.md).
+
+## 050 — quests and Journal (M04)
+
+Adds immutable quest events, principal claims, consumed source claims and scoped personal information/notes. Runtime quest projections require matching immutable decisions and owner receipts. `quests.journal` defaults disabled. Updated role grants allow journal INSERT only. Old migration files are unchanged. Rehearsal applies 001–050 and backs up/restores quest and Journal history alongside old encounter evidence. Read [quest operation and forward-fix strategy](quests-journal.md) before content adoption; never remove or rewrite earned history as rollback.
