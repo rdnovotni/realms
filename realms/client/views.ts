@@ -1,3 +1,4 @@
+import { dmShell } from './dm-shell.js';
 import { renderJournal } from './journal.js';
 import { renderNoncombat } from './noncombat.js';
 import { renderConsumption } from './consumption.js';
@@ -36,7 +37,7 @@ export function render(root:HTMLElement,session:GameSession,screen:Screen,naviga
   const help=section('Your next step');add(help,el('p',snapshot.progression.build.mode!=='CONFIGURED'?'Choose a class and starting attributes to shape this life.':snapshot.game.activeEncounter?'Your encounter is saved. Continue from the current turn.':snapshot.progression.readiness?.pendingLevels?'You have earned a level. Choose how your character grows.':'Choose a known adventure. Each entry shows its Turn cost.','help'),button(snapshot.progression.build.mode!=='CONFIGURED'?'Create your build':'View character',()=>navigate('character'),false,'small'));left.append(help);
   if(screen==='combat')layout.classList.add('combat-layout');
   left.setAttribute('aria-label','Character summary');
-  const main=el('main','','folio-page');main.id='main';main.setAttribute('aria-busy',String(session.busy));
+  const main=el('section','','folio-page');main.setAttribute('aria-label','Contextual actions');main.setAttribute('aria-busy',String(session.busy));
   const reserveConfirmation=renderReserveConfirmation(session);if(reserveConfirmation)main.append(reserveConfirmation);
   if(screen==='journal')renderJournal(main,session,disabled);
   else if(screen==='noncombat')renderNoncombat(main,session,disabled);
@@ -48,10 +49,10 @@ export function render(root:HTMLElement,session:GameSession,screen:Screen,naviga
   else renderAdventure(main,snapshot,session,disabled,navigate);
   main.prepend(el('p',shellChapter(renderedScreen),'shell-page-label'));
   const right=el('aside','','right-column');right.setAttribute('aria-label','Journey notes');const journal=renderJourneyJournal(snapshot,()=>navigate('combat'));
-  const guide=section('A few things to know');add(guide,el('p','Explore at your own pace. Browsing your character, pack, and saved encounter costs no Turns.','help'),el('p','Choose actions during your turn. The server resolves opponents and automated companions, then returns control to your party.','help'),el('p','Victory rewards and recovery are saved automatically.','help'));add(right,journal,guide);add(layout,left,main,right);fragment.append(layout);
+  const guide=section('A few things to know');add(guide,el('p','Explore at your own pace. Browsing your character, pack, and saved encounter costs no Turns.','help'),el('p','Choose actions during your turn. The server resolves opponents and automated companions, then returns control to your party.','help'),el('p','Victory rewards and recovery are saved automatically.','help'));add(right,journal,guide);add(layout,left,main,right);layout.classList.add('dm-context');for(const h of Array.from(main.querySelectorAll<HTMLElement>('h1,h2,h3,h4,h5'))){if(reserveConfirmation?.contains(h))continue;const next=document.createElement('h'+(Number(h.tagName[1])+1));for(const a of h.attributes)next.setAttribute(a.name,a.value);next.append(...h.childNodes);h.replaceWith(next);}const workspace=el('main','','dm-workspace');workspace.id='main';workspace.append(dmShell(session).node,layout);fragment.append(workspace);
  }
- fragment.append(el('footer','Follybound · A living world, one journey at a time.','footer'));root.replaceChildren(fragment);
- if(!session.busy&&retainedFocus){const matching=Array.from(root.querySelectorAll<HTMLElement>('[data-focus]')).find(e=>e.dataset.focus===retainedFocus);if(matching&&!(matching instanceof HTMLButtonElement&&matching.disabled)){matching.focus();if(matching instanceof HTMLInputElement&&selection?.start!==null&&selection?.start!==undefined)matching.setSelectionRange(selection.start,selection.end);}else (root.querySelector<HTMLElement>('#combat-controls')??root.querySelector<HTMLElement>('main h1'))?.focus();retainedFocus=null;}
+ fragment.append(el('footer','Follybound · A living world, one journey at a time.','footer'));root.replaceChildren(fragment);if(snapshot)dmShell(session).update(root,renderedScreen,navigate);
+ if(!session.busy&&retainedFocus){const matching=Array.from(root.querySelectorAll<HTMLElement>('[data-focus]')).find(e=>e.dataset.focus===retainedFocus);if(matching&&!(matching instanceof HTMLButtonElement&&matching.disabled)){matching.focus({preventScroll:true});if(matching instanceof HTMLInputElement&&selection?.start!==null&&selection?.start!==undefined)matching.setSelectionRange(selection.start,selection.end);}else (root.querySelector<HTMLElement>('#combat-controls')??root.querySelector<HTMLElement>('main h1'))?.focus();retainedFocus=null;}
 }
 function stat(name:string,value:string){return add(el('div','','stat'),el('strong',value),el('span',name));}
 

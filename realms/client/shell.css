@@ -117,3 +117,47 @@
 .turn-ledger li { margin-block:var(--folio-space-2);overflow-wrap:anywhere; }
 .reserve-confirmation { border:2px solid var(--folio-ink); }
 .reserve-confirmation button { margin:var(--folio-space-2); }
+
+/* DM01: the persistent story and command context leads; tools remain contextual. */
+.dm-workspace { display: grid; grid-template-columns: minmax(18rem, .9fr) minmax(0, 1.25fr); gap: var(--folio-space-5); max-width: 1660px; margin: auto; padding: var(--folio-space-5); align-items: start; }
+.dm-narrative { min-width: 0; position: sticky; top: 1rem; padding: var(--folio-space-5); border: 1px solid var(--folio-border-interactive); background: var(--folio-surface); color: var(--folio-text); border-radius: var(--folio-radius-sm); }
+.dm-narrative h1 { font-size: 1.35rem; margin-top: 0; }
+.dm-focus,.dm-narrative .help { color: var(--folio-text-muted); font-size: .875rem; overflow-wrap: anywhere; }
+.dm-transcript { list-style: none; padding: 0; margin: var(--folio-space-3) 0; max-height: 46dvh; min-height: 10rem; overflow: auto; overscroll-behavior: contain; scrollbar-gutter: stable; }
+.dm-entry { padding: var(--folio-space-3); margin-bottom: var(--folio-space-3); border-left: 3px solid var(--folio-brass); overflow-wrap: anywhere; }
+.dm-entry p { margin: .35rem 0; max-width: 66ch; }
+.dm-entry>strong { font-size: .8rem; letter-spacing: .03em; }
+.dm-channel-dm .dm-prose { font-style: italic; }
+.dm-channel-player { border-left-style: dotted; background: var(--folio-surface-inset); }
+.dm-channel-npc { border-left-style: double; font-style: italic; }
+.dm-channel-party { border-left-style: dashed; }
+.dm-channel-facts { background: var(--folio-surface-inset); }
+.dm-channel-warning { border-color: var(--folio-warning); background: var(--folio-warning-surface); color: var(--folio-warning); }
+.dm-channel-error { border-color: var(--folio-danger); background: var(--folio-danger-surface); color: var(--folio-danger); }
+.dm-entry details { margin-top: var(--folio-space-2); }
+.dm-entry summary,.dm-preferences summary { min-height: 24px; cursor: pointer; }
+.dm-command { border-top: 1px solid var(--folio-border-interactive); padding-top: var(--folio-space-3); display: grid; gap: var(--folio-space-2); }
+.dm-command label,.dm-preferences label { display: grid; gap: var(--folio-space-1); min-width: 0; }
+.dm-command input,.dm-preferences select { width: 100%; min-width: 0; min-height: 44px; }
+.dm-command button,.dm-followups button,.dm-narrative>button { min-height: 44px; }
+.dm-followups { display: flex; flex-wrap: wrap; gap: var(--folio-space-2); margin-bottom: var(--folio-space-3); }
+.dm-preferences { padding: var(--folio-space-2) 0; }
+.dm-context.layout { display: block; margin: 0; padding: 0; min-width: 0; }
+.dm-context>.left-column,.dm-context>.right-column { display: none; }
+.dm-context .folio-page { width: 100%; min-width: 0; }
+.dm-narrative[data-density=speed] .dm-entry { margin-bottom: .25rem; padding-block: .35rem; }
+.dm-live { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+@media (max-width: 1000px) { .dm-workspace { grid-template-columns: minmax(0,1fr); padding: var(--folio-space-3); } .dm-narrative { position: static; } .dm-transcript { max-height: 35dvh; } }
+@media (prefers-reduced-motion: reduce) { .dm-narrative * { scroll-behavior: auto; transition: none; } }
+@media (forced-colors: active) { .dm-entry { border-color: CanvasText; } }
+@media (pointer: coarse) { .dm-entry summary,.dm-preferences summary { min-height: 44px; } }
+
+.dm-entry p { white-space: pre-line; }
+
+@media (min-width: 1001px) { .dm-narrative { display: flex; flex-direction: column; max-height: calc(100dvh - 3rem); } .dm-transcript { flex: 1 1 auto; min-height: 7rem; } .dm-command,.dm-followups { flex-shrink: 0; } }
+
+.dm-channel-choices button { display: block; width: 100%; min-height: 44px; text-align: left; margin-block: .25rem; white-space: normal; }
+.dm-preferences button { min-width: 0; max-width: 100%; min-height: 44px; white-space: normal; overflow-wrap: anywhere; }
+
+.dm-prose { font-style: italic; }
+.dm-channel-facts .dm-prose { margin-top: var(--folio-space-2); padding-top: var(--folio-space-2); border-top: 1px dotted var(--folio-border-interactive); }

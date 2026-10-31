@@ -1,0 +1,28 @@
+{
+  "decision": "DM00-PERSONA-APPROVAL-001",
+  "status": "APPROVED",
+  "approved_persona_version": "1.0.0",
+  "reviewed_candidate_version": "0.1.0",
+  "reviewed_candidate_fingerprint_sha256": "ed4ff1a6ef605dfe3d95f2d7d501b491d5eb0f5796008c508766e35a4150dfbb",
+  "reviewed_remote_commit": "233b2bbbd7a57036de4f341f146ca4fdb94a97b0",
+  "reviewed_tree": "4f811baef28abd6b2c69d87291fe51170fb33f94",
+  "approver": "Project owner in this chat",
+  "approval_evidence": "Direct reply to the assistant’s explicit request to approve persona v0.1.0 with pointed default and name open.",
+  "exact_response": "Yes, just make sure he’s entertaining and funny, but make it actually clever.",
+  "recorded_at_utc": "2026-10-31T00:17:33Z",
+  "local_date": "2026-10-30 America/Chicago",
+  "defaults": {
+    "wit": "dry",
+    "sarcasm": "pointed",
+    "density": "standard",
+    "banter": "occasional"
+  },
+  "name": null,
+  "scope": "Persona and future template adoption approved; runtime work, production activation and deployment are not completed or authorized by this record.",
+  "clarification": "Specific observation, surprising but legible connections and timing; human editorial review rather than an automated cleverness score. No expansion of mockery or change of defaults.",
+  "adopted_document_sha256": {
+    "README.md": "4c0c4df40651d37ca5e06f90f68ad46985f30494e45a7efb806f9267c210ead2",
+    "contract.json": "447ac0caef252114aa625918395160367418d9ab388be801aec793078f6ce107",
+    "scenarios.json": "8c4ef6152c4a85b3ec44d0af61a1496533d3dc3d244ca88054dc3a5e4af8d09d"
+  }
+}

@@ -11,7 +11,7 @@ const draw=()=>{
  const active=session.snapshot?.game.activeEncounter;
  if((active?.kind==='TACTICAL'||active?.kind==='SHARED_TACTICAL')&&active.id!==previousActive)screen='combat';
  previousActive=active?.id??null;
- render(root,session,screen,next=>{if(next!=='combat')session.stopRepeatingCombat();if(next!=='daily')session.stopRepeatingTurns();if(next!=='consumption')session.stopRepeatingMeal();screen=next;draw();root.querySelector<HTMLElement>('main h1')?.focus();},command=>{
+ render(root,session,screen,next=>{if(next!=='combat')session.stopRepeatingCombat();if(next!=='daily')session.stopRepeatingTurns();if(next!=='consumption')session.stopRepeatingMeal();screen=next;draw();if(document.activeElement?.id!=='dm-command-input')root.querySelector<HTMLElement>('main h1')?.focus();},command=>{
   const battle=session.snapshot?.battle;if(!battle)return;
   if(battle.shared){void session.action('/api/v1/tactical/shared/actions','SHARED_TACTICAL_ACTION',{sessionId:battle.shared.sessionId,expectedSharedRevision:battle.tacticalRevision,command:command.kind==='CONTINUE'?{...command,actorId:battle.shared.unitId}:command});return;}
   void session.action('/api/v1/tactical/actions','TACTICAL_ACTION',{instanceId:battle.instanceId,expectedEncounterRevision:battle.encounterRevision,expectedTacticalRevision:battle.tacticalRevision,command});

@@ -1,0 +1,19 @@
+export {};
+/** Loopback-only QA; every report comes from the rendered child browser viewport. */
+const frame=document.querySelector<HTMLIFrameElement>('#fixture')!,width=document.querySelector<HTMLSelectElement>('#width')!,scene=document.querySelector<HTMLSelectElement>('#scene')!,mode=document.querySelector<HTMLSelectElement>('#mode')!;
+function update(){frame.width=width.value;const path='/dev/visual?scene='+encodeURIComponent(scene.value)+'&mode='+encodeURIComponent(mode.value);if(frame.getAttribute('src')!==path)frame.src=path;}
+const apply=document.createElement('button');apply.type='button';apply.textContent='Apply fixture';apply.addEventListener('click',update);frame.before(apply);
+const start=document.createElement('button');start.type='button';start.textContent='Run browser matrix';const status=document.createElement('output');status.id='matrix-status';status.setAttribute('aria-live','polite');const results=document.createElement('textarea');results.id='matrix-results';results.readOnly=true;results.setAttribute('aria-label','Browser matrix results');results.rows=8;frame.before(start,status,results);
+type Case={scene:string;mode:string;width:number};type Report=Case&{viewport:{width:number;height:number};manifest:string;horizontalOverflow:boolean;headingSkips:number;smallTargets:number;unnamedControls:number;contrastFailures:unknown[];coarseSmallTargets:number;maximumControlTransitionMs:number};
+let pending:{expected:Case;resolve:(report:Report)=>void}|null=null;
+window.addEventListener('message',event=>{if(event.origin!==location.origin||event.source!==frame.contentWindow||!pending)return;const r=event.data;if(!r||r.type!=='FOLLYBOUND_VISUAL_REPORT')return;const report=r.report as Report,c=pending.expected;if(report.scene===c.scene&&report.mode===c.mode&&report.viewport?.width===c.width){const resolve=pending.resolve;pending=null;resolve(report);}});
+start.addEventListener('click',()=>void(async()=>{
+ start.disabled=true;apply.disabled=true;for(const field of [width,scene,mode])field.disabled=true;
+ const preferences=['dm-shell','overview','progression','inventory','inspector','comparison','adventure','combat','dialog','daily','consumption','combat-field','combat-boss','combat-item-review','combat-shared-lobby','noncombat','journal'];
+ const cases:Case[]=[...Array.from(scene.options).flatMap(o=>[320,375,768,1024,1440,1920].map(width=>({scene:o.value,mode:'normal',width}))),...preferences.flatMap(scene=>[320,1440].flatMap(width=>['motion','contrast','forced','text200','coarse'].map(mode=>({scene,mode,width}))))];
+ const reports:Report[]=[];
+ try{for(const c of cases){status.textContent=`Checking ${reports.length+1}/${cases.length}: ${c.scene}, ${c.mode}, ${c.width}px`;const report=await new Promise<Report>((resolve,reject)=>{const timer=setTimeout(()=>{pending=null;reject(Error('Fixture report timed out'));},15000);pending={expected:c,resolve:r=>{clearTimeout(timer);resolve(r);}};width.value=String(c.width);scene.value=c.scene;mode.value=c.mode;const prior=frame.getAttribute('src');update();if(prior===frame.getAttribute('src'))frame.contentWindow?.postMessage({type:'FOLLYBOUND_VISUAL_AUDIT'},location.origin);});reports.push(report);results.value=JSON.stringify(reports);}
+ const failures=reports.filter(r=>r.horizontalOverflow||r.headingSkips||r.smallTargets||r.unnamedControls||r.contrastFailures.length||r.mode==='coarse'&&r.coarseSmallTargets||r.mode==='motion'&&r.maximumControlTransitionMs);status.textContent=`Complete: ${reports.length} browser cases; ${failures.length} failures.`;
+ }catch(error){status.textContent=`Stopped after ${reports.length} cases: ${error instanceof Error?error.message:'audit failed'}`;}
+ finally{start.disabled=false;apply.disabled=false;for(const field of [width,scene,mode])field.disabled=false;}
+})());update();

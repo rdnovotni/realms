@@ -23,6 +23,7 @@
     "scripts/visual-preview.ts",
     "scripts/capture-visual-fixtures.ts",
     "scripts/turns-preview.ts",
-    "scripts/consumption-preview.ts"
+    "scripts/consumption-preview.ts",
+    "scripts/dm-preview.ts"
   ]
 }

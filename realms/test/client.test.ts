@@ -28,7 +28,7 @@ test('public preview marks account access unavailable and serves only approved s
   const art=await app.inject({url:'/assets/realms-tavern.webp'});assert.equal(art.statusCode,200);assert.match(art.headers['content-type']!,/^image\/webp/);assert.equal(art.rawPayload.subarray(0,4).toString(),'RIFF');assert.match(art.headers['content-security-policy']!,/img-src 'self'/);assert.equal(art.headers['cache-control'],'no-store');
   const css=await app.inject({url:'/assets/welcome.css'});assert.equal(css.statusCode,200);assert.match(css.headers['content-type']!,/^text\/css/);
   for(const name of ['interactions.css']){const style=await app.inject({url:'/assets/'+name});assert.equal(style.statusCode,200);assert.match(style.body,/prefers-reduced-motion/);assert.match(style.body,/forced-colors/);}
-  for(const path of ['/dev/visual','/dev/fixture/pack','/dev/manifest','/assets/visual-reference.js','/assets/dev/visual-reference.js'])assert.equal((await app.inject({url:path})).statusCode,404);
+  for(const path of ['/dev/visual','/dev/matrix','/assets/dev/visual-matrix.js','/dev/fixture/pack','/dev/manifest','/assets/visual-reference.js','/assets/dev/visual-reference.js'])assert.equal((await app.inject({url:path})).statusCode,404);
   const characterStyle=await app.inject({url:'/assets/character-folio.css'});assert.equal(characterStyle.statusCode,200);assert.match(characterStyle.body,/\.character-sheet/);
   const shellStyle=await app.inject({url:'/assets/shell.css'});assert.equal(shellStyle.statusCode,200);assert.match(shellStyle.headers['content-type']!,/^text\/css/);assert.match(shellStyle.body,/\.game-shell/);
   const ledger=await app.inject({url:'/assets/inventory-folio.css'});assert.equal(ledger.statusCode,200);assert.match(ledger.headers['content-type']!,/^text\/css/);assert.match(ledger.body,/\.paperdoll-slot/);
@@ -125,7 +125,7 @@ test('Ascension requires a current explicit preview and retries the same token a
  await h.session.previewAscension();assert.equal(h.session.ascension?.retained.consumption.fullness,6);
  let count=0;h.setPost(async()=>{count++;h.setRun('next-run');h.setStatus('ACTIVE');h.setRevision(0);if(count===1)throw Error('Transition response lost');return json({replayed:true});});
  await h.session.confirmAscension();assert.ok(h.session.pending);await h.session.refresh();assert.equal(h.session.ascension,null);await h.session.retry();
- assert.equal(h.session.snapshot?.game.run.runId,'next-run');assert.equal(h.session.pending,null);
+ assert.equal(h.session.snapshot?.game.run.runId,'next-run');assert.equal(h.session.pending,null);assert.equal(h.session.dm.entries.filter(e=>e.receipt?.phase==='SAVED').length,1);assert.equal(h.session.dm.entries.find(e=>e.receipt?.phase==='SAVED')?.receipt?.action,'ascend');assert.equal(h.session.dm.target,null);assert.equal(h.session.dm.draft,'');
  const posts=h.calls.filter(c=>c.init.method==='POST');assert.equal(posts.length,2);assert.equal(posts[0]!.init.body,posts[1]!.init.body);assert.equal(JSON.parse(posts[0]!.init.body as string).previewToken,'a'.repeat(64));
 });
 test('Ascension preview clears on refresh and read-only sessions cannot confirm or request a transition preview',async()=>{

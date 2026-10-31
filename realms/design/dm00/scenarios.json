@@ -1,0 +1,640 @@
+{
+  "version": "1.0.0",
+  "purpose": "Authored review fixtures, not generated runtime narration or a content package.",
+  "scenarios": [
+    {
+      "id": "mimic",
+      "context": "ordinary",
+      "server_facts": [
+        "The chest bites you for 4 damage.",
+        "HP: 16/20.",
+        "The chest remains hostile."
+      ],
+      "variants": {
+        "gentle": {
+          "facts": [
+            "The chest bites you for 4 damage.",
+            "HP: 16/20.",
+            "The chest remains hostile."
+          ],
+          "prose": "The chest bites you. Your inspection technique has been entered into the chest’s favorable review.",
+          "comic_asides": 1,
+          "target": "player_choice",
+          "fourth_wall": false
+        },
+        "pointed": {
+          "facts": [
+            "The chest bites you for 4 damage.",
+            "HP: 16/20.",
+            "The chest remains hostile."
+          ],
+          "prose": "The chest bites you. An ambitious way to introduce yourself to the local furniture.",
+          "comic_asides": 1,
+          "target": "player_choice",
+          "fourth_wall": false
+        },
+        "straightforward": {
+          "facts": [
+            "The chest bites you for 4 damage.",
+            "HP: 16/20.",
+            "The chest remains hostile."
+          ],
+          "prose": "The chest opens on a hinge of teeth. It bites your hand.",
+          "comic_asides": 0,
+          "target": null,
+          "fourth_wall": false
+        }
+      },
+      "human_review": "Check precision, warmth, comedic timing, fictional stakes, and absence of implied hidden facts."
+    },
+    {
+      "id": "failed_lock",
+      "context": "ordinary",
+      "server_facts": [
+        "Lockpicking failed.",
+        "1 lockpick consumed.",
+        "The door remains locked.",
+        "You may try another eligible approach."
+      ],
+      "variants": {
+        "gentle": {
+          "facts": [
+            "Lockpicking failed.",
+            "1 lockpick consumed.",
+            "The door remains locked.",
+            "You may try another eligible approach."
+          ],
+          "prose": "The lock holds. Your lockpick has tendered its resignation.",
+          "comic_asides": 1,
+          "target": "player_choice",
+          "fourth_wall": false
+        },
+        "pointed": {
+          "facts": [
+            "Lockpicking failed.",
+            "1 lockpick consumed.",
+            "The door remains locked.",
+            "You may try another eligible approach."
+          ],
+          "prose": "The lock holds. You have successfully converted a lockpick into a shorter lockpick.",
+          "comic_asides": 1,
+          "target": "player_choice",
+          "fourth_wall": false
+        },
+        "straightforward": {
+          "facts": [
+            "Lockpicking failed.",
+            "1 lockpick consumed.",
+            "The door remains locked.",
+            "You may try another eligible approach."
+          ],
+          "prose": "The pick snaps inside the lock. The door remains closed.",
+          "comic_asides": 0,
+          "target": null,
+          "fourth_wall": false
+        }
+      },
+      "human_review": "Check precision, warmth, comedic timing, fictional stakes, and absence of implied hidden facts."
+    },
+    {
+      "id": "victory",
+      "context": "ordinary",
+      "server_facts": [
+        "The sentinel is defeated.",
+        "12 XP awarded.",
+        "No loot awarded."
+      ],
+      "variants": {
+        "gentle": {
+          "facts": [
+            "The sentinel is defeated.",
+            "12 XP awarded.",
+            "No loot awarded."
+          ],
+          "prose": "The sentinel collapses. It will be taking a more horizontal approach to security.",
+          "comic_asides": 1,
+          "target": "monster",
+          "fourth_wall": false
+        },
+        "pointed": {
+          "facts": [
+            "The sentinel is defeated.",
+            "12 XP awarded.",
+            "No loot awarded."
+          ],
+          "prose": "The sentinel collapses. An impressive defense, apart from the defending.",
+          "comic_asides": 1,
+          "target": "monster",
+          "fourth_wall": false
+        },
+        "straightforward": {
+          "facts": [
+            "The sentinel is defeated.",
+            "12 XP awarded.",
+            "No loot awarded."
+          ],
+          "prose": "The sentinel falls. The passage beyond is quiet.",
+          "comic_asides": 0,
+          "target": null,
+          "fourth_wall": false
+        }
+      },
+      "human_review": "Check precision, warmth, comedic timing, fictional stakes, and absence of implied hidden facts."
+    },
+    {
+      "id": "bureaucracy",
+      "context": "ordinary",
+      "server_facts": [
+        "The clerk requires a burial permit.",
+        "No payment has been made.",
+        "You may inspect the permit requirements."
+      ],
+      "variants": {
+        "gentle": {
+          "facts": [
+            "The clerk requires a burial permit.",
+            "No payment has been made.",
+            "You may inspect the permit requirements."
+          ],
+          "prose": "The clerk requires a burial permit. Death has simplified remarkably little.",
+          "comic_asides": 1,
+          "target": "bureaucracy",
+          "fourth_wall": false
+        },
+        "pointed": {
+          "facts": [
+            "The clerk requires a burial permit.",
+            "No payment has been made.",
+            "You may inspect the permit requirements."
+          ],
+          "prose": "The clerk requires a burial permit. Even the grave has an admissions department.",
+          "comic_asides": 1,
+          "target": "bureaucracy",
+          "fourth_wall": false
+        },
+        "straightforward": {
+          "facts": [
+            "The clerk requires a burial permit.",
+            "No payment has been made.",
+            "You may inspect the permit requirements."
+          ],
+          "prose": "The clerk slides a burial-permit form across the desk.",
+          "comic_asides": 0,
+          "target": null,
+          "fourth_wall": false
+        }
+      },
+      "human_review": "Check precision, warmth, comedic timing, fictional stakes, and absence of implied hidden facts."
+    },
+    {
+      "id": "grief",
+      "context": "grief",
+      "server_facts": [
+        "Mara has learned that her brother died.",
+        "No response has been chosen.",
+        "You may stay, speak, or leave."
+      ],
+      "variants": {
+        "gentle": {
+          "facts": [
+            "Mara has learned that her brother died.",
+            "No response has been chosen.",
+            "You may stay, speak, or leave."
+          ],
+          "prose": "Mara folds the letter along its old crease. Her hand stays there. You can wait.",
+          "comic_asides": 0,
+          "target": null,
+          "fourth_wall": false
+        },
+        "pointed": {
+          "facts": [
+            "Mara has learned that her brother died.",
+            "No response has been chosen.",
+            "You may stay, speak, or leave."
+          ],
+          "prose": "Mara folds the letter along its old crease. Her hand stays there. You can wait.",
+          "comic_asides": 0,
+          "target": null,
+          "fourth_wall": false
+        },
+        "straightforward": {
+          "facts": [
+            "Mara has learned that her brother died.",
+            "No response has been chosen.",
+            "You may stay, speak, or leave."
+          ],
+          "prose": "Mara folds the letter along its old crease. Her hand stays there. You can wait.",
+          "comic_asides": 0,
+          "target": null,
+          "fourth_wall": false
+        }
+      },
+      "human_review": "Check precision, warmth, comedic timing, fictional stakes, and absence of implied hidden facts."
+    },
+    {
+      "id": "horror",
+      "context": "horror_reveal",
+      "server_facts": [
+        "Something is moving behind the sealed door.",
+        "Its identity is unknown.",
+        "No action has been taken."
+      ],
+      "variants": {
+        "gentle": {
+          "facts": [
+            "Something is moving behind the sealed door.",
+            "Its identity is unknown.",
+            "No action has been taken."
+          ],
+          "prose": "The knocking stops when you stop breathing. From the other side, something waits.",
+          "comic_asides": 0,
+          "target": null,
+          "fourth_wall": false
+        },
+        "pointed": {
+          "facts": [
+            "Something is moving behind the sealed door.",
+            "Its identity is unknown.",
+            "No action has been taken."
+          ],
+          "prose": "The knocking stops when you stop breathing. From the other side, something waits.",
+          "comic_asides": 0,
+          "target": null,
+          "fourth_wall": false
+        },
+        "straightforward": {
+          "facts": [
+            "Something is moving behind the sealed door.",
+            "Its identity is unknown.",
+            "No action has been taken."
+          ],
+          "prose": "The knocking stops when you stop breathing. From the other side, something waits.",
+          "comic_asides": 0,
+          "target": null,
+          "fourth_wall": false
+        }
+      },
+      "human_review": "Check precision, warmth, comedic timing, fictional stakes, and absence of implied hidden facts."
+    },
+    {
+      "id": "revelation",
+      "context": "key_revelation",
+      "server_facts": [
+        "The seal bears your companion’s sign.",
+        "Their involvement is unconfirmed.",
+        "You have not confronted them."
+      ],
+      "variants": {
+        "gentle": {
+          "facts": [
+            "The seal bears your companion’s sign.",
+            "Their involvement is unconfirmed.",
+            "You have not confronted them."
+          ],
+          "prose": "You recognize the sign. The wax has cooled; the question it leaves has not.",
+          "comic_asides": 0,
+          "target": null,
+          "fourth_wall": false
+        },
+        "pointed": {
+          "facts": [
+            "The seal bears your companion’s sign.",
+            "Their involvement is unconfirmed.",
+            "You have not confronted them."
+          ],
+          "prose": "You recognize the sign. The wax has cooled; the question it leaves has not.",
+          "comic_asides": 0,
+          "target": null,
+          "fourth_wall": false
+        },
+        "straightforward": {
+          "facts": [
+            "The seal bears your companion’s sign.",
+            "Their involvement is unconfirmed.",
+            "You have not confronted them."
+          ],
+          "prose": "You recognize the sign. The wax has cooled; the question it leaves has not.",
+          "comic_asides": 0,
+          "target": null,
+          "fourth_wall": false
+        }
+      },
+      "human_review": "Check precision, warmth, comedic timing, fictional stakes, and absence of implied hidden facts."
+    },
+    {
+      "id": "ascension",
+      "context": "ascension_confirmation",
+      "server_facts": [
+        "Ascension has not started.",
+        "Review the server-provided loss and retention summary.",
+        "Explicit confirmation is required."
+      ],
+      "variants": {
+        "gentle": {
+          "facts": [
+            "Ascension has not started.",
+            "Review the server-provided loss and retention summary.",
+            "Explicit confirmation is required."
+          ],
+          "prose": "Take the time you need. Review what will be lost and what will remain before you confirm.",
+          "comic_asides": 0,
+          "target": null,
+          "fourth_wall": false
+        },
+        "pointed": {
+          "facts": [
+            "Ascension has not started.",
+            "Review the server-provided loss and retention summary.",
+            "Explicit confirmation is required."
+          ],
+          "prose": "Take the time you need. Review what will be lost and what will remain before you confirm.",
+          "comic_asides": 0,
+          "target": null,
+          "fourth_wall": false
+        },
+        "straightforward": {
+          "facts": [
+            "Ascension has not started.",
+            "Review the server-provided loss and retention summary.",
+            "Explicit confirmation is required."
+          ],
+          "prose": "Take the time you need. Review what will be lost and what will remain before you confirm.",
+          "comic_asides": 0,
+          "target": null,
+          "fourth_wall": false
+        }
+      },
+      "human_review": "Check precision, warmth, comedic timing, fictional stakes, and absence of implied hidden facts."
+    },
+    {
+      "id": "trade",
+      "context": "high_stakes_transaction",
+      "server_facts": [
+        "Purchase preview: 80 Gold.",
+        "Balance after purchase: 20 Gold.",
+        "No purchase has been submitted."
+      ],
+      "variants": {
+        "gentle": {
+          "facts": [
+            "Purchase preview: 80 Gold.",
+            "Balance after purchase: 20 Gold.",
+            "No purchase has been submitted."
+          ],
+          "prose": "Review the item, quantity, and total before confirming this purchase.",
+          "comic_asides": 0,
+          "target": null,
+          "fourth_wall": false
+        },
+        "pointed": {
+          "facts": [
+            "Purchase preview: 80 Gold.",
+            "Balance after purchase: 20 Gold.",
+            "No purchase has been submitted."
+          ],
+          "prose": "Review the item, quantity, and total before confirming this purchase.",
+          "comic_asides": 0,
+          "target": null,
+          "fourth_wall": false
+        },
+        "straightforward": {
+          "facts": [
+            "Purchase preview: 80 Gold.",
+            "Balance after purchase: 20 Gold.",
+            "No purchase has been submitted."
+          ],
+          "prose": "Review the item, quantity, and total before confirming this purchase.",
+          "comic_asides": 0,
+          "target": null,
+          "fourth_wall": false
+        }
+      },
+      "human_review": "Check precision, warmth, comedic timing, fictional stakes, and absence of implied hidden facts."
+    },
+    {
+      "id": "accessibility",
+      "context": "accessibility_help",
+      "server_facts": [
+        "Text size can be changed in Display settings.",
+        "Keyboard navigation remains available.",
+        "No game resources are affected."
+      ],
+      "variants": {
+        "gentle": {
+          "facts": [
+            "Text size can be changed in Display settings.",
+            "Keyboard navigation remains available.",
+            "No game resources are affected."
+          ],
+          "prose": "Open Display settings to change text size. You can reach the controls with the keyboard.",
+          "comic_asides": 0,
+          "target": null,
+          "fourth_wall": false
+        },
+        "pointed": {
+          "facts": [
+            "Text size can be changed in Display settings.",
+            "Keyboard navigation remains available.",
+            "No game resources are affected."
+          ],
+          "prose": "Open Display settings to change text size. You can reach the controls with the keyboard.",
+          "comic_asides": 0,
+          "target": null,
+          "fourth_wall": false
+        },
+        "straightforward": {
+          "facts": [
+            "Text size can be changed in Display settings.",
+            "Keyboard navigation remains available.",
+            "No game resources are affected."
+          ],
+          "prose": "Open Display settings to change text size. You can reach the controls with the keyboard.",
+          "comic_asides": 0,
+          "target": null,
+          "fourth_wall": false
+        }
+      },
+      "human_review": "Check precision, warmth, comedic timing, fictional stakes, and absence of implied hidden facts."
+    },
+    {
+      "id": "party",
+      "context": "player_conflict",
+      "server_facts": [
+        "The party has not agreed to spend the shared resource.",
+        "No resource was consumed.",
+        "Affected players must consent."
+      ],
+      "variants": {
+        "gentle": {
+          "facts": [
+            "The party has not agreed to spend the shared resource.",
+            "No resource was consumed.",
+            "Affected players must consent."
+          ],
+          "prose": "The decision is still open. Each affected player must agree before the resource is spent.",
+          "comic_asides": 0,
+          "target": null,
+          "fourth_wall": false
+        },
+        "pointed": {
+          "facts": [
+            "The party has not agreed to spend the shared resource.",
+            "No resource was consumed.",
+            "Affected players must consent."
+          ],
+          "prose": "The decision is still open. Each affected player must agree before the resource is spent.",
+          "comic_asides": 0,
+          "target": null,
+          "fourth_wall": false
+        },
+        "straightforward": {
+          "facts": [
+            "The party has not agreed to spend the shared resource.",
+            "No resource was consumed.",
+            "Affected players must consent."
+          ],
+          "prose": "The decision is still open. Each affected player must agree before the resource is spent.",
+          "comic_asides": 0,
+          "target": null,
+          "fourth_wall": false
+        }
+      },
+      "human_review": "Check precision, warmth, comedic timing, fictional stakes, and absence of implied hidden facts."
+    },
+    {
+      "id": "distress",
+      "context": "genuine_distress",
+      "server_facts": [
+        "The scene is paused at an available choice.",
+        "No choice has been submitted.",
+        "You may stop or change presentation settings."
+      ],
+      "variants": {
+        "gentle": {
+          "facts": [
+            "The scene is paused at an available choice.",
+            "No choice has been submitted.",
+            "You may stop or change presentation settings."
+          ],
+          "prose": "You can stop here. Nothing requires an immediate choice.",
+          "comic_asides": 0,
+          "target": null,
+          "fourth_wall": false
+        },
+        "pointed": {
+          "facts": [
+            "The scene is paused at an available choice.",
+            "No choice has been submitted.",
+            "You may stop or change presentation settings."
+          ],
+          "prose": "You can stop here. Nothing requires an immediate choice.",
+          "comic_asides": 0,
+          "target": null,
+          "fourth_wall": false
+        },
+        "straightforward": {
+          "facts": [
+            "The scene is paused at an available choice.",
+            "No choice has been submitted.",
+            "You may stop or change presentation settings."
+          ],
+          "prose": "You can stop here. Nothing requires an immediate choice.",
+          "comic_asides": 0,
+          "target": null,
+          "fourth_wall": false
+        }
+      },
+      "human_review": "Check precision, warmth, comedic timing, fictional stakes, and absence of implied hidden facts."
+    },
+    {
+      "id": "npc_boundary",
+      "context": "ordinary",
+      "server_facts": [
+        "The clerk says the bridge is safe.",
+        "You have not verified that claim.",
+        "Crossing has not begun."
+      ],
+      "variants": {
+        "gentle": {
+          "facts": [
+            "The clerk says the bridge is safe.",
+            "You have not verified that claim.",
+            "Crossing has not begun."
+          ],
+          "prose": "The clerk calls the bridge safe. His confidence appears to be doing most of the structural work.",
+          "comic_asides": 1,
+          "target": "circumstance",
+          "fourth_wall": false
+        },
+        "pointed": {
+          "facts": [
+            "The clerk says the bridge is safe.",
+            "You have not verified that claim.",
+            "Crossing has not begun."
+          ],
+          "prose": "The clerk calls the bridge safe. A compelling argument from a man remaining on this side.",
+          "comic_asides": 1,
+          "target": "circumstance",
+          "fourth_wall": false
+        },
+        "straightforward": {
+          "facts": [
+            "The clerk says the bridge is safe.",
+            "You have not verified that claim.",
+            "Crossing has not begun."
+          ],
+          "prose": "The clerk says the bridge is safe. You have not tested his claim.",
+          "comic_asides": 0,
+          "target": null,
+          "fourth_wall": false
+        }
+      },
+      "human_review": "Check precision, warmth, comedic timing, fictional stakes, and absence of implied hidden facts."
+    },
+    {
+      "id": "tragedy",
+      "context": "tragedy",
+      "server_facts": [
+        "The chapel has been destroyed.",
+        "Survivors are sheltering in the square.",
+        "No response has been chosen."
+      ],
+      "variants": {
+        "gentle": {
+          "facts": [
+            "The chapel has been destroyed.",
+            "Survivors are sheltering in the square.",
+            "No response has been chosen."
+          ],
+          "prose": "The chapel bell lies in the square. The survivors have gathered beside it.",
+          "comic_asides": 0,
+          "target": null,
+          "fourth_wall": false
+        },
+        "pointed": {
+          "facts": [
+            "The chapel has been destroyed.",
+            "Survivors are sheltering in the square.",
+            "No response has been chosen."
+          ],
+          "prose": "The chapel bell lies in the square. The survivors have gathered beside it.",
+          "comic_asides": 0,
+          "target": null,
+          "fourth_wall": false
+        },
+        "straightforward": {
+          "facts": [
+            "The chapel has been destroyed.",
+            "Survivors are sheltering in the square.",
+            "No response has been chosen."
+          ],
+          "prose": "The chapel bell lies in the square. The survivors have gathered beside it.",
+          "comic_asides": 0,
+          "target": null,
+          "fourth_wall": false
+        }
+      },
+      "human_review": "Preserve the loss and agency; no punchline."
+    }
+  ]
+}

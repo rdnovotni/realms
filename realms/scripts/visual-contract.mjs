@@ -4,9 +4,9 @@ import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import assert from 'node:assert/strict';
 const root=new URL('../',import.meta.url);
-const scenes=['overview','progression','abilities','statistics','history','inventory','paperdoll','inspector','comparison','loadouts','adventure','combat','dialog','empty','loading','error','setup','stress','daily','daily-waiting','daily-confirmation','daily-loading','daily-error','daily-readonly','consumption','consumption-overdrunk','consumption-empty','consumption-loading','consumption-error','consumption-readonly','consumption-running','consumption-nightcap','consumption-meal','adventure-overdrunk','combat-field','combat-boss','combat-shared-lobby','combat-shared-waiting','combat-shared-claim','combat-readonly','combat-preparation','combat-item-review','combat-manual','combat-log','combat-routine','noncombat','noncombat-empty','noncombat-loading','noncombat-error','noncombat-readonly','noncombat-resolved','journal','journal-empty','journal-loading','journal-error','journal-readonly','journal-resolved','journal-partial'];
+const scenes=['dm-shell','dm-compact','dm-speed','dm-onboarding','overview','progression','abilities','statistics','history','inventory','paperdoll','inspector','comparison','loadouts','adventure','combat','dialog','empty','loading','error','setup','stress','daily','daily-waiting','daily-confirmation','daily-loading','daily-error','daily-readonly','consumption','consumption-overdrunk','consumption-empty','consumption-loading','consumption-error','consumption-readonly','consumption-running','consumption-nightcap','consumption-meal','adventure-overdrunk','combat-field','combat-boss','combat-shared-lobby','combat-shared-waiting','combat-shared-claim','combat-readonly','combat-preparation','combat-item-review','combat-manual','combat-log','combat-routine','noncombat','noncombat-empty','noncombat-loading','noncombat-error','noncombat-readonly','noncombat-resolved','journal','journal-empty','journal-loading','journal-error','journal-readonly','journal-resolved','journal-partial'];
 const widths=[320,375,768,1024,1440,1920];
-const preferenceScenes=['overview','progression','inventory','inspector','comparison','adventure','combat','dialog','daily','consumption','combat-field','combat-boss','combat-item-review','combat-shared-lobby','noncombat','journal'];
+const preferenceScenes=['dm-shell','overview','progression','inventory','inspector','comparison','adventure','combat','dialog','daily','consumption','combat-field','combat-boss','combat-item-review','combat-shared-lobby','noncombat','journal'];
 const preferenceModes=['motion','contrast','forced','text200','coarse'];
 export function requiredVisualCases(){
  return [...scenes.flatMap(scene=>widths.map(width=>({scene,mode:'normal',width}))),...preferenceScenes.flatMap(scene=>[320,1440].flatMap(width=>preferenceModes.map(mode=>({scene,mode,width}))))];
@@ -24,7 +24,7 @@ export function checkReports(reports,manifest){
  for(const {scene,mode,width} of requiredVisualCases())assert.ok(reports.some(r=>r.scene===scene&&r.mode===mode&&r.viewport.width===width),scene+': missing '+mode+' '+width+'px case');
 }
 if(process.argv[1]===fileURLToPath(import.meta.url)){
- const actualIndex=process.argv.indexOf('--actual'),path=actualIndex>=0?process.argv[actualIndex+1]:'docs/screenshots/m04/browser-contracts.json';assert.ok(path,'Supply --actual report.json');
+ const actualIndex=process.argv.indexOf('--actual'),path=actualIndex>=0?process.argv[actualIndex+1]:'docs/screenshots/dm01/browser-contracts.json';assert.ok(path,'Supply --actual report.json');
  const reports=JSON.parse(readFileSync(new URL(path,root),'utf8')),manifest=visualManifest();checkReports(reports,manifest);
  console.log(`Visual contract: ${reports.length} recorded browser checks match ${manifest.files} current visual sources/fixtures. ${actualIndex>=0?'Fresh report validated.':'Stored baseline validated; this command does not launch a browser or compare pixels.'}`);
 }
