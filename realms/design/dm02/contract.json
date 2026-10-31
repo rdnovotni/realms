@@ -1,0 +1,53 @@
+{
+  "version": "1.0.0",
+  "milestone": "DM02",
+  "date": "2026-10-31",
+  "sourceCatalogSha256": "bbb101b37b74f0e85668e18233bd256c18546b14f662c790e574bfba5ba3b18b",
+  "systems": [
+    16,
+    23,
+    29,
+    31,
+    34
+  ],
+  "sourceOrder": "M01 canon lock; owning system sections; DM00 persona and M03\u2013M06 authority; DM02 recommendations do not supersede canon",
+  "tasks": {
+    "DM-021": "IMPLEMENTED_SYNTHETIC_CLIENT_SLICE",
+    "DM-022": "IMPLEMENTED_SYNTHETIC_CLIENT_SLICE",
+    "DM-023": "IMPLEMENTED_SYNTHETIC_CLIENT_SLICE",
+    "DM-024": "IMPLEMENTED_SYNTHETIC_CLIENT_SLICE",
+    "DM-025": "IMPLEMENTED_SYNTHETIC_CLIENT_SLICE",
+    "DM-026": "IMPLEMENTED_SYNTHETIC_CLIENT_SLICE",
+    "DM-027": "IMPLEMENTED_SYNTHETIC_CLIENT_SLICE",
+    "DM-028": "IMPLEMENTED_SYNTHETIC_CLIENT_SLICE"
+  },
+  "authority": "Existing server Action, shared rules and domain owners; planner is untrusted",
+  "migration": null,
+  "activation": "NO_PRODUCTION_ACTIVATION",
+  "limitations": [
+    "Bounded deterministic published vocabulary; unrestricted language understanding not claimed",
+    "Tactical natural composition remains explicit controls",
+    "Reporting intake is not connected",
+    "Manual-only domains remain unavailable to automation",
+    "Human screen-reader listening review remains a release check"
+  ],
+  "evidence": [
+    "test/intent-arbitration.test.ts",
+    "test/intent-integration.test.ts",
+    "docs/dm-intent-arbitration.md",
+    "docs/screenshots/dm02/browser-contracts.json"
+  ],
+  "sourceSections": [
+    "SEC-D2997A73FD42",
+    "SEC-E0C4EE14701E",
+    "SEC-BA0B94DF0BBF",
+    "SEC-84D4B3D85CDF",
+    "SEC-BA891D0175BD",
+    "SEC-693FBD61874F",
+    "SEC-C1BDFAF99F42",
+    "SEC-0CEC6DED732A",
+    "SEC-1B6CEA6F56C7",
+    "SEC-B35D4CCC3427",
+    "SEC-135DFA1E7648"
+  ]
+}

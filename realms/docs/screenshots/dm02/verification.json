@@ -1,0 +1,39 @@
+{
+  "milestone": "DM02",
+  "date": "2026-10-31",
+  "baseCommit": "cfdc0e38646f52150497d4f1e583804b8db7cc0a",
+  "basePR": 78,
+  "tests": {
+    "unit": 326,
+    "intentModel": 13,
+    "sceneIntegration": 13,
+    "intentParity": 2,
+    "infrastructurePassed": 202,
+    "infrastructureSkipped": 10,
+    "contrastPairs": 55,
+    "minimumTextContrast": 4.79,
+    "databaseIntegration": 33,
+    "dialogueObstacleAndParityIntegration": 20,
+    "actualBrowserCases": 790
+  },
+  "walkthrough": [
+    "Natural lockpick phrasing opens a free one-Turn preview",
+    "Inspect it resolves only the current known cabinet",
+    "Refresh invalidates proposal; confirm intent performs no action",
+    "Open it asks between published approaches with literal disabled reasons",
+    "Unknown fireball does not substitute an owned spell",
+    "Natural read-notes proposal requires confirmation, then saved receipt and three clues",
+    "go people and partial known NPC name preserve command navigation",
+    "Natural marsh-road question opens authored review, then final confirmation records memory",
+    "Reload restores historical transcript without action replay"
+  ],
+  "authority": "No server rule or domain permission changes; all natural actions use current GUI controls",
+  "notes": [
+    "Combined multi-file local integration wrapper was interrupted with exit 143; bounded suites rerun separately. Do not count the interrupted wrapper as a complete successful gate.",
+    "Independent actors have distinct event/operation IDs; parity compares semantic costs, degrees, rewards and revisions. Exact request retry retains one original receipt."
+  ],
+  "productionActivation": false,
+  "baseCI": "All eight MU01 head checks passed",
+  "visualManifest": "5147451aeb221323093bb77b631fd597206871582a8f2c419b2f2b2df7874db1",
+  "visualFailures": 0
+}

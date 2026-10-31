@@ -198,3 +198,10 @@
 .dm-workspace[data-mud-preset=retro] .dm-narrative :is(h1,h2,button,input,select) { font-family: inherit; }
 @media (max-width: 600px) { .dm-command { grid-template-columns: minmax(0,1fr) minmax(0,1fr); } .dm-command label { grid-column: 1 / -1; } }
 .dm-command button { min-width: 0; max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
+
+.dm-intent { border: 1px solid var(--folio-border-interactive); padding: var(--folio-space-3); margin-block: var(--folio-space-3); overflow-wrap: anywhere; }
+.dm-intent h2 { font-size: 1.1rem; }
+.dm-intent h3 { font-size: 1rem; }
+.dm-intent p { white-space: pre-line; margin-block: .4rem; }
+.dm-intent button { min-width: 0; max-width: 100%; min-height: 44px; white-space: normal; overflow-wrap: anywhere; }
+.dm-intent article { border-block-end: 1px solid var(--folio-border-interactive); padding-block: .5rem; }
