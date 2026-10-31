@@ -79,7 +79,8 @@
   },
   "initialRunIssues": {
     "largeTextOverflow": "Fixed; entire browser matrix rerun passed",
-    "databaseLockCapacity": "Overlapping disposable schema cleanup exhausted default capacity. Increased only the owned temporary cluster lock budget, then reran the full integration suite successfully."
+    "databaseLockCapacity": "Overlapping disposable schema cleanup exhausted default capacity. Increased only the owned temporary cluster lock budget, then reran the full integration suite successfully.",
+    "ciCheckpointMigrationCount": "Fixed the legacy 50-migration checkpoint assertion for 051; included real NPC memory in journal hashes, grant checks and upgraded restore proof. The complete checkpoint rehearsal then passed locally."
   },
   "production": {
     "migrationApplied": false,
@@ -87,5 +88,13 @@
     "contentAdopted": false,
     "featureActivated": false
   },
-  "stackBase": "DM01 PR #75 (open); prerequisite PRs remain separate"
+  "stackBase": "DM01 PR #75 (open); prerequisite PRs remain separate",
+  "checkpointRehearsal": {
+    "status": "passed",
+    "migrations": 51,
+    "sourceTree": "715d696c75f28b9c5651e414ac4ed0e0d8528d97",
+    "historicalReplayAndOldBinaryRejection": true,
+    "runtimeGrantsVerified": true,
+    "npcHistoryBackupRestoreVerified": true
+  }
 }
