@@ -1,8 +1,8 @@
-# DM00 — Dungeon Master persona contract, candidate 0.1.0
+# DM00 — Dungeon Master persona contract, approved 1.0.0
 
-**Status: written candidate; explicit persona sign-off pending.** His name is undecided. “Dungeon Master” is a role label, not an approved proper name. This package proposes the voice and future interface obligations; it introduces no runtime narrator, content-template changes, new mechanics, or production activation.
+**Status: persona approved by the project owner; implementation remains pending.** His name is undecided. “Dungeon Master” is a role label, not an approved proper name. This package records the approved voice and future interface obligations; it introduces no runtime narrator, content-template changes, new mechanics, or production activation.
 
-The owner's direction is witty, clever, sardonic, funny, sometimes mocking of the player, and serious where important. The proposed default is **pointed but affectionate**, illustrated below. The exact delivery, limits, budgets and settings here are recommendations awaiting DM-010 approval. The underlying server authority, privacy, accessibility and world-canon constraints already apply.
+The owner's direction is witty, clever, sardonic, funny, sometimes mocking of the player, and serious where important. The approved default is **pointed but affectionate**, illustrated below. The owner approved candidate 0.1.0 and emphasized that he must be entertaining, funny and actually clever. Version 1.0.0 records that approval and clarifies the editorial standard without expanding mockery or changing defaults. See [the decision record](approval.json). The underlying server authority, privacy, accessibility and world-canon constraints already apply.
 
 This is a retroactive design checkpoint ahead of further interface/content work. M02/M03 work already exists on separate branches; this document does not rewrite that history or certify their interfaces as compliant. Adoption will require an explicit gap review after persona approval.
 
@@ -39,6 +39,26 @@ Use modern, clear English with selected fantasy texture. Prefer concrete nouns, 
 
 He helps first. A joke may follow an understandable outcome; it must not replace help, conceal an available alternative, nag a player to optimize, or punish experimentation. Familiar encounters can shorten, with full text expandable. Repeated failure reduces banter rather than escalating it.
 
+## Comedy craft
+
+“Actually clever” is an editorial acceptance criterion. A line should reward attention to this scene: a concrete object, an established consequence, a character's contradiction, or a justified connection. Use understatement, reversal, precise metaphor, occasional earned callbacks and a well-placed final word. A callback needs a previously disclosed event and must not become a nickname or repeated insult. Humor can also come from escalation within an authored institution or a successful plan; failure is not his only subject.
+
+Before retaining a joke, a writer reviews five questions:
+
+1. What specific detail makes this line belong here? If it fits any random failure, rewrite it.
+2. Is there a fresh, understandable turn of thought? Obscure vocabulary and references do not supply one.
+3. Does the short version land better? Cut the explanation after the punchline; avoid two competing jokes.
+4. Does it preserve the facts, agency, tone and player relationship? Drop it if the beat needs seriousness.
+5. Does it still feel entertaining in sequence? Rotate the comic mechanism; silence is better than filler.
+
+| Scene | Reject or rewrite | Stronger direction | Why |
+|---|---|---|---|
+| A pick breaks in the lock | “Well, that went well.” | “You have successfully converted a lockpick into a shorter lockpick.” | Concrete transformation presented as a dubious achievement |
+| A clerk demands a burial permit | “Bureaucracy is hell.” | “Death has simplified remarkably little.” | Understatement connects the paperwork to the particular absurdity |
+| A boastful clerk stays back from an unverified bridge | “Seems legit.” | “A compelling argument from a man remaining on this side.” | The speaker's observable conduct undercuts his claim without certifying the bridge |
+
+Reject stock snark, meme substitutions, routine “well, that happened,” adjective-heavy insults, puns inserted only to fill a quota, and explanations of why the joke was funny. A deliberately simple joke can work when its timing and scene earn it; novelty is not a demand for elaborate wordplay. These comparisons guide a human editor, not an automatic humor score. Tests cannot certify cleverness. Review actual sequences aloud, including quiet beats and successful actions, before shipping authored narration.
+
 ## Modes
 
 1. **Mechanical referee:** exact costs, requirements, chances and results supplied by the rules engine; clear uncertainty and disabled reasons. This mode wins any conflict.
@@ -53,7 +73,7 @@ Allowed targets: an immediate risky player choice, a monster's conduct, pompous 
 
 Never target actual or inferred identity, disability, access needs, trauma, loneliness, vulnerability, genuine distress, or real-life circumstances. Never infer personal traits from play, use private chat/history for a joke, or pretend a player has consented to personal humiliation. Fictional cruelty from a clearly attributed NPC is governed by that character/content's separate review; it is not permission for narrator cruelty.
 
-A local “less banter” setting or feedback action must work without explaining personal reasons. In a party, private preferences and knowledge remain private; shared narration takes the least sarcastic affected participant's setting, with player-specific text allowed only inside that player's visibility boundary. No identifying who requested restraint. This is a proposed future integration rule, not an implemented setting.
+A local “less banter” setting or feedback action must work without explaining personal reasons. In a party, private preferences and knowledge remain private; shared narration takes the least sarcastic affected participant's setting, with player-specific text allowed only inside that player's visibility boundary. No identifying who requested restraint. This is an approved future integration rule, not an implemented setting.
 
 ## Gravity
 
@@ -74,13 +94,13 @@ Protected beats suppress witty commentary even at maximum wit/sarcasm. Do not in
 
 The inhabitants take their world seriously, even where it is absurd. An undead tax collector may be ridiculous and still dangerous; the debt can still matter. An institution can be mocked without making every member of its culture a caricature. The DM can notice irony while preserving agency, stakes and causal consequences. NPCs do not all inherit his sarcasm.
 
-Fourth-wall jokes are rare, deliberately authored and optional: at most one per session in the proposed policy, never on protected beats. They must not assert debugging information, hidden outcomes, real player monitoring, or an explanation of Ascension. Avoid current internet memes, named contemporary personalities, and constant references to the game as software. Mechanical help may naturally say “menu” or “command”; useful interface language is not charged as a joke.
+Fourth-wall jokes are rare, deliberately authored and optional: at most one per session in the approved policy, never on protected beats. They must not assert debugging information, hidden outcomes, real player monitoring, or an explanation of Ascension. Avoid current internet memes, named contemporary personalities, and constant references to the game as software. Mechanical help may naturally say “menu” or “command”; useful interface language is not charged as a joke.
 
 ## Preferences
 
-All settings affect presentation only. Account-level persistence is proposed, with local/session override and accessible preview/reset. Changing them cannot change rolls, rewards, costs, legality, content access, NPC memory or discovered knowledge. Do not infer preferences from player identity or purchase behavior.
+All settings affect presentation only. Account-level persistence is specified, with local/session override and accessible preview/reset. Changing them cannot change rolls, rewards, costs, legality, content access, NPC memory or discovered knowledge. Do not infer preferences from player identity or purchase behavior.
 
-| Setting | Proposed choices | Proposed default |
+| Setting | Choices | Approved default |
 |---|---|---|
 | Wit | off / dry / theatrical | dry |
 | Sarcasm | off / gentle / pointed | pointed |
@@ -89,7 +109,7 @@ All settings affect presentation only. Account-level persistence is proposed, wi
 
 “Straightforward” sets wit, sarcasm and banter off; density remains independently selectable. Sarcasm off forbids player-directed jabs; wit off or banter off suppresses comic asides altogether. Rich text adds atmosphere, not hidden hints. Compact text never drops costs, risks, objective changes, choices, consent, loot or necessary recovery instructions. Expand/collapse must retain those essentials and keep an accessible full log.
 
-Proposed frequency budget: no more than one aside per result; rare permits one and occasional two per ten eligible completed action results. Use a rolling window. Protected beats and errors are not eligible and cannot accumulate a backlog. Repeated failure at the same obstacle, rapid automation, help requests and rejected commands suppress asides. Do not spend mechanical RNG for joke selection. Within this ceiling, prefer fewer jokes with better timing. Fourth-wall asides count toward both limits.
+Approved frequency budget: no more than one aside per result; rare permits one and occasional two per ten eligible completed action results. Use a rolling window. Protected beats and errors are not eligible and cannot accumulate a backlog. Repeated failure at the same obstacle, rapid automation, help requests and rejected commands suppress asides. Do not spend mechanical RNG for joke selection. Within this ceiling, prefer fewer jokes with better timing. Fourth-wall asides count toward both limits.
 
 ## Authority
 
@@ -103,7 +123,7 @@ Essential mechanical output is rendered directly from the server receipt. Prose 
 
 The full 14-scenario, three-variant comparison set is in [scenarios.json](scenarios.json). Numbers are synthetic review examples, not balance decisions. Each variant preserves the same separately rendered mechanical facts. Examples below are tone samples, not content templates or final copy.
 
-| Situation | Gentle | Pointed — proposed default | Straightforward |
+| Situation | Gentle | Pointed — approved default | Straightforward |
 |---|---|---|---|
 | A mimic bites after an incautious inspection | “Your inspection technique has been entered into the chest’s favorable review.” | “An ambitious way to introduce yourself to the local furniture.” | “The chest opens on a hinge of teeth. It bites your hand.” |
 | Lockpick breaks | “Your lockpick has tendered its resignation.” | “You have successfully converted a lockpick into a shorter lockpick.” | “The pick snaps inside the lock. The door remains closed.” |
@@ -129,7 +149,7 @@ For grief, all variants use: “Mara folds the letter along its old crease. Her 
 
 ## Evidence and limits
 
-[contract.json](contract.json) pins source-section IDs, preferences, priorities, coverage and pending approval. It fingerprints the imported catalog; individual document fingerprints and the 12 correction records remain in the frozen [M01 canon lock](../m01/canon-lock.json). Apply its source-of-truth order: approved corrections → owning system → master summary → historical Core → examples. Relevant sources include Core §§3/18/29/30, Systems 16/23/34/44/46; section IDs in the contract resolve against the exact catalog. No source document was edited. New persona detail is distinguished above from inherited constraints.
+[contract.json](contract.json) pins source-section IDs, preferences, priorities, coverage and recorded approval. It fingerprints the imported catalog; individual document fingerprints and the 12 correction records remain in the frozen [M01 canon lock](../m01/canon-lock.json). Apply its source-of-truth order: approved corrections → owning system → master summary → historical Core → examples. Relevant sources include Core §§3/18/29/30, Systems 16/23/34/44/46; section IDs in the contract resolve against the exact catalog. No source document was edited. New persona detail is distinguished above from inherited constraints.
 
 Run from the repository root:
 
@@ -138,18 +158,12 @@ python3 infra/scripts/validate_dm00.py
 python3 -m unittest discover -s infra/tests -p test_dm00.py
 ```
 
-Validation covers source drift, ten-item coverage, unresolved name/approval gate, preference domains, protected-beat suppression, allowed joke targets and identical mechanical fact blocks across variants. Mutation tests prove representative bad artifacts are rejected. These are tests of the written contract and authored fixtures, not a semantic classifier, live generation test, or proof that every future joke lands. Human review must assess humor, respect, implied facts, pacing and the warmth of direct mockery. The fixtures are not adopted content and must stay out of runtime packages.
+Validation covers source drift, ten-item coverage, unresolved name and approval provenance, preference domains, protected-beat suppression, allowed joke targets and identical mechanical fact blocks across variants. Mutation tests prove representative bad artifacts are rejected. These are tests of the written contract and authored fixtures, not a semantic classifier, live generation test, or proof that every future joke lands. Human review must assess humor, respect, implied facts, pacing and the warmth of direct mockery. The fixtures are not adopted content and must stay out of runtime packages.
 
 ## Signoff
 
-DM-001 through DM-009 are drafted for review with traceable source constraints and scenario evidence. **DM-010 remains pending.** No writer/developer may adopt this candidate into content templates before the owner explicitly approves a version and its scenario balance. CI success, a merge flag, earlier “continue” requests, or acceptance of server work is not persona approval.
+DM-001 through DM-009 are an approved design contract. **DM-010 is complete:** the owner explicitly approved the presented scenario balance and pointed default, with his name left open. [approval.json](approval.json) preserves the exact response, reviewed candidate version/fingerprint/commit and adopted document hashes. This is persona approval, not a claim that narration, settings or client integration are implemented, nor production/deployment authorization.
 
-Review the pointed, gentle and straightforward samples, then record one of:
+The owner's response was: “Yes, just make sure he’s entertaining and funny, but make it actually clever.” The clarification strengthens the existing cleverness requirement; it changes no authority, target, gravity or preference boundaries. No additional approval is needed to record this decision. Future changes to the persona/default or expanded mockery boundaries need their own explicit review. Naming remains a later decision.
 
-- Approve candidate 0.1.0 with pointed default; name remains undecided.
-- Approve a revised candidate using gentle default; regenerate the fingerprint and review the change.
-- Request changes, identifying samples that feel too harsh, too tame or too ornate.
-
-Approval must reference the reviewed version/fingerprint and chosen defaults, with the owner's actual words, date and identity in a new reviewed decision record. Do not fabricate a signature or approve all future changes. A changed persona/default or expanded mockery boundary needs a new version and explicit review. Naming can be a later separately recorded decision; a name is not required for tone approval.
-
-After approval: (1) reconcile existing M02/M03 interfaces and visibility boundaries, (2) define/version the narration envelope and structured fallback, (3) add preference UI on GUI and console, (4) integrate the approved voice into a small authored slice, (5) verify server-fact invariance, secret filtering, retry behavior, accessibility, budgets and protected beats in actual clients. Those are future implementation tasks, not completed by this design package.
+Next implementation steps: (1) reconcile existing M02/M03 interfaces and visibility boundaries, (2) define/version the narration envelope and structured fallback, (3) add preference UI on GUI and console, (4) integrate the approved voice into a small authored slice, (5) verify server-fact invariance, secret filtering, retry behavior, accessibility, budgets and protected beats in actual clients. Those are future implementation tasks, not completed by this design package.

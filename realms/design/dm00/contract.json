@@ -1,6 +1,6 @@
 {
-  "version": "0.1.0",
-  "status": "CANDIDATE_AWAITING_PERSONA_SIGNOFF",
+  "version": "1.0.0",
+  "status": "PERSONA_APPROVED_IMPLEMENTATION_PENDING",
   "name": null,
   "working_label": "Dungeon Master",
   "pronouns": [
@@ -9,17 +9,12 @@
   ],
   "user_direction": "Witty, clever, sardonic, funny; sometimes mocking of the player; serious where important. Name undecided.",
   "approval": {
-    "status": "PENDING",
-    "approved_by": null,
-    "approved_on": null,
-    "approved_fingerprint": null,
-    "template_adoption_allowed": false
-  },
-  "proposed_defaults": {
-    "wit": "dry",
-    "sarcasm": "pointed",
-    "density": "standard",
-    "banter": "occasional"
+    "status": "APPROVED",
+    "approved_by": "Project owner in this chat",
+    "approved_on": "2026-10-30 America/Chicago",
+    "approved_fingerprint": "ed4ff1a6ef605dfe3d95f2d7d501b491d5eb0f5796008c508766e35a4150dfbb",
+    "template_adoption_allowed": true,
+    "decision_record": "approval.json"
   },
   "preferences": {
     "wit": [
@@ -213,44 +208,57 @@
   ],
   "coverage": {
     "DM-001": {
-      "status": "DRAFTED_FOR_REVIEW",
+      "status": "APPROVED_DESIGN_CONTRACT",
       "evidence": "README.md#presence"
     },
     "DM-002": {
-      "status": "DRAFTED_FOR_REVIEW",
+      "status": "APPROVED_DESIGN_CONTRACT",
       "evidence": "README.md#voice"
     },
     "DM-003": {
-      "status": "DRAFTED_FOR_REVIEW",
+      "status": "APPROVED_DESIGN_CONTRACT",
       "evidence": "README.md#identity"
     },
     "DM-004": {
-      "status": "DRAFTED_FOR_REVIEW",
+      "status": "APPROVED_DESIGN_CONTRACT",
       "evidence": "README.md#modes"
     },
     "DM-005": {
-      "status": "DRAFTED_FOR_REVIEW",
+      "status": "APPROVED_DESIGN_CONTRACT",
       "evidence": "README.md#examples"
     },
     "DM-006": {
-      "status": "DRAFTED_FOR_REVIEW",
+      "status": "APPROVED_DESIGN_CONTRACT",
       "evidence": "README.md#targets"
     },
     "DM-007": {
-      "status": "DRAFTED_FOR_REVIEW",
+      "status": "APPROVED_DESIGN_CONTRACT",
       "evidence": "README.md#gravity"
     },
     "DM-008": {
-      "status": "DRAFTED_FOR_REVIEW",
+      "status": "APPROVED_DESIGN_CONTRACT",
       "evidence": "README.md#world"
     },
     "DM-009": {
-      "status": "DRAFTED_FOR_REVIEW",
+      "status": "APPROVED_DESIGN_CONTRACT",
       "evidence": "README.md#preferences"
     },
     "DM-010": {
-      "status": "PENDING_HUMAN_SIGNOFF",
+      "status": "PERSONA_SIGNOFF_RECORDED",
       "evidence": "README.md#signoff"
     }
-  }
+  },
+  "approved_defaults": {
+    "wit": "dry",
+    "sarcasm": "pointed",
+    "density": "standard",
+    "banter": "occasional"
+  },
+  "quality_standard": [
+    "scene_specific_observation",
+    "surprising_but_legible_connection",
+    "concise_comic_timing",
+    "respect_and_gravity",
+    "human_editorial_review"
+  ]
 }

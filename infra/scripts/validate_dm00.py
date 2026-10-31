@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate a review-only DM00 candidate; never approve or generate game content."""
+"""Validate a approved DM00 design contract; never approve or generate game content."""
 import gzip
 import hashlib
 import json
@@ -16,23 +16,44 @@ def require(condition, message):
 
 def fingerprint(directory=DIRECTORY):
     digest = hashlib.sha256()
-    for name in ('README.md', 'contract.json', 'scenarios.json'):
+    for name in ('README.md', 'contract.json', 'scenarios.json', 'approval.json'):
         digest.update(name.encode() + b'\0' + (directory / name).read_bytes() + b'\0')
     return digest.hexdigest()
 
 
-def validate(contract=None, fixtures=None):
+def validate(contract=None, fixtures=None, decision=None):
     policy = contract if contract is not None else json.loads((DIRECTORY / 'contract.json').read_text())
     examples = fixtures if fixtures is not None else json.loads((DIRECTORY / 'scenarios.json').read_text())
     catalog_bytes = gzip.decompress((ROOT / 'realms/design/source-catalog.json.gz').read_bytes())
     catalog = json.loads(catalog_bytes)
-    require(policy['version'] == examples['version'] == '0.1.0', 'Candidate version mismatch')
-    require(policy['status'] == 'CANDIDATE_AWAITING_PERSONA_SIGNOFF', 'Candidate silently approved')
+    require(policy['version'] == examples['version'] == '1.0.0', 'Approved version mismatch')
+    require(policy['status'] == 'PERSONA_APPROVED_IMPLEMENTATION_PENDING', 'Design/runtime status drift')
     require(policy['name'] is None and policy['working_label'] == 'Dungeon Master', 'Name remains undecided')
     require(policy['pronouns'] == ['he', 'him'], 'Presentation drift')
-    require(policy['approval'] == {'status': 'PENDING', 'approved_by': None, 'approved_on': None,
-                                  'approved_fingerprint': None, 'template_adoption_allowed': False},
-            'Explicit persona approval needs a new reviewed decision record')
+    approval = decision if decision is not None else json.loads((DIRECTORY / 'approval.json').read_text())
+    reviewed = 'ed4ff1a6ef605dfe3d95f2d7d501b491d5eb0f5796008c508766e35a4150dfbb'
+    require(approval['status'] == 'APPROVED' and approval['approved_persona_version'] == policy['version']
+            and approval['reviewed_candidate_version'] == '0.1.0'
+            and approval['reviewed_candidate_fingerprint_sha256'] == reviewed
+            and approval['reviewed_remote_commit'] == '233b2bbbd7a57036de4f341f146ca4fdb94a97b0'
+            and approval['reviewed_tree'] == '4f811baef28abd6b2c69d87291fe51170fb33f94',
+            'Invalid approval provenance')
+    require(approval['exact_response'] == 'Yes, just make sure he’s entertaining and funny, but make it actually clever.'
+            and approval['approver'] == 'Project owner in this chat'
+            and approval['local_date'] == '2026-10-30 America/Chicago', 'Invalid approval evidence')
+    require(policy['approval'] == {'status': 'APPROVED', 'approved_by': approval['approver'],
+            'approved_on': approval['local_date'], 'approved_fingerprint': reviewed,
+            'template_adoption_allowed': True, 'decision_record': 'approval.json'}, 'Invalid approval binding')
+    require(policy['approved_defaults'] == approval['defaults'] == {
+            'wit': 'dry', 'sarcasm': 'pointed', 'density': 'standard', 'banter': 'occasional'},
+            'Approved default drift')
+    require(policy['quality_standard'] == ['scene_specific_observation', 'surprising_but_legible_connection',
+            'concise_comic_timing', 'respect_and_gravity', 'human_editorial_review'], 'Editorial standard drift')
+    require(set(approval['adopted_document_sha256']) == {'README.md', 'contract.json', 'scenarios.json'},
+            'Incomplete approved document binding')
+    for name, expected_hash in approval['adopted_document_sha256'].items():
+        require(hashlib.sha256((DIRECTORY / name).read_bytes()).hexdigest() == expected_hash,
+                'Approved document changed without a reviewed decision: ' + name)
     require(policy['catalog_sha256'] == hashlib.sha256(catalog_bytes).hexdigest(), 'Source catalog drift')
     sections = {(s['system_label'], s['section_id']): s['stable_id'] for s in catalog['sections']}
     refs = policy['source_refs']
@@ -46,7 +67,7 @@ def validate(contract=None, fixtures=None):
     require(set(coverage) == {f'DM-{n:03}' for n in range(1, 11)}, 'Incomplete DM00 coverage')
     readme = (DIRECTORY / 'README.md').read_text()
     for key, row in coverage.items():
-        require(row['status'] == ('PENDING_HUMAN_SIGNOFF' if key == 'DM-010' else 'DRAFTED_FOR_REVIEW'),
+        require(row['status'] == ('PERSONA_SIGNOFF_RECORDED' if key == 'DM-010' else 'APPROVED_DESIGN_CONTRACT'),
                 'Coverage incorrectly claims acceptance')
         require(row['evidence'].startswith('README.md#'), 'Unknown evidence document')
         heading = row['evidence'].split('#')[1]
@@ -56,8 +77,8 @@ def validate(contract=None, fixtures=None):
     domains = {'wit': ['off', 'dry', 'theatrical'], 'sarcasm': ['off', 'gentle', 'pointed'],
                'density': ['compact', 'standard', 'rich'], 'banter': ['off', 'rare', 'occasional']}
     require(policy['preferences'] == domains, 'Preference domain drift')
-    require(set(policy['proposed_defaults']) == set(domains), 'Missing proposed default')
-    require(all(v in domains[k] for k, v in policy['proposed_defaults'].items()), 'Invalid proposed default')
+    require(set(policy['approved_defaults']) == set(domains), 'Missing approved default')
+    require(all(v in domains[k] for k, v in policy['approved_defaults'].items()), 'Invalid approved default')
     require(policy['straightforward'] == {'wit': 'off', 'sarcasm': 'off', 'banter': 'off'}, 'Straightforward must disable jabs')
     protected = {'grief', 'tragedy', 'horror_reveal', 'key_revelation', 'player_conflict', 'accessibility_help',
                  'high_stakes_transaction', 'ascension_confirmation', 'genuine_distress'}
@@ -97,5 +118,5 @@ def validate(contract=None, fixtures=None):
 
 if __name__ == '__main__':
     count = validate()
-    print(f'DM00 candidate 0.1.0: {count} scenarios / {count * 3} variants validated. Human sign-off PENDING.')
+    print(f'DM00 approved design 1.0.0: {count} scenarios / {count * 3} variants validated. Persona sign-off recorded; runtime integration pending.')
     print('Review fingerprint SHA-256: ' + fingerprint())

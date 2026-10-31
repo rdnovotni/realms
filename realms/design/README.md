@@ -8,7 +8,7 @@ Start with [the work plan](WORK_PLAN.md). Finish reusable feature frameworks wit
 
 The [M01 canon and vertical-slice contract](m01/README.md) confirms the source fingerprints and launch tiers, separates eight implementation/readiness axes, and specifies a provisional two-life region with a dependency board and ten PR briefs. It does not promote proposed catalogs or activate content.
 
-The [DM00 Dungeon Master persona candidate](dm00/README.md) defines his voice, restraint, presentation preferences and 14 scenario comparisons. His name remains undecided; explicit owner sign-off is pending before template adoption. This is a review artifact, not a runtime narrator.
+The [DM00 Dungeon Master persona contract](dm00/README.md) defines his voice, restraint, presentation preferences and 14 scenario comparisons. His name remains undecided; the owner approved the pointed voice and scenario balance, with cleverness an explicit editorial requirement. This is a review artifact, not a runtime narrator.
 
 ## Files and source authority
 

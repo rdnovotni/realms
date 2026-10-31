@@ -1,5 +1,5 @@
 {
-  "version": "0.1.0",
+  "version": "1.0.0",
   "purpose": "Authored review fixtures, not generated runtime narration or a content package.",
   "scenarios": [
     {

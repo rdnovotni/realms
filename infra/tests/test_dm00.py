@@ -16,7 +16,7 @@ class DM00ContractTests(unittest.TestCase):
         self.policy = json.loads((dm.DIRECTORY / 'contract.json').read_text())
         self.fixtures = json.loads((dm.DIRECTORY / 'scenarios.json').read_text())
 
-    def test_review_candidate_is_complete_but_unapproved(self):
+    def test_design_contract_is_approved_but_not_implemented(self):
         self.assertEqual(dm.validate(self.policy, self.fixtures), 14)
         self.assertEqual(len(dm.fingerprint()), 64)
 
@@ -30,9 +30,31 @@ class DM00ContractTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'Source section mismatch'):
             dm.validate(self.policy, self.fixtures)
 
-    def test_template_adoption_cannot_be_silently_enabled(self):
-        self.policy['approval']['template_adoption_allowed'] = True
+    def test_template_adoption_must_match_recorded_approval(self):
+        self.policy['approval']['template_adoption_allowed'] = False
         with self.assertRaisesRegex(ValueError, 'approval'):
+            dm.validate(self.policy, self.fixtures)
+
+    def test_approval_cannot_be_claimed_without_actual_evidence(self):
+        decision = json.loads((dm.DIRECTORY / 'approval.json').read_text())
+        decision['exact_response'] = 'Inferred from silence'
+        with self.assertRaisesRegex(ValueError, 'approval evidence'):
+            dm.validate(self.policy, self.fixtures, decision)
+
+    def test_approval_cannot_be_reused_for_another_candidate(self):
+        decision = json.loads((dm.DIRECTORY / 'approval.json').read_text())
+        decision['reviewed_candidate_fingerprint_sha256'] = '0' * 64
+        with self.assertRaisesRegex(ValueError, 'approval provenance'):
+            dm.validate(self.policy, self.fixtures, decision)
+
+    def test_editorial_standard_cannot_be_dropped(self):
+        self.policy['quality_standard'].remove('human_editorial_review')
+        with self.assertRaisesRegex(ValueError, 'Editorial standard'):
+            dm.validate(self.policy, self.fixtures)
+
+    def test_approved_defaults_cannot_be_silently_changed(self):
+        self.policy['approved_defaults']['sarcasm'] = 'gentle'
+        with self.assertRaisesRegex(ValueError, 'default drift'):
             dm.validate(self.policy, self.fixtures)
 
     def test_unapproved_name_is_rejected(self):
