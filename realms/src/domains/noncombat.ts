@@ -31,7 +31,7 @@ async function access(c:ActionContext,a:Approach,itemId?:string){
 }
 /** Reserve the entire possible consequence before generating private rolls. Otherwise
  * an unaffordable failure could be used as a free technical reroll. */
-async function reserveConsequences(c:ActionContext,actionId:string,failure:ObstacleSpec['steps'][number]['failure']){
+export async function reserveConsequences(c:Pick<ActionContext,'client'|'run'>,actionId:string,failure:Pick<ObstacleSpec['steps'][number]['failure'],'costs'>){
  const row=(await c.client.query("SELECT v.definition->'mechanics'->'sharedAction'->'costs' AS costs FROM release_entries e JOIN content_versions v ON v.entity_id=e.entity_id AND v.revision=e.revision WHERE e.release_id=$1 AND e.entity_id=$2",[c.run.content_release_id,actionId])).rows[0];
  const costs=row.costs;if(c.run.turns<costs.turns+failure.costs.turns)throw new DomainError(409,'CONSEQUENCE_BUDGET_REQUIRED');
  const required=new Map<string,number>();for(const r of [...costs.resources,...failure.costs.resources])required.set(r.key,(required.get(r.key)??0)+r.amount);

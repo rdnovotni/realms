@@ -26,6 +26,7 @@
     "scripts/consumption-preview.ts",
     "scripts/dm-preview.ts",
     "scripts/npc-preview.ts",
-    "scripts/npc-rehearsal.ts"
+    "scripts/npc-rehearsal.ts",
+    "scripts/scene-preview.ts"
   ]
 }

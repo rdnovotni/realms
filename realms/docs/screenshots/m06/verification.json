@@ -1,0 +1,74 @@
+{
+  "version": 1,
+  "date": "2026-10-31",
+  "scope": "SYNTHETIC_LOCAL_CANDIDATE",
+  "runtime": {
+    "node": "24.21.0",
+    "postgres": "18.6",
+    "disposableMaxLocksPerTransaction": 512
+  },
+  "unitClient": {
+    "passed": 304,
+    "failed": 0
+  },
+  "sceneIntegration": {
+    "passed": 13,
+    "failed": 0
+  },
+  "workerRuntime": {
+    "passed": 10,
+    "failed": 0
+  },
+  "infra": {
+    "passed": 202,
+    "skipped": 10,
+    "failed": 0
+  },
+  "responsiveBrowser": {
+    "cases": 684,
+    "failed": 0,
+    "widths": [
+      320,
+      375,
+      768,
+      1024,
+      1440,
+      1920
+    ],
+    "preferences": [
+      "reduced motion",
+      "high contrast",
+      "forced colors",
+      "200% text",
+      "coarse pointer"
+    ]
+  },
+  "contrast": {
+    "pairs": 55,
+    "minimumTextRatio": 4.79
+  },
+  "fullIntegration": {
+    "status": "PASSED",
+    "passed": 473,
+    "failed": 0,
+    "priorRun": {
+      "passed": 470,
+      "failed": 1,
+      "failure": "statement timeout during disposable schema migration, before NPC gameplay; isolated test passes"
+    }
+  },
+  "featureFlags": {
+    "scenes.interaction": "DISABLED_BY_MIGRATION"
+  },
+  "productionTouched": false,
+  "typecheck": "PASSED",
+  "build": "PASSED",
+  "styles": "PASSED",
+  "documentation": "PASSED",
+  "checkpoint": {
+    "sourceCommit": "19a0f1cd487e405b27800eb54e86613362218ed9",
+    "checks": 18,
+    "migrations": 52,
+    "status": "PASSED"
+  }
+}

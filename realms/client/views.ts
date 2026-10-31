@@ -1,3 +1,4 @@
+import {renderScenes} from './scenes.js';
 import { renderNpcs } from './npcs.js';
 import { dmShell } from './dm-shell.js';
 import { renderJournal } from './journal.js';
@@ -14,7 +15,7 @@ import { renderInventory } from './inventory.js';
 import { renderLanding } from './landing.js';
 import type { GameSession } from './session.js';
 import type { Command,Snapshot,Failure } from './types.js';
-export type Screen='adventure'|'character'|'pack'|'combat'|'daily'|'consumption'|'noncombat'|'journal'|'npcs';
+export type Screen='adventure'|'character'|'pack'|'combat'|'daily'|'consumption'|'noncombat'|'journal'|'npcs'|'scenes';
 let retainedFocus:string|null=null;
 export const label=(value:string)=>value==='hero'?'You':value.split(/[._-]/).filter(Boolean).map(w=>w[0]!.toUpperCase()+w.slice(1).toLowerCase()).join(' ');
 function el<K extends keyof HTMLElementTagNameMap>(tag:K,text='',className=''):HTMLElementTagNameMap[K]{const node=document.createElement(tag);node.textContent=text;if(className)node.className=className;return node;}
@@ -34,13 +35,14 @@ export function render(root:HTMLElement,session:GameSession,screen:Screen,naviga
  const snapshot=session.snapshot;
  if(!snapshot){fragment.append(renderLanding(session));
  }else{
-  const layout=el('div','',screen==='pack'||screen==='character'||screen==='daily'||screen==='consumption'||screen==='noncombat'||screen==='journal'||screen==='npcs'?'layout inventory-layout':'layout'),left=el('aside','','left-column'),character=section('The wayfarer');character.classList.add('character');const cameo=el('div','','portrait');cameo.append(folioIcon('adventurer','character'));character.prepend(cameo);add(character,el('small',snapshot.progression.build.mode==='CONFIGURED'?snapshot.progression.build.classes?.map(c=>`${snapshot.options.classes.find(option=>option.classId===c.classId)?.name??label(c.classId)} ${c.nativeLevel}`).join(' · ')??'Adventurer':'Choose your calling'),add(el('div','','stats'),stat('Level',String(snapshot.progression.level)),stat('Turns',String(snapshot.game.run.turns)),stat('XP',snapshot.progression.xp)),el('div','','rule'),el('p',snapshot.game.run.status==='AFTERCORE'?'Aftercore · A new chapter':'A life still being written','build-list muted'));left.append(character);
+  const layout=el('div','',screen==='pack'||screen==='character'||screen==='daily'||screen==='consumption'||screen==='noncombat'||screen==='journal'||screen==='npcs'||screen==='scenes'?'layout inventory-layout':'layout'),left=el('aside','','left-column'),character=section('The wayfarer');character.classList.add('character');const cameo=el('div','','portrait');cameo.append(folioIcon('adventurer','character'));character.prepend(cameo);add(character,el('small',snapshot.progression.build.mode==='CONFIGURED'?snapshot.progression.build.classes?.map(c=>`${snapshot.options.classes.find(option=>option.classId===c.classId)?.name??label(c.classId)} ${c.nativeLevel}`).join(' · ')??'Adventurer':'Choose your calling'),add(el('div','','stats'),stat('Level',String(snapshot.progression.level)),stat('Turns',String(snapshot.game.run.turns)),stat('XP',snapshot.progression.xp)),el('div','','rule'),el('p',snapshot.game.run.status==='AFTERCORE'?'Aftercore · A new chapter':'A life still being written','build-list muted'));left.append(character);
   const help=section('Your next step');add(help,el('p',snapshot.progression.build.mode!=='CONFIGURED'?'Choose a class and starting attributes to shape this life.':snapshot.game.activeEncounter?'Your encounter is saved. Continue from the current turn.':snapshot.progression.readiness?.pendingLevels?'You have earned a level. Choose how your character grows.':'Choose a known adventure. Each entry shows its Turn cost.','help'),button(snapshot.progression.build.mode!=='CONFIGURED'?'Create your build':'View character',()=>navigate('character'),false,'small'));left.append(help);
   if(screen==='combat')layout.classList.add('combat-layout');
   left.setAttribute('aria-label','Character summary');
   const main=el('section','','folio-page');main.setAttribute('aria-label','Contextual actions');main.setAttribute('aria-busy',String(session.busy));
   const reserveConfirmation=renderReserveConfirmation(session);if(reserveConfirmation)main.append(reserveConfirmation);
-  if(screen==='npcs')renderNpcs(main,session,disabled,navigate);
+  if(screen==='scenes')renderScenes(main,session,disabled,navigate);
+  else if(screen==='npcs')renderNpcs(main,session,disabled,navigate);
   else if(screen==='journal')renderJournal(main,session,disabled);
   else if(screen==='noncombat')renderNoncombat(main,session,disabled);
   else if(screen==='daily')renderTurnPlanner(main,session,disabled,()=>{navigate('consumption');void session.loadConsumption();});

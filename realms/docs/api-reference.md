@@ -204,3 +204,9 @@ DM01 adds the optional public `failureCosts` block to noncombat resolution resul
 - `POST /api/v1/npcs/choice` — explicit `NPC_CHOICE`, canonical consequence and memory with receipt/replay.
 
 See [NPC contract](npc-dialogue.md) for exact fields, bounds and ownership.
+
+## M06 scenes (gated, synthetic slice)
+
+`GET /api/v1/scenes` with optional `sceneId=<discovered-id>` returns a revision-pinned discovered scene list, public object/action previews, discovered clues, independent observer awareness and saved decision history. Hidden definitions, seeds and undetected mechanisms are excluded.
+
+`POST /api/v1/scenes/actions` requires the action envelope (`actionType: SCENE_ACTION`), `sceneId`, `objectId`, authored `actionId`, and `confirm: true`. A key/tool requires an owned `itemInstanceId`; only a consumable approach additionally accepts and requires `confirmItem: true`. Unknown fields and client consequences are rejected. Only manual write-authorized intents may settle a scene. Stale revisions conflict; identical retries replay the committed receipt. Quest/NPC requirements accept `kind: SCENE` with terminal `SOLVED`, `BYPASSED`, or `FAILED_FORWARD` outcomes. See [scene contract](scene-interactions.md).

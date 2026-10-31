@@ -66,3 +66,7 @@ Adds immutable quest events, principal claims, consumed source claims and scoped
 ## 051 — NPC conversations (M05)
 
 Adds append-only, owner/release/choice-verified NPC exchanges with structured scoped memories and source evidence. `npc.dialogue` defaults disabled. The restricted runtime receives SELECT/INSERT, never UPDATE/DELETE, on `npc_conversation_events`. Existing migrations are unchanged. RUN memories archive on Ascension; unapproved ACCOUNT awareness is rejected. Read [NPC recovery and adoption](npc-dialogue.md) and the disposable restore proof before adoption.
+
+### 052 — scene interaction histories
+
+Adds append-only scene decisions, guarded run projections and one principal outcome per run; extends quest evidence kinds and Journal observation/reasoning kinds. Checks independently reconstruct pinned authored consequences and link shared checks to owner receipts. Runtime grants are updated in `provision-role.ts`. Installs `scenes.interaction` disabled. Migrations 001–051 remain byte-for-byte immutable. All scene state archives with its run at Ascension. Disable the flag before forward-fixing incompatible scene content; keep existing release pins and compatible reader binaries. Do not delete evidence or reverse 052 after adoption. Rehearse backup/restore and exact receipt replay before a separately authorized production adoption.

@@ -34,3 +34,15 @@
  .game-shell button:active:enabled,dialog button:active:enabled { outline:2px solid Highlight;box-shadow:none; }
  .game-shell .paperdoll-slot.occupied { border-style:double;border-width:3px; }
 }
+
+/* Scene affordances remain readable at narrow widths and enlarged text. */
+.scene-page { overflow-wrap:anywhere; }
+.scene-intro { font-style:italic; }
+.scene-index { display:flex; flex-wrap:wrap; gap:.5rem; margin-block:1rem; }
+.scene-objects { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,22rem),1fr)); gap:1rem; align-items:start; }
+.scene-object { min-width:0; }
+.scene-approach,.scene-clue,.scene-history { border-top:1px solid var(--line); padding-block:.8rem; }
+.scene-approach pre { white-space:pre-wrap; overflow-wrap:anywhere; font-size:.85em; }
+.scene-approach label { display:block; margin-block:.5rem; }
+.scene-approach select { max-width:100%; }
+.scene-awareness meter { width:min(100%,16rem); }

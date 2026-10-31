@@ -1,0 +1,1573 @@
+{
+  "version": "m06-archive-fixture",
+  "engineVersion": "foundation-1",
+  "entities": [
+    {
+      "id": "location.archive",
+      "kind": "LOCATION",
+      "revision": 1,
+      "schemaVersion": 1,
+      "definition": {
+        "name": "Town archive",
+        "dependencies": [],
+        "public": {
+          "description": "A small archive with a large filing policy."
+        }
+      }
+    },
+    {
+      "id": "npc.archive-guard",
+      "kind": "NPC",
+      "revision": 1,
+      "schemaVersion": 1,
+      "definition": {
+        "name": "Gallery guard",
+        "dependencies": [],
+        "public": {}
+      }
+    },
+    {
+      "id": "class.archive-engineer",
+      "kind": "CLASS",
+      "revision": 1,
+      "schemaVersion": 1,
+      "definition": {
+        "name": "Synthetic engineer",
+        "dependencies": [],
+        "public": {}
+      }
+    },
+    {
+      "id": "ability.archive-unseal",
+      "kind": "ABILITY",
+      "revision": 1,
+      "schemaVersion": 1,
+      "definition": {
+        "name": "Quiet unseal",
+        "dependencies": [
+          "class.archive-engineer"
+        ],
+        "public": {},
+        "mechanics": {
+          "noncombatAbility": {
+            "version": 1,
+            "classId": "class.archive-engineer",
+            "minimumNativeLevel": 1
+          }
+        }
+      }
+    },
+    {
+      "id": "item.archive-key",
+      "kind": "ITEM",
+      "revision": 1,
+      "schemaVersion": 1,
+      "definition": {
+        "name": "Archive key",
+        "dependencies": [],
+        "public": {},
+        "mechanics": {
+          "inventory": {
+            "version": 1,
+            "storageMode": "STACK",
+            "category": "MATERIAL"
+          }
+        }
+      }
+    },
+    {
+      "id": "item.archive-tools",
+      "kind": "ITEM",
+      "revision": 1,
+      "schemaVersion": 1,
+      "definition": {
+        "name": "Fine tools",
+        "dependencies": [],
+        "public": {},
+        "mechanics": {
+          "inventory": {
+            "version": 1,
+            "storageMode": "STACK",
+            "category": "MATERIAL"
+          }
+        }
+      }
+    },
+    {
+      "id": "item.archive-tabard",
+      "kind": "ITEM",
+      "revision": 1,
+      "schemaVersion": 1,
+      "definition": {
+        "name": "Archive tabard",
+        "dependencies": [],
+        "public": {},
+        "mechanics": {
+          "inventory": {
+            "version": 1,
+            "storageMode": "INSTANCE",
+            "category": "EQUIPMENT"
+          },
+          "equipment": {
+            "version": 1,
+            "slots": [
+              "CHEST"
+            ],
+            "hands": 0,
+            "minimumLevel": 1,
+            "bindingPolicy": "PRESERVE"
+          }
+        }
+      }
+    },
+    {
+      "id": "activity.archive-observe",
+      "kind": "ACTIVITY",
+      "revision": 1,
+      "schemaVersion": 1,
+      "definition": {
+        "name": "Read the maintenance notes",
+        "dependencies": [],
+        "public": {},
+        "mechanics": {
+          "sceneApproach": {
+            "version": 1,
+            "sceneId": "activity.archive-scene"
+          },
+          "sharedAction": {
+            "version": 1,
+            "domain": "INTERACTION",
+            "prerequisite": {
+              "op": "FACT",
+              "key": "level",
+              "test": "GTE",
+              "value": 1
+            },
+            "check": {
+              "version": 2,
+              "attribute": "attribute.intelligence",
+              "skill": null,
+              "difficulty": 10,
+              "minimumRank": 0,
+              "attributeBaseline": 10,
+              "attributeDivisor": 2,
+              "rankBonuses": [
+                0,
+                2,
+                4,
+                6,
+                8,
+                10
+              ],
+              "partialMargin": -2,
+              "exceptionalMargin": 5,
+              "criticalFailureMargin": -8,
+              "naturalShift": false,
+              "possibility": "AUTOMATIC",
+              "advantage": false,
+              "disadvantage": false,
+              "mode": "PASSIVE",
+              "visibility": "KNOWN"
+            },
+            "costs": {
+              "turns": 0,
+              "worldTime": 0,
+              "gold": "0",
+              "resources": [],
+              "rest": "NONE"
+            },
+            "rewards": [],
+            "effects": [],
+            "retry": "NEVER",
+            "retryTime": 0,
+            "remove": null
+          }
+        }
+      }
+    },
+    {
+      "id": "activity.archive-deduce",
+      "kind": "ACTIVITY",
+      "revision": 1,
+      "schemaVersion": 1,
+      "definition": {
+        "name": "Set the symbols: reed, wheel, bell",
+        "dependencies": [],
+        "public": {},
+        "mechanics": {
+          "sceneApproach": {
+            "version": 1,
+            "sceneId": "activity.archive-scene"
+          },
+          "sharedAction": {
+            "version": 1,
+            "domain": "INTERACTION",
+            "prerequisite": {
+              "op": "FACT",
+              "key": "level",
+              "test": "GTE",
+              "value": 1
+            },
+            "check": {
+              "version": 2,
+              "attribute": "attribute.intelligence",
+              "skill": null,
+              "difficulty": 10,
+              "minimumRank": 0,
+              "attributeBaseline": 10,
+              "attributeDivisor": 2,
+              "rankBonuses": [
+                0,
+                2,
+                4,
+                6,
+                8,
+                10
+              ],
+              "partialMargin": -2,
+              "exceptionalMargin": 5,
+              "criticalFailureMargin": -8,
+              "naturalShift": false,
+              "possibility": "AUTOMATIC",
+              "advantage": false,
+              "disadvantage": false,
+              "mode": "ACTIVE",
+              "visibility": "KNOWN"
+            },
+            "costs": {
+              "turns": 0,
+              "worldTime": 0,
+              "gold": "0",
+              "resources": [],
+              "rest": "NONE"
+            },
+            "rewards": [],
+            "effects": [],
+            "retry": "NEVER",
+            "retryTime": 0,
+            "remove": null
+          }
+        }
+      }
+    },
+    {
+      "id": "activity.archive-open",
+      "kind": "ACTIVITY",
+      "revision": 1,
+      "schemaVersion": 1,
+      "definition": {
+        "name": "Open the cabinet",
+        "dependencies": [],
+        "public": {},
+        "mechanics": {
+          "sceneApproach": {
+            "version": 1,
+            "sceneId": "activity.archive-scene"
+          },
+          "sharedAction": {
+            "version": 1,
+            "domain": "INTERACTION",
+            "prerequisite": {
+              "op": "FACT",
+              "key": "level",
+              "test": "GTE",
+              "value": 1
+            },
+            "check": {
+              "version": 2,
+              "attribute": "attribute.intelligence",
+              "skill": null,
+              "difficulty": 10,
+              "minimumRank": 0,
+              "attributeBaseline": 10,
+              "attributeDivisor": 2,
+              "rankBonuses": [
+                0,
+                2,
+                4,
+                6,
+                8,
+                10
+              ],
+              "partialMargin": -2,
+              "exceptionalMargin": 5,
+              "criticalFailureMargin": -8,
+              "naturalShift": false,
+              "possibility": "AUTOMATIC",
+              "advantage": false,
+              "disadvantage": false,
+              "mode": "ACTIVE",
+              "visibility": "KNOWN"
+            },
+            "costs": {
+              "turns": 0,
+              "worldTime": 0,
+              "gold": "0",
+              "resources": [],
+              "rest": "NONE"
+            },
+            "rewards": [],
+            "effects": [],
+            "retry": "NEVER",
+            "retryTime": 0,
+            "remove": null
+          }
+        }
+      }
+    },
+    {
+      "id": "activity.archive-key",
+      "kind": "ACTIVITY",
+      "revision": 1,
+      "schemaVersion": 1,
+      "definition": {
+        "name": "Use the archive key",
+        "dependencies": [],
+        "public": {},
+        "mechanics": {
+          "sceneApproach": {
+            "version": 1,
+            "sceneId": "activity.archive-scene"
+          },
+          "sharedAction": {
+            "version": 1,
+            "domain": "INTERACTION",
+            "prerequisite": {
+              "op": "FACT",
+              "key": "level",
+              "test": "GTE",
+              "value": 1
+            },
+            "check": {
+              "version": 2,
+              "attribute": "attribute.intelligence",
+              "skill": null,
+              "difficulty": 10,
+              "minimumRank": 0,
+              "attributeBaseline": 10,
+              "attributeDivisor": 2,
+              "rankBonuses": [
+                0,
+                2,
+                4,
+                6,
+                8,
+                10
+              ],
+              "partialMargin": -2,
+              "exceptionalMargin": 5,
+              "criticalFailureMargin": -8,
+              "naturalShift": false,
+              "possibility": "AUTOMATIC",
+              "advantage": false,
+              "disadvantage": false,
+              "mode": "ACTIVE",
+              "visibility": "KNOWN"
+            },
+            "costs": {
+              "turns": 0,
+              "worldTime": 0,
+              "gold": "0",
+              "resources": [],
+              "rest": "NONE"
+            },
+            "rewards": [],
+            "effects": [],
+            "retry": "NEVER",
+            "retryTime": 0,
+            "remove": null
+          }
+        }
+      }
+    },
+    {
+      "id": "activity.archive-tools",
+      "kind": "ACTIVITY",
+      "revision": 1,
+      "schemaVersion": 1,
+      "definition": {
+        "name": "Pick the cabinet lock",
+        "dependencies": [],
+        "public": {},
+        "mechanics": {
+          "sceneApproach": {
+            "version": 1,
+            "sceneId": "activity.archive-scene"
+          },
+          "sharedAction": {
+            "version": 1,
+            "domain": "INTERACTION",
+            "prerequisite": {
+              "op": "FACT",
+              "key": "level",
+              "test": "GTE",
+              "value": 1
+            },
+            "check": {
+              "version": 2,
+              "attribute": "attribute.intelligence",
+              "skill": null,
+              "difficulty": 10,
+              "minimumRank": 0,
+              "attributeBaseline": 10,
+              "attributeDivisor": 2,
+              "rankBonuses": [
+                0,
+                2,
+                4,
+                6,
+                8,
+                10
+              ],
+              "partialMargin": -2,
+              "exceptionalMargin": 5,
+              "criticalFailureMargin": -8,
+              "naturalShift": false,
+              "possibility": "ROLL",
+              "advantage": false,
+              "disadvantage": false,
+              "mode": "ACTIVE",
+              "visibility": "KNOWN"
+            },
+            "costs": {
+              "turns": 1,
+              "worldTime": 2,
+              "gold": "0",
+              "resources": [],
+              "rest": "NONE"
+            },
+            "rewards": [],
+            "effects": [],
+            "retry": "NEVER",
+            "retryTime": 0,
+            "remove": null
+          }
+        }
+      }
+    },
+    {
+      "id": "activity.archive-disarm",
+      "kind": "ACTIVITY",
+      "revision": 1,
+      "schemaVersion": 1,
+      "definition": {
+        "name": "Cut the bell linkage",
+        "dependencies": [],
+        "public": {},
+        "mechanics": {
+          "sceneApproach": {
+            "version": 1,
+            "sceneId": "activity.archive-scene"
+          },
+          "sharedAction": {
+            "version": 1,
+            "domain": "INTERACTION",
+            "prerequisite": {
+              "op": "FACT",
+              "key": "level",
+              "test": "GTE",
+              "value": 1
+            },
+            "check": {
+              "version": 2,
+              "attribute": "attribute.intelligence",
+              "skill": null,
+              "difficulty": 10,
+              "minimumRank": 0,
+              "attributeBaseline": 10,
+              "attributeDivisor": 2,
+              "rankBonuses": [
+                0,
+                2,
+                4,
+                6,
+                8,
+                10
+              ],
+              "partialMargin": -2,
+              "exceptionalMargin": 5,
+              "criticalFailureMargin": -8,
+              "naturalShift": false,
+              "possibility": "ROLL",
+              "advantage": false,
+              "disadvantage": false,
+              "mode": "ACTIVE",
+              "visibility": "KNOWN"
+            },
+            "costs": {
+              "turns": 1,
+              "worldTime": 2,
+              "gold": "0",
+              "resources": [],
+              "rest": "NONE"
+            },
+            "rewards": [],
+            "effects": [],
+            "retry": "NEVER",
+            "retryTime": 0,
+            "remove": null
+          }
+        }
+      }
+    },
+    {
+      "id": "activity.archive-spell",
+      "kind": "ACTIVITY",
+      "revision": 1,
+      "schemaVersion": 1,
+      "definition": {
+        "name": "Unseal and quiet the cabinet",
+        "dependencies": [],
+        "public": {},
+        "mechanics": {
+          "sceneApproach": {
+            "version": 1,
+            "sceneId": "activity.archive-scene"
+          },
+          "sharedAction": {
+            "version": 1,
+            "domain": "INTERACTION",
+            "prerequisite": {
+              "op": "FACT",
+              "key": "level",
+              "test": "GTE",
+              "value": 1
+            },
+            "check": {
+              "version": 2,
+              "attribute": "attribute.intelligence",
+              "skill": null,
+              "difficulty": 10,
+              "minimumRank": 0,
+              "attributeBaseline": 10,
+              "attributeDivisor": 2,
+              "rankBonuses": [
+                0,
+                2,
+                4,
+                6,
+                8,
+                10
+              ],
+              "partialMargin": -2,
+              "exceptionalMargin": 5,
+              "criticalFailureMargin": -8,
+              "naturalShift": false,
+              "possibility": "ROLL",
+              "advantage": false,
+              "disadvantage": false,
+              "mode": "ACTIVE",
+              "visibility": "KNOWN"
+            },
+            "costs": {
+              "turns": 1,
+              "worldTime": 2,
+              "gold": "0",
+              "resources": [],
+              "rest": "NONE"
+            },
+            "rewards": [],
+            "effects": [],
+            "retry": "NEVER",
+            "retryTime": 0,
+            "remove": null
+          }
+        }
+      }
+    },
+    {
+      "id": "activity.archive-sneak",
+      "kind": "ACTIVITY",
+      "revision": 1,
+      "schemaVersion": 1,
+      "definition": {
+        "name": "Slip through the service passage",
+        "dependencies": [],
+        "public": {},
+        "mechanics": {
+          "sceneApproach": {
+            "version": 1,
+            "sceneId": "activity.archive-scene"
+          },
+          "sharedAction": {
+            "version": 1,
+            "domain": "INTERACTION",
+            "prerequisite": {
+              "op": "FACT",
+              "key": "level",
+              "test": "GTE",
+              "value": 1
+            },
+            "check": {
+              "version": 2,
+              "attribute": "attribute.dexterity",
+              "skill": null,
+              "difficulty": 10,
+              "minimumRank": 0,
+              "attributeBaseline": 10,
+              "attributeDivisor": 2,
+              "rankBonuses": [
+                0,
+                2,
+                4,
+                6,
+                8,
+                10
+              ],
+              "partialMargin": -2,
+              "exceptionalMargin": 5,
+              "criticalFailureMargin": -8,
+              "naturalShift": false,
+              "possibility": "ROLL",
+              "advantage": false,
+              "disadvantage": false,
+              "mode": "ACTIVE",
+              "visibility": "KNOWN"
+            },
+            "costs": {
+              "turns": 1,
+              "worldTime": 2,
+              "gold": "0",
+              "resources": [],
+              "rest": "NONE"
+            },
+            "rewards": [],
+            "effects": [],
+            "retry": "NEVER",
+            "retryTime": 0,
+            "remove": null
+          }
+        }
+      }
+    },
+    {
+      "id": "activity.archive-disguise",
+      "kind": "ACTIVITY",
+      "revision": 1,
+      "schemaVersion": 1,
+      "definition": {
+        "name": "Present yourself as the maintenance clerk",
+        "dependencies": [],
+        "public": {},
+        "mechanics": {
+          "sceneApproach": {
+            "version": 1,
+            "sceneId": "activity.archive-scene"
+          },
+          "sharedAction": {
+            "version": 1,
+            "domain": "INTERACTION",
+            "prerequisite": {
+              "op": "FACT",
+              "key": "level",
+              "test": "GTE",
+              "value": 1
+            },
+            "check": {
+              "version": 2,
+              "attribute": "attribute.charisma",
+              "skill": null,
+              "difficulty": 10,
+              "minimumRank": 0,
+              "attributeBaseline": 10,
+              "attributeDivisor": 2,
+              "rankBonuses": [
+                0,
+                2,
+                4,
+                6,
+                8,
+                10
+              ],
+              "partialMargin": -2,
+              "exceptionalMargin": 5,
+              "criticalFailureMargin": -8,
+              "naturalShift": false,
+              "possibility": "ROLL",
+              "advantage": false,
+              "disadvantage": false,
+              "mode": "ACTIVE",
+              "visibility": "KNOWN"
+            },
+            "costs": {
+              "turns": 1,
+              "worldTime": 2,
+              "gold": "0",
+              "resources": [],
+              "rest": "NONE"
+            },
+            "rewards": [],
+            "effects": [],
+            "retry": "NEVER",
+            "retryTime": 0,
+            "remove": null
+          }
+        }
+      }
+    },
+    {
+      "id": "activity.archive-leave",
+      "kind": "ACTIVITY",
+      "revision": 1,
+      "schemaVersion": 1,
+      "definition": {
+        "name": "Request an escorted copy",
+        "dependencies": [],
+        "public": {},
+        "mechanics": {
+          "sceneApproach": {
+            "version": 1,
+            "sceneId": "activity.archive-scene"
+          },
+          "sharedAction": {
+            "version": 1,
+            "domain": "INTERACTION",
+            "prerequisite": {
+              "op": "FACT",
+              "key": "level",
+              "test": "GTE",
+              "value": 1
+            },
+            "check": {
+              "version": 2,
+              "attribute": "attribute.intelligence",
+              "skill": null,
+              "difficulty": 10,
+              "minimumRank": 0,
+              "attributeBaseline": 10,
+              "attributeDivisor": 2,
+              "rankBonuses": [
+                0,
+                2,
+                4,
+                6,
+                8,
+                10
+              ],
+              "partialMargin": -2,
+              "exceptionalMargin": 5,
+              "criticalFailureMargin": -8,
+              "naturalShift": false,
+              "possibility": "AUTOMATIC",
+              "advantage": false,
+              "disadvantage": false,
+              "mode": "ACTIVE",
+              "visibility": "KNOWN"
+            },
+            "costs": {
+              "turns": 0,
+              "worldTime": 0,
+              "gold": "0",
+              "resources": [],
+              "rest": "NONE"
+            },
+            "rewards": [],
+            "effects": [],
+            "retry": "NEVER",
+            "retryTime": 0,
+            "remove": null
+          }
+        }
+      }
+    },
+    {
+      "id": "activity.archive-scene",
+      "kind": "ACTIVITY",
+      "revision": 1,
+      "schemaVersion": 1,
+      "definition": {
+        "name": "The archive’s missing ledger",
+        "dependencies": [
+          "location.archive",
+          "npc.archive-guard",
+          "class.archive-engineer",
+          "ability.archive-unseal",
+          "item.archive-key",
+          "item.archive-tools",
+          "item.archive-tabard",
+          "activity.archive-observe",
+          "activity.archive-deduce",
+          "activity.archive-open",
+          "activity.archive-key",
+          "activity.archive-tools",
+          "activity.archive-disarm",
+          "activity.archive-spell",
+          "activity.archive-sneak",
+          "activity.archive-disguise",
+          "activity.archive-leave"
+        ],
+        "public": {
+          "description": "Investigate the archive and recover a usable ledger."
+        },
+        "secrets": {
+          "culprit": "do-not-leak-the-culprit"
+        },
+        "mechanics": {
+          "scene": {
+            "version": 1,
+            "principalId": "outcome.archive-ledger",
+            "locationId": "location.archive",
+            "description": "A town archive, an overcomplicated cabinet, and a guard who has been promised a quiet shift. Secure a ledger or a usable copy. Ordinary inspection is free; risky approaches disclose their costs.",
+            "fallbackActionId": "leave",
+            "objects": [
+              {
+                "id": "desk",
+                "type": "CLUE_SOURCE",
+                "name": "Maintenance desk",
+                "description": "A drawing, a duty roster, and unusually emphatic handwriting.",
+                "states": [
+                  "untouched",
+                  "studied"
+                ],
+                "initial": "untouched",
+                "visibleAfter": []
+              },
+              {
+                "id": "panel",
+                "type": "MECHANISM",
+                "name": "Three-symbol panel",
+                "description": "Three symbols surround a spindle. Read the notes to reason about their order.",
+                "states": [
+                  "resting",
+                  "aligned"
+                ],
+                "initial": "resting",
+                "visibleAfter": []
+              },
+              {
+                "id": "cabinet",
+                "type": "CONTAINER",
+                "name": "Sealed ledger cabinet",
+                "description": "The lock is ordinary. The care taken around the lid suggests you should inspect before opening it.",
+                "states": [
+                  "locked",
+                  "open"
+                ],
+                "initial": "locked",
+                "visibleAfter": []
+              },
+              {
+                "id": "bell",
+                "type": "TRAP",
+                "name": "Bell linkage",
+                "description": "A fine wire connects the cabinet lid to an alarm bell.",
+                "states": [
+                  "armed",
+                  "disabled",
+                  "triggered"
+                ],
+                "initial": "armed",
+                "visibleAfter": [
+                  "clue.archive-bell"
+                ]
+              },
+              {
+                "id": "passage",
+                "type": "DOOR",
+                "name": "Service passage",
+                "description": "A guard watches the passage. An escorted public-copy route remains available.",
+                "states": [
+                  "clear"
+                ],
+                "initial": "clear",
+                "visibleAfter": []
+              }
+            ],
+            "clues": [
+              {
+                "id": "clue.archive-sequence",
+                "title": "The maintenance drawing",
+                "text": "The reed feeds the wheel; the wheel must turn before the bell is silenced. The symbols read left to right.",
+                "sourceObjectId": "desk",
+                "kind": "OBSERVATION"
+              },
+              {
+                "id": "clue.archive-bell",
+                "title": "A wire beneath the lid",
+                "text": "Opening the cabinet while the wire remains armed will ring the bell. The bell does not identify whoever opened it.",
+                "sourceObjectId": "desk",
+                "kind": "OBSERVATION"
+              },
+              {
+                "id": "clue.archive-duty",
+                "title": "The clerk’s duty",
+                "text": "The maintenance clerk checks the wheel before filing the ledger. A uniform alone is not the whole disguise.",
+                "sourceObjectId": "desk",
+                "kind": "OBSERVATION"
+              },
+              {
+                "id": "clue.archive-reasoning",
+                "title": "A reasoned safe sequence",
+                "text": "You used the drawing to align reed, wheel, and bell. The safe latch also disconnects the alarm.",
+                "sourceObjectId": "panel",
+                "kind": "REASONING"
+              },
+              {
+                "id": "clue.archive-alarm",
+                "title": "The alarm sounded",
+                "text": "The guard heard the cabinet bell. This proves a disturbance, not your identity.",
+                "sourceObjectId": "cabinet",
+                "kind": "OBSERVATION"
+              }
+            ],
+            "guards": [
+              {
+                "id": "guard.gallery",
+                "npcId": "npc.archive-guard",
+                "name": "Gallery guard",
+                "visibleAfter": []
+              }
+            ],
+            "traps": [
+              {
+                "id": "trap.archive-bell",
+                "objectId": "bell",
+                "armedState": "armed",
+                "triggeredState": "triggered",
+                "triggerActions": [
+                  "open",
+                  "key",
+                  "tools",
+                  "disarm"
+                ],
+                "onTrigger": {
+                  "text": "The bell rings once. The guard begins investigating the cabinet; your identity remains unknown.",
+                  "clues": [
+                    "clue.archive-alarm",
+                    "clue.archive-bell"
+                  ],
+                  "stimuli": [
+                    {
+                      "guardId": "guard.gallery",
+                      "amount": 2,
+                      "presence": "ANOMALY",
+                      "location": "LAST_KNOWN",
+                      "atObjectId": "cabinet",
+                      "identity": "UNKNOWN",
+                      "cause": "A bell rang at the cabinet. The guard heard an intrusion, but did not identify its author."
+                    }
+                  ]
+                }
+              }
+            ],
+            "actions": [
+              {
+                "id": "observe",
+                "objectId": "desk",
+                "label": "Read the maintenance notes",
+                "verb": "OBSERVE",
+                "ruleId": "activity.archive-observe",
+                "from": [
+                  "untouched"
+                ],
+                "visibleAfter": [],
+                "requiresClues": [],
+                "requiresStates": [],
+                "maxSuspicion": null,
+                "item": null,
+                "ability": null,
+                "disguise": null,
+                "success": {
+                  "text": "You find a drawing and a maintenance note.",
+                  "states": [
+                    {
+                      "objectId": "desk",
+                      "to": "studied"
+                    }
+                  ],
+                  "clues": [
+                    "clue.archive-sequence",
+                    "clue.archive-bell",
+                    "clue.archive-duty"
+                  ],
+                  "stimuli": [],
+                  "outcome": null
+                },
+                "failure": {
+                  "text": "Your approach fails. The side passage remains available.",
+                  "states": [],
+                  "clues": [],
+                  "stimuli": [
+                    {
+                      "guardId": "guard.gallery",
+                      "amount": 1,
+                      "presence": "ANOMALY",
+                      "location": "LAST_KNOWN",
+                      "atObjectId": "desk",
+                      "identity": "UNKNOWN",
+                      "cause": "A failed approach caused a local disturbance. The guard does not know your identity."
+                    }
+                  ],
+                  "outcome": null
+                },
+                "failureCosts": {
+                  "turns": 0,
+                  "worldTime": 0,
+                  "gold": "0",
+                  "resources": [],
+                  "rest": "NONE"
+                },
+                "failureEffects": [],
+                "warning": "Review the known costs and consequences before confirming."
+              },
+              {
+                "id": "deduce",
+                "objectId": "panel",
+                "label": "Set the symbols: reed, wheel, bell",
+                "verb": "MANIPULATE",
+                "ruleId": "activity.archive-deduce",
+                "from": [
+                  "resting"
+                ],
+                "visibleAfter": [
+                  "clue.archive-sequence"
+                ],
+                "requiresClues": [
+                  "clue.archive-sequence"
+                ],
+                "requiresStates": [],
+                "maxSuspicion": null,
+                "item": null,
+                "ability": null,
+                "disguise": null,
+                "success": {
+                  "text": "The symbols align. A safe latch releases the cabinet.",
+                  "states": [
+                    {
+                      "objectId": "panel",
+                      "to": "aligned"
+                    },
+                    {
+                      "objectId": "bell",
+                      "to": "disabled"
+                    }
+                  ],
+                  "clues": [
+                    "clue.archive-reasoning"
+                  ],
+                  "stimuli": [],
+                  "outcome": null
+                },
+                "failure": {
+                  "text": "Your approach fails. The side passage remains available.",
+                  "states": [],
+                  "clues": [],
+                  "stimuli": [
+                    {
+                      "guardId": "guard.gallery",
+                      "amount": 1,
+                      "presence": "ANOMALY",
+                      "location": "LAST_KNOWN",
+                      "atObjectId": "panel",
+                      "identity": "UNKNOWN",
+                      "cause": "A failed approach caused a local disturbance. The guard does not know your identity."
+                    }
+                  ],
+                  "outcome": null
+                },
+                "failureCosts": {
+                  "turns": 0,
+                  "worldTime": 0,
+                  "gold": "0",
+                  "resources": [],
+                  "rest": "NONE"
+                },
+                "failureEffects": [],
+                "warning": "Review the known costs and consequences before confirming."
+              },
+              {
+                "id": "open",
+                "objectId": "cabinet",
+                "label": "Open the cabinet",
+                "verb": "UNLOCK",
+                "ruleId": "activity.archive-open",
+                "from": [
+                  "locked"
+                ],
+                "visibleAfter": [],
+                "requiresClues": [],
+                "requiresStates": [
+                  {
+                    "objectId": "panel",
+                    "state": "aligned"
+                  }
+                ],
+                "maxSuspicion": null,
+                "item": null,
+                "ability": null,
+                "disguise": null,
+                "success": {
+                  "text": "The ledger is secured without disturbing the bell.",
+                  "states": [
+                    {
+                      "objectId": "cabinet",
+                      "to": "open"
+                    }
+                  ],
+                  "clues": [],
+                  "stimuli": [],
+                  "outcome": {
+                    "id": "reasoned",
+                    "kind": "SOLVED",
+                    "text": "The ledger is secured without disturbing the bell."
+                  }
+                },
+                "failure": {
+                  "text": "Your approach fails. The side passage remains available.",
+                  "states": [],
+                  "clues": [],
+                  "stimuli": [
+                    {
+                      "guardId": "guard.gallery",
+                      "amount": 1,
+                      "presence": "ANOMALY",
+                      "location": "LAST_KNOWN",
+                      "atObjectId": "cabinet",
+                      "identity": "UNKNOWN",
+                      "cause": "A failed approach caused a local disturbance. The guard does not know your identity."
+                    }
+                  ],
+                  "outcome": null
+                },
+                "failureCosts": {
+                  "turns": 0,
+                  "worldTime": 0,
+                  "gold": "0",
+                  "resources": [],
+                  "rest": "NONE"
+                },
+                "failureEffects": [],
+                "warning": "Review the known costs and consequences before confirming."
+              },
+              {
+                "id": "key",
+                "objectId": "cabinet",
+                "label": "Use the archive key",
+                "verb": "UNLOCK",
+                "ruleId": "activity.archive-key",
+                "from": [
+                  "locked"
+                ],
+                "visibleAfter": [],
+                "requiresClues": [],
+                "requiresStates": [],
+                "maxSuspicion": null,
+                "item": {
+                  "id": "item.archive-key",
+                  "mode": "KEY"
+                },
+                "ability": null,
+                "disguise": null,
+                "success": {
+                  "text": "The key opens the cabinet. Whether the bell sounds depends on the mechanism.",
+                  "states": [
+                    {
+                      "objectId": "cabinet",
+                      "to": "open"
+                    }
+                  ],
+                  "clues": [],
+                  "stimuli": [],
+                  "outcome": {
+                    "id": "keyed",
+                    "kind": "SOLVED",
+                    "text": "The key opens the cabinet. Whether the bell sounds depends on the mechanism."
+                  }
+                },
+                "failure": {
+                  "text": "Your approach fails. The side passage remains available.",
+                  "states": [],
+                  "clues": [],
+                  "stimuli": [
+                    {
+                      "guardId": "guard.gallery",
+                      "amount": 1,
+                      "presence": "ANOMALY",
+                      "location": "LAST_KNOWN",
+                      "atObjectId": "cabinet",
+                      "identity": "UNKNOWN",
+                      "cause": "A failed approach caused a local disturbance. The guard does not know your identity."
+                    }
+                  ],
+                  "outcome": null
+                },
+                "failureCosts": {
+                  "turns": 0,
+                  "worldTime": 0,
+                  "gold": "0",
+                  "resources": [],
+                  "rest": "NONE"
+                },
+                "failureEffects": [],
+                "warning": "Review the known costs and consequences before confirming."
+              },
+              {
+                "id": "tools",
+                "objectId": "cabinet",
+                "label": "Pick the cabinet lock",
+                "verb": "USE_TOOL",
+                "ruleId": "activity.archive-tools",
+                "from": [
+                  "locked"
+                ],
+                "visibleAfter": [],
+                "requiresClues": [],
+                "requiresStates": [],
+                "maxSuspicion": null,
+                "item": {
+                  "id": "item.archive-tools",
+                  "mode": "TOOL"
+                },
+                "ability": null,
+                "disguise": null,
+                "success": {
+                  "text": "Your tools open the cabinet. The mechanism still responds to the lid.",
+                  "states": [
+                    {
+                      "objectId": "cabinet",
+                      "to": "open"
+                    }
+                  ],
+                  "clues": [],
+                  "stimuli": [],
+                  "outcome": {
+                    "id": "tooled",
+                    "kind": "SOLVED",
+                    "text": "Your tools open the cabinet. The mechanism still responds to the lid."
+                  }
+                },
+                "failure": {
+                  "text": "Your approach fails. The side passage remains available.",
+                  "states": [],
+                  "clues": [],
+                  "stimuli": [
+                    {
+                      "guardId": "guard.gallery",
+                      "amount": 1,
+                      "presence": "ANOMALY",
+                      "location": "LAST_KNOWN",
+                      "atObjectId": "cabinet",
+                      "identity": "UNKNOWN",
+                      "cause": "A failed approach caused a local disturbance. The guard does not know your identity."
+                    }
+                  ],
+                  "outcome": null
+                },
+                "failureCosts": {
+                  "turns": 0,
+                  "worldTime": 0,
+                  "gold": "0",
+                  "resources": [],
+                  "rest": "NONE"
+                },
+                "failureEffects": [],
+                "warning": "Review the known costs and consequences before confirming."
+              },
+              {
+                "id": "disarm",
+                "objectId": "bell",
+                "label": "Cut the bell linkage",
+                "verb": "DISARM",
+                "ruleId": "activity.archive-disarm",
+                "from": [
+                  "armed"
+                ],
+                "visibleAfter": [
+                  "clue.archive-bell"
+                ],
+                "requiresClues": [],
+                "requiresStates": [],
+                "maxSuspicion": null,
+                "item": {
+                  "id": "item.archive-tools",
+                  "mode": "TOOL"
+                },
+                "ability": null,
+                "disguise": null,
+                "success": {
+                  "text": "The bell linkage is disabled for this life.",
+                  "states": [
+                    {
+                      "objectId": "bell",
+                      "to": "disabled"
+                    }
+                  ],
+                  "clues": [],
+                  "stimuli": [],
+                  "outcome": null
+                },
+                "failure": {
+                  "text": "Your approach fails. The side passage remains available.",
+                  "states": [],
+                  "clues": [],
+                  "stimuli": [
+                    {
+                      "guardId": "guard.gallery",
+                      "amount": 1,
+                      "presence": "ANOMALY",
+                      "location": "LAST_KNOWN",
+                      "atObjectId": "bell",
+                      "identity": "UNKNOWN",
+                      "cause": "A failed approach caused a local disturbance. The guard does not know your identity."
+                    }
+                  ],
+                  "outcome": null
+                },
+                "failureCosts": {
+                  "turns": 0,
+                  "worldTime": 0,
+                  "gold": "0",
+                  "resources": [],
+                  "rest": "NONE"
+                },
+                "failureEffects": [],
+                "warning": "Review the known costs and consequences before confirming."
+              },
+              {
+                "id": "spell",
+                "objectId": "cabinet",
+                "label": "Unseal and quiet the cabinet",
+                "verb": "CAST",
+                "ruleId": "activity.archive-spell",
+                "from": [
+                  "locked"
+                ],
+                "visibleAfter": [],
+                "requiresClues": [],
+                "requiresStates": [],
+                "maxSuspicion": null,
+                "item": null,
+                "ability": {
+                  "id": "ability.archive-unseal",
+                  "classId": "class.archive-engineer",
+                  "minimumLevel": 1
+                },
+                "disguise": null,
+                "success": {
+                  "text": "The seal opens and the bell falls quiet.",
+                  "states": [
+                    {
+                      "objectId": "cabinet",
+                      "to": "open"
+                    },
+                    {
+                      "objectId": "bell",
+                      "to": "disabled"
+                    }
+                  ],
+                  "clues": [],
+                  "stimuli": [],
+                  "outcome": {
+                    "id": "arcane",
+                    "kind": "SOLVED",
+                    "text": "The seal opens and the bell falls quiet."
+                  }
+                },
+                "failure": {
+                  "text": "Your approach fails. The side passage remains available.",
+                  "states": [],
+                  "clues": [],
+                  "stimuli": [
+                    {
+                      "guardId": "guard.gallery",
+                      "amount": 1,
+                      "presence": "ANOMALY",
+                      "location": "LAST_KNOWN",
+                      "atObjectId": "cabinet",
+                      "identity": "UNKNOWN",
+                      "cause": "A failed approach caused a local disturbance. The guard does not know your identity."
+                    }
+                  ],
+                  "outcome": null
+                },
+                "failureCosts": {
+                  "turns": 0,
+                  "worldTime": 0,
+                  "gold": "0",
+                  "resources": [],
+                  "rest": "NONE"
+                },
+                "failureEffects": [],
+                "warning": "Review the known costs and consequences before confirming."
+              },
+              {
+                "id": "sneak",
+                "objectId": "passage",
+                "label": "Slip through the service passage",
+                "verb": "SNEAK",
+                "ruleId": "activity.archive-sneak",
+                "from": [
+                  "clear"
+                ],
+                "visibleAfter": [],
+                "requiresClues": [],
+                "requiresStates": [],
+                "maxSuspicion": 1,
+                "item": null,
+                "ability": null,
+                "disguise": null,
+                "success": {
+                  "text": "You reach the duplicate ledger by the service route. The guard has no new identity evidence.",
+                  "states": [],
+                  "clues": [],
+                  "stimuli": [],
+                  "outcome": {
+                    "id": "unseen",
+                    "kind": "BYPASSED",
+                    "text": "You reach the duplicate ledger by the service route. The guard has no new identity evidence."
+                  }
+                },
+                "failure": {
+                  "text": "Your approach fails. The side passage remains available.",
+                  "states": [],
+                  "clues": [],
+                  "stimuli": [
+                    {
+                      "guardId": "guard.gallery",
+                      "amount": 1,
+                      "presence": "ANOMALY",
+                      "location": "LAST_KNOWN",
+                      "atObjectId": "passage",
+                      "identity": "UNKNOWN",
+                      "cause": "A failed approach caused a local disturbance. The guard does not know your identity."
+                    }
+                  ],
+                  "outcome": null
+                },
+                "failureCosts": {
+                  "turns": 0,
+                  "worldTime": 0,
+                  "gold": "0",
+                  "resources": [],
+                  "rest": "NONE"
+                },
+                "failureEffects": [],
+                "warning": "Review the known costs and consequences before confirming."
+              },
+              {
+                "id": "disguise",
+                "objectId": "passage",
+                "label": "Present yourself as the maintenance clerk",
+                "verb": "DISGUISE",
+                "ruleId": "activity.archive-disguise",
+                "from": [
+                  "clear"
+                ],
+                "visibleAfter": [],
+                "requiresClues": [
+                  "clue.archive-duty"
+                ],
+                "requiresStates": [],
+                "maxSuspicion": null,
+                "item": null,
+                "ability": null,
+                "disguise": {
+                  "observerId": "guard.gallery",
+                  "gearIds": [
+                    "item.archive-tabard"
+                  ],
+                  "bonusPerPiece": 2
+                },
+                "success": {
+                  "text": "Your appearance and knowledge survive the guard’s check. You are admitted as a clerk.",
+                  "states": [],
+                  "clues": [],
+                  "stimuli": [
+                    {
+                      "guardId": "guard.gallery",
+                      "amount": 0,
+                      "presence": "ACTOR",
+                      "location": "CURRENT",
+                      "atObjectId": "passage",
+                      "identity": "COVER",
+                      "cause": "A compatible uniform and the correct duty survived a social check. The guard accepted a role, not legal authority."
+                    }
+                  ],
+                  "outcome": {
+                    "id": "clerk",
+                    "kind": "BYPASSED",
+                    "text": "Your appearance and knowledge survive the guard’s check. You are admitted as a clerk."
+                  }
+                },
+                "failure": {
+                  "text": "Your approach fails. The side passage remains available.",
+                  "states": [],
+                  "clues": [],
+                  "stimuli": [
+                    {
+                      "guardId": "guard.gallery",
+                      "amount": 1,
+                      "presence": "ANOMALY",
+                      "location": "LAST_KNOWN",
+                      "atObjectId": "passage",
+                      "identity": "UNKNOWN",
+                      "cause": "A failed approach caused a local disturbance. The guard does not know your identity."
+                    }
+                  ],
+                  "outcome": null
+                },
+                "failureCosts": {
+                  "turns": 0,
+                  "worldTime": 0,
+                  "gold": "0",
+                  "resources": [],
+                  "rest": "NONE"
+                },
+                "failureEffects": [],
+                "warning": "Review the known costs and consequences before confirming."
+              },
+              {
+                "id": "leave",
+                "objectId": "passage",
+                "label": "Request an escorted copy",
+                "verb": "LEAVE",
+                "ruleId": "activity.archive-leave",
+                "from": [
+                  "clear"
+                ],
+                "visibleAfter": [],
+                "requiresClues": [],
+                "requiresStates": [],
+                "maxSuspicion": null,
+                "item": null,
+                "ability": null,
+                "disguise": null,
+                "success": {
+                  "text": "You accept an escort and request a public copy. The source stays sealed; your investigation can continue.",
+                  "states": [],
+                  "clues": [],
+                  "stimuli": [],
+                  "outcome": {
+                    "id": "escorted",
+                    "kind": "FAILED_FORWARD",
+                    "text": "You accept an escort and request a public copy. The source stays sealed; your investigation can continue."
+                  }
+                },
+                "failure": {
+                  "text": "You accept an escort and request a public copy. The source stays sealed; your investigation can continue.",
+                  "states": [],
+                  "clues": [],
+                  "stimuli": [],
+                  "outcome": {
+                    "id": "escorted",
+                    "kind": "FAILED_FORWARD",
+                    "text": "You accept an escort and request a public copy. The source stays sealed; your investigation can continue."
+                  }
+                },
+                "failureCosts": {
+                  "turns": 0,
+                  "worldTime": 0,
+                  "gold": "0",
+                  "resources": [],
+                  "rest": "NONE"
+                },
+                "failureEffects": [],
+                "warning": "Review the known costs and consequences before confirming."
+              }
+            ]
+          }
+        }
+      }
+    }
+  ]
+}
