@@ -114,3 +114,5 @@ Compare the new document/entry IDs and corrections, explicitly reconcile renamed
 These files are developer planning data. No production database, server configuration, networking, credentials or authored `content/game.json` changes are part of this deliverable. Live acceptance from P1 item 1 remains recorded as `DEC-004`, not silently closed by CI. Wagering/payment/event activation remains separately gated.
 
 Rollback is a Git revert of this PR; it has no player-data migration or live-service rollback step. To verify a future runtime checkpoint, use the existing disposable verification path and staging manual-test/promotion/rollback workflow described in [the development baseline](../../infra/docs/development-baseline.md).
+
+M05 NPC implementation evidence is recorded in `m05/contract.json` and [the runtime contract](../docs/npc-dialogue.md). It does not revise canonical source documents or establish deployment/activation.

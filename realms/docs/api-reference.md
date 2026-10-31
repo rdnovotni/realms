@@ -1,6 +1,6 @@
 # Follybound HTTP API reference
 
-This inventories the implemented routes in `src/app.ts` and `src/client-assets.ts` through migration 049. Route schemas and domain documents define exact parameters and response shapes; this is not a claim of a stable public SDK or a deployed version. Server checks reject extra body fields. There is no generic client write of stats, arbitrary state, roll results, rewards or content definitions.
+This inventories the implemented routes in `src/app.ts` and `src/client-assets.ts` through migration 051. Route schemas and domain documents define exact parameters and response shapes; this is not a claim of a stable public SDK or a deployed version. Server checks reject extra body fields. There is no generic client write of stats, arbitrary state, roll results, rewards or content definitions.
 
 ## Authentication and Action contract
 
@@ -196,3 +196,11 @@ M00 reconciles these routes onto current main without adding an API family. See 
 See [M04 quest ownership, validation and lifetime rules](quests-journal.md). These routes require compatible migration 050; writes require separately enabled `quests.journal`.
 
 DM01 adds the optional public `failureCosts` block to noncombat resolution results alongside the existing attempt costs. It exposes charged resource/Turn/world-time costs, never hidden check evidence. No new endpoint or migration is introduced. See [the DM interface contract](dm-interface.md).
+
+## NPC conversation (M05)
+
+- `GET /api/v1/npcs` — known contacts and selected pinned conversation/presence/history.
+- `POST /api/v1/npcs/interpret` — read-only bounded text interpretation; no mechanical effects.
+- `POST /api/v1/npcs/choice` — explicit `NPC_CHOICE`, canonical consequence and memory with receipt/replay.
+
+See [NPC contract](npc-dialogue.md) for exact fields, bounds and ownership.

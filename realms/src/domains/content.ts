@@ -1,3 +1,4 @@
+import { validateNpcContent } from './npc-content.js';
 import { validateRuntimeQuests } from './quest-runtime-content.js';
 import { validateNoncombatContent } from '../rules/noncombat.js';
 import { validateQuestContent,validateQuestRewardOwners } from './quest-content.js';
@@ -63,6 +64,7 @@ export function validateContent(input:unknown): asserts input is ContentPackage 
   validateSharedContent(entities);
   validateNoncombatContent(entities);
   validateRuntimeQuests(entities);
+  validateNpcContent(entities);
   validateDailyContent(entities);
   validateTurnRests(entities);
   validateTurnPolicies(entities);

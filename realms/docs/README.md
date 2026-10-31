@@ -89,3 +89,5 @@ Original art and asset provenance: [client art](../client/art/README.md). Curren
 - [Validated quests, rewards, rumors and Journal](quests-journal.md)
 
 - [DM-first interface and continuous presentation (DM01)](dm-interface.md)
+
+- [NPCs, authored dialogue and bounded freeform](npc-dialogue.md)

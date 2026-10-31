@@ -1,3 +1,4 @@
+import { checksum } from '../foundation/json.js';
 import { DomainError } from '../foundation/errors.js';
 import type { ContentEntity } from '../domains/content.js';
 import { validateCosts,validateRewards,type Costs,type Reward } from './settlement.js';
@@ -29,7 +30,7 @@ export function validateNoncombatContent(entities:Map<string,ContentEntity>){
  for(const r of spec.rewards)if(r.kind!=='GOLD')ref(e,r.id,r.kind==='ITEM'?'ITEM':undefined);
  for(const s of spec.steps){for(const effect of s.failure.effects){const target=ref(e,effect,'EFFECT');if(!target.definition.mechanics?.sharedEffect)throw new DomainError(400,'INVALID_OBSTACLE_EFFECT');}
  for(const a of s.approaches){const target=ref(e,a.actionId,'ACTIVITY');validateRuleAction(target.definition.mechanics?.sharedAction);const action=target.definition.mechanics!.sharedAction as unknown as RuleAction;
- if(assigned.has(a.actionId)||action.domain!=='INTERACTION'||action.rewards.length||action.costs.rest!=='NONE'||target.definition.mechanics?.dailyAllowance!==undefined||JSON.stringify(target.definition.mechanics?.noncombatApproach)!==JSON.stringify({version:1,obstacleId:e.id}))throw new DomainError(400,'INVALID_OBSTACLE_ACTION_OWNER');assigned.set(a.actionId,e.id);
+ if(assigned.has(a.actionId)||action.domain!=='INTERACTION'||action.rewards.length||action.costs.rest!=='NONE'||target.definition.mechanics?.dailyAllowance!==undefined||checksum(target.definition.mechanics?.noncombatApproach??null)!==checksum({version:1,obstacleId:e.id}))throw new DomainError(400,'INVALID_OBSTACLE_ACTION_OWNER');assigned.set(a.actionId,e.id);
  if(a.intent==='OBSERVE'&&action.check.mode!=='PASSIVE'||a.intent==='SKILL_CHECK'&&action.check.skill===null||a.contest&&(action.check.possibility!=='ROLL'||action.check.mode!=='ACTIVE'||action.check.naturalShift||a.contest.check.naturalShift))throw new DomainError(400,'INVALID_OBSTACLE_CHECK');
  if(a.itemId)ref(e,a.itemId,'ITEM');if(a.ability){const ability=ref(e,a.ability.id,'ABILITY');ref(e,a.ability.classId,'CLASS');const owned=ability.definition.mechanics?.noncombatAbility as any;if(!owned||owned.version!==1||owned.classId!==a.ability.classId||owned.minimumNativeLevel!==a.ability.minimumLevel||!ability.definition.dependencies.includes(a.ability.classId))throw new DomainError(400,'INVALID_NONCOMBAT_ABILITY_SOURCE');}if(a.contest)ref(e,a.contest.targetId,'NPC');for(const assist of a.assistance){const npc=ref(e,assist.companionId,'NPC');if(!npc.definition.mechanics?.companion)throw new DomainError(400,'INVALID_OBSTACLE_COMPANION');}
  }

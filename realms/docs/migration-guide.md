@@ -62,3 +62,7 @@ Migration **049** adds the disabled `noncombat.pipeline` flag and coordinated pr
 ## 050 — quests and Journal (M04)
 
 Adds immutable quest events, principal claims, consumed source claims and scoped personal information/notes. Runtime quest projections require matching immutable decisions and owner receipts. `quests.journal` defaults disabled. Updated role grants allow journal INSERT only. Old migration files are unchanged. Rehearsal applies 001–050 and backs up/restores quest and Journal history alongside old encounter evidence. Read [quest operation and forward-fix strategy](quests-journal.md) before content adoption; never remove or rewrite earned history as rollback.
+
+## 051 — NPC conversations (M05)
+
+Adds append-only, owner/release/choice-verified NPC exchanges with structured scoped memories and source evidence. `npc.dialogue` defaults disabled. The restricted runtime receives SELECT/INSERT, never UPDATE/DELETE, on `npc_conversation_events`. Existing migrations are unchanged. RUN memories archive on Ascension; unapproved ACCOUNT awareness is rejected. Read [NPC recovery and adoption](npc-dialogue.md) and the disposable restore proof before adoption.
