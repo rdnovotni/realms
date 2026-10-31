@@ -116,3 +116,5 @@ These files are developer planning data. No production database, server configur
 Rollback is a Git revert of this PR; it has no player-data migration or live-service rollback step. To verify a future runtime checkpoint, use the existing disposable verification path and staging manual-test/promotion/rollback workflow described in [the development baseline](../../infra/docs/development-baseline.md).
 
 M05 NPC implementation evidence is recorded in `m05/contract.json` and [the runtime contract](../docs/npc-dialogue.md). It does not revise canonical source documents or establish deployment/activation.
+
+M06 scene implementation evidence is recorded in `m06/contract.json` and [the scene contract](../docs/scene-interactions.md). The synthetic slice preserves the source hierarchy and does not establish production content or activation.

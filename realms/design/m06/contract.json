@@ -1,0 +1,45 @@
+{
+  "version": "1.0.0",
+  "milestone": "M06",
+  "date": "2026-10-31",
+  "sourceOrder": "M01 canon lock; owning Systems 29/30/31/34/38; M03 checks, M04 quest authority, M05 NPC availability",
+  "sourceCatalogSha256": "bbb101b37b74f0e85668e18233bd256c18546b14f662c790e574bfba5ba3b18b",
+  "tasks": {
+    "M06/FB-056": "IMPLEMENTED_SYNTHETIC_SLICE",
+    "M06/FB-057": "IMPLEMENTED_SYNTHETIC_SLICE",
+    "M06/FB-058": "IMPLEMENTED_SYNTHETIC_SLICE",
+    "M06/FB-059": "IMPLEMENTED_SYNTHETIC_SLICE",
+    "M06/FB-060": "IMPLEMENTED_SYNTHETIC_SLICE",
+    "M06/FB-061": "IMPLEMENTED_SYNTHETIC_SLICE",
+    "M06/FB-062": "IMPLEMENTED_SYNTHETIC_SLICE",
+    "M06/FB-063": "IMPLEMENTED_SYNTHETIC_SLICE",
+    "M06/FB-064": "IMPLEMENTED_SYNTHETIC_SLICE"
+  },
+  "authority": {
+    "scene": "object states, clues, bounded local observer awareness, terminal route",
+    "sharedRules": "checks, prerequisites, costs, effects, clocks",
+    "quests": "principal rewards and source claims",
+    "npcs": "dialogue and authored memory",
+    "crime": "not implemented by this increment"
+  },
+  "migration": 52,
+  "activation": "DISABLED",
+  "guardTruths": [
+    "presence",
+    "location",
+    "identity"
+  ],
+  "accountability": "System 21; no scene mutation",
+  "fallback": "visible, free, automatic, no item/ability/disguise/resource requirements",
+  "analysisLimit": 4096,
+  "broaderUnimplemented": [
+    "patrol movement",
+    "cover and line-of-sight simulation",
+    "criminal warrants",
+    "disguise catalog",
+    "arbitrary physics",
+    "multiplayer investigation",
+    "production content"
+  ],
+  "disguiseObserver": "Each authored disguise check names one observer; identity does not propagate between observers."
+}

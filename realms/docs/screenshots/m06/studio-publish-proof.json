@@ -1,0 +1,330 @@
+{
+  "status": "passed",
+  "scope": "DISPOSABLE_CLUSTER_ONLY",
+  "postgresVersion": "PostgreSQL 18.6 (Ubuntu 18.6-0ubuntu0.26.04.1) on x86_64-pc-linux-gnu, compiled by gcc (Ubuntu 15.2.0-16ubuntu1) 15.2.0, 64-bit",
+  "inputSha256": "b6984aa0e10b65a8916fee43ff7f9d36ef7b49cced843156726f88c9f9316587",
+  "packageVersion": "m06-archive-fixture",
+  "contentReleaseId": "b86691a4-68e4-431e-9166-6165b17f0168",
+  "releaseChecksum": "131260990b5c7d53d7925402f6d8835064db483030f4339569fd800039a63e72",
+  "sealed": true,
+  "manifest": {
+    "version": "m06-archive-fixture",
+    "entities": [
+      {
+        "id": "ability.archive-unseal",
+        "checksum": "d8a25c2e0b9cb8a8c450aaf996921d83aee5e6cface86322e856baea3ab2f4e4",
+        "revision": 1
+      },
+      {
+        "id": "activity.archive-deduce",
+        "checksum": "8ef0bb59075a659f8d12f184c21191cad241c7e51ec5b48c005f3034b946bd69",
+        "revision": 1
+      },
+      {
+        "id": "activity.archive-disarm",
+        "checksum": "74469c222f520aa3a553361acd70987b955a70bc69b1bbee29c22ae929bbcc30",
+        "revision": 1
+      },
+      {
+        "id": "activity.archive-disguise",
+        "checksum": "05429896990757074e585e3485d1fecfe0bf8ab8ade54b0ee12aada3384eeab6",
+        "revision": 1
+      },
+      {
+        "id": "activity.archive-key",
+        "checksum": "080610720521706c203f8b0e895af691800acae24c0199f503ed4ec61a3d5e6c",
+        "revision": 1
+      },
+      {
+        "id": "activity.archive-leave",
+        "checksum": "41baadf59aead69aefacc80cd4ee0f54583fb6ed28f6125679a658d8d56c4213",
+        "revision": 1
+      },
+      {
+        "id": "activity.archive-observe",
+        "checksum": "32bc6b4b547e6ebc7c1032535bd871dc79d65ae1fee1b69399cb60e066afacfd",
+        "revision": 1
+      },
+      {
+        "id": "activity.archive-open",
+        "checksum": "66d487538855c6a2c1a9a121ab2a7290891212707ee57eda09713f1b69131744",
+        "revision": 1
+      },
+      {
+        "id": "activity.archive-scene",
+        "checksum": "e82769178b3877c2361e2e542b8abd9d13858ece8780cadc553cdd3ed8c9d2e4",
+        "revision": 1
+      },
+      {
+        "id": "activity.archive-sneak",
+        "checksum": "35e561522d1d9e817ecfdd0c8cd90f6947c36318d1f932379bef61f84c272dff",
+        "revision": 1
+      },
+      {
+        "id": "activity.archive-spell",
+        "checksum": "6464945fa07f8cb87e714a1ffc5fe5164c93f99f0ff7eec81a56bbb37538e671",
+        "revision": 1
+      },
+      {
+        "id": "activity.archive-tools",
+        "checksum": "c10d3932305114341e00440786804f25eda0317c51b9653663dc3a0c23f47020",
+        "revision": 1
+      },
+      {
+        "id": "class.archive-engineer",
+        "checksum": "6e364178c9872729b29fa9f3d0acd5787a4abdb66457b03805ad5a8ed5af37d7",
+        "revision": 1
+      },
+      {
+        "id": "item.archive-key",
+        "checksum": "5f7edfda467d323f2ccdd5b3ac91838c8bd2a6a03569df075da1ef1601293cfa",
+        "revision": 1
+      },
+      {
+        "id": "item.archive-tabard",
+        "checksum": "e714083f6204c6cf747b04672d5c3964ff96e7716791367a2cc594f5c5f61091",
+        "revision": 1
+      },
+      {
+        "id": "item.archive-tools",
+        "checksum": "9f753e801358c3555d7eec25d61f8359c0a3412133541e08d4015f6d09636a8a",
+        "revision": 1
+      },
+      {
+        "id": "location.archive",
+        "checksum": "04791de429965b51105e2458f95f98ce01177e8e192a51b01bd58af95c35542b",
+        "revision": 1
+      },
+      {
+        "id": "npc.archive-guard",
+        "checksum": "124f1de7bf70b7d08306b862f390f572382c72b85983aaae7f5c6386be100d62",
+        "revision": 1
+      }
+    ],
+    "engineVersion": "foundation-1"
+  },
+  "migrations": [
+    {
+      "name": "001_foundation.sql",
+      "checksum": "8968377c39ae1ac14b658755f6c23fdc266391322560f4065386afc9ff6cf1e8"
+    },
+    {
+      "name": "002_domain_foundation.sql",
+      "checksum": "abbee9da68d679e13245e32f8db3c6adafeb0785bc49cd26e5a0ea76f493dd8c"
+    },
+    {
+      "name": "003_integrity_hardening.sql",
+      "checksum": "25e13a56f7ba322de532c858c6e0e8eee1766db40faf4a4d213e722b6f3d6797"
+    },
+    {
+      "name": "004_inventory_accounting.sql",
+      "checksum": "28fff45b8a25c756e1da918c7373c739bd3f1923787c4f2662ddb92a8b6893ec"
+    },
+    {
+      "name": "005_account_sessions.sql",
+      "checksum": "832f585e157b9202859e828561a06216863d9a0d011909ad0b8c1c2a6db9747b"
+    },
+    {
+      "name": "006_encounter_journal.sql",
+      "checksum": "abdb96037b3538bd06d5bd88bfe76234ed3d96dfda5c4b115c867550f2f60656"
+    },
+    {
+      "name": "007_authored_item_loot.sql",
+      "checksum": "b4f23aa6a9b57427aa6ddbd30adce86816576f7b26dad46e4e8d19f1ee96784e"
+    },
+    {
+      "name": "008_basic_combat_loop.sql",
+      "checksum": "890be7443ce3bdc5c3458e378804586426af4de4adf4c9aa33fb886dd6cca49d"
+    },
+    {
+      "name": "009_routine_crafting.sql",
+      "checksum": "e160a433a8ea6a56a2f031f005ef4efeab9ec40d8cce40fae95ce077b78d335f"
+    },
+    {
+      "name": "010_item_locks.sql",
+      "checksum": "19e1fa87ce82a88acf89b8e3afa20011fb0a107560bb326e8e40b2fbe53b2b35"
+    },
+    {
+      "name": "011_equipment_persistence.sql",
+      "checksum": "0a8745ab095a81d329d3f325bba24bc1b4b2e934c0b730996811c1b9dbc4d4c2"
+    },
+    {
+      "name": "012_item_binding_transitions.sql",
+      "checksum": "0c892c3e26b34cfc587a0751e61ac38ad854d52fecd53e4190f0244d80f0ee0e"
+    },
+    {
+      "name": "013_saved_equipment_loadouts.sql",
+      "checksum": "a62d0e381a9fcaa2b5bba6759f70d81cf8794368ee49674d3a76e00aec0b3a8e"
+    },
+    {
+      "name": "014_encounter_xp_journal.sql",
+      "checksum": "08b937299a492d33e421cd27556f58b52316b58e9ee56be221661b7f9c9b39d5"
+    },
+    {
+      "name": "015_run_class_progression.sql",
+      "checksum": "f00500ae0ca3b14c0c407afa2f1a197906ca4e0d20708c10740373671d3d5781"
+    },
+    {
+      "name": "016_run_subclass_choices.sql",
+      "checksum": "90dabf089f2cb748d6e5638b71591bcbdcd6d0dbe92b1dc66a9a0afc0e56fe5e"
+    },
+    {
+      "name": "017_run_feat_choices.sql",
+      "checksum": "5b0e761784733cfae42400da28cc6415dfe0311992085404c82d523496585514"
+    },
+    {
+      "name": "018_attribute_milestones.sql",
+      "checksum": "29ec97198c2f7efd738490dc854229ce67c286e96da38decc65fc98a382dd3a5"
+    },
+    {
+      "name": "019_run_proficiencies.sql",
+      "checksum": "7c22266cdfd8f115774551b60d66d976c3694ddad62351fe8bed96e9ddc13b9b"
+    },
+    {
+      "name": "020_proficiency_requirements.sql",
+      "checksum": "7fe9529f97e017793f55b133ca1e34ab96499a2ed914be0201d057b448cb3497"
+    },
+    {
+      "name": "021_character_encounter_snapshots.sql",
+      "checksum": "c0c0a6268be2448aff2eeb31625acb2e64f6b6023656881497740208981ee50b"
+    },
+    {
+      "name": "022_tactical_encounter_journal.sql",
+      "checksum": "f6a0949d3a26f6688c18cd277af2289c825bd649ccce4b7395c86bdb046be9d2"
+    },
+    {
+      "name": "023_tactical_campaign_proofs.sql",
+      "checksum": "2e59723222c5734ee7ebe2fd3b159b0134db3e452508393b851f19c288ff3d64"
+    },
+    {
+      "name": "024_tactical_check_pins.sql",
+      "checksum": "a23ab8c1a9680e2dbf024919e2584ac74a24634554752a2920030822588c7293"
+    },
+    {
+      "name": "025_tactical_failure_contracts.sql",
+      "checksum": "6e3e3810a3b6898b7530ad8ec42a8c70890e76f1ff6a7ab6c1e6a2a8aa56011c"
+    },
+    {
+      "name": "026_owned_combat_companions.sql",
+      "checksum": "67346a30492db2819397db462c8cbc5c01ab05e60168220a72dc503711dd47e3"
+    },
+    {
+      "name": "027_shared_tactical_combat.sql",
+      "checksum": "9ea7b2f35ed70e5e512807a3ae4a8a5ceb71ddd6fb10e44e9c4680a0ae950bfc"
+    },
+    {
+      "name": "028_worker_receipts.sql",
+      "checksum": "85551d9267922a454209e8f1c9b91a5d390ddc4decb3055b06d6ecb28df3494c"
+    },
+    {
+      "name": "029_scheduler.sql",
+      "checksum": "762c196dd893916f6115a5e5ec054ffdc6846c111aeeb3c69af55325d4921310"
+    },
+    {
+      "name": "030_state_ascension_contracts.sql",
+      "checksum": "ecaf9ad687722f5b4c6ab7091c190f30d706bb87905cba21129c8ff8f789d2e9"
+    },
+    {
+      "name": "031_shared_rules.sql",
+      "checksum": "89c875bc7579799e930070559cfb28c709ba1f86e860aeffad5b7cf02c69bfe5"
+    },
+    {
+      "name": "032_inventory_carry.sql",
+      "checksum": "5d00bef6d4730325451f59b668ba1e80692c24e19033a1ec788cc826fd989b8b"
+    },
+    {
+      "name": "033_interchangeable_trinkets.sql",
+      "checksum": "6d3137599f22f526d0b6b65d44a384ee12d915d9cb9b49c6b5cd77f97c7bd7d4"
+    },
+    {
+      "name": "034_inventory_presentation.sql",
+      "checksum": "e10d09240a53685fd61f6b581827552879e62a797c94233acc6ab558e31da297"
+    },
+    {
+      "name": "035_inventory_services.sql",
+      "checksum": "86a5813735a3effc709ae6d03540bc3ba4811c10a4e75af56ad03fc55c1dcdae"
+    },
+    {
+      "name": "036_inventory_intelligence.sql",
+      "checksum": "46721e00607f5abdbb7e4225b876bd6a9cea7d9379f9f8b6076f1847803f730c"
+    },
+    {
+      "name": "037_turn_planner.sql",
+      "checksum": "0c5ac260688f1f2399b9978a52c1ccdb66078da745a4a071ddbf88626c3e03bc"
+    },
+    {
+      "name": "038_turn_rests.sql",
+      "checksum": "0d7c0e31c373095d1873192b3b4d65c89a78b6c87329ff9acc05f7e76665d9ea"
+    },
+    {
+      "name": "039_encounter_turn_budgets.sql",
+      "checksum": "2806beb13458d2549597c89f850478fbd1b2e7f3458c35bc453a24e6fdec2a9a"
+    },
+    {
+      "name": "040_rollover_policies.sql",
+      "checksum": "3e90c1f3585ea9107ea0ff56a90d7e0349f71929c430d1fa1ce98d6227855e55"
+    },
+    {
+      "name": "041_daily_allowance_integrity.sql",
+      "checksum": "5e9593b915df6d87a7a8113a004ae6c8dd9afc0397825c55de299fefed9da42e"
+    },
+    {
+      "name": "042_consumption.sql",
+      "checksum": "0e87263184cbcb387d10a122f70f922a82dd84282f3f51238fbe967922cc313a"
+    },
+    {
+      "name": "043_combat_plans.sql",
+      "checksum": "0c41dfc879d283fd4e6bd3564b95e480b14af8d1b9f8136534f2bd349e0af2d5"
+    },
+    {
+      "name": "044_tactical_resource_rests.sql",
+      "checksum": "c3caed3dc8660447d0dd661ff49f66e2462842e2bba548facb8655582da2c5d9"
+    },
+    {
+      "name": "045_combat_quickslots.sql",
+      "checksum": "ff04aacf7a706a5224f6a27fbbd80672e738ca489d52c8a29f392b6e7efc1946"
+    },
+    {
+      "name": "046_prepared_weapon_swaps.sql",
+      "checksum": "ad14fa8275830f725d67afa69bda85f34c1451402b56dd1cdcfe564b686494cc"
+    },
+    {
+      "name": "047_combat_item_debits.sql",
+      "checksum": "3a6cdf9d4399b55bf9e8589d8e37002008577fb4fcc6fb3a0c4fe5766faedb84"
+    },
+    {
+      "name": "048_shared_battlefield_projection.sql",
+      "checksum": "a913eefa50623849d4c5d83f7a414b73412a4c62c7b2575248adc1dc04fb3244"
+    },
+    {
+      "name": "049_noncombat_obstacles.sql",
+      "checksum": "b32fe47a5426e2b8739f8dc84260b2e54ae79373423bf3762972ea8f67371e7b"
+    },
+    {
+      "name": "050_quests_journal.sql",
+      "checksum": "dcedb7cfa2b1db0aaf1f4fa8b25ae14573f6e92a34e491bedef8be6492365496"
+    },
+    {
+      "name": "051_npc_dialogue.sql",
+      "checksum": "58a1f4ae7e7a0a65deb89b89b8a5018af2d18e2f71fc305d7a30eae6e6562c46"
+    },
+    {
+      "name": "052_scene_interactions.sql",
+      "checksum": "d76b0fe726c90ab6a2146fe82f5edfc058f1b6590a68040f6b6045760fba69c6"
+    }
+  ],
+  "checks": [
+    "real backend content validation",
+    "checksummed sequential migrations",
+    "real immutable content publication",
+    "idempotent seal",
+    "changed release version refused",
+    "changed definition revision refused"
+  ],
+  "sandboxes": [],
+  "playerRuns": 0,
+  "clusterStopped": true,
+  "implementationSha256": "4b5fdbf796628ec78b97400c1edd89d419aec2374ebee9d971101cd49af30a03",
+  "sourceCommit": "19a0f1cd487e405b27800eb54e86613362218ed9",
+  "sourceDirty": false
+}

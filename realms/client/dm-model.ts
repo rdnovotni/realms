@@ -41,6 +41,7 @@ export function dmReceipt(requestId:string,action:string,result:Record<string,un
  // Check details are only accepted from the public check projection, not committed evidence.
  const check=record(result.check);for(const key of ['success','roll','total','dc','difficulty']){const value=scalar(check[key]);if(value!==null)checks.push(`${human(key)}: ${value}`);}
  const chance=record(check.chance);if(typeof chance.numerator==='number'&&typeof chance.denominator==='number'&&chance.denominator>0)checks.push(`Disclosed chance: ${chance.numerator}/${chance.denominator}`);const obstacle=record(result.obstacle);for(const key of ['outcome','consequence']){const value=scalar(obstacle[key]);if(value!==null)facts.push(`${human(key)}: ${value}`);}
+ if(action==='SCENE_ACTION'){const scene=record(result.scene);for(const key of ['outcome','consequence']){const value=scalar(scene[key]);if(value!==null)facts.push(`${human(key)}: ${value}`);}if(Array.isArray(scene.newClues))for(const clue of scene.newClues)if(typeof clue==='string')journal.push('Evidence discovered: '+clue);}
  if(action==='NPC_CHOICE'){costs.push('No Turns or resources spent.');if(typeof result.consequence==='string')facts.push(result.consequence);if(result.memory)facts.push('Authored NPC memory recorded.');}
  if(action==='QUEST_COMMAND')journal.push(`Quest state: ${scalar(result.lifecycle)??'saved; open Journal for the current objective'}.`);
  if(action==='JOURNAL_NOTE')journal.push('Personal note saved. It does not establish a quest fact.');
