@@ -1,0 +1,80 @@
+{
+  "milestone": "DM01",
+  "status": "IMPLEMENTED_AND_LOCALLY_VERIFIED",
+  "observed_local_date": "2026-10-30 America/Chicago",
+  "base_pr": 73,
+  "base_remote_commit": "e66071759f8a59b3c692454fead7809909f9d1ee",
+  "approved_persona_pr": 74,
+  "approved_persona_remote_commit": "009c9f648fd4c386c89928b9d871e17b583964f2",
+  "persona_version": "1.0.0",
+  "visual_manifest": "02412da81b23a65b4c887c8cc36206983014bb29c9e43be6b5c51419adb8e6d7",
+  "checks": {
+    "unit_and_client": {
+      "passed": 292,
+      "failed": 0,
+      "includes_dm_interface_tests": 20
+    },
+    "focused_final_client": {
+      "passed": 118,
+      "failed": 0,
+      "includes_ascension_receipt_preservation": true
+    },
+    "database_integration": {
+      "passed": 31,
+      "failed": 0,
+      "files": [
+        "noncombat-integration.test.ts",
+        "shared-rules-integration.test.ts",
+        "quests-integration.test.ts"
+      ],
+      "database": "disposable realms_test on a private Unix socket"
+    },
+    "persona_contract": {
+      "passed": 19,
+      "failed": 0
+    },
+    "browser": {
+      "cases": 542,
+      "failures": 0,
+      "sources_and_fixtures": 94,
+      "report": "browser-contracts.json",
+      "pixel_approval": false,
+      "physical_assistive_device_test": false
+    },
+    "theme": {
+      "contrast_pairs": 55,
+      "minimum_text_contrast": 4.79
+    },
+    "edge_tests": {
+      "passed": 8,
+      "skipped": 3,
+      "failed": 0
+    },
+    "typecheck": "passed",
+    "build": "passed",
+    "documentation": "passed",
+    "canon_and_registry": "passed",
+    "diff_whitespace": "passed"
+  },
+  "verified_player_workflows": [
+    "First login and discovered build selection by click",
+    "Command-only noncombat with free disambiguation and saved check/cost/result",
+    "Command-only Journal field editing and note submission",
+    "Click/command switching, unsent draft and expanded-receipt preservation across refresh",
+    "Attributed DM/NPC/party/fact/warning channel fixture and reading order"
+  ],
+  "github_ci": "Not yet observed for the final published candidate; inspect PR checks separately.",
+  "boundaries": [
+    "Implementation branch, not merged main",
+    "No production deployment, migration or content activation",
+    "Live NPC dialogue, party chat transport and built-in voice transcription are separate providers",
+    "Narration preferences and transcript are session-local",
+    "Structured action-specific details remain in their existing panels and logs"
+  ],
+  "corrections_verified": [
+    "Turn-reserve heading order",
+    "Ascension receipt survives old-run context reset",
+    "Straightforward button wraps at 200% text on 320px",
+    "DM narration in receipts has its own visible and accessible label"
+  ]
+}

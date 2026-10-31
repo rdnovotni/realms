@@ -194,3 +194,5 @@ M00 reconciles these routes onto current main without adding an API family. See 
 - `POST /api/v1/journal/notes` — `JOURNAL_NOTE` envelope and 1–1,500 character text; append-only account memory.
 
 See [M04 quest ownership, validation and lifetime rules](quests-journal.md). These routes require compatible migration 050; writes require separately enabled `quests.journal`.
+
+DM01 adds the optional public `failureCosts` block to noncombat resolution results alongside the existing attempt costs. It exposes charged resource/Turn/world-time costs, never hidden check evidence. No new endpoint or migration is introduced. See [the DM interface contract](dm-interface.md).

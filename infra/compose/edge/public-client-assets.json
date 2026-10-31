@@ -22,6 +22,8 @@
   "/assets/combat-preparation.js",
   "/assets/combat-tools.js",
   "/assets/consumption.js",
+  "/assets/dm-model.js",
+  "/assets/dm-shell.js",
   "/assets/equipment-drag.js",
   "/assets/equipment-picker.js",
   "/assets/equipment-presentation.js",

@@ -50,3 +50,9 @@ M02 adds the [guided content production Studio](m02-content-studio.md): typed or
 ## M04 source increment
 
 Typed quest runtime, authoritative source/principal claims, audited rewards, scoped hints/rumors, bounded contracts and Journal UI are implemented on M03's verified tree. See [M04 acceptance and limits](quests-journal.md). M01 matrices are historical checkpoints. This increment is not evidence of deployment, content readiness or activation; M02/M03 PR dependencies and FB-006 remain open until separately reconciled. New `quests.journal` gate defaults disabled.
+
+## DM01 interface shell
+
+The DM-first Folio shell provides a persistent transcript/input context, explicit narrative/NPC/party/fact/warning/error channels, deterministic visible-choice commands, free clarification, known-destination mentions, expandable saved/unconfirmed action receipts and four text-density modes. Clicks and typed actions share GameSession and the existing authoritative endpoints. Ascension preserves its just-confirmed transition receipt after the old run context clears. Noncombat public results additionally disclose charged failure costs.
+
+See the [DM01 contract and task evidence](dm-interface.md) and [browser proof](screenshots/dm01/README.md). This is an implementation branch on the unmerged M04 plus DM00 stack, not evidence of a main merge or deployment. The shell supports attributed NPC/party presentation and retained local conversation context; live dialogue/chat providers, integrated voice transcription and account-synced narration preferences are separate work. No migration, feature activation, production content or deployment occurs here.

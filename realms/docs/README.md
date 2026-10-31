@@ -87,3 +87,5 @@ Original art and asset provenance: [client art](../client/art/README.md). Curren
 - [Tactical combat expansion and player workflows](combat-completion.md)
 
 - [Validated quests, rewards, rumors and Journal](quests-journal.md)
+
+- [DM-first interface and continuous presentation (DM01)](dm-interface.md)
