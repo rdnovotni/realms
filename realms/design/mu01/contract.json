@@ -1,0 +1,36 @@
+{
+  "version": "1.0.0",
+  "milestone": "MU01",
+  "date": "2026-10-31",
+  "sourceCatalogSha256": "bbb101b37b74f0e85668e18233bd256c18546b14f662c790e574bfba5ba3b18b",
+  "systems": [
+    16,
+    18,
+    23,
+    34
+  ],
+  "tasks": {
+    "MU-011": "IMPLEMENTED_SYNTHETIC_CLIENT_SLICE",
+    "MU-012": "IMPLEMENTED_SYNTHETIC_CLIENT_SLICE",
+    "MU-013": "IMPLEMENTED_SYNTHETIC_CLIENT_SLICE",
+    "MU-014": "IMPLEMENTED_SYNTHETIC_CLIENT_SLICE",
+    "MU-015": "IMPLEMENTED_SYNTHETIC_CLIENT_SLICE",
+    "MU-016": "IMPLEMENTED_SYNTHETIC_CLIENT_SLICE",
+    "MU-017": "IMPLEMENTED_SYNTHETIC_CLIENT_SLICE",
+    "MU-018": "IMPLEMENTED_SYNTHETIC_CLIENT_SLICE",
+    "MU-019": "IMPLEMENTED_SYNTHETIC_CLIENT_SLICE",
+    "MU-020": "IMPLEMENTED_SYNTHETIC_CLIENT_SLICE"
+  },
+  "migration": null,
+  "productionActivation": false,
+  "pendingReleaseChecks": [
+    "Human screen-reader listening review",
+    "Integrate open M06 ancestry onto tested current main"
+  ],
+  "excludedAuthority": [
+    "Physical travel mutation",
+    "General multiplayer room occupancy",
+    "Offline or cached game authority",
+    "Account-synced preferences"
+  ]
+}

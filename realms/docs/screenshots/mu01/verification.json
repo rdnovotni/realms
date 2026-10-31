@@ -1,0 +1,81 @@
+{
+  "milestone": "MU01",
+  "date": "2026-10-31",
+  "codeFingerprintSha256": "9cd1cc44551286a1b669d40351d5accecc197d299045c7097c2eecbbd6303e22",
+  "localBase": "0f13a44f0a80f1fcc3b43cefd49dddea55b9be06",
+  "remoteBase": {
+    "branch": "feature/m06-scenes-investigation",
+    "sha": "e106360763b39ea4e4172d6397080e51aca2ffaa",
+    "pullRequest": 77,
+    "state": "OPEN"
+  },
+  "migrationChanges": false,
+  "productionActivation": false,
+  "gates": {
+    "unitClient": {
+      "passed": 313,
+      "failed": 0,
+      "exitCode": 0
+    },
+    "integration": {
+      "passed": 476,
+      "failed": 0,
+      "cancelled": 0,
+      "note": "The Node runner printed its complete successful summary; the local npm wrapper later reported termination (143). Exact candidate GitHub CI repeats the full command."
+    },
+    "runtimeWorkers": {
+      "passed": 10,
+      "failed": 0,
+      "exitCode": 0
+    },
+    "infrastructure": {
+      "passed": 202,
+      "skipped": 10,
+      "failed": 0,
+      "exitCode": 0
+    },
+    "build": true,
+    "typecheck": true,
+    "documentation": true,
+    "content": true,
+    "registry": true,
+    "style": {
+      "contrastPairs": 55,
+      "minimumRatio": 4.79
+    },
+    "browser": {
+      "cases": 734,
+      "failed": 0,
+      "sourceFingerprintSha256": "c6a0db8cfc52ca45dcb87035f13028e36e2a912b6075eb66b4917df4b15cec7b"
+    }
+  },
+  "browserAcceptance": [
+    "keyboard-only archive reasoning route",
+    "discovered exit to office",
+    "authored NPC greeting preview and confirmation",
+    "GUI escorted-copy alternative",
+    "command recall and unfinished draft restoration",
+    "typing undo",
+    "unknown input preservation",
+    "local alias",
+    "clickable known-object mention",
+    "visible command completion",
+    "authenticated owner/run resume with unchanged receipt count",
+    "fresh numbered-choice requirement after resume",
+    "native browser typing undo preserved",
+    "authentication-expiry privacy regression"
+  ],
+  "limitations": [
+    "Synthetic contact-scene navigation, not physical world travel",
+    "Shared encounter party only; general room occupancy not supplied",
+    "Human screen-reader listening review remains a release check",
+    "Open dependency stack requires integration onto tested main"
+  ],
+  "localLogSha256": {
+    "integration": "bfed7bd5a012cbcb3adae9b708e1d42d9efe873d897016a9a594485a00537f96",
+    "runtime": "e282d5a658c35db79c3523de2f44ffd6911174f5acb8db762db897481dd2703a",
+    "unit-checkpoint": "7e7ed7b51ddbb1b58704e124ae1b2608a6f91e48bdb16494c1478b8464cf6dd8",
+    "infra": "c92814bf2f58b9d6ef1b84f35df1923be098dd153f34e94977cc8890c48866b5",
+    "unit-final": "e23d93cb10dae61580da0ce04e0a6499a0c0871c136027ca68eab84fa8460e36"
+  }
+}

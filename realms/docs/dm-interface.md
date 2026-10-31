@@ -21,7 +21,7 @@ The shell is a first command interface, not an unrestricted language interpreter
 
 Channels use visible accessible labels and distinct type/border treatments: Dungeon Master, attributed NPC speech, Party chat, You, Mechanical facts, Available choices, Warning, System error. NPC speech remains an attributed claim rather than a mechanical fact. The `dm-shell` synthetic visual fixture demonstrates the transitions with the same input context. It is not a live NPC or multiplayer chat service. Actual System 34 conversation rules and multiplayer messaging remain separate feature integrations; `say` never pretends to send a message where those services are unavailable.
 
-`DmTranscript.focus` retains the local target/conversation independently from channels and input draft. Changes of signed-in run/account clear that scope. No transcript or input is stored in local storage, sent to a model, or retained after sign-out. This session log holds the latest 200 messages; the server Journal and action histories remain the durable record. Narration preferences are explicitly session-scoped in this milestone; account synchronization is future work.
+`DmTranscript.focus` retains the local target/conversation independently from channels and input draft. Changes of signed-in run/account clear that scope. MU01 adds validated tab-local session storage for resumable transcript/input; nothing is sent to a model or retained after sign-out. See [MUD client](mud-client.md). This session log holds the latest 200 messages; the server Journal and action histories remain the durable record. Narration preferences are explicitly session-scoped in this milestone; account synchronization is future work.
 
 ## Consequential results and receipts
 
