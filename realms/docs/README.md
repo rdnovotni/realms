@@ -95,3 +95,5 @@ Original art and asset provenance: [client art](../client/art/README.md). Curren
 [M06 scenes and investigation](scene-interactions.md) — objects, clues, local awareness, traps and fail-forward routes.
 
 - [MU01 playable MUD client and resume contract](mud-client.md)
+
+- [DM02 intent arbitration and rules explanations](dm-intent-arbitration.md)
