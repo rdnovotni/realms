@@ -6,6 +6,7 @@ const root=document.getElementById('app');if(!root)throw new Error('Missing clie
 const session=new GameSession();let screen:Screen='adventure',previousActive:string|null=null,previousConnected=false,previousRun:string|null=null;
 const draw=()=>{
  if(session.snapshot&&(!previousConnected||session.snapshot.game.run.runId!==previousRun)&&session.snapshot.progression.build.mode==='UNCONFIGURED')screen='character';
+ if(session.snapshot&&!previousConnected&&session.snapshot.progression.build.mode!=='UNCONFIGURED'&&['adventure','character','pack','combat','daily','consumption','noncombat','journal','npcs','scenes'].includes(session.dm.scene))screen=session.dm.scene as Screen;
  previousRun=session.snapshot?.game.run.runId??null;
  previousConnected=!!session.snapshot;
  const active=session.snapshot?.game.activeEncounter;

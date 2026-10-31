@@ -210,3 +210,7 @@ See [NPC contract](npc-dialogue.md) for exact fields, bounds and ownership.
 `GET /api/v1/scenes` with optional `sceneId=<discovered-id>` returns a revision-pinned discovered scene list, public object/action previews, discovered clues, independent observer awareness and saved decision history. Hidden definitions, seeds and undetected mechanisms are excluded.
 
 `POST /api/v1/scenes/actions` requires the action envelope (`actionType: SCENE_ACTION`), `sceneId`, `objectId`, authored `actionId`, and `confirm: true`. A key/tool requires an owned `itemInstanceId`; only a consumable approach additionally accepts and requires `confirmItem: true`. Unknown fields and client consequences are rejected. Only manual write-authorized intents may settle a scene. Stale revisions conflict; identical retries replay the committed receipt. Quest/NPC requirements accept `kind: SCENE` with terminal `SOLVED`, `BYPASSED`, or `FAILED_FORWARD` outcomes. See [scene contract](scene-interactions.md).
+
+## MU01 text client read projections
+
+`GET /api/v1/client/state` adds `playerStatus` with nullable assessed `vitals: {health,mana,maxHealth,maxMana}`, owned known `resources: [{name,amount,capacity}]`, `conditions: string[]` and current-run `companions: string[]`. Active tactical views remain authoritative for live battle vitals. Selected `GET /api/v1/scenes` projections add public `locationId`, discovered `exits: [{id,label,sceneId,name}]` and available discovered `contacts: [{id,name}]`. These reads never mutate location, revision, Turns or outcome. See [MU01](mud-client.md).

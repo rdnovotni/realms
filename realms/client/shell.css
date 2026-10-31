@@ -174,3 +174,27 @@
 .npc-page .panel {margin-block:1rem;}
 .npc-history p {white-space:pre-wrap;}
 @media (prefers-reduced-motion:reduce) {.npc-page * {scroll-behavior:auto;}}
+/* MU01: the same legal controls remain available below each text presentation. */
+.mud-status,.mud-place { border-block-end: 1px solid var(--folio-border-interactive); padding-block: .4rem; }
+.mud-status h2,.mud-place h2 { font-size: 1rem; margin: .25rem 0; }
+.mud-status p,.mud-place p { margin: .25rem 0; font-size: .875rem; white-space: pre-line; overflow-wrap: anywhere; }
+.mud-place p { max-height: 6rem; overflow: auto; }
+.dm-entry>small { display: block; color: var(--folio-text-muted); }
+.dm-workspace[data-mud-preset=text],.dm-workspace[data-mud-preset=minimal],.dm-workspace[data-mud-preset=retro] { grid-template-columns: minmax(0,1fr); max-width: 76rem; }
+.dm-workspace:not([data-mud-preset=hybrid]) .dm-narrative { position: static; max-height: none; }
+.dm-workspace[data-mud-preset=text] .dm-transcript,.dm-workspace[data-mud-preset=retro] .dm-transcript { min-height: 20rem; max-height: 48dvh; }
+.dm-workspace[data-mud-preset=minimal] .dm-entry { padding-block: .25rem; margin-block: .25rem; }
+.dm-workspace[data-mud-preset=minimal] .dm-transcript { max-height: 40dvh; }
+.dm-workspace[data-mud-preset=retro] .dm-narrative { font-family: ui-monospace,monospace; border-radius: 0; box-shadow: none; }
+.dm-workspace[data-mud-preset=retro] .dm-entry { border-radius: 0; }
+
+.dm-narrative { max-height: none; position: static; }
+.dm-entry button { min-height: 44px; max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
+.dm-followups button { min-width: 0; max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
+.mud-place { max-height: 10rem; overflow: auto; }
+.mud-place p { max-height: none; overflow: visible; }
+.dm-command { position: static; grid-template-columns: minmax(0,1fr) auto auto; align-items: end; }
+.dm-command .help { grid-column: 1 / -1; }
+.dm-workspace[data-mud-preset=retro] .dm-narrative :is(h1,h2,button,input,select) { font-family: inherit; }
+@media (max-width: 600px) { .dm-command { grid-template-columns: minmax(0,1fr) minmax(0,1fr); } .dm-command label { grid-column: 1 / -1; } }
+.dm-command button { min-width: 0; max-width: 100%; white-space: normal; overflow-wrap: anywhere; }

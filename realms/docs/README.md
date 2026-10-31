@@ -93,3 +93,5 @@ Original art and asset provenance: [client art](../client/art/README.md). Curren
 - [NPCs, authored dialogue and bounded freeform](npc-dialogue.md)
 
 [M06 scenes and investigation](scene-interactions.md) — objects, clues, local awareness, traps and fail-forward routes.
+
+- [MU01 playable MUD client and resume contract](mud-client.md)
