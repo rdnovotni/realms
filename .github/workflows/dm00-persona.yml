@@ -1,0 +1,26 @@
+name: DM00 persona candidate
+on:
+  push:
+    paths:
+      - 'realms/design/dm00/**'
+      - 'realms/design/source-catalog.json.gz'
+      - 'infra/scripts/validate_dm00.py'
+      - 'infra/tests/test_dm00.py'
+      - '.github/workflows/dm00-persona.yml'
+  pull_request:
+    paths:
+      - 'realms/design/dm00/**'
+      - 'realms/design/source-catalog.json.gz'
+      - 'infra/scripts/validate_dm00.py'
+      - 'infra/tests/test_dm00.py'
+      - '.github/workflows/dm00-persona.yml'
+permissions:
+  contents: read
+jobs:
+  review-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v6
+      - run: python3 infra/scripts/validate_dm00.py
+      - run: python3 -m unittest discover -s infra/tests -p test_dm00.py
