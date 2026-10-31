@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "date": "2026-10-31",
+  "synthetic": true,
+  "migrations": 51,
+  "immutableChecksumRerun": true,
+  "npcHistoryRestored": true,
+  "exactReceiptReplay": true,
+  "backupSha256": "f01248577e6b9bc58ca52acad744836794a0b6858482d026e6d2b07a0086f10b",
+  "productionTouched": false
+}

@@ -161,3 +161,16 @@
 
 .dm-prose { font-style: italic; }
 .dm-channel-facts .dm-prose { margin-top: var(--folio-space-2); padding-top: var(--folio-space-2); border-top: 1px dotted var(--folio-border-interactive); }
+
+/* Authored contact scenes share the Folio's focus, typography and theme tokens. */
+.npc-page {min-width:0;overflow-wrap:anywhere;}
+.npc-contacts {display:flex;flex-wrap:wrap;gap:.5rem;margin-block:1rem;}
+.npc-identity {position:relative;}
+.npc-portrait {display:block;font-size:2rem;}
+.npc-speech {margin:1rem 0;padding:1rem;border-inline-start:3px solid var(--accent);white-space:pre-wrap;}
+.npc-choice,.npc-history {padding-block:.8rem;border-block-end:1px solid var(--line);overflow-wrap:anywhere;}
+.npc-page textarea {display:block;width:100%;box-sizing:border-box;max-width:100%;}
+.npc-page button {max-width:100%;white-space:normal;overflow-wrap:anywhere;}
+.npc-page .panel {margin-block:1rem;}
+.npc-history p {white-space:pre-wrap;}
+@media (prefers-reduced-motion:reduce) {.npc-page * {scroll-behavior:auto;}}

@@ -1,0 +1,40 @@
+{
+  "version": "1.0.0",
+  "milestone": "M05",
+  "date": "2026-10-31",
+  "sourceOrder": "M01 canon-lock; owning Systems 16/21/23/29/34/44; approved DM00 for framing",
+  "sourceCatalogSha256": "bbb101b37b74f0e85668e18233bd256c18546b14f662c790e574bfba5ba3b18b",
+  "tasks": {
+    "M05/FB-047": "IMPLEMENTED_SYNTHETIC_SLICE",
+    "M05/FB-048": "IMPLEMENTED_SYNTHETIC_SLICE",
+    "M05/FB-049": "IMPLEMENTED_SYNTHETIC_SLICE",
+    "M05/FB-050": "IMPLEMENTED_SYNTHETIC_SLICE",
+    "M05/FB-051": "IMPLEMENTED_SYNTHETIC_SLICE",
+    "M05/FB-052": "IMPLEMENTED_SYNTHETIC_SLICE",
+    "M05/FB-053": "IMPLEMENTED_SYNTHETIC_SLICE",
+    "M05/FB-054": "IMPLEMENTED_SYNTHETIC_SLICE",
+    "M05/FB-055": "IMPLEMENTED_SYNTHETIC_SLICE"
+  },
+  "authority": {
+    "npc": "authored node, response, own structured memory",
+    "quests": "M04 principal/reward/Journal owner",
+    "checks": "M03/shared rules owner",
+    "economy": "no NPC v1 economy mutation",
+    "factions": "no NPC v1 faction standing mutation"
+  },
+  "accountMemoryExceptions": [],
+  "presence": "static discovered contact scene outside active encounters, with optional story prerequisites",
+  "interpretation": "deterministic exact authored alias fallback; proposal only",
+  "unimplementedBroaderProviders": [
+    "generative paraphrasing",
+    "System 18 timed schedules and physical movement",
+    "multiplayer group dialogue",
+    "relationship dimensions and legal/faction mutations"
+  ],
+  "integrationBase": "open DM01 PR #75, which includes open M04/M03/M02 dependencies and approved DM00",
+  "production": {
+    "deployed": false,
+    "contentAdopted": false,
+    "featureActivated": false
+  }
+}

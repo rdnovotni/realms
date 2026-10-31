@@ -1,0 +1,983 @@
+{
+  "engineVersion": "foundation-1",
+  "entities": [
+    {
+      "definition": {
+        "dependencies": [],
+        "name": "The hidden sluice route",
+        "public": {
+          "description": "A safe way through the marsh."
+        },
+        "secrets": {
+          "password": "never-reveal-secret"
+        }
+      },
+      "id": "lore.sluice",
+      "kind": "LORE",
+      "revision": 1,
+      "schemaVersion": 1
+    },
+    {
+      "definition": {
+        "dependencies": [],
+        "name": "Synthetic engineer",
+        "public": {}
+      },
+      "id": "class.engineer",
+      "kind": "CLASS",
+      "revision": 1,
+      "schemaVersion": 1
+    },
+    {
+      "definition": {
+        "dependencies": [
+          "class.engineer"
+        ],
+        "mechanics": {
+          "noncombatAbility": {
+            "classId": "class.engineer",
+            "minimumNativeLevel": 1,
+            "version": 1
+          }
+        },
+        "name": "Unseal",
+        "public": {}
+      },
+      "id": "ability.unseal",
+      "kind": "ABILITY",
+      "revision": 1,
+      "schemaVersion": 1
+    },
+    {
+      "definition": {
+        "dependencies": [],
+        "mechanics": {
+          "inventory": {
+            "category": "MATERIAL",
+            "storageMode": "STACK",
+            "version": 1
+          }
+        },
+        "name": "Wedge",
+        "public": {}
+      },
+      "id": "item.wedge",
+      "kind": "ITEM",
+      "revision": 1,
+      "schemaVersion": 1
+    },
+    {
+      "definition": {
+        "dependencies": [],
+        "mechanics": {
+          "skill": {
+            "access": "DISCOVERED",
+            "defaultAttribute": "intelligence",
+            "family": "KNOWLEDGE",
+            "maximumRank": 5,
+            "version": 1
+          }
+        },
+        "name": "Mechanisms",
+        "public": {}
+      },
+      "id": "skill.mechanisms",
+      "kind": "SKILL",
+      "revision": 1,
+      "schemaVersion": 1
+    },
+    {
+      "definition": {
+        "dependencies": [],
+        "name": "Keeper",
+        "public": {}
+      },
+      "id": "npc.keeper",
+      "kind": "NPC",
+      "revision": 1,
+      "schemaVersion": 1
+    },
+    {
+      "definition": {
+        "dependencies": [],
+        "mechanics": {
+          "noncombatApproach": {
+            "obstacleId": "activity.sluice",
+            "version": 1
+          },
+          "sharedAction": {
+            "check": {
+              "advantage": false,
+              "attribute": "attribute.strength",
+              "attributeBaseline": 10,
+              "attributeDivisor": 2,
+              "criticalFailureMargin": -8,
+              "difficulty": 10,
+              "disadvantage": false,
+              "exceptionalMargin": 5,
+              "minimumRank": 0,
+              "mode": "ACTIVE",
+              "naturalShift": false,
+              "partialMargin": -2,
+              "possibility": "AUTOMATIC",
+              "rankBonuses": [
+                0,
+                2,
+                4,
+                6,
+                8,
+                10
+              ],
+              "skill": null,
+              "version": 2,
+              "visibility": "KNOWN"
+            },
+            "costs": {
+              "gold": "0",
+              "resources": [],
+              "rest": "NONE",
+              "turns": 1,
+              "worldTime": 2
+            },
+            "domain": "INTERACTION",
+            "effects": [],
+            "prerequisite": {
+              "key": "level",
+              "op": "FACT",
+              "test": "GTE",
+              "value": 1
+            },
+            "remove": null,
+            "retry": "NEVER",
+            "retryTime": 0,
+            "rewards": [],
+            "version": 1
+          }
+        },
+        "name": "Raise the counterweight",
+        "public": {
+          "description": "Synthetic M03 approach"
+        }
+      },
+      "id": "activity.lever",
+      "kind": "ACTIVITY",
+      "revision": 1,
+      "schemaVersion": 1
+    },
+    {
+      "definition": {
+        "dependencies": [],
+        "mechanics": {
+          "noncombatApproach": {
+            "obstacleId": "activity.sluice",
+            "version": 1
+          },
+          "sharedAction": {
+            "check": {
+              "advantage": false,
+              "attribute": "attribute.strength",
+              "attributeBaseline": 10,
+              "attributeDivisor": 2,
+              "criticalFailureMargin": -8,
+              "difficulty": 10,
+              "disadvantage": false,
+              "exceptionalMargin": 5,
+              "minimumRank": 0,
+              "mode": "ACTIVE",
+              "naturalShift": false,
+              "partialMargin": -2,
+              "possibility": "AUTOMATIC",
+              "rankBonuses": [
+                0,
+                2,
+                4,
+                6,
+                8,
+                10
+              ],
+              "skill": null,
+              "version": 2,
+              "visibility": "KNOWN"
+            },
+            "costs": {
+              "gold": "0",
+              "resources": [],
+              "rest": "NONE",
+              "turns": 1,
+              "worldTime": 2
+            },
+            "domain": "INTERACTION",
+            "effects": [],
+            "prerequisite": {
+              "key": "level",
+              "op": "FACT",
+              "test": "GTE",
+              "value": 1
+            },
+            "remove": null,
+            "retry": "NEVER",
+            "retryTime": 0,
+            "rewards": [],
+            "version": 1
+          }
+        },
+        "name": "Unseal with magic",
+        "public": {
+          "description": "Synthetic M03 approach"
+        }
+      },
+      "id": "activity.magic",
+      "kind": "ACTIVITY",
+      "revision": 1,
+      "schemaVersion": 1
+    },
+    {
+      "definition": {
+        "dependencies": [],
+        "mechanics": {
+          "noncombatApproach": {
+            "obstacleId": "activity.sluice",
+            "version": 1
+          },
+          "sharedAction": {
+            "check": {
+              "advantage": false,
+              "attribute": "attribute.strength",
+              "attributeBaseline": 10,
+              "attributeDivisor": 2,
+              "criticalFailureMargin": -8,
+              "difficulty": 10,
+              "disadvantage": false,
+              "exceptionalMargin": 5,
+              "minimumRank": 0,
+              "mode": "PASSIVE",
+              "naturalShift": false,
+              "partialMargin": -2,
+              "possibility": "AUTOMATIC",
+              "rankBonuses": [
+                0,
+                2,
+                4,
+                6,
+                8,
+                10
+              ],
+              "skill": null,
+              "version": 2,
+              "visibility": "KNOWN"
+            },
+            "costs": {
+              "gold": "0",
+              "resources": [],
+              "rest": "NONE",
+              "turns": 1,
+              "worldTime": 2
+            },
+            "domain": "INTERACTION",
+            "effects": [],
+            "prerequisite": {
+              "key": "level",
+              "op": "FACT",
+              "test": "GTE",
+              "value": 1
+            },
+            "remove": null,
+            "retry": "NEVER",
+            "retryTime": 0,
+            "rewards": [],
+            "version": 1
+          }
+        },
+        "name": "Study the mechanism",
+        "public": {
+          "description": "Synthetic M03 approach"
+        }
+      },
+      "id": "activity.observe",
+      "kind": "ACTIVITY",
+      "revision": 1,
+      "schemaVersion": 1
+    },
+    {
+      "definition": {
+        "dependencies": [],
+        "mechanics": {
+          "noncombatApproach": {
+            "obstacleId": "activity.sluice",
+            "version": 1
+          },
+          "sharedAction": {
+            "check": {
+              "advantage": false,
+              "attribute": "attribute.strength",
+              "attributeBaseline": 10,
+              "attributeDivisor": 2,
+              "criticalFailureMargin": -8,
+              "difficulty": 10,
+              "disadvantage": false,
+              "exceptionalMargin": 5,
+              "minimumRank": 0,
+              "mode": "ACTIVE",
+              "naturalShift": false,
+              "partialMargin": -2,
+              "possibility": "ROLL",
+              "rankBonuses": [
+                0,
+                2,
+                4,
+                6,
+                8,
+                10
+              ],
+              "skill": null,
+              "version": 2,
+              "visibility": "KNOWN"
+            },
+            "costs": {
+              "gold": "0",
+              "resources": [],
+              "rest": "NONE",
+              "turns": 1,
+              "worldTime": 2
+            },
+            "domain": "INTERACTION",
+            "effects": [],
+            "prerequisite": {
+              "key": "level",
+              "op": "FACT",
+              "test": "GTE",
+              "value": 1
+            },
+            "remove": null,
+            "retry": "NEVER",
+            "retryTime": 0,
+            "rewards": [],
+            "version": 1
+          }
+        },
+        "name": "Distract the keeper",
+        "public": {
+          "description": "Synthetic M03 approach"
+        }
+      },
+      "id": "activity.contest",
+      "kind": "ACTIVITY",
+      "revision": 1,
+      "schemaVersion": 1
+    },
+    {
+      "definition": {
+        "dependencies": [],
+        "mechanics": {
+          "noncombatApproach": {
+            "obstacleId": "activity.sluice",
+            "version": 1
+          },
+          "sharedAction": {
+            "check": {
+              "advantage": false,
+              "attribute": "attribute.strength",
+              "attributeBaseline": 10,
+              "attributeDivisor": 2,
+              "criticalFailureMargin": -8,
+              "difficulty": 10,
+              "disadvantage": false,
+              "exceptionalMargin": 5,
+              "minimumRank": 0,
+              "mode": "ACTIVE",
+              "naturalShift": false,
+              "partialMargin": -2,
+              "possibility": "AUTOMATIC",
+              "rankBonuses": [
+                0,
+                2,
+                4,
+                6,
+                8,
+                10
+              ],
+              "skill": null,
+              "version": 2,
+              "visibility": "KNOWN"
+            },
+            "costs": {
+              "gold": "0",
+              "resources": [],
+              "rest": "NONE",
+              "turns": 1,
+              "worldTime": 2
+            },
+            "domain": "INTERACTION",
+            "effects": [],
+            "prerequisite": {
+              "key": "level",
+              "op": "FACT",
+              "test": "GTE",
+              "value": 1
+            },
+            "remove": null,
+            "retry": "NEVER",
+            "retryTime": 0,
+            "rewards": [],
+            "version": 1
+          }
+        },
+        "name": "Jam the gate with a wedge",
+        "public": {
+          "description": "Synthetic M03 approach"
+        }
+      },
+      "id": "activity.tool",
+      "kind": "ACTIVITY",
+      "revision": 1,
+      "schemaVersion": 1
+    },
+    {
+      "definition": {
+        "dependencies": [
+          "skill.mechanisms"
+        ],
+        "mechanics": {
+          "noncombatApproach": {
+            "obstacleId": "activity.sluice",
+            "version": 1
+          },
+          "sharedAction": {
+            "check": {
+              "advantage": false,
+              "attribute": "attribute.strength",
+              "attributeBaseline": 10,
+              "attributeDivisor": 2,
+              "criticalFailureMargin": -8,
+              "difficulty": 10,
+              "disadvantage": false,
+              "exceptionalMargin": 5,
+              "minimumRank": 1,
+              "mode": "ACTIVE",
+              "naturalShift": false,
+              "partialMargin": -2,
+              "possibility": "ROLL",
+              "rankBonuses": [
+                0,
+                2,
+                4,
+                6,
+                8,
+                10
+              ],
+              "skill": "skill.skill.mechanisms",
+              "version": 2,
+              "visibility": "KNOWN"
+            },
+            "costs": {
+              "gold": "0",
+              "resources": [],
+              "rest": "NONE",
+              "turns": 1,
+              "worldTime": 2
+            },
+            "domain": "INTERACTION",
+            "effects": [],
+            "prerequisite": {
+              "key": "level",
+              "op": "FACT",
+              "test": "GTE",
+              "value": 1
+            },
+            "remove": null,
+            "retry": "NEVER",
+            "retryTime": 0,
+            "rewards": [],
+            "version": 1
+          }
+        },
+        "name": "Pick the release",
+        "public": {
+          "description": "Synthetic M03 approach"
+        }
+      },
+      "id": "activity.skill",
+      "kind": "ACTIVITY",
+      "revision": 1,
+      "schemaVersion": 1
+    },
+    {
+      "definition": {
+        "dependencies": [
+          "activity.lever",
+          "activity.magic",
+          "activity.observe",
+          "activity.contest",
+          "activity.tool",
+          "activity.skill",
+          "lore.sluice",
+          "ability.unseal",
+          "class.engineer",
+          "item.wedge",
+          "npc.keeper"
+        ],
+        "mechanics": {
+          "noncombatObstacle": {
+            "rewards": [
+              {
+                "id": "lore.sluice",
+                "kind": "KNOWLEDGE",
+                "quantity": 1
+              }
+            ],
+            "steps": [
+              {
+                "approaches": [
+                  {
+                    "ability": null,
+                    "actionId": "activity.lever",
+                    "assistance": [],
+                    "contest": null,
+                    "id": "lever",
+                    "intent": "INTERACT",
+                    "itemId": null
+                  },
+                  {
+                    "ability": {
+                      "classId": "class.engineer",
+                      "id": "ability.unseal",
+                      "minimumLevel": 1
+                    },
+                    "actionId": "activity.magic",
+                    "assistance": [],
+                    "contest": null,
+                    "id": "magic",
+                    "intent": "ABILITY_USE",
+                    "itemId": null
+                  },
+                  {
+                    "ability": null,
+                    "actionId": "activity.observe",
+                    "assistance": [],
+                    "contest": null,
+                    "id": "observe",
+                    "intent": "OBSERVE",
+                    "itemId": null
+                  },
+                  {
+                    "ability": null,
+                    "actionId": "activity.contest",
+                    "assistance": [],
+                    "contest": {
+                      "actor": {
+                        "attributeScore": 10,
+                        "canAttempt": true,
+                        "modifiers": [],
+                        "rank": 0
+                      },
+                      "check": {
+                        "advantage": false,
+                        "attribute": "attribute.strength",
+                        "attributeBaseline": 10,
+                        "attributeDivisor": 2,
+                        "criticalFailureMargin": -8,
+                        "difficulty": 12,
+                        "disadvantage": false,
+                        "exceptionalMargin": 5,
+                        "minimumRank": 0,
+                        "mode": "ACTIVE",
+                        "naturalShift": false,
+                        "partialMargin": -2,
+                        "possibility": "ROLL",
+                        "rankBonuses": [
+                          0,
+                          2,
+                          4,
+                          6,
+                          8,
+                          10
+                        ],
+                        "skill": null,
+                        "version": 2,
+                        "visibility": "KNOWN"
+                      },
+                      "targetId": "npc.keeper"
+                    },
+                    "id": "contest",
+                    "intent": "CONTESTED_CHECK",
+                    "itemId": null
+                  },
+                  {
+                    "ability": null,
+                    "actionId": "activity.tool",
+                    "assistance": [],
+                    "contest": null,
+                    "id": "tool",
+                    "intent": "ITEM_USE",
+                    "itemId": "item.wedge"
+                  },
+                  {
+                    "ability": null,
+                    "actionId": "activity.skill",
+                    "assistance": [],
+                    "contest": null,
+                    "id": "skill",
+                    "intent": "SKILL_CHECK",
+                    "itemId": null
+                  }
+                ],
+                "failure": {
+                  "advance": true,
+                  "alert": 2,
+                  "costs": {
+                    "gold": "0",
+                    "resources": [],
+                    "rest": "NONE",
+                    "turns": 0,
+                    "worldTime": 0
+                  },
+                  "effects": [],
+                  "flag": "sluice.alerted",
+                  "text": "The keeper hears you. Take the longer reed path."
+                },
+                "id": "release",
+                "name": "Open the sluice"
+              }
+            ],
+            "version": 1
+          }
+        },
+        "name": "The old sluice gate",
+        "public": {
+          "description": "A gate separates you from the reed road."
+        }
+      },
+      "id": "activity.sluice",
+      "kind": "ACTIVITY",
+      "revision": 1,
+      "schemaVersion": 1
+    },
+    {
+      "definition": {
+        "dependencies": [
+          "activity.sluice",
+          "lore.sluice"
+        ],
+        "mechanics": {
+          "questRuntime": {
+            "availability": [],
+            "nodes": [
+              {
+                "edges": [
+                  {
+                    "consequence": "The keeper marks a safe route through the marsh.",
+                    "grade": "SUCCESS",
+                    "id": "investigate",
+                    "information": [
+                      {
+                        "credibility": "QUESTIONABLE",
+                        "id": "rumor.sluice",
+                        "kind": "RUMOR",
+                        "scope": "RUN",
+                        "source": "Keeper, over a borrowed ale",
+                        "text": "The keeper says the sluice hides a smuggling route."
+                      },
+                      {
+                        "credibility": "CORROBORATED",
+                        "id": "hint.reeds",
+                        "kind": "HINT",
+                        "scope": "ACCOUNT",
+                        "source": "Your investigation",
+                        "text": "The reeds hide a second way through."
+                      }
+                    ],
+                    "label": "Ask about the old sluice",
+                    "requires": [],
+                    "to": "gate"
+                  }
+                ],
+                "id": "lead",
+                "kind": "SCENE",
+                "name": "A rumor at the old sluice",
+                "optional": false,
+                "outcome": null
+              },
+              {
+                "edges": [
+                  {
+                    "consequence": "The keeper marks a safe route through the marsh.",
+                    "grade": "SUCCESS",
+                    "id": "report",
+                    "information": [],
+                    "label": "Report the open sluice",
+                    "requires": [
+                      {
+                        "id": "activity.sluice",
+                        "kind": "OBSTACLE",
+                        "outcome": "RESOLVED"
+                      }
+                    ],
+                    "to": "home"
+                  },
+                  {
+                    "consequence": "The keeper heard the mechanism. The town is safe, but the smugglers escaped.",
+                    "grade": "FAIL_FORWARD",
+                    "id": "reed",
+                    "information": [],
+                    "label": "Follow the reed path",
+                    "requires": [
+                      {
+                        "id": "activity.sluice",
+                        "kind": "OBSTACLE",
+                        "outcome": "FAILED_FORWARD"
+                      }
+                    ],
+                    "to": "mixed"
+                  }
+                ],
+                "id": "gate",
+                "kind": "OBJECTIVE",
+                "name": "Find a route through the marsh",
+                "optional": false,
+                "outcome": null
+              },
+              {
+                "edges": [],
+                "id": "home",
+                "kind": "OUTCOME",
+                "name": "A safe road",
+                "optional": false,
+                "outcome": "SUCCESS"
+              },
+              {
+                "edges": [],
+                "id": "mixed",
+                "kind": "OUTCOME",
+                "name": "A road with consequences",
+                "optional": false,
+                "outcome": "FAIL_FORWARD"
+              }
+            ],
+            "principalId": "outcome.marsh-road",
+            "repeat": null,
+            "rewards": [
+              {
+                "id": "lore.sluice",
+                "kind": "KNOWLEDGE",
+                "quantity": 1
+              }
+            ],
+            "start": "lead",
+            "version": 1
+          }
+        },
+        "name": "The Marsh Road",
+        "public": {
+          "description": "Find a safe road for the town."
+        },
+        "secrets": {
+          "truth": "do-not-disclose-world-truth"
+        }
+      },
+      "id": "quest.marsh-road",
+      "kind": "QUEST",
+      "revision": 1,
+      "schemaVersion": 1
+    },
+    {
+      "definition": {
+        "dependencies": [],
+        "name": "The sluice office",
+        "public": {
+          "description": "A small office beside the marsh crossing."
+        }
+      },
+      "id": "location.sluice-office",
+      "kind": "LOCATION",
+      "revision": 1,
+      "schemaVersion": 1
+    },
+    {
+      "definition": {
+        "dependencies": [],
+        "name": "Marsh wardens",
+        "public": {
+          "description": "The local crossing keepers."
+        }
+      },
+      "id": "faction.marsh-wardens",
+      "kind": "FACTION",
+      "revision": 1,
+      "schemaVersion": 1
+    },
+    {
+      "definition": {
+        "dependencies": [
+          "location.sluice-office",
+          "faction.marsh-wardens",
+          "quest.marsh-road",
+          "activity.sluice"
+        ],
+        "mechanics": {
+          "npcDialogue": {
+            "accountMemoryApproval": null,
+            "affiliations": [
+              "faction.marsh-wardens"
+            ],
+            "attributes": {
+              "background": "A local keeper charged with maintaining the marsh crossing.",
+              "boundaries": "Will not invent rewards, promise faction authority, or claim knowledge of earlier lives.",
+              "motives": "Keep the crossing safe.",
+              "personality": "Practical, patient and wry. Their humor is about maintenance, not a copy of the narrator.",
+              "values": "Useful work and honest reports."
+            },
+            "locationId": "location.sluice-office",
+            "nodes": [
+              {
+                "choices": [
+                  {
+                    "aliases": [
+                      "hello",
+                      "hi",
+                      "greetings",
+                      "tell me about yourself"
+                    ],
+                    "consequence": "The keeper remembers this conversation in the current life. No reward or quest outcome is granted.",
+                    "handoff": null,
+                    "id": "hello",
+                    "label": "Introduce yourself",
+                    "memory": {
+                      "id": "memory.hello",
+                      "scope": "RUN",
+                      "text": "The keeper and you discussed introduce yourself."
+                    },
+                    "requires": [],
+                    "response": "I keep the sluice. The sluice keeps finding reasons to require a keeper. I see no end to either arrangement.",
+                    "to": "greeting"
+                  },
+                  {
+                    "aliases": [
+                      "the road",
+                      "marsh road",
+                      "tell me about the road"
+                    ],
+                    "consequence": "The keeper remembers this conversation in the current life. No reward or quest outcome is granted.",
+                    "handoff": {
+                      "id": "quest.marsh-road",
+                      "kind": "QUEST"
+                    },
+                    "id": "road",
+                    "label": "Ask about the marsh road",
+                    "memory": {
+                      "id": "memory.road",
+                      "scope": "RUN",
+                      "text": "The keeper and you discussed ask about the marsh road."
+                    },
+                    "requires": [],
+                    "response": "The road is flooded. There is a lever by the gate; it has been waiting years for someone with more curiosity than sense.",
+                    "to": "greeting"
+                  },
+                  {
+                    "aliases": [
+                      "I opened the sluice",
+                      "the sluice is open"
+                    ],
+                    "consequence": "The keeper remembers this conversation in the current life. No reward or quest outcome is granted.",
+                    "handoff": {
+                      "id": "quest.marsh-road",
+                      "kind": "QUEST"
+                    },
+                    "id": "report",
+                    "label": "Report the open sluice",
+                    "memory": {
+                      "id": "memory.sluice",
+                      "scope": "RUN",
+                      "text": "You opened the sluice and told the keeper. The report is backed by your committed encounter."
+                    },
+                    "requires": [
+                      {
+                        "id": "activity.sluice",
+                        "kind": "OBSTACLE",
+                        "outcome": "RESOLVED"
+                      }
+                    ],
+                    "response": "You opened it. Good. I was beginning to think the lever was a purely decorative threat.",
+                    "to": "greeting"
+                  },
+                  {
+                    "aliases": [
+                      "reeds"
+                    ],
+                    "consequence": "The keeper remembers this conversation in the current life. No reward or quest outcome is granted.",
+                    "handoff": null,
+                    "id": "reeds",
+                    "label": "Report the broken mechanism",
+                    "memory": {
+                      "id": "memory.reeds",
+                      "scope": "RUN",
+                      "text": "The keeper knows the mechanism failed and you found another route."
+                    },
+                    "requires": [
+                      {
+                        "id": "activity.sluice",
+                        "kind": "OBSTACLE",
+                        "outcome": "FAILED_FORWARD"
+                      }
+                    ],
+                    "response": "The reeds will have to do. A road need not be elegant; it merely has to continue being underneath you.",
+                    "to": "greeting"
+                  },
+                  {
+                    "aliases": [
+                      "inspect sluice",
+                      "the road"
+                    ],
+                    "consequence": "The keeper remembers this conversation in the current life. No reward or quest outcome is granted.",
+                    "handoff": {
+                      "id": "activity.sluice",
+                      "kind": "OBSTACLE"
+                    },
+                    "id": "lever",
+                    "label": "Inspect the sluice approaches",
+                    "memory": {
+                      "id": "memory.lever",
+                      "scope": "RUN",
+                      "text": "The keeper and you discussed inspect the sluice approaches."
+                    },
+                    "requires": [],
+                    "response": "Look at the gate before touching anything. We tried the other order. It was educational.",
+                    "to": "greeting"
+                  }
+                ],
+                "id": "greeting",
+                "recall": [
+                  {
+                    "memoryId": "memory.sluice",
+                    "text": "Back again? The crossing is still open. For once, I am pleased to have nothing interesting to report."
+                  },
+                  {
+                    "memoryId": "memory.reeds",
+                    "text": "The reed path is holding. The mechanism is not. I have recorded both facts in the appropriate tone."
+                  }
+                ],
+                "text": "Mind the step. The floor is dry because the water has found more ambitious places to be."
+              }
+            ],
+            "presence": [],
+            "pronouns": "they/them",
+            "role": "Keeper of the marsh crossing",
+            "start": "greeting",
+            "version": 1
+          }
+        },
+        "name": "The Keeper",
+        "public": {
+          "description": "A practical keeper of an impractical crossing."
+        },
+        "secrets": {
+          "unrevealed": "never-send-this-secret-to-a-player"
+        }
+      },
+      "id": "npc.sluice-keeper",
+      "kind": "NPC",
+      "revision": 2,
+      "schemaVersion": 1
+    }
+  ],
+  "version": "authored-20261031T122129Z-194816f4"
+}

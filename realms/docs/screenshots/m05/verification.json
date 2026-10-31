@@ -1,0 +1,100 @@
+{
+  "version": 1,
+  "date": "2026-10-31",
+  "scope": "SYNTHETIC_LOCAL_CANDIDATE",
+  "runtime": {
+    "node": "24.21.0",
+    "postgres": "18.6",
+    "disposableMaxLocksPerTransaction": 512
+  },
+  "unitClient": {
+    "passed": 298,
+    "failed": 0
+  },
+  "fullIntegration": {
+    "passed": 460,
+    "failed": 0,
+    "durationMs": 646877.909936,
+    "historicalCombatQuestAndAscensionIncluded": true
+  },
+  "finalNpcIntegrityAndOperational": {
+    "passed": 19,
+    "failed": 0,
+    "includesNpcCases": 9,
+    "includesForgedAuthoredReceiptRejection": true,
+    "workerAndRuntimeRecoveryIncluded": true
+  },
+  "infrastructure": {
+    "tests": 212,
+    "passed": 202,
+    "skipped": 10,
+    "failed": 0
+  },
+  "studioWorkspace": {
+    "passed": 18,
+    "failed": 0
+  },
+  "personaContract": {
+    "passed": 19,
+    "failed": 0
+  },
+  "browser": {
+    "cases": 616,
+    "failed": 0,
+    "manifest": "f299c7bf11099ef296598037f251996b77e4e31b3717e261b3230f18f90ae0a3",
+    "files": 96,
+    "physicalAssistiveDeviceTesting": false,
+    "pixelApproval": false
+  },
+  "styles": {
+    "contrastPairs": 55,
+    "minimumTextRatio": 4.79
+  },
+  "gates": [
+    "typecheck",
+    "build",
+    "content validators",
+    "feature registry",
+    "documentation/API inventory",
+    "M01 canon",
+    "DM00 approval fingerprint",
+    "real browser matrix"
+  ],
+  "restore": {
+    "version": 1,
+    "date": "2026-10-31",
+    "synthetic": true,
+    "migrations": 51,
+    "immutableChecksumRerun": true,
+    "npcHistoryRestored": true,
+    "exactReceiptReplay": true,
+    "backupSha256": "f01248577e6b9bc58ca52acad744836794a0b6858482d026e6d2b07a0086f10b",
+    "productionTouched": false
+  },
+  "authoring": {
+    "browserEditedNpcRole": true,
+    "canonicalRoundTripFixed": true,
+    "finalDisposableCandidateSealed": true,
+    "productionAdopted": false
+  },
+  "initialRunIssues": {
+    "largeTextOverflow": "Fixed; entire browser matrix rerun passed",
+    "databaseLockCapacity": "Overlapping disposable schema cleanup exhausted default capacity. Increased only the owned temporary cluster lock budget, then reran the full integration suite successfully.",
+    "ciCheckpointMigrationCount": "Fixed the legacy 50-migration checkpoint assertion for 051; included real NPC memory in journal hashes, grant checks and upgraded restore proof. The complete checkpoint rehearsal then passed locally."
+  },
+  "production": {
+    "migrationApplied": false,
+    "deployed": false,
+    "contentAdopted": false,
+    "featureActivated": false
+  },
+  "stackBase": "DM01 PR #75 (open); prerequisite PRs remain separate",
+  "checkpointRehearsal": {
+    "status": "passed",
+    "migrations": 51,
+    "sourceTree": "715d696c75f28b9c5651e414ac4ed0e0d8528d97",
+    "historicalReplayAndOldBinaryRejection": true,
+    "runtimeGrantsVerified": true,
+    "npcHistoryBackupRestoreVerified": true
+  }
+}
